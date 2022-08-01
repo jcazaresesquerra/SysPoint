@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "728951316622",
-    "project_id": "apppoint-3c407",
-    "storage_bucket": "apppoint-3c407.appspot.com"
+    "project_number": "539015261641",
+    "project_id": "apppoint-e3b61",
+    "storage_bucket": "apppoint-e3b61.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:728951316622:android:0865b2de3662344e0829df",
+        "mobilesdk_app_id": "1:539015261641:android:1a824301c56d63c0324c18",
         "android_client_info": {
           "package_name": "com.app.syspoint"
         }
       },
       "oauth_client": [
         {
-          "client_id": "728951316622-ctbnp7to64rl86gv390h8gu5mtr1ouad.apps.googleusercontent.com",
+          "client_id": "539015261641-7mat73q7us9n8d97v00adufe16l15nag.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCeBkNCKT-w4Ga9E-UYuIlkCiAib4kU8H8"
+          "current_key": "AIzaSyAUy2eQzaTXL2jETmAWCAAPFAprtlUd36M"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "728951316622-ctbnp7to64rl86gv390h8gu5mtr1ouad.apps.googleusercontent.com",
+              "client_id": "539015261641-7mat73q7us9n8d97v00adufe16l15nag.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
