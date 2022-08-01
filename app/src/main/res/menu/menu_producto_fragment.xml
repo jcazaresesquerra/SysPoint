@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/search"
+        android:title=""
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        android:icon="@drawable/ic_search_white"/>
+
+    <item
+        android:id="@+id/syncProductos"
+        android:icon="@drawable/ic_sync_white"
+        android:orderInCategory="100"
+        android:title="@string/sincronizar_productos"
+        app:showAsAction="always" />
+
+</menu>

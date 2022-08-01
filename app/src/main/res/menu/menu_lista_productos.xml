@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/buscarProducto"
+        android:title=""
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        android:icon="@drawable/ic_search_white"/>
+
+    <item
+        android:contentDescription="Todos"
+        android:visible="true"
+        android:id="@+id/all"
+        android:title="Todos" />
+    <item
+        android:contentDescription="Solo disponibles"
+        android:visible="true"
+        android:id="@+id/by_disponibles"
+        android:title="Solo disponibles" />
+
+</menu>

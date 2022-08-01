@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_home"
+        android:name="com.app.syspoint.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_empleado"
+        android:name="com.app.syspoint.ui.empleados.EmpleadoFragment"
+        android:label="@string/menu_empleados"
+        tools:layout="@layout/fragment_empleado" />
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_producto"
+        android:name="com.app.syspoint.ui.productos.ProductoFragment"
+        android:label="@string/menu_productos"
+        tools:layout="@layout/fragment_producto" />
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_cliente"
+        android:name="com.app.syspoint.ui.clientes.ClienteFragment"
+        android:label="@string/menu_cliente"
+        tools:layout="@layout/fragment_cliente" />
+
+
+    <fragment
+        android:id="@+id/nav_historial"
+        android:name="com.app.syspoint.ui.ventas.ListaVentasFragment"
+        android:label="@string/menu_historial_ventas"
+        android:screenOrientation="portrait"
+        tools:layout="@layout/fragment_lista_ventas"
+        />
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_printer"
+        android:name="com.app.syspoint.ui.printer.ConfigPrinterActivity"
+        android:label="@string/imprimir"
+        tools:layout="@layout/activity_config_printer"/>
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_ruta"
+        android:name="com.app.syspoint.ui.home.HomeFragment"
+        android:label="Ruta"
+        tools:layout="@layout/fragment_home" />
+
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_inventario"
+        android:name="com.app.syspoint.ui.inventarios.InventarioFragment"
+        android:label="Inventario"
+        tools:layout="@layout/activity_inventario" />
+
+
+
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_cobranza"
+        android:name="com.app.syspoint.ui.cobranza.CobranzaFragment"
+        android:label="Cobranza"
+        tools:layout="@layout/fragment_cobranza" />
+
+
+
+
+</navigation>

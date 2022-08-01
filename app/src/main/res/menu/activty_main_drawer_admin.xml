@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view_admin">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="@string/menu_home" />
+
+
+        <item
+            android:id="@+id/nav_ruta"
+            android:icon="@drawable/ic_ruta"
+            android:title="@string/menu_ruta" />
+
+        <item
+            android:id="@+id/nav_empleado"
+            android:icon="@drawable/ic_empleados_black"
+            android:title="@string/menu_empleados" />
+
+        <item
+            android:id="@+id/nav_producto"
+            android:icon="@drawable/ic_productos_black"
+            android:title="@string/menu_productos" />
+
+        <item
+            android:id="@+id/nav_cliente"
+            android:icon="@drawable/ic_clientes_black"
+            android:title="@string/menu_cliente" />
+
+        <item
+            android:id="@+id/nav_historial"
+            android:icon="@drawable/ic_shopping_cart_black"
+            android:title="@string/menu_historial_ventas" />
+
+        <item
+            android:id="@+id/nav_inventario"
+            android:icon="@drawable/ic_inventario"
+            android:title="@string/menu_inventario" />
+
+        <item
+            android:id="@+id/nav_cobranza"
+            android:icon="@drawable/ic_money"
+            android:title="@string/menu_cobranza" />
+
+    </group>
+</menu>

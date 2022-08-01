@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:support="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/item_menu_confirma_inventario"
+        android:icon="@drawable/ic_save_white"
+        android:title="Confirmar"
+        support:showAsAction="ifRoom"/>
+
+</menu>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/sinronizaAll"
+        android:icon="@drawable/ic_sync_white"
+        android:orderInCategory="100"
+        android:title="@string/sincronizar_datos"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/viewMap"
+        android:icon="@drawable/ic_baseline_map_24"
+        android:orderInCategory="100"
+        android:title="@string/sincronizar_datos"
+        app:showAsAction="always" />
+
+
+
+</menu>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "539015261641",
+    "project_id": "apppoint-e3b61",
+    "storage_bucket": "apppoint-e3b61.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:539015261641:android:1a824301c56d63c0324c18",
+        "android_client_info": {
+          "package_name": "com.app.syspoint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "539015261641-7mat73q7us9n8d97v00adufe16l15nag.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUy2eQzaTXL2jETmAWCAAPFAprtlUd36M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "539015261641-7mat73q7us9n8d97v00adufe16l15nag.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,157 @@
+package com.app.syspoint.ui.productos;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.app.syspoint.R;
+import com.app.syspoint.db.bean.ProductoBean;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+public class AdapterListaProductosInv extends RecyclerView.Adapter<AdapterListaProductosInv.Holder> implements Filterable {
+
+
+    private List<ProductoBean> mData;
+    private List<ProductoBean> mDataFilter;
+    private AdapterListaProductos.OnItemClickListener onItemClickListener;
+
+    public AdapterListaProductosInv(List<ProductoBean> mData, AdapterListaProductos.OnItemClickListener onItemClickListener) {
+        this.mData = mData;
+        this.mDataFilter = mData;
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String filtro = constraint.toString();
+
+                if (filtro.isEmpty()){
+                    mDataFilter = mData;
+                }else {
+
+                    //TODO filtro productos
+                    List<ProductoBean> filtroProductos = new ArrayList<>();
+
+                    for (ProductoBean row : mDataFilter){
+                        if (row.getArticulo().toLowerCase().contains(filtro) || row.getDescripcion().toLowerCase().contains(filtro) ){
+                            filtroProductos.add(row);
+                        }
+                    }
+                    mDataFilter = filtroProductos;
+                }
+
+                FilterResults results = new FilterResults();
+                results.values = mDataFilter;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                mDataFilter = (ArrayList<ProductoBean>) results.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+    @NonNull
+    @Override
+    public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_lista_productos_inventario, parent, false);
+        return new Holder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull Holder holder, int position) {
+        holder.bind(mDataFilter.get(position), onItemClickListener);
+    }
+
+    @Override
+    public int getItemCount() {
+        return  mDataFilter.size()>0 ? mDataFilter.size() : 0;
+    }
+
+    public class Holder extends RecyclerView.ViewHolder {
+        TextView textViewArticulo;
+        TextView textViewDescripcion;
+        TextView textViewPrecio;
+        TextView textViewUnidadMedida;
+        TextView textViewIVA;
+        TextView textViewIEPS;
+        TextView textViewCategoria;
+        TextView textViewPrioridad;
+        TextView textViewStatus;
+        TextView textViewCodAlfa;
+        TextView textViewCodBarras;
+        TextView textViewRegion;
+        CircleImageView imageView;
+        public Holder(@NonNull View itemView) {
+            super(itemView);
+            this.textViewArticulo = itemView.findViewById(R.id.textViewArticuloListInv);
+            this.textViewDescripcion= itemView.findViewById(R.id.textViewDescripcionProductoListInv);
+            this.textViewPrecio= itemView.findViewById(R.id.textViewPreciosArticuloListInv);
+            this.textViewUnidadMedida= itemView.findViewById(R.id.textViewArticuloUnidadMedidaListInv);
+            this.textViewIVA = itemView.findViewById(R.id.textViewArticuloIVAListInv);
+            this.textViewIEPS= itemView.findViewById(R.id.textViewArticuloIESPListInv);
+            this.textViewCategoria= itemView.findViewById(R.id.textViewArticuloCategoriaListInv);
+            this.textViewPrioridad= itemView.findViewById(R.id.textViewArticuloPrioridadListInv);
+            this.textViewStatus= itemView.findViewById(R.id.textViewArticuloStatusListInv);
+            this.textViewCodAlfa= itemView.findViewById(R.id.textViewArticuloCodAlfaListInv);
+            this.textViewCodBarras= itemView.findViewById(R.id.textViewArticuloCodBarrasListInv);
+            this.textViewRegion= itemView.findViewById(R.id.textViewArticuloRegionListInv);
+            this.imageView = itemView.findViewById(R.id.imageView2);
+        }
+
+        private void bind(ProductoBean producto, final AdapterListaProductos.OnItemClickListener onItemClickListener){
+            this.textViewArticulo.setText(producto.getArticulo());
+            this.textViewDescripcion.setText(producto.getDescripcion());
+            this.textViewPrecio.setText("$"+ producto.getPrecio());
+            this.textViewUnidadMedida.setText(producto.getUnidad_medida());
+            this.textViewIVA.setText(""+producto.getIva() + "%");
+            this.textViewIEPS.setText(""+producto.getIeps() + "%");
+            this.textViewCategoria.setText("SYS");
+            this.textViewPrioridad.setText(""+ producto.getPrioridad());
+            this.textViewStatus.setText(""+producto.getStatus());
+            this.textViewCodAlfa.setText(""+ producto.getCodigo_alfa());
+            this.textViewCodBarras.setText(""+ producto.getCodigo_barras());
+            this.textViewRegion.setText(""+ producto.getRegion());
+
+            if (producto.getPath_img() != null){
+                byte[] decodedString = Base64.decode(producto.getPath_img(), Base64.DEFAULT);
+                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                imageView.setImageBitmap(decodedByte);
+            }
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClickListener.onItemClick(getAdapterPosition());
+                }
+            });
+        }
+    }
+
+    public interface OnItemClickListener{
+        void onItemClick(int position);
+    }
+
+    public void setProducts(List<ProductoBean> data){
+        this.mDataFilter = data;
+        notifyDataSetChanged();
+    }
+}

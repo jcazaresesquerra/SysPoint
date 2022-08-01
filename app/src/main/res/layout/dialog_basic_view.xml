@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="linearlayout.match_p_match_p.orientation_vertical.layout_gravity_center"
+    android:background="@color/white"
+    android:paddingLeft="40dp"
+    android:paddingRight="40dp"
+    android:paddingTop="10dp"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!--Contiene la imágen de la empresa-->
+    <ImageView
+        style="@style/logo_empresa"
+        android:layout_width="match_parent"
+        android:layout_height="81dp"
+        android:id="@+id/dialog_basic.imageview.joyfood"
+        android:layout_gravity="center_horizontal|top" />
+
+    <!--Contiene el mensaje-->
+    <TextView
+        style="@style/textview.match_p_wrap_c.gravity_center"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="22sp"
+        android:maxLines="15"
+        android:scrollbars="vertical"
+        android:text="hola"
+        android:id="@+id/dialog_basic.textview.mensaje"/>
+
+    <!--Contenedor de los botones-->
+    <LinearLayout
+        style="@style/linearlayout.match_p_wrap_c.orientation_horisontal"
+        android:layout_below="@+id/dialog_basic.imageview.joyfood"
+        android:weightSum="2"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp">
+
+        <!--Contiene el botón de cancelar-->
+        <Button
+            android:layout_marginEnd="8dp"
+            android:textSize="16dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_weight="1"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@color/white"
+            android:text="@string/Cancelar"
+            android:id="@+id/dialog_basic_view.button.cancelar"/>
+
+        <!--Contiene el botón de aceptar-->
+        <Button
+            android:layout_marginStart="8dp"
+            android:textSize="16dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_weight="1"
+            android:text="@string/Aceptar"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@color/white"
+            android:id="@+id/dialog_basic_view.button.aceptar"/>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="textview">
+    </style>
+    <style name="textview.wrap_c_wrap_c">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="textview.match_p_wrap_c">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="textview.match_p_wrap_c.gravity_center">
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="textview.wrap_c_wrap_c.gravity_center">
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="ImportesInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">left</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:textCursorDrawable">@color/purple_500</item>
+    </style>
+
+</resources>

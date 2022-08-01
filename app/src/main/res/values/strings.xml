@@ -1,3 +1,69 @@
 <resources>
-    <string name="app_name">SysPoint</string>
+
+        <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+        AIzaSyCfsjZFl9Pn19TTtb3uSfPlr-aQPqlThJU
+    </string>
+    <string name="app_name">App Point</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="Cancelar">Cancelar</string>
+    <string name="Aceptar">Aceptar</string>
+    <string name="menu_home">Inicio</string>
+    <string name="menu_empleados">Empleados</string>
+    <string name="menu_ruta">Cargar Ruta</string>
+    <string name="menu_productos">Productos</string>
+    <string name="menu_cliente">Clientes</string>
+    <string name="registrar_empleado">Registrar</string>
+    <string name="ups_no_hay_datos">Ups...</string>
+    <string name="sincronizar_empleados">Sincronizar empleados</string>
+    <string name="cancelar_dialog">Cancelar</string>
+    <string name="confirmar_dialog">Confirmar</string>
+    <string name="ok_dialog">OK</string>
+    <string name="sincronizar_productos">Sincronizar productos</string>
+    <string name="registrar_producto">Registrar producto</string>
+    <string name="registrar_cliente">Registrar cliente</string>
+    <string name="no_hay_productos_para_la_venta">No hay productos para la venta</string>
+    <string name="error_server">Ocurrió un error, intenta de nuevo más tarde</string>
+
+    <string name="no_hay_productos_inventariados">No hay productos inventariados</string>
+    <string name="sincroniza_clientes">Sincroniza clientes</string>
+    <string name="title_activity_view_p_d_f">ViewPDFActivity</string>
+    <string name="imprimir">Confiurar Impresora</string>
+    <string name="compartir">Compartir</string>
+    <string name="terminar">Terminar</string>
+    <string name="menu_historial_ventas">Historial Ventas</string>
+    <string name="establecer_impresora">Establecer</string>
+    <string name="configura_impresora">Configura impresora</string>
+    <string name="activar_ubicacion">Activar ubicación</string>
+    <string name="sincronizar_datos">Sincronizar datos</string>
+
+    <string name="menu_inventario">Inventario</string>
+
+    <string name="menu_cobranza">Cobranza</string>
+
+
+    <string name="device_discovery_started">Buscando dispositivos cercanos&#8230;</string>
+    <string name="device_already_paired">Este dispositivo ya está emparejado!</string>
+    <string name="device_pairing_success">Dispositivo emparejado correctamente!</string>
+    <string name="enabling_bluetooth">Encender Bluetooth y buscar dispositivos&#8230;</string>
+    <string name="device_discovery_stopped">Descubrimiento de dispositivo cancelado</string>
+    <string name="empty_list_message">No se encontraron dispositivos cercanos. Toque el botón de abajo a la derecha para iniciar un nuevo descubrimiento de dispositivo.</string>
+    <string name="bluetooth_not_available_message">Parece que este dispositivo no tiene un controlador Bluetooth disponible. \ nBlue Pair solo funciona con Bluetooth, así que inténtalo de nuevo en un dispositivo diferente. \ nLa aplicación se cerrará ahora.</string>
+    <string name="bluetooth_not_available_title">Bluetooth no disponible</string>
+    <string name="title_activity_maps_ruteo">MapsRuteoActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

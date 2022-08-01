@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:support="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/buscarImpresoras"
+        android:icon="@drawable/ic_sync_white"
+        android:title="Seleccionar impresora"
+        support:showAsAction="ifRoom"/>
+
+
+</menu>

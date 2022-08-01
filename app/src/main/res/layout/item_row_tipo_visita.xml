@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    android:id="@+id/card_tipo_seleccion"
+    android:padding="10dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="6dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="5dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <TextView
+        android:id="@+id/tv_tipo"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:textStyle="bold"
+        android:textSize="14dp"
+        android:text="No se encontro el cliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </TextView>
+</androidx.cardview.widget.CardView>

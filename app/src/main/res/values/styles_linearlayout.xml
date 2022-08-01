@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="linearlayout">
+    </style>
+    <style name="linearlayout.match_p_match_p">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.background_white">
+        <item name="android:background">#2196F3</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.background_yellow_ligh">
+        <item name="android:background">@color/purple_700</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.background_orange">
+        <item name="android:background">@color/purple_700</item>
+    </style>
+    <style name="linearlayout.match_p_wrap_c">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.orientation_vertical">
+        <item name="android:orientation">vertical</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.orientation_horisontal">
+        <item name="android:orientation">horizontal</item>
+    </style>
+    <style name="linearlayout.match_p_wrap_c.orientation_vertical">
+        <item name="android:orientation">vertical</item>
+    </style>
+    <style name="linearlayout.match_p_wrap_c.orientation_horisontal">
+        <item name="android:orientation">horizontal</item>
+    </style>
+    <style name="linearlayout.match_p_match_p.orientation_vertical.layout_gravity_center">
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+</resources>

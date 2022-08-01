@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="unidades_de_medida">
+        <item>Pieza</item>
+        <item>KG</item>
+        <item>Litro</item>
+        <item>Docena</item>
+        <item>Gramo</item>
+        <item>Paquete</item>
+        <item>Caja</item>
+        <item>Kit</item>
+        <item>Servicio</item>
+        <item>Actividad</item>
+        <item>Trabajo</item>
+        <item>Tarifa</item>
+        <item>Día</item>
+        <item>Mes</item>
+        <item>Hora</item>
+        <item>Viaje</item>
+    </string-array>
+
+    <string-array name="region">
+        <item>UNO</item>
+        <item>DOS</item>
+        <item>TRES</item>
+        <item>CUATRO</item>
+        <item>CINCO</item>
+        <item>SEIS</item>
+        <item>SIETE</item>
+        <item>OCHO</item>
+        <item>NUEVE</item>
+        <item>DIEZ</item>
+        <item>ONCE</item>
+        <item>DOCE</item>
+        <item>TRECE</item>
+        <item>CATORCE</item>
+        <item>QUINCE</item>
+        <item>GLOBAL</item>
+    </string-array>
+
+    <string-array name="status_producto">
+        <item>Activo</item>
+        <item>Inactivo</item>
+    </string-array>
+    <string-array name="grupo">
+        <item>Independiente</item>
+    </string-array>
+
+    <string-array name="categoria">
+        <item>Independiente</item>
+        <item>Matrix</item>
+        <item>Sucursal</item>
+    </string-array>
+
+    <string-array name="tipo_contrato">
+        <item>Capacitación Inicial</item>
+        <item>Por obra</item>
+        <item>Tiempo Determinado</item>
+        <item>Temporada</item>
+        <item>Periodo de prueba</item>
+        <item>Tiempo indeterminado</item>
+    </string-array>
+
+    <string-array name="ruteo_sector">
+        <item>A</item>
+        <item>B</item>
+        <item>C</item>
+        <item>D</item>
+        <item>E</item>
+        <item>F</item>
+        <item>G</item>
+        <item>H</item>
+        <item>I</item>
+        <item>J</item>
+        <item>K</item>
+        <item>L</item>
+    </string-array>
+
+    <string-array name="ruteo_rango_rutas">
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+    </string-array>
+
+    <string-array name="ruteo_periodo">
+        <item>7</item>
+        <item>14</item>
+        <item>21</item>
+        <item>28</item>
+        <item>56</item>
+        <item>112</item>
+    </string-array>
+
+    <string-array name="dias">
+        <item>Lunes</item>
+        <item>Martes</item>
+        <item>Miercoles</item>
+        <item>Jueves</item>
+        <item>Viernes</item>
+        <item>Sabado</item>
+        <item>Domingo</item>
+    </string-array>
+
+    <string-array name="tipo_visita">
+        <item>No Recibio</item>
+        <item>Cerrado</item>
+        <item>No Visitado</item>
+        <item>No Cobrado</item>
+    </string-array>
+
+    <string-array name="concepto_inventario">
+        <item>Abasto suficiente</item>
+        <item>Nos falto algun producto</item>
+        <item>Tiene producto de competencia</item>
+        <item>No quiso por cualquier razon</item>
+        <item>Ya no quiere nuestro producto</item>
+        <item>En inventario</item>
+    </string-array>
+
+</resources>
