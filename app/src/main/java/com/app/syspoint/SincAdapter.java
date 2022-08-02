@@ -20,7 +20,6 @@ public class SincAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private int lastPosition = -1;
     private boolean on_attach = true;
 
-
     public SincAdapter(List<LogSyncGetBean> mData, int animation_type) {
         this.mData = mData;
         this.animation_type = animation_type;

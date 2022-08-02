@@ -311,7 +311,9 @@ public class ListaVentasFragment extends Fragment {
                                     progressDialog.show();
                                     new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
                                         progressDialog.dismiss();
-                                        if (connected)  syncCloudVenta(venta.getId());
+                                        if (connected)  {
+                                            syncCloudVenta(venta.getId());
+                                        }
 
                                         if (venta.getCobranza() != null) {
                                             //Actualiza el documento de la cobranza
@@ -329,26 +331,31 @@ public class ListaVentasFragment extends Fragment {
                                                     new loadCobranza().execute();
                                                 }
                                             }
-                                            if (connected) new loadCobranza().execute();
+                                            if (connected) {
+                                                new loadCobranza().execute();
+                                            }
+                                        }
 
-                                            final VentasBean ventasBean = ventasDao.getVentaByInventario(venta.getVenta());
 
-                                            for (PartidasBean item : ventasBean.getListaPartidas()){
-                                                final ProductoDao productoDao = new ProductoDao();
-                                                final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                                        final VentasBean ventasBean = ventasDao.getVentaByInventario(venta.getVenta());
 
-                                                if (productoBean != null){
+                                        for (PartidasBean item : ventasBean.getListaPartidas()){
+                                            final ProductoDao productoDao = new ProductoDao();
+                                            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
-                                                    productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
-                                                    productoDao.save(productoBean);
+                                            if (productoBean != null){
 
-                                                    final InventarioHistorialDao inventarioHistorialDao = new InventarioHistorialDao();
-                                                    final InventarioHistorialBean inventarioHistorialBean = inventarioHistorialDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                                                productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
+                                                productoDao.save(productoBean);
 
-                                                    if (inventarioHistorialBean != null){
-                                                        inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
-                                                        inventarioHistorialDao.save(inventarioHistorialBean);
-                                                    }
+
+                                                final InventarioHistorialDao inventarioHistorialDao = new InventarioHistorialDao();
+                                                final InventarioHistorialBean inventarioHistorialBean = inventarioHistorialDao.getInvatarioPorArticulo(productoBean.getArticulo());
+
+                                                if (inventarioHistorialBean != null){
+                                                    inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
+                                                    inventarioHistorialDao.save(inventarioHistorialBean);
+
                                                 }
                                             }
                                         }

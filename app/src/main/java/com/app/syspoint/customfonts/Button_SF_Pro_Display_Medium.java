@@ -1,5 +1,4 @@
-package
-        com.app.syspoint.customfonts;
+package com.app.syspoint.customfonts;
 
 import android.content.Context;
 import android.graphics.Typeface;
