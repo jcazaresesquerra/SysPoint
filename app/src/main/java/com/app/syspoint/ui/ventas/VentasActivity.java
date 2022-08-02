@@ -458,9 +458,6 @@ public class VentasActivity extends AppCompatActivity {
                                         }
                                         ventasBean.setTicket(Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", ""));
 
-                                        //Creamos la venta
-                                        ventasDao.creaVenta(ventasBean, lista);
-
 
                                         double totalVenta = Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")) + Double.parseDouble(textViewImpuesto.getText().toString().replace(",", ""));
                                         String ticketRamdom = ticketRamdom() + ventasBean.getFecha().replace("-", "") + "" + ventasBean.getHora().replace(":", "");
@@ -484,7 +481,7 @@ public class VentasActivity extends AppCompatActivity {
 
                                                 //Actualizamos el documento de la venta con el de la cobranza
                                                 ventasBean.setCobranza(ticketRamdom);
-                                                ventasDao.save(ventasBean);
+                                                //ventasDao.save(ventasBean);
 
                                                 //Actualizamos el saldo del cliente
                                                 ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(cuentaMatriz);
@@ -513,7 +510,7 @@ public class VentasActivity extends AppCompatActivity {
 
                                                 //Actualizamos el documento de la venta con el de la cobranza
                                                 ventasBean.setCobranza(ticketRamdom);
-                                                ventasDao.save(ventasBean);
+                                                //ventasDao.save(ventasBean);
 
                                                 //Actualizamos el saldo del cliente
                                                 double saldoNuevo = clienteBean.getSaldo_credito() + totalVenta;
@@ -527,7 +524,13 @@ public class VentasActivity extends AppCompatActivity {
                                             }
                                         }
 
-                                        String ventaID = String.valueOf(ventasBean.getId());
+                                        ventasDao.save(ventasBean);
+
+
+                                        //Creamos la venta
+                                        ventasDao.creaVenta(ventasBean, lista);
+
+                                        String ventaID = String.valueOf(ventasBean.getVenta());
 
                                         //Creamos el template del timbre
                                         TicketVenta ticketVenta = new TicketVenta(VentasActivity.this);
@@ -582,9 +585,7 @@ public class VentasActivity extends AppCompatActivity {
             }
         });
 
-        imageViewVisitas =
-
-                findViewById(R.id.img_btn_finish_visita);
+        imageViewVisitas = findViewById(R.id.img_btn_finish_visita);
         imageViewVisitas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
