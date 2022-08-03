@@ -53,10 +53,14 @@ public class EmpleadoDao extends Dao {
 
 
     final public EmpleadoBean getByEmail(final String email) {
-        final List<EmpleadoBean> usuarioBeanList = dao.queryBuilder()
-                .where(EmpleadoBeanDao.Properties.Email.eq(email))
-                .list();
-        return usuarioBeanList.size()>0?usuarioBeanList.get(0):null;
+        if (email != null && !email.isEmpty()) {
+            final List<EmpleadoBean> usuarioBeanList = dao.queryBuilder()
+                    .where(EmpleadoBeanDao.Properties.Email.eq(email))
+                    .list();
+            return usuarioBeanList.size() > 0 ? usuarioBeanList.get(0) : null;
+        } else {
+            return null;
+        }
     }
 
 

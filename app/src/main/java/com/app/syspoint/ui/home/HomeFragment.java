@@ -89,6 +89,7 @@ import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
+    private static String TAG = "HomeFragment";
     AdapterRutaClientes mAdapter;
     List<ClientesRutaBean> mData;
     private RelativeLayout rlprogress;
@@ -1476,7 +1477,11 @@ public class HomeFragment extends Fragment {
                 visita.setLatidud(item.getLatidud());
                 visita.setLongitud(item.getLongitud());
                 visita.setMotivo_visita(item.getMotivo_visita());
-                visita.setIdentificador(vendedoresBean.getIdentificador());
+                if (vendedoresBean != null) {
+                    visita.setIdentificador(vendedoresBean.getIdentificador());
+                } else {
+                    Log.e(TAG, "vendedoresBean is null");
+                }
 
                 listaVisitas.add(visita);
             }
