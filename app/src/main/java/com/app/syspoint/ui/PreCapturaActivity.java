@@ -161,9 +161,11 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
                 }
                 recyclerView.getAdapter().notifyDataSetChanged();
 
-                TipoVisitaModel item = mData.get(position);
-                concepto_visita_seleccioando  = item.getName();
-                item.setSelected(true);
+                if (position < mData.size()) {
+                    TipoVisitaModel item = mData.get(position);
+                    concepto_visita_seleccioando = item.getName();
+                    item.setSelected(true);
+                }
                 recyclerView.getAdapter().notifyDataSetChanged();
 
             }
@@ -332,7 +334,9 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
             visita.setLatidud(item.getLatidud());
             visita.setLongitud(item.getLongitud());
             visita.setMotivo_visita(item.getMotivo_visita());
-            visita.setIdentificador(vendedoresBean.getIdentificador());
+            if (vendedoresBean != null) {
+                visita.setIdentificador(vendedoresBean.getIdentificador());
+            }
             listaVisitas.add(visita);
         }
 

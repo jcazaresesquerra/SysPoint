@@ -430,7 +430,12 @@ public class RegistrarProductoActivity extends AppCompatActivity {
         if (editTextCosto.getText().toString() == null){
             producto.setCosto(0);
         }else {
-            producto.setCosto(Double.parseDouble(editTextCosto.getText().toString()));
+            String costo = editTextCosto.getText().toString();
+            if (costo == null || costo.isEmpty()) {
+                Toast.makeText(this, "El campo costo no debe estar vacio", Toast.LENGTH_SHORT).show();
+            } else {
+                producto.setCosto(Double.parseDouble(costo));
+            }
         }
 
         if (editTextIVA.getText().toString() == null){

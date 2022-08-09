@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -423,7 +424,13 @@ public class LoginActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (response.isSuccessful()){
+
+            if (response == null) {
+                Toast.makeText(LoginActivity.this, "Ha ocurrido un error al iniciar", Toast.LENGTH_SHORT).show();
+                return null;
+            }
+
+            if (response.isSuccessful()) {
 
                 if (response.code() == 200){
 

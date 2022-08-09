@@ -40,6 +40,8 @@ public class TicketVenta extends Documento {
             }
         }
         String salto = "\n";
+        String vendedor = ventasBean.getEmpleado() != null ? ("Vendedor:" + ventasBean.getEmpleado().getNombre() + salto) : "";
+
         String ticket =
                         "     AGUA POINT S.A. DE C.V.    " + salto +
                         "     Calz. Aeropuerto 4912 A    " + salto +
@@ -52,7 +54,7 @@ public class TicketVenta extends Documento {
                         "" + salto +
                         "" + salto +
                         "(" + ventasBean.getCliente().getCuenta() + ")  " + ventasBean.getCliente().getNombre_comercial() + salto +
-                        "Vendedor:" + ventasBean.getEmpleado().getNombre() + salto +
+                        vendedor +
                         "" + ventasBean.getFecha() + " " + ventasBean.getHora() + "" + salto +
                         "FOLIO FINAL:         " + ventasBean.getTicket() + salto +
                         "" + salto +

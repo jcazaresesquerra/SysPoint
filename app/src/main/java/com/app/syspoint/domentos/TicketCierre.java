@@ -36,6 +36,7 @@ public class TicketCierre extends Documento {
         final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
         String salto = "\n";
+        String vendedores = vendedoresBean != null ? "" + vendedoresBean.getNombre() + salto : "";
         String ticket =
                 "     AGUA POINT S.A. DE C.V.    " + salto +
                         "     Calz. Aeropuerto 4912 A    " + salto +
@@ -47,7 +48,7 @@ public class TicketCierre extends Documento {
                         "         www.aguapoint.com      " + salto +
                         "" + salto +
                         "" + salto +
-                        "" + vendedoresBean.getNombre() + salto +
+                        vendedores +
                         "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + salto +
                         "" + salto +
                         "" + salto +

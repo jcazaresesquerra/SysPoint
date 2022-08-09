@@ -475,7 +475,9 @@ public class VentasActivity extends AppCompatActivity {
                                                 cobranzaBean.setObservaciones("Se realiza la venta a crédito para sucursal \n " + clienteBean.getCuenta() + " " + clienteBean.getNombre_comercial() + " \n con cargo a Matriz " + cuentaMatriz + " " + sucursalMatriz + "\n" + ventasBean.getFecha() + " hora " + ventasBean.getHora());
                                                 cobranzaBean.setFecha(ventasBean.getFecha());
                                                 cobranzaBean.setHora(ventasBean.getHora());
-                                                cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                if (vendedoresBean != null) {
+                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                }
                                                 cobranzaBean.setAbono(false);
                                                 cobranzaDao.save(cobranzaBean);
 
@@ -505,7 +507,9 @@ public class VentasActivity extends AppCompatActivity {
                                                 cobranzaBean.setObservaciones("Venta a crédito " + ventasBean.getFecha() + " hora " + ventasBean.getHora());
                                                 cobranzaBean.setFecha(ventasBean.getFecha());
                                                 cobranzaBean.setHora(ventasBean.getHora());
-                                                cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                if (vendedoresBean != null) {
+                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                }
                                                 cobranzaDao.save(cobranzaBean);
 
                                                 //Actualizamos el documento de la venta con el de la cobranza

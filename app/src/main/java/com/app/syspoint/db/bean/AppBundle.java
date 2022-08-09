@@ -25,6 +25,7 @@ public class AppBundle extends Bean{
         if (userSesion_ == null) Log.e(TAG, "user session is null");
         final EmpleadoDao vendedoresDao = new EmpleadoDao();
         final EmpleadoBean vendedoresBean = vendedoresDao.getByEmail(userSesion_.getUsuario());
+        if (vendedoresBean == null) Log.e(TAG, "vendedoresBean is null");
         return vendedoresBean;
     }
 

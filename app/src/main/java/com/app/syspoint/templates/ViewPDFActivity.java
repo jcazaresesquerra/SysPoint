@@ -537,6 +537,11 @@ public class ViewPDFActivity extends AppCompatActivity {
         final VentasDao ventasDao = new VentasDao();
         final VentasBean ventasBean = ventasDao.getVentaByInventario(venta);
 
+        if (ventasBean == null) {
+            Toast.makeText(this, "Ha ocurrido un error", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         //Contiene las partidas de la venta
         for (PartidasBean item : ventasBean.getListaPartidas()){
 
