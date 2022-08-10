@@ -45,6 +45,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -236,7 +237,7 @@ public class VentasActivity extends AppCompatActivity {
         imageViewVentas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                imageViewVentas.setEnabled(false);
                 if (existenPartidas()) {
 
 
@@ -261,6 +262,7 @@ public class VentasActivity extends AppCompatActivity {
                                 });
                         dialogo.setCancelable(false);
                         dialogo.show();
+                        imageViewVentas.setEnabled(true);
                         return;
                     }
 
@@ -285,6 +287,7 @@ public class VentasActivity extends AppCompatActivity {
                                 });
                         dialogo.setCancelable(false);
                         dialogo.show();
+                        imageViewVentas.setEnabled(true);
                         return;
                     }
 
@@ -324,6 +327,7 @@ public class VentasActivity extends AppCompatActivity {
                                                     });
                                             dialogo.setCancelable(false);
                                             dialogo.show();
+                                            imageViewVentas.setEnabled(true);
                                             return;
                                         }
                                     } else {
@@ -350,6 +354,7 @@ public class VentasActivity extends AppCompatActivity {
                                                         });
                                                 dialogo.setCancelable(false);
                                                 dialogo.show();
+                                                imageViewVentas.setEnabled(true);
                                                 return;
                                             }
                                         }
@@ -432,7 +437,11 @@ public class VentasActivity extends AppCompatActivity {
                                         }
 
                                         //Obtiene el nombre del vendedor
-                                        final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+                                        if (vendedoresBean == null) {
+                                            vendedoresBean = new CacheInteractor(VentasActivity.this).getSeller();
+                                        }
 
                                         ventasBean.setTipo_doc("TIK");
                                         ventasBean.setFecha(Utils.fechaActual());
@@ -551,6 +560,7 @@ public class VentasActivity extends AppCompatActivity {
                                         startActivity(intent);
 
                                         dialogo.dismiss();
+                                        imageViewVentas.setEnabled(true);
                                     }, VentasActivity.this).execute(), 100);
                                 }
                             })
@@ -563,6 +573,7 @@ public class VentasActivity extends AppCompatActivity {
                             });
                     dialogo.setCancelable(false);
                     dialogo.show();
+                    imageViewVentas.setEnabled(true);
 
                 } else {
                     final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
@@ -585,7 +596,9 @@ public class VentasActivity extends AppCompatActivity {
                             });
                     dialogo.setCancelable(false);
                     dialogo.show();
+                    imageViewVentas.setEnabled(true);
                 }
+                imageViewVentas.setEnabled(true);
             }
         });
 
@@ -593,6 +606,7 @@ public class VentasActivity extends AppCompatActivity {
         imageViewVisitas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                imageViewVisitas.setEnabled(false);
                 ClienteDao clienteDao = new ClienteDao();
                 ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
                 HashMap<String, String> parametros = new HashMap<>();
@@ -605,6 +619,7 @@ public class VentasActivity extends AppCompatActivity {
                 parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
                 Utils.addActivity2Stack(activity);
                 Actividades.getSingleton(VentasActivity.this, PreCapturaActivity.class).muestraActividad(parametros);
+                imageViewVisitas.setEnabled(true);
             }
         });
 
@@ -647,7 +662,9 @@ public class VentasActivity extends AppCompatActivity {
         fb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                fb.setEnabled(false);
                 Actividades.getSingleton(VentasActivity.this, ListaProductosActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
+                fb.setEnabled(true);
             }
         });
 
@@ -1309,7 +1326,8 @@ public class VentasActivity extends AppCompatActivity {
                         longitud = "" + list.get(0).getLongitude();
                     }
 
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }

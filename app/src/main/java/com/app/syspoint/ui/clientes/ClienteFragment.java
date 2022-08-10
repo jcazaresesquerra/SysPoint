@@ -31,6 +31,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -199,24 +200,19 @@ public class ClienteFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterListaClientes(mData, new AdapterListaClientes.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, ClienteBean obj, int position) {
-
-                showDialogList(obj);
-            }
-        }, new AdapterListaClientes.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
-                return false;
-            }
-        });
+        mAdapter = new AdapterListaClientes(
+                mData,
+                (view, obj, position, onDialogShownListener) -> {
+                    showDialogList(obj, onDialogShownListener);
+                },
+                position -> false
+        );
 
         recyclerView.setAdapter(mAdapter);
 
     }
 
-    private void showDialogList(ClienteBean cliente) {
+    private void showDialogList(ClienteBean cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
 
         final ClienteBean clienteBean = cliente;
 
@@ -250,8 +246,11 @@ public class ClienteFragment extends Fragment {
                 String identificador = "";
 
                 //Obtiene el nombre del vendedor
-                final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
+                if (vendedoresBean == null) {
+                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                }
 
                 if (vendedoresBean != null) {
                     identificador = vendedoresBean.getIdentificador();
@@ -366,6 +365,8 @@ public class ClienteFragment extends Fragment {
             }
         });
         builderSingle.show();
+
+        onDialogShownListener.onDialogShown();
     }
 
 

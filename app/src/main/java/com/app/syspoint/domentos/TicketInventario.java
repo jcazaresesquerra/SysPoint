@@ -7,6 +7,7 @@ import com.app.syspoint.db.bean.EmpleadoBean;
 import com.app.syspoint.db.bean.InventarioBean;
 import com.app.syspoint.db.dao.InventarioDao;
 import com.app.syspoint.utils.Utils;
+import com.app.syspoint.utils.cache.CacheInteractor;
 
 import java.util.List;
 
@@ -14,13 +15,15 @@ public class TicketInventario  extends Documento{
 
 
     private InventarioBean inventarioBean;
+    private Activity mActicity;
+
     public void setVentasBean(InventarioBean inventarioBean) {
         this.inventarioBean = inventarioBean;
     }
 
     public TicketInventario(Activity activity) {
-
         super(activity);
+        mActicity = activity;
     }
 
 
@@ -31,9 +34,14 @@ public class TicketInventario  extends Documento{
         mLidata = (List<InventarioBean>) (List<?>) new InventarioDao().list();
 
         //Obtiene el nombre del vendedor
-        final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean == null) {
+            vendedoresBean = new CacheInteractor(mActicity).getSeller();
+        }
 
         String salto = "\n";
+        String vendedor = vendedoresBean != null ? "" + vendedoresBean.getNombre() + salto : "";
         String ticket =
                 "     AGUA POINT S.A. DE C.V.    " + salto +
                         "     Calz. Aeropuerto 4912 A    " + salto +
@@ -45,7 +53,7 @@ public class TicketInventario  extends Documento{
                         "         www.aguapoint.com      " + salto +
                         "" + salto +
                         "" + salto +
-                        "" + vendedoresBean.getNombre() + salto +
+                        vendedor +
                         "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + salto +
                         "" + salto +
                         "" + salto +

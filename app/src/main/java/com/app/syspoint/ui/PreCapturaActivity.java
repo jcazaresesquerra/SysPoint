@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -161,10 +162,12 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
                 }
                 recyclerView.getAdapter().notifyDataSetChanged();
 
-                if (position < mData.size()) {
+                if (position >= 0 && position < mData.size()) {
                     TipoVisitaModel item = mData.get(position);
                     concepto_visita_seleccioando = item.getName();
                     item.setSelected(true);
+                } else {
+                    Toast.makeText(PreCapturaActivity.this, "Ha ocurrido un error, intente nuevamente", Toast.LENGTH_LONG).show();
                 }
                 recyclerView.getAdapter().notifyDataSetChanged();
 
@@ -243,7 +246,10 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
                             @Override
                             public void onClick() {
 
-                                final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                if (vendedoresBean == null) {
+                                    vendedoresBean = new CacheInteractor(PreCapturaActivity.this).getSeller();
+                                }
 
                                 //Le indicamos al sistema que el cliente ya se ah visitado
                                 final ClienteDao clienteDao = new ClienteDao();
@@ -280,7 +286,9 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
                                 HashMap<String, String> parametros = new HashMap<>();
                                 parametros.put(Actividades.PARAM_1, concepto_visita_seleccioando);
                                 parametros.put(Actividades.PARAM_2, tipo_inventario_seleccionado);
-                                parametros.put(Actividades.PARAM_3, vendedoresBean.getNombre());
+                                if (vendedoresBean != null) {
+                                    parametros.put(Actividades.PARAM_3, vendedoresBean.getNombre());
+                                }
                                 parametros.put(Actividades.PARAM_4, Utils.fechaActual());
                                 parametros.put(Actividades.PARAM_5, Utils.getHoraActual());
                                 parametros.put(Actividades.PARAM_6, String.valueOf(latitud));
@@ -322,7 +330,11 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
         visitasBeanListBean =  visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
 
         List<Visita> listaVisitas = new ArrayList<>();
-        final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        if (vendedoresBean == null) {
+            vendedoresBean = new CacheInteractor(PreCapturaActivity.this).getSeller();
+        }
+
         final ClienteDao clienteDao = new ClienteDao();
 
         for (VisitasBean item : visitasBeanListBean){

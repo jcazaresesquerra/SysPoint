@@ -31,6 +31,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.db.bean.AppBundle;
@@ -317,8 +318,11 @@ public class EmpleadoFragment extends Fragment {
                 String identificador = "";
 
                 //Obtiene el nombre del vendedor
-                final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
+                if (vendedoresBean == null && getContext() != null) {
+                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                }
 
                 if (vendedoresBean != null){
                     identificador = vendedoresBean.getIdentificador();

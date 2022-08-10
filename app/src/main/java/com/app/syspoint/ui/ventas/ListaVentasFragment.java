@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.BluetoothActivity;
@@ -229,8 +230,11 @@ public class ListaVentasFragment extends Fragment {
                 String identificador = "";
 
                 //Obtiene el nombre del vendedor
-                final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
+                if (vendedoresBean == null && getContext() != null) {
+                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                }
 
                 if (vendedoresBean != null){
                     identificador = vendedoresBean.getIdentificador();
@@ -296,7 +300,12 @@ public class ListaVentasFragment extends Fragment {
                             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
                                 @Override
                                 public void onClick() {
-                                    final EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
+                                    EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
+
+                                    if (cancelaUsuario == null && getContext() != null) {
+                                        cancelaUsuario = new CacheInteractor(getContext()).getSeller();
+                                    }
+
                                     VentasDao ventasDao = new VentasDao();
                                     venta.setEstado("CA");
                                     venta.setUsuario_cancelo(cancelaUsuario.getNombre());

@@ -27,6 +27,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.BluetoothActivity;
@@ -432,8 +433,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             visita.setLongitud(item.getLongitud());
             visita.setMotivo_visita(item.getMotivo_visita());
             //Obtiene el nombre del vendedor
-            final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-            visita.setIdentificador(vendedoresBean.getIdentificador());
+            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+            if (vendedoresBean == null) {
+                vendedoresBean = new CacheInteractor(FinalizaPrecapturaActivity.this).getSeller();
+            }
+
+            if (vendedoresBean != null) {
+                visita.setIdentificador(vendedoresBean.getIdentificador());
+            }
 
             listaVisitas.add(visita);
         }

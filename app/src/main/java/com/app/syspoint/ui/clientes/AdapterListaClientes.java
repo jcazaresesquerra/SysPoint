@@ -118,21 +118,22 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             textViewCategoria.setText("" + cliente.getCategoria());
             textViewColonia.setText("Col. " + cliente.getColonia());
 
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    onItemLongClickListener.onItemLongClicked(getAdapterPosition());
-                    return true;
-                }
+            itemView.setOnLongClickListener(v -> {
+                onItemLongClickListener.onItemLongClicked(getAdapterPosition());
+                return true;
             });
 
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mOnItemClickListener != null) {
-                        onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition());
-                    }
+            itemView.setOnClickListener(v -> {
+                if (mOnItemClickListener != null) {
+                    itemView.setEnabled(false);
+                    onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition(), new OnDialogShownListener() {
+                        @Override
+                        public void onDialogShown() {
+                            itemView.setEnabled(true);
+                        }
+                    });
+                    itemView.setEnabled(true);
                 }
             });
         }
@@ -148,7 +149,11 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
     }
 
     public interface OnItemClickListener {
-        void onItemClick(View view, ClienteBean obj, int position);
+        void onItemClick(View view, ClienteBean obj, int position, OnDialogShownListener onDialogShownListener);
+    }
+
+    public interface OnDialogShownListener {
+        void onDialogShown();
     }
 
     public void setOnItemClickListener(final OnItemClickListener mItemClickListener) {

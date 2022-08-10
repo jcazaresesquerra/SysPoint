@@ -158,7 +158,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                 initPrinter();
             }
         }else {
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
 
 
@@ -296,7 +296,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
             return true;
         }else if  (id ==  R.id.action_settings){
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
 
         return super.onOptionsItemSelected(item);
@@ -441,7 +441,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
             }
         }else {
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
     }
 
@@ -623,7 +623,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                     initPrinter();
                 }
             } else {
-                Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+                //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
             }
         }
     }

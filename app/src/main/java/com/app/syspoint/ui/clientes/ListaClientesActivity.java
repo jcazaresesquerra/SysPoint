@@ -117,20 +117,16 @@ public class ListaClientesActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterListaClientes(mData, new AdapterListaClientes.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, ClienteBean obj, int position) {
-                Intent intent = new Intent();
-                intent.putExtra(Actividades.PARAM_1, obj.getCuenta());
-                setResult(Activity.RESULT_OK, intent);
-                finish();
-            }
-        }, new AdapterListaClientes.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
-                return false;
-            }
-        });
+        mAdapter = new AdapterListaClientes(
+                mData,
+                (view, obj, position, onDialogShownListener) -> {
+                    Intent intent = new Intent();
+                    intent.putExtra(Actividades.PARAM_1, obj.getCuenta());
+                    setResult(Activity.RESULT_OK, intent);
+                    onDialogShownListener.onDialogShown();
+                    finish();
+                },
+                position -> false);
 
         recyclerView.setAdapter(mAdapter);
 

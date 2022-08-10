@@ -9,6 +9,7 @@ import com.app.syspoint.db.bean.InventarioBean;
 import com.app.syspoint.db.dao.InventarioDao;
 import com.app.syspoint.db.dao.VentasDao;
 import com.app.syspoint.utils.Utils;
+import com.app.syspoint.utils.cache.CacheInteractor;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class TicketCierre extends Documento {
     private InventarioBean inventarioBean;
     private List<CorteBean> listaCorte;
     private VentasDao ventasDao;
+    private Activity mActivity;
 
     public void setInventarioBean(InventarioBean inventarioBean) {
         this.inventarioBean = inventarioBean;
@@ -24,6 +26,7 @@ public class TicketCierre extends Documento {
 
     public TicketCierre(Activity activity) {
         super(activity);
+        mActivity = activity;
     }
 
     @Override
@@ -33,7 +36,11 @@ public class TicketCierre extends Documento {
 
         List<InventarioBean> mLidata;
         mLidata = (List<InventarioBean>) (List<?>) new InventarioDao().list();
-        final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean == null) {
+            vendedoresBean = new CacheInteractor(mActivity).getSeller();
+        }
 
         String salto = "\n";
         String vendedores = vendedoresBean != null ? "" + vendedoresBean.getNombre() + salto : "";
