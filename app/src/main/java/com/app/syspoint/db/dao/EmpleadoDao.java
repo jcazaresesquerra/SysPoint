@@ -1,10 +1,13 @@
 package com.app.syspoint.db.dao;
 
+import android.database.Cursor;
+
 import com.app.syspoint.db.bean.EmpleadoBean;
 import com.app.syspoint.db.bean.EmpleadoBeanDao;
 
 import org.greenrobot.greendao.query.CountQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EmpleadoDao extends Dao {
@@ -53,10 +56,19 @@ public class EmpleadoDao extends Dao {
 
 
     final public EmpleadoBean getByEmail(final String email) {
-        final List<EmpleadoBean> usuarioBeanList = dao.queryBuilder()
-                .where(EmpleadoBeanDao.Properties.Email.eq(email))
-                .list();
-        return usuarioBeanList.size()>0?usuarioBeanList.get(0):null;
+        if (email != null && !email.isEmpty()) {
+            try {
+                final List<EmpleadoBean> usuarioBeanList = dao.queryBuilder()
+                        .where(EmpleadoBeanDao.Properties.Email.eq(email))
+                        .list();
+                return usuarioBeanList.size() > 0 ? usuarioBeanList.get(0) : null;
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
 

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.db.bean.AppBundle;
@@ -89,6 +90,7 @@ import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
+    private static String TAG = "HomeFragment";
     AdapterRutaClientes mAdapter;
     List<ClientesRutaBean> mData;
     private RelativeLayout rlprogress;
@@ -1465,7 +1467,12 @@ public class HomeFragment extends Fragment {
             List<VisitasBean> visitasBeanListBean = new ArrayList<>();
             visitasBeanListBean = visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
             final ClienteDao clienteDao = new ClienteDao();
-            final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+            if (vendedoresBean == null && getContext() != null) {
+                vendedoresBean = new CacheInteractor(getContext()).getSeller();
+            }
+
             List<Visita> listaVisitas = new ArrayList<>();
             for (VisitasBean item : visitasBeanListBean) {
                 Visita visita = new Visita();
@@ -1476,7 +1483,11 @@ public class HomeFragment extends Fragment {
                 visita.setLatidud(item.getLatidud());
                 visita.setLongitud(item.getLongitud());
                 visita.setMotivo_visita(item.getMotivo_visita());
-                visita.setIdentificador(vendedoresBean.getIdentificador());
+                if (vendedoresBean != null) {
+                    visita.setIdentificador(vendedoresBean.getIdentificador());
+                } else {
+                    Log.e(TAG, "vendedoresBean is null");
+                }
 
                 listaVisitas.add(visita);
             }

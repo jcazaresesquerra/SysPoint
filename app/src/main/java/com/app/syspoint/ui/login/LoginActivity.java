@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -59,6 +60,7 @@ import com.app.syspoint.json.Precio;
 import com.app.syspoint.json.Producto;
 import com.app.syspoint.json.Role;
 import com.app.syspoint.utils.Utils;
+import com.app.syspoint.utils.cache.CacheInteractor;
 
 import java.io.IOException;
 
@@ -256,6 +258,11 @@ public class LoginActivity extends AppCompatActivity {
         //Obtiene el nombre del vendedor
         final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
+        // guarda al vendedor en cache
+        CacheInteractor cacheInteractor = new CacheInteractor(LoginActivity.this);
+        cacheInteractor.saveSeller(vendedoresBean);
+        EmpleadoBean empleado = cacheInteractor.getSeller();
+
         String identificador = "";
         if (vendedoresBean != null){
             identificador = vendedoresBean.getIdentificador();
@@ -423,7 +430,13 @@ public class LoginActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (response.isSuccessful()){
+
+            if (response == null) {
+                Toast.makeText(LoginActivity.this, "Ha ocurrido un error al iniciar", Toast.LENGTH_SHORT).show();
+                return null;
+            }
+
+            if (response.isSuccessful()) {
 
                 if (response.code() == 200){
 

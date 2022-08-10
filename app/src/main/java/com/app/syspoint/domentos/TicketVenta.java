@@ -3,17 +3,21 @@ package com.app.syspoint.domentos;
 import android.app.Activity;
 
 import com.app.syspoint.db.bean.ClienteBean;
+import com.app.syspoint.db.bean.EmpleadoBean;
 import com.app.syspoint.db.bean.PartidasBean;
 import com.app.syspoint.db.bean.VentasBean;
 import com.app.syspoint.db.dao.ClienteDao;
 import com.app.syspoint.utils.Utils;
+import com.app.syspoint.utils.cache.CacheInteractor;
 
 public class TicketVenta extends Documento {
 
     private VentasBean ventasBean;
+    private Activity mActivity;
 
     public TicketVenta(Activity activity) {
         super(activity);
+        mActivity = activity;
     }
 
     public void setVentasBean(VentasBean ventasBean) {
@@ -39,7 +43,16 @@ public class TicketVenta extends Documento {
                 facturaMatriz = false;
             }
         }
+
         String salto = "\n";
+        String vendedor = ventasBean.getEmpleado() != null ? ("Vendedor:" + ventasBean.getEmpleado().getNombre() + salto) : "";
+
+        if (ventasBean.getEmpleado() == null) {
+            EmpleadoBean empleadoBean = new CacheInteractor(mActivity).getSeller();
+            vendedor = empleadoBean != null ? ("Vendedor:" + empleadoBean.getNombre() + salto) : "";
+        }
+
+
         String ticket =
                         "     AGUA POINT S.A. DE C.V.    " + salto +
                         "     Calz. Aeropuerto 4912 A    " + salto +
@@ -52,7 +65,7 @@ public class TicketVenta extends Documento {
                         "" + salto +
                         "" + salto +
                         "(" + ventasBean.getCliente().getCuenta() + ")  " + ventasBean.getCliente().getNombre_comercial() + salto +
-                        "Vendedor:" + ventasBean.getEmpleado().getNombre() + salto +
+                        vendedor +
                         "" + ventasBean.getFecha() + " " + ventasBean.getHora() + "" + salto +
                         "FOLIO FINAL:         " + ventasBean.getTicket() + salto +
                         "" + salto +

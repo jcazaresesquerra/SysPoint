@@ -47,10 +47,15 @@ public class CobranzaDao extends Dao{
     }
 
     final public CobranzaBean getByCobranza(final String cobranza) {
-        final List<CobranzaBean> productosBeans = dao.queryBuilder()
-                .where(CobranzaBeanDao.Properties.Cobranza.eq(cobranza))
-                .list();
-        return productosBeans.size()>0?productosBeans.get(0):null;
+        try {
+            final List<CobranzaBean> productosBeans = dao.queryBuilder()
+                    .where(CobranzaBeanDao.Properties.Cobranza.eq(cobranza))
+                    .list();
+            return productosBeans.size() > 0 ? productosBeans.get(0) : null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     final public double getTotalSaldoDocumentosCliente(final String cliente) throws Exception

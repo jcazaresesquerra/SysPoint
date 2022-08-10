@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -305,7 +306,11 @@ public class CobranzaActivity extends AppCompatActivity {
 
 
                     //Obtiene el nombre del vendedor
-                    final EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                    EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+                    if (vendedoresBean == null) {
+                        vendedoresBean = new CacheInteractor(CobranzaActivity.this).getSeller();
+                    }
 
                     if (vendedoresBean == null) {
                         final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);

@@ -158,7 +158,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                 initPrinter();
             }
         }else {
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
 
 
@@ -296,7 +296,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
             return true;
         }else if  (id ==  R.id.action_settings){
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
 
         return super.onOptionsItemSelected(item);
@@ -441,7 +441,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
             }
         }else {
-            Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
         }
     }
 
@@ -537,6 +537,11 @@ public class ViewPDFActivity extends AppCompatActivity {
         final VentasDao ventasDao = new VentasDao();
         final VentasBean ventasBean = ventasDao.getVentaByInventario(venta);
 
+        if (ventasBean == null) {
+            Toast.makeText(this, "Ha ocurrido un error", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         //Contiene las partidas de la venta
         for (PartidasBean item : ventasBean.getListaPartidas()){
 
@@ -618,7 +623,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                     initPrinter();
                 }
             } else {
-                Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+                //Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
             }
         }
     }

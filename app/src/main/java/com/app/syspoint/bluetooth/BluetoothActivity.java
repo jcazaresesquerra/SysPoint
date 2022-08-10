@@ -45,7 +45,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.UUID;
 
-public class BluetoothActivity extends AppCompatActivity  {
+public class BluetoothActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
 
@@ -87,7 +87,7 @@ public class BluetoothActivity extends AppCompatActivity  {
         mBTArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         mBTAdapter = BluetoothAdapter.getDefaultAdapter(); // get a handle on the bluetooth radio
 
-        listViewNuevos = (ListView)findViewById(R.id.devices_list_view);
+        listViewNuevos = (ListView) findViewById(R.id.devices_list_view);
         listViewNuevos.setAdapter(mBTArrayAdapter); // assign model to view
         listViewNuevos.setOnItemClickListener(mDeviceClickListener);
 
@@ -110,28 +110,28 @@ public class BluetoothActivity extends AppCompatActivity  {
         }
 
         // Ask for location permission if not already allowed
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
 
-        mHandler = new Handler(Looper.myLooper()){
+        mHandler = new Handler(Looper.myLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                if (msg.what == MESSAGE_READ){
+                if (msg.what == MESSAGE_READ) {
                     String readMessage = null;
-                    try{
-                        readMessage = new String((byte[]) msg.obj, "UTF-8" );
-                    }catch (UnsupportedEncodingException e){
+                    try {
+                        readMessage = new String((byte[]) msg.obj, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                     textViewStatus.setText(readMessage);
                 }
-                if (msg.what == CONNECTING_STATUS){
-                    if (msg.arg1 == 1){
+                if (msg.what == CONNECTING_STATUS) {
+                    if (msg.arg1 == 1) {
                         textViewStatus.setText("Dispositivo conectado ");
-                        if(mConnectedThread != null) //First check to make sure thread created
+                        if (mConnectedThread != null) //First check to make sure thread created
                             mConnectedThread.write("");
-                    }else {
+                    } else {
                         textViewStatus.setText("¡Dispositivo Bluetooth no encontrado!");
                     }
                 }
@@ -144,7 +144,6 @@ public class BluetoothActivity extends AppCompatActivity  {
                 discover();
             }
         });
-
 
 
     }
@@ -164,17 +163,15 @@ public class BluetoothActivity extends AppCompatActivity  {
     }
 
 
-
-    private void bluetoothOn(){
+    private void bluetoothOn() {
         if (!mBTAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             //mBluetoothStatus.setText("Bluetooth enabled");
-            Toast.makeText(getApplicationContext(),"Bluetooth activado",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Bluetooth activado", Toast.LENGTH_SHORT).show();
 
-        }
-        else{
-            Toast.makeText(getApplicationContext(),"Bluetooth ya está activado", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Bluetooth ya está activado", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -191,8 +188,8 @@ public class BluetoothActivity extends AppCompatActivity  {
                 // The Intent's data Uri identifies which contact was selected.
                 // mBluetoothStatus.setText("Activado");
                 textViewStatus.setText("Activado");
-            } else{
-            //mBluetoothStatus.setText("Activado");
+            } else {
+                //mBluetoothStatus.setText("Activado");
                 textViewStatus.setText("Desactivado");
             }
         }
@@ -203,10 +200,11 @@ public class BluetoothActivity extends AppCompatActivity  {
 
 
         boolean success = false;
+
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            if(!mBTAdapter.isEnabled()) {
+            if (!mBTAdapter.isEnabled()) {
                 Toast.makeText(getBaseContext(), "Bluetooth NO ENCENDIDO", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -215,11 +213,10 @@ public class BluetoothActivity extends AppCompatActivity  {
             // Get the device MAC address, which is the last 17 chars in the View
             String info = ((TextView) view).getText().toString();
             final String address = info.substring(info.length() - 17);
-            final String name = info.substring(0,info.length() - 17);
+            final String name = info.substring(0, info.length() - 17);
 
             // Spawn a new thread to avoid blocking the GUI one
-            new Thread()
-            {
+            new Thread() {
                 @Override
                 public void run() {
                     boolean fail = false;
@@ -246,7 +243,7 @@ public class BluetoothActivity extends AppCompatActivity  {
                             Toast.makeText(getBaseContext(), "Falló la creación de socket", Toast.LENGTH_SHORT).show();
                         }
                     }
-                    if(!fail) {
+                    if (!fail) {
                         mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
                         mConnectedThread.start();
 
@@ -268,9 +265,7 @@ public class BluetoothActivity extends AppCompatActivity  {
             }.start();
 
 
-
         }
-
 
 
     };
@@ -281,32 +276,29 @@ public class BluetoothActivity extends AppCompatActivity  {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            Log.e(TAG, "Could not create Insecure RFComm Connection", e);
         }
-        return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+        return device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }
 
-    private void bluetoothOff(){
+    private void bluetoothOff() {
         mBTAdapter.disable(); // turn off
         //mBluetoothStatus.setText("Bluetooth desactivado");
-        Toast.makeText(getApplicationContext(),"Bluetooth NO ENCENDIDO", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Bluetooth NO ENCENDIDO", Toast.LENGTH_SHORT).show();
     }
 
-    private void discover(){
-        // Check if the device is already discovering
-        if(mBTAdapter.isDiscovering()){
+    private void discover() {
+        if (mBTAdapter.isDiscovering()) {
             mBTAdapter.cancelDiscovery();
-            Toast.makeText(getApplicationContext(),"Busqueda de dispositivos detenida..",Toast.LENGTH_SHORT).show();
-        }
-        else{
-            if(mBTAdapter.isEnabled()) {
+            Toast.makeText(getApplicationContext(), "Busqueda de dispositivos detenida..", Toast.LENGTH_SHORT).show();
+        } else {
+            if (mBTAdapter.isEnabled()) {
                 mBTArrayAdapter.clear(); // clear items
                 mBTAdapter.startDiscovery();
                 Toast.makeText(getApplicationContext(),
                         "Buscando dispositivos..", Toast.LENGTH_SHORT).show();
                 registerReceiver(blReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-            }
-            else{
+            } else {
                 Toast.makeText(getApplicationContext(), "Bluetooth NO ENCENDIDO", Toast.LENGTH_SHORT).show();
             }
         }
