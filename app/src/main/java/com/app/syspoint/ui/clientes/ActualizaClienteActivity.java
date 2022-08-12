@@ -839,85 +839,92 @@ public class ActualizaClienteActivity extends AppCompatActivity {
     String idCliente;
     private void actualizaCliente() {
 
-        ClienteDao dao = new ClienteDao();
-        ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
-        bean.setNombre_comercial(editText_nombre_actualiza_cliente.getText().toString());
-        bean.setCalle(editText_calle_actualiza_cliente.getText().toString());
-        bean.setNumero(editText_numero_actualiza_cliente.getText().toString());
-        bean.setColonia(editText_colonia_actualiza_cliente.getText().toString());
-        bean.setCiudad(editText_ciudad_actualiza_cliente.getText().toString());
-        bean.setCodigo_postal(Integer.parseInt(editText_cp_actualiza_cliente.getText().toString()));
-        bean.setFecha_registro(editText_fecha_alta_actualiza_cliente.getText().toString());
-        bean.setFecha_baja(editText_fecha_baja_actualiza_cliente.getText().toString());
-        bean.setCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
-        bean.setGrupo(grupo_seleccionado);
-        bean.setCategoria(categoria_seleccionada);
-        bean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
-        bean.setConsec(no_cuenta);
-        bean.setRegion(region_seleccionado);
-        bean.setSector(sector_seleccionado);
-        bean.setRango(ruta_seleccionado);
-        bean.setRuta(inp_ruta_actualiza_cliente.getText().toString());
-        bean.setSecuencia(Integer.parseInt(inp_secuencia_actualiza_cliente.getText().toString()));
-        bean.setPeriodo(Integer.parseInt(periodo_seleccionado));
-        if (checkbor_lunes_actualiza_cliente.isChecked()){
-            bean.setLun(1);
-        }else {
-            bean.setLun(0);
-        }
-        if (checkbor_martes_actualiza_cliente.isChecked()){
-            bean.setMar(1);
-        }else {
-            bean.setMar(0);
-        }
-        if (checkbor_miercoles_actualiza_cliente.isChecked()){
-            bean.setMie(1);
-        }else {
-            bean.setMie(0);
-        }
-        if (checkbor_jueves_actualiza_cliente.isChecked()){
-            bean.setJue(1);
-        }else {
-            bean.setJue(0);
-        }
-        if (checkbor_viernes_actualiza_cliente.isChecked()){
-            bean.setVie(1);
-        }else {
-            bean.setVie(0);
-        }
-        if (checkbor_sabado_actualiza_cliente.isChecked()){
-            bean.setSab(1);
-        }else {
-            bean.setSab(0);
-        }
-        if (checkbor_domingo_actualiza_cliente.isChecked()){
-            bean.setDom(1);
-        }else {
-            bean.setDom(0);
-        }
+        String cp = editText_cp_actualiza_cliente.getText().toString();
+        String sec = inp_secuencia_actualiza_cliente.getText().toString();
+
+        if (cp != null && !cp.isEmpty() && sec != null && !sec.isEmpty() && periodo_seleccionado != null && !periodo_seleccionado.isEmpty()) {
+            ClienteDao dao = new ClienteDao();
+            ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+            bean.setNombre_comercial(editText_nombre_actualiza_cliente.getText().toString());
+            bean.setCalle(editText_calle_actualiza_cliente.getText().toString());
+            bean.setNumero(editText_numero_actualiza_cliente.getText().toString());
+            bean.setColonia(editText_colonia_actualiza_cliente.getText().toString());
+            bean.setCiudad(editText_ciudad_actualiza_cliente.getText().toString());
+            bean.setCodigo_postal(Integer.parseInt(cp));
+            bean.setFecha_registro(editText_fecha_alta_actualiza_cliente.getText().toString());
+            bean.setFecha_baja(editText_fecha_baja_actualiza_cliente.getText().toString());
+            bean.setCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+            bean.setGrupo(grupo_seleccionado);
+            bean.setCategoria(categoria_seleccionada);
+            bean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
+            bean.setConsec(no_cuenta);
+            bean.setRegion(region_seleccionado);
+            bean.setSector(sector_seleccionado);
+            bean.setRango(ruta_seleccionado);
+            bean.setRuta(inp_ruta_actualiza_cliente.getText().toString());
+            bean.setSecuencia(Integer.parseInt(sec));
+            bean.setPeriodo(Integer.parseInt(periodo_seleccionado));
+            if (checkbor_lunes_actualiza_cliente.isChecked()) {
+                bean.setLun(1);
+            } else {
+                bean.setLun(0);
+            }
+            if (checkbor_martes_actualiza_cliente.isChecked()) {
+                bean.setMar(1);
+            } else {
+                bean.setMar(0);
+            }
+            if (checkbor_miercoles_actualiza_cliente.isChecked()) {
+                bean.setMie(1);
+            } else {
+                bean.setMie(0);
+            }
+            if (checkbor_jueves_actualiza_cliente.isChecked()) {
+                bean.setJue(1);
+            } else {
+                bean.setJue(0);
+            }
+            if (checkbor_viernes_actualiza_cliente.isChecked()) {
+                bean.setVie(1);
+            } else {
+                bean.setVie(0);
+            }
+            if (checkbor_sabado_actualiza_cliente.isChecked()) {
+                bean.setSab(1);
+            } else {
+                bean.setSab(0);
+            }
+            if (checkbor_domingo_actualiza_cliente.isChecked()) {
+                bean.setDom(1);
+            } else {
+                bean.setDom(0);
+            }
 
 
-        bean.setLatitud(editTextLatitud.getText().toString());
-        bean.setLongitud(editTextLongitud.getText().toString());
-        bean.setContacto_phone(inp_contacto_phone_actualiza_cliente.getText().toString());
-        if (et_actualiza_credito.isChecked()){
-            bean.setIs_credito(true);
-        }else{
-            bean.setIs_credito(false);
-        }
+            bean.setLatitud(editTextLatitud.getText().toString());
+            bean.setLongitud(editTextLongitud.getText().toString());
+            bean.setContacto_phone(inp_contacto_phone_actualiza_cliente.getText().toString());
+            if (et_actualiza_credito.isChecked()) {
+                bean.setIs_credito(true);
+            } else {
+                bean.setIs_credito(false);
+            }
 
 
-        bean.setLimite_credito(Double.parseDouble(et_registro_actualiza_limite_credito.getText().toString().replace("$", "").replace(" ", "")));
-        bean.setSaldo_credito(Double.parseDouble(et_registro_actualiza_credito.getText().toString().replace("$", "").replace(" ", "")));
-        bean.setMatriz(inp_matriz_asignada_actualiza_cliente.getText().toString());
-        bean.setDate_sync(Utils.fechaActual());
-        dao.save(bean);
-        idCliente = String.valueOf(bean.getId());
+            bean.setLimite_credito(Double.parseDouble(et_registro_actualiza_limite_credito.getText().toString().replace("$", "").replace(" ", "")));
+            bean.setSaldo_credito(Double.parseDouble(et_registro_actualiza_credito.getText().toString().replace("$", "").replace(" ", "")));
+            bean.setMatriz(inp_matriz_asignada_actualiza_cliente.getText().toString());
+            bean.setDate_sync(Utils.fechaActual());
+            dao.save(bean);
+            idCliente = String.valueOf(bean.getId());
 
-        if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
-        }else {
-            testLoadClientes(idCliente);
+            if (!Utils.isNetworkAvailable(getApplication())) {
+                showDialogNotConnectionInternet();
+            } else {
+                testLoadClientes(idCliente);
+            }
+        } else {
+            Toast.makeText(ActualizaClienteActivity.this, "Necesita llenar todos los campos", Toast.LENGTH_SHORT).show();
         }
     }
 
