@@ -1,6 +1,6 @@
 <resources>
 
-        <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
         AIzaSyCfsjZFl9Pn19TTtb3uSfPlr-aQPqlThJU
     </string>
     <string name="app_name">App Point</string>

@@ -2,8 +2,8 @@ package com.app.syspoint.utils.gmap;
 
 import android.util.Log;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.MainActivity;
+import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.utils.gmap.directions.Direction;
 
 import org.w3c.dom.Document;
@@ -31,7 +31,7 @@ public class GMapDirection {
                 + "origin=" + start.latitude + "," + start.longitude
                 + "&destination=" + end.latitude + "," + end.longitude
                 + "&sensor=false&units=metric&mode="+mode
-                + "&key="+ MainActivity.apikey;
+                + "&key="+ MainActivity.getApikey();
 
         if (isAlternative)
             url += "&alternatives=true";
@@ -56,7 +56,7 @@ public class GMapDirection {
                 + "&destination=" + end[end.length-1].latitude + "," + end[end.length-1].longitude
                 + via
                 + "&sensor=false&units=metric&mode="+mode
-                + "&key="+ MainActivity.apikey;
+                + "&key="+ MainActivity.getApikey();
 
         if (isAlternative)
             url += "&alternatives=true";
@@ -75,7 +75,7 @@ public class GMapDirection {
                 + "origin=" + start.latitude + "," + start.longitude
                 + "&destination=" + end.latitude + "," + end.longitude
                 + "&sensor=false&units=metric&mode=driving"
-                + "&key="+ MainActivity.apikey;
+                + "&key="+ MainActivity.getApikey();
 
 //        String url = "http://maps.googleapis.com/maps/api/directions/xml?"
 //                + "origin=" + start.latitude + "," + start.longitude
@@ -104,7 +104,7 @@ public class GMapDirection {
         String url = "http://maps.googleapis.com/maps/api/directions/json?"
                 + "origin=" + origin + "&destination=" + destination
                 + "&sensor=false&units=metric&mode=driving"
-                + "&key="+ MainActivity.apikey;
+                + "&key="+ MainActivity.getApikey();
 
         url = url.replace(" ", "+");
         Log.e("Query URL", url);

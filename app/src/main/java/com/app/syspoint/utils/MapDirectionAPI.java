@@ -2,8 +2,8 @@ package com.app.syspoint.utils;
 
 import android.content.Context;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.MainActivity;
+import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.utils.gmap.Directions;
 import com.app.syspoint.utils.gmap.GMapDirection;
 import com.app.syspoint.utils.gmap.directions.Leg;
@@ -33,7 +33,7 @@ public class MapDirectionAPI {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url("https://maps.googleapis.com/maps/api/geocode/json?latlng="+address.latitude+","+address.longitude+"&key="+ MainActivity.apikey)
+                .url("https://maps.googleapis.com/maps/api/geocode/json?latlng="+address.latitude+","+address.longitude+"&key="+ MainActivity.getApikey())
                 .build();
 
         return client.newCall(request);

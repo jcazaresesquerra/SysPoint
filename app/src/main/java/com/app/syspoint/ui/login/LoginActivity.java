@@ -20,7 +20,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.MainActivity;
-import com.app.syspoint.MainAdminActivity;
 import com.app.syspoint.R;
 import com.app.syspoint.db.bean.AppBundle;
 import com.app.syspoint.db.bean.ClienteBean;
@@ -32,7 +31,7 @@ import com.app.syspoint.db.bean.ProductoBean;
 import com.app.syspoint.db.bean.RolesBean;
 import com.app.syspoint.db.bean.SesionBean;
 import com.app.syspoint.db.bean.TaskBean;
-import com.app.syspoint.db.bean.UserSesion;
+import com.app.syspoint.db.bean.UserSession;
 import com.app.syspoint.db.dao.ClienteDao;
 import com.app.syspoint.db.dao.ClientesRutaDao;
 import com.app.syspoint.db.dao.CobranzaDao;
@@ -178,16 +177,16 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (validaUsuarioLogin()) {
 
-                    final UserSesion userSesion = new UserSesion();
-                    userSesion.setUsuario(usuario);
-                    userSesion.setPassword(password);
+                    final UserSession userSession = new UserSession();
+                    userSession.setUsuario(usuario);
+                    userSession.setPassword(password);
 
                     final SesionDao sesionDao = new SesionDao();
                     sesionDao.clear();
 
                     final SesionBean sesionBean = new SesionBean();
                     final EmpleadoDao empleadoDao = new EmpleadoDao();
-                    final EmpleadoBean usuarioBean = empleadoDao.getByEmail(userSesion.getUsuario());
+                    final EmpleadoBean usuarioBean = empleadoDao.getByEmail(userSession.getUsuario());
 
                     if (usuarioBean != null) {
                         sesionBean.setEmpleado(usuarioBean);
@@ -199,13 +198,12 @@ public class LoginActivity extends AppCompatActivity {
                         return;
                     }
 
-                    AppBundle.setUserSession(userSesion);
+                    AppBundle.setUserSession(userSession);
 
                     showActivityMain();
                 } else {
                     showDialog();
                 }
-                //showActivityMain();
             }
         });
 
@@ -261,7 +259,6 @@ public class LoginActivity extends AppCompatActivity {
         // guarda al vendedor en cache
         CacheInteractor cacheInteractor = new CacheInteractor(LoginActivity.this);
         cacheInteractor.saveSeller(vendedoresBean);
-        EmpleadoBean empleado = cacheInteractor.getSeller();
 
         String identificador = "";
         if (vendedoresBean != null){
@@ -270,23 +267,12 @@ public class LoginActivity extends AppCompatActivity {
         final RolesDao rolesDao = new RolesDao();
         final RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Inventarios");
 
-        if (rolesBean!=null){
-            if (rolesBean.getActive() == true){
-                Intent intent = new Intent(getApplicationContext(), MainAdminActivity.class);
-                startActivity(intent);
-                finish();
-            }else {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
+        boolean isAdmin = rolesBean!=null && rolesBean.getActive();
 
-        }else {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.putExtra(MainActivity.IS_ADMIN, isAdmin);
+        startActivity(intent);
+        finish();
     }
 
     private boolean validaPermisos() {
@@ -401,7 +387,7 @@ public class LoginActivity extends AppCompatActivity {
     private void showProgress(){
         rlprogress_login.setVisibility(View.VISIBLE);
     }
-    private void shideProgress(){
+    private void hideProgress(){
         rlprogress_login.setVisibility(View.GONE);
 
     }
@@ -418,7 +404,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            shideProgress();
+            hideProgress();
         }
 
         @Override

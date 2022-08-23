@@ -7,13 +7,13 @@ import com.app.syspoint.db.dao.EmpleadoDao;
 public class AppBundle extends Bean{
 
     private static String TAG = "AppBundle";
-    private static UserSesion userSesion;
+    private static UserSession userSesion;
 
-    final public static UserSesion getUserSesion(){
+    final public static UserSession getUserSesion(){
         if (userSesion == null) {
             synchronized (AppBundle.class) {
                 if (userSesion == null) {
-                    userSesion = new UserSesion();
+                    userSesion = new UserSession();
                 }
             }
         }
@@ -21,7 +21,7 @@ public class AppBundle extends Bean{
     }
 
     final public static EmpleadoBean getUserBean() {
-        final UserSesion userSesion_ = AppBundle.getUserSesion();
+        final UserSession userSesion_ = AppBundle.getUserSesion();
         if (userSesion_ == null) Log.e(TAG, "user session is null");
         final EmpleadoDao vendedoresDao = new EmpleadoDao();
         final EmpleadoBean vendedoresBean = vendedoresDao.getByEmail(userSesion_.getUsuario());
@@ -31,7 +31,7 @@ public class AppBundle extends Bean{
         return vendedoresBean;
     }
 
-    final public static void setUserSession(final UserSesion userSesion){
+    final public static void setUserSession(final UserSession userSesion){
         AppBundle.userSesion = userSesion;
     }
 }
