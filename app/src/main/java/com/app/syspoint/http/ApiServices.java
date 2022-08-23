@@ -21,8 +21,8 @@ public class ApiServices {
         if (retrofit == null){
             retrofit = new Retrofit.Builder()
                     //.baseUrl("https://api.ocsistems.com/public/api/") operacion
-                    //.baseUrl("https://apiqa.ocsistems.com/public/api/")
-                    .baseUrl("https://api.ocsistems.com/public/api/")
+                    .baseUrl("https://apiqa.ocsistems.com/public/api/")
+                    //.baseUrl("https://api.ocsistems.com/public/api/")
                     .client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();

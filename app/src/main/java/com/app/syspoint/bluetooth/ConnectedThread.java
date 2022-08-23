@@ -161,14 +161,12 @@ public class ConnectedThread extends Thread {
         String salto = "\n";
 
         String header =
-                        "     AGUA POINT S.A. DE C.V.    " + salto +
-                        "     Calz. Aeropuerto 4912 A    " + salto +
-                        "      San Rafael C.P. 80150     " + salto +
+                        "         AGUAS DON AQUI         " + salto +
+                        " Blvd. Manuel J. Clouthier 2755 " + salto +
+                        "     Buenos Aires C.P. 80199    " + salto +
                         "        Culiacan, Sinaloa       " + salto +
-                        "           APO170818QR6         " + salto +
-                        "          (667) 774-9350        " + salto +
-                        "        info@aguapoint.com      " + salto +
-                        "         www.aguapoint.com      " + salto;
+                        "          HIMA9801022T8         " + salto +
+                        "    Adalberto Higuera Mendez    " + salto;
         return header;
     }
 
@@ -202,14 +200,12 @@ public class ConnectedThread extends Thread {
         String salto = "\n";
 
         String footer =
-                "     AGUA POINT S.A. DE C.V.    " + salto +
-                        "     Calz. Aeropuerto 4912 A    " + salto +
-                        "      San Rafael C.P. 80150     " + salto +
+                        "         AGUAS DON AQUI         " + salto +
+                        " Blvd. Manuel J. Clouthier 2755 " + salto +
+                        "     Buenos Aires C.P. 80199    " + salto +
                         "        Culiacan, Sinaloa       " + salto +
-                        "           APO170818QR6         " + salto +
-                        "          (667) 774-9350        " + salto +
-                        "        info@aguapoint.com      " + salto +
-                        "         www.aguapoint.com      " + salto;
+                        "          HIMA9801022T8         " + salto +
+                        "    Adalberto Higuera Mendez    " + salto;
         return footer;
     }
 

@@ -1,6 +1,7 @@
 package com.app.syspoint.domentos;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.app.syspoint.db.bean.AppBundle;
 import com.app.syspoint.db.bean.EmpleadoBean;
@@ -43,14 +44,12 @@ public class TicketInventario  extends Documento{
         String salto = "\n";
         String vendedor = vendedoresBean != null ? "" + vendedoresBean.getNombre() + salto : "";
         String ticket =
-                "     AGUA POINT S.A. DE C.V.    " + salto +
-                        "     Calz. Aeropuerto 4912 A    " + salto +
-                        "      San Rafael C.P. 80150     " + salto +
+                        "         AGUAS DON AQUI         " + salto +
+                        " Blvd. Manuel J. Clouthier 2755 " + salto +
+                        "     Buenos Aires C.P. 80199    " + salto +
                         "        Culiacan, Sinaloa       " + salto +
-                        "           APO170818QR6         " + salto +
-                        "          (667) 744-9350        " + salto +
-                        "        info@aguapoint.com      " + salto +
-                        "         www.aguapoint.com      " + salto +
+                        "          HIMA9801022T8         " + salto +
+                        "    Adalberto Higuera Mendez    " + salto +
                         "" + salto +
                         "" + salto +
                         vendedor +
@@ -88,6 +87,7 @@ public class TicketInventario  extends Documento{
                 "================================" + salto +
                 "" + salto + salto + salto + salto;
 
+        Log.d("Ticket", ticket);
         documento = ticket;
     }
 }

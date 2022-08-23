@@ -1,6 +1,7 @@
 package com.app.syspoint.domentos;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.app.syspoint.db.bean.CobdetBean;
 import com.app.syspoint.db.bean.CobrosBean;
@@ -31,14 +32,12 @@ public class TicketAbono extends Documento{
 
             String ticket =
                     salto + linea + salto +
-                            "     AGUA POINT S.A. DE C.V.    " + salto +
-                            "     Calz. Aeropuerto 4912 A    " + salto +
-                            "      San Rafael C.P. 80150     " + salto +
+                            "         AGUAS DON AQUI         " + salto +
+                            " Blvd. Manuel J. Clouthier 2755 " + salto +
+                            "     Buenos Aires C.P. 80199    " + salto +
                             "        Culiacan, Sinaloa       " + salto +
-                            "           APO170818QR6         " + salto +
-                            "          (667) 744-9350        " + salto +
-                            "        info@aguapoint.com      " + salto +
-                            "         www.aguapoint.com      " + salto +
+                            "          HIMA9801022T8         " + salto +
+                            "    Adalberto Higuera Mendez    " + salto +
                             "COBRANZA:" + cobrosBean.getCobro() + salto +
                             "FECHA   :" + cobrosBean.getFecha() + salto +
                             "VENDEDOR:" + cobrosBean.getEmpleado().getNombre() + salto +
@@ -70,8 +69,8 @@ public class TicketAbono extends Documento{
                     "" + salto;
 
 
+            Log.d("Ticket", ticket);
             documento = ticket;
-
         } catch (Exception e){
 
         }
