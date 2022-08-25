@@ -35,23 +35,23 @@ import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.RolesDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.ClientesRutaDao;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.RequestCobranza;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.json.CobranzaJson;
+import com.app.syspoint.models.json.RequestCobranza;
 import com.app.syspoint.ui.clientes.PreciosEspeciales.PreciosEspecialesActivity;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.ui.ventas.VentasActivity;
@@ -399,7 +399,7 @@ public class ClienteFragment extends Fragment {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
                     CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
+                    for (Payment item : response.body().getCobranzas()) {
 
                         CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
@@ -509,10 +509,10 @@ public class ClienteFragment extends Fragment {
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB = clienteDao.getByIDCliente(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -549,9 +549,9 @@ public class ClienteFragment extends Fragment {
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()){
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             }else{
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -604,7 +604,7 @@ public class ClienteFragment extends Fragment {
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Cliente item : response.body().getClientes()) {
+                    for (Client item : response.body().getClientes()) {
 
                         //Validamos si existe el cliente
                         final ClienteDao dao = new ClienteDao();
@@ -646,7 +646,7 @@ public class ClienteFragment extends Fragment {
                             clienteBean.setSab(item.getSab());
                             clienteBean.setDom(item.getDom());
 
-                            if (item.getIsCredito() == 1){
+                            if (item.isCredito() == 1){
                                 clienteBean.setIs_credito(true);
                             }else{
                                 clienteBean.setIs_credito(false);

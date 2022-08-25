@@ -2,7 +2,7 @@ package com.app.syspoint.utils.gmap;
 
 import android.util.Log;
 
-import com.app.syspoint.MainActivity;
+import com.app.syspoint.ui.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.utils.gmap.directions.Direction;
 

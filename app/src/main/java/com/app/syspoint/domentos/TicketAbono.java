@@ -2,8 +2,8 @@ package com.app.syspoint.domentos;
 
 import android.app.Activity;
 
-import com.app.syspoint.db.bean.CobdetBean;
-import com.app.syspoint.db.bean.CobrosBean;
+import com.app.syspoint.repository.database.bean.CobdetBean;
+import com.app.syspoint.repository.database.bean.CobrosBean;
 import com.app.syspoint.utils.Utils;
 
 public class TicketAbono extends Documento{

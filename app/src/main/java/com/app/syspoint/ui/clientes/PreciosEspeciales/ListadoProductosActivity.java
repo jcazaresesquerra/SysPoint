@@ -27,16 +27,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.PreciosEspecialesBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.PreciosEspecialesDao;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
+import com.app.syspoint.repository.database.dao.ProductoDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Precio;
-import com.app.syspoint.json.PrecioEspecialJson;
+import com.app.syspoint.models.Price;
+import com.app.syspoint.models.json.PrecioEspecialJson;
 import com.app.syspoint.ui.productos.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
@@ -354,12 +354,12 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
 
         //Contiene la lista de lo que se envia al servidor
-        final List<Precio> listaPreciosServidor = new ArrayList<>();
+        final List<Price> listaPreciosServidor = new ArrayList<>();
 
         //Contien la lista de precios especiales locales
         for (PreciosEspecialesBean items : listaDB){
 
-            final Precio precio = new Precio();
+            final Price precio = new Price();
             if (items.getActive() == true){
                 precio.setActive(1);
             }else{

@@ -1,5 +1,7 @@
 package com.app.syspoint.http;
 
+import com.app.syspoint.utils.Constants;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -22,7 +24,7 @@ public class ApiServices {
             retrofit = new Retrofit.Builder()
                     //.baseUrl("https://api.ocsistems.com/public/api/") operacion
                     //.baseUrl("https://apiqa.ocsistems.com/public/api/")
-                    .baseUrl("https://api.ocsistems.com/public/api/")
+                    .baseUrl(Constants.BASE_URL)
                     .client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();

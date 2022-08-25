@@ -1,8 +1,8 @@
 package com.app.syspoint.ui.clientes;
 
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.CobranzaDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;

@@ -14,15 +14,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.syspoint.LogSync;
 import com.app.syspoint.R;
-import com.app.syspoint.SincAdapter;
-import com.app.syspoint.db.bean.LogSyncGetBean;
-import com.app.syspoint.db.dao.LogSyncGetDao;
+import com.app.syspoint.repository.database.bean.LogSyncGetBean;
+import com.app.syspoint.repository.database.dao.LogSyncGetDao;
 import com.app.syspoint.http.Data;
 import com.app.syspoint.utils.ItemAnimation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -35,7 +32,6 @@ public class SincCloudActivity extends AppCompatActivity {
     private ProgressBar progress_indeterminate;
     private LinearLayout lyt_no_connection;
     private List<LogSyncGetBean> mData;
-    private List<LogSync> logSyncList;
     private SincAdapter mAdapter;
     private int animation_type = ItemAnimation.FADE_IN;
 
@@ -44,7 +40,6 @@ public class SincCloudActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sinc_cloud);
 
-        this.logSyncList = new ArrayList<>();
         this.initToolBar();
         lyt_no_connection = findViewById(R.id.lyt_no_connection);
         lyt_progress = findViewById(R.id.lyt_progress);

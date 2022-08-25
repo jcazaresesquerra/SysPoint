@@ -33,29 +33,29 @@ import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.InventarioBean;
-import com.app.syspoint.db.bean.InventarioHistorialBean;
-import com.app.syspoint.db.bean.PartidasBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.VentasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.InventarioDao;
-import com.app.syspoint.db.dao.InventarioHistorialDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.VentasDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.InventarioBean;
+import com.app.syspoint.repository.database.bean.InventarioHistorialBean;
+import com.app.syspoint.repository.database.bean.PartidasBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.VentasBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.InventarioDao;
+import com.app.syspoint.repository.database.dao.InventarioHistorialDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.repository.database.dao.ProductoDao;
+import com.app.syspoint.repository.database.dao.VentasDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
 import com.app.syspoint.http.Servicio;
 import com.app.syspoint.http.SincVentasByID;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.json.CobranzaJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -213,9 +213,9 @@ public class ViewPDFActivity extends AppCompatActivity {
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
             cobranzaBeanList = cobranzaDao.getCobranzaFechaActual(Utils.fechaActual());
 
-            List<Cobranza> listaCobranza = new ArrayList<>();
+            List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
+                Payment cobranza = new Payment();
                 cobranza.setCobranza(item.getCobranza());
                 cobranza.setCuenta(item.getCliente());
                 cobranza.setImporte(item.getImporte());
@@ -311,51 +311,51 @@ public class ViewPDFActivity extends AppCompatActivity {
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB = clienteDao.getByIDCliente(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
-            cliente.setNombreComercial(item.getNombre_comercial());
-            cliente.setCalle(item.getCalle());
-            cliente.setNumero(item.getNumero());
-            cliente.setColonia(item.getColonia());
-            cliente.setCiudad(item.getCiudad());
-            cliente.setCodigoPostal(item.getCodigo_postal());
-            cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
-            cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
+            Client client = new Client();
+            client.setNombreComercial(item.getNombre_comercial());
+            client.setCalle(item.getCalle());
+            client.setNumero(item.getNumero());
+            client.setColonia(item.getColonia());
+            client.setCiudad(item.getCiudad());
+            client.setCodigoPostal(item.getCodigo_postal());
+            client.setFechaRegistro(item.getFecha_registro());
+            client.setFechaBaja(item.getFecha_baja());
+            client.setCuenta(item.getCuenta());
+            client.setGrupo(item.getGrupo());
+            client.setCategoria(item.getCategoria());
             if (item.getStatus() == false) {
-                cliente.setStatus(0);
+                client.setStatus(0);
             } else {
-                cliente.setStatus(1);
+                client.setStatus(1);
             }
-            cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
-            cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
-            cliente.setLun(item.getLun());
-            cliente.setMar(item.getMar());
-            cliente.setMie(item.getMie());
-            cliente.setJue(item.getJue());
-            cliente.setVie(item.getVie());
-            cliente.setSab(item.getSab());
-            cliente.setDom(item.getDom());
-            cliente.setLatitud(item.getLatitud());
-            cliente.setLongitud(item.getLongitud());
-            cliente.setPhone_contacto(""+item.getContacto_phone());
-            cliente.setRecordatorio(""+item.getRecordatorio());
-            cliente.setVisitas(item.getVisitasNoefectivas());
+            client.setConsec(item.getConsec());
+            client.setRegion(item.getRegion());
+            client.setSector(item.getSector());
+            client.setRango(item.getRango());
+            client.setSecuencia(item.getSecuencia());
+            client.setPeriodo(item.getPeriodo());
+            client.setRuta(item.getRuta());
+            client.setLun(item.getLun());
+            client.setMar(item.getMar());
+            client.setMie(item.getMie());
+            client.setJue(item.getJue());
+            client.setVie(item.getVie());
+            client.setSab(item.getSab());
+            client.setDom(item.getDom());
+            client.setLatitud(item.getLatitud());
+            client.setLongitud(item.getLongitud());
+            client.setPhone_contacto(""+item.getContacto_phone());
+            client.setRecordatorio(""+item.getRecordatorio());
+            client.setVisitas(item.getVisitasNoefectivas());
             if (item.getMatriz()== "null" && item.getMatriz() == null && item.getMatriz().length() == 0) {
-                cliente.setMatriz("");
+                client.setMatriz("");
             }else{
-                cliente.setMatriz(item.getMatriz());
+                client.setMatriz(item.getMatriz());
             }
-            listaClientes.add(cliente);
+            listaClientes.add(client);
         }
 
         ClienteJson clienteRF = new ClienteJson();

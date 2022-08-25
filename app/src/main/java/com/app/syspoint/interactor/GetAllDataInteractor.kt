@@ -1,8 +1,5 @@
 package com.app.syspoint.interactor
 
-import com.app.syspoint.http.Data
-import retrofit2.Response
-
 abstract class GetAllDataInteractor {
     interface OnGetAllDataListener {
         fun onGetAllDataSuccess()
@@ -10,7 +7,7 @@ abstract class GetAllDataInteractor {
     }
 
     interface OnGetAllDataByDateListener {
-        fun onGetAllDataByDateSuccess(response: Response<Data?>?)
+        fun onGetAllDataByDateSuccess()
         fun onGetAllDataByDateError()
     }
 

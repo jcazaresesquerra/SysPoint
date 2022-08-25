@@ -34,15 +34,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.dao.EmpleadoDao;
-import com.app.syspoint.db.dao.RolesDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.EmpleadoDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Empleado;
-import com.app.syspoint.json.EmpleadoJson;
+import com.app.syspoint.models.Employee;
+import com.app.syspoint.models.json.EmpleadoJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 
@@ -212,7 +212,7 @@ public class EmpleadoFragment extends Fragment {
 
                     progresshide();
 
-                    for (Empleado item : response.body().getEmpleados()){
+                    for (Employee item : response.body().getEmpleados()){
 
                         //Instancia el DAO
                         final EmpleadoDao dao = new EmpleadoDao();

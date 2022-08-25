@@ -28,44 +28,44 @@ import com.androidnetworking.error.ANError;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PreciosEspecialesBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.bean.RuteoBean;
-import com.app.syspoint.db.bean.VisitasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.EmpleadoDao;
-import com.app.syspoint.db.dao.PreciosEspecialesDao;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.RolesDao;
-import com.app.syspoint.db.dao.RuteoDao;
-import com.app.syspoint.db.dao.VisitasDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.bean.VisitasBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.ClientesRutaDao;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.EmpleadoDao;
+import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
+import com.app.syspoint.repository.database.dao.ProductoDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
+import com.app.syspoint.repository.database.dao.RuteoDao;
+import com.app.syspoint.repository.database.dao.VisitasDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.Data;
 import com.app.syspoint.http.PointApi;
 import com.app.syspoint.http.Servicio;
 import com.app.syspoint.http.SincVentas;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.Empleado;
-import com.app.syspoint.json.EmpleadoJson;
-import com.app.syspoint.json.Precio;
-import com.app.syspoint.json.PrecioEspecialJson;
-import com.app.syspoint.json.Producto;
-import com.app.syspoint.json.ProductoJson;
-import com.app.syspoint.json.Role;
-import com.app.syspoint.json.RolsJson;
-import com.app.syspoint.json.Visita;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.json.CobranzaJson;
+import com.app.syspoint.models.Employee;
+import com.app.syspoint.models.json.EmpleadoJson;
+import com.app.syspoint.models.Price;
+import com.app.syspoint.models.json.PrecioEspecialJson;
+import com.app.syspoint.models.Product;
+import com.app.syspoint.models.json.ProductoJson;
+import com.app.syspoint.models.Role;
+import com.app.syspoint.models.json.RolsJson;
+import com.app.syspoint.models.Visit;
+import com.app.syspoint.models.json.VisitaJson;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
@@ -182,7 +182,7 @@ public class HomeFragment extends Fragment {
                 if (response.code() == 200){
 
                     //Contiene la lista de empledos
-                    for (Empleado item : response.body().getData().getEmpleados()) {
+                    for (Employee item : response.body().getData().getEmpleados()) {
 
                         //Instancia el DAO
                         final EmpleadoDao dao = new EmpleadoDao();
@@ -286,7 +286,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
                     //Contiene la lista de productos
-                    for (Producto items : response.body().getData().getProductos()) {
+                    for (Product items : response.body().getData().getProductos()) {
 
                         final ProductoDao productoDao = new ProductoDao();
                         final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
@@ -331,7 +331,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    for (Cliente item : response.body().getData().getClientes()) {
+                    for (Client item : response.body().getData().getClientes()) {
 
                         //Validamos si existe el cliente
                         final ClienteDao dao = new ClienteDao();
@@ -378,7 +378,7 @@ public class HomeFragment extends Fragment {
                             clienteBean.setRecordatorio(item.getRecordatorio());
                             clienteBean.setVisitasNoefectivas(item.getVisitas());
 
-                            if (item.getIsCredito() == 1) {
+                            if (item.isCredito() == 1) {
                                 clienteBean.setIs_credito(true);
                             } else {
                                 clienteBean.setIs_credito(false);
@@ -429,7 +429,7 @@ public class HomeFragment extends Fragment {
                             bean.setContacto_phone(item.getPhone_contacto());
                             bean.setRecordatorio(item.getRecordatorio());
                             bean.setVisitasNoefectivas(item.getVisitas());
-                            if (item.getIsCredito() == 1) {
+                            if (item.isCredito() == 1) {
                                 bean.setIs_credito(true);
                             } else {
                                 bean.setIs_credito(false);
@@ -442,7 +442,7 @@ public class HomeFragment extends Fragment {
                     }
 
 
-                    for (Cobranza item : response.body().getData().getCobranzas()) {
+                    for (Payment item : response.body().getData().getCobranzas()) {
                         CobranzaDao cobranzaDao = new CobranzaDao();
                         CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
@@ -476,7 +476,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    for (Precio item : response.body().getData().getPrecios()) {
+                    for (Price item : response.body().getData().getPrecios()) {
 
                         //Para obtener los datos del cliente
                         final ClienteDao clienteDao = new ClienteDao();
@@ -542,9 +542,9 @@ public class HomeFragment extends Fragment {
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
             cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
 
-            List<Cobranza> listaCobranza = new ArrayList<>();
+            List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
+                Payment cobranza = new Payment();
                 cobranza.setCobranza(item.getCobranza());
                 cobranza.setCuenta(item.getCliente());
                 cobranza.setImporte(item.getImporte());
@@ -971,7 +971,7 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     progresshide();
                     CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
+                    for (Payment item : response.body().getCobranzas()) {
 
                         CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
@@ -1021,7 +1021,7 @@ public class HomeFragment extends Fragment {
 
                     progresshide();
 
-                    for (Empleado item : response.body().getEmpleados()) {
+                    for (Employee item : response.body().getEmpleados()) {
 
                         //Instancia el DAO
                         final EmpleadoDao dao = new EmpleadoDao();
@@ -1103,7 +1103,7 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Cliente item : response.body().getClientes()) {
+                    for (Client item : response.body().getClientes()) {
 
                         //Validamos si existe el cliente
                         final ClienteDao dao = new ClienteDao();
@@ -1150,7 +1150,7 @@ public class HomeFragment extends Fragment {
                             clienteBean.setContacto_phone(item.getPhone_contacto());
                             clienteBean.setRecordatorio(item.getRecordatorio());
                             clienteBean.setVisitasNoefectivas(0);
-                            if (item.getIsCredito() == 1) {
+                            if (item.isCredito() == 1) {
                                 clienteBean.setIs_credito(true);
                             } else {
                                 clienteBean.setIs_credito(false);
@@ -1200,7 +1200,7 @@ public class HomeFragment extends Fragment {
                             bean.setContacto_phone(item.getPhone_contacto());
                             bean.setRecordatorio(item.getRecordatorio());
                             bean.setVisitasNoefectivas(item.getVisitas());
-                            if (item.getIsCredito() == 1) {
+                            if (item.isCredito() == 1) {
                                 bean.setIs_credito(true);
                             } else {
                                 bean.setIs_credito(false);
@@ -1230,7 +1230,7 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Producto items : response.body().getProductos()) {
+                    for (Product items : response.body().getProductos()) {
 
                         final ProductoDao productoDao = new ProductoDao();
                         final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
@@ -1348,7 +1348,7 @@ public class HomeFragment extends Fragment {
                 progresshide();
                 if (response.isSuccessful()) {
 
-                    for (Precio item : response.body().getPrecios()) {
+                    for (Price item : response.body().getPrecios()) {
 
                         //Para obtener los datos del cliente
                         final ClienteDao clienteDao = new ClienteDao();
@@ -1473,9 +1473,9 @@ public class HomeFragment extends Fragment {
                 vendedoresBean = new CacheInteractor(getContext()).getSeller();
             }
 
-            List<Visita> listaVisitas = new ArrayList<>();
+            List<Visit> listaVisitas = new ArrayList<>();
             for (VisitasBean item : visitasBeanListBean) {
-                Visita visita = new Visita();
+                Visit visita = new Visit();
                 visita.setFecha(item.getFecha());
                 visita.setHora(item.getHora());
                 final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente().getCuenta());
@@ -1525,9 +1525,9 @@ public class HomeFragment extends Fragment {
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
             cobranzaBeanList = cobranzaDao.getCobranzaFechaActual(Utils.fechaActual());
 
-            List<Cobranza> listaCobranza = new ArrayList<>();
+            List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
+                Payment cobranza = new Payment();
                 cobranza.setCobranza(item.getCobranza());
                 cobranza.setCuenta(item.getCliente());
                 cobranza.setImporte(item.getImporte());
@@ -1581,12 +1581,12 @@ public class HomeFragment extends Fragment {
 
 
             //Contiene la lista de lo que se envia al servidor
-            final List<Precio> listaPreciosServidor = new ArrayList<>();
+            final List<Price> listaPreciosServidor = new ArrayList<>();
 
             //Contien la lista de precios especiales locales
             for (PreciosEspecialesBean items : listaDB) {
 
-                final Precio precio = new Precio();
+                final Price precio = new Price();
                 if (items.getActive() == true) {
                     precio.setActive(1);
                 } else {
@@ -1633,10 +1633,10 @@ public class HomeFragment extends Fragment {
             List<ClienteBean> listaClientesDB = new ArrayList<>();
             listaClientesDB = clienteDao.getClientsByDay(Utils.fechaActual());
 
-            List<Cliente> listaClientes = new ArrayList<>();
+            List<Client> listaClientes = new ArrayList<>();
 
             for (ClienteBean item : listaClientesDB) {
-                Cliente cliente = new Cliente();
+                Client cliente = new Client();
                 cliente.setNombreComercial(item.getNombre_comercial());
                 cliente.setCalle(item.getCalle());
                 cliente.setNumero(item.getNumero());
@@ -1673,9 +1673,9 @@ public class HomeFragment extends Fragment {
                 cliente.setRecordatorio("" + item.getRecordatorio());
                 cliente.setVisitas(item.getVisitasNoefectivas());
                 if (item.getIs_credito()) {
-                    cliente.setIsCredito(1);
+                    cliente.setCredito(1);
                 } else {
-                    cliente.setIsCredito(0);
+                    cliente.setCredito(0);
                 }
                 cliente.setSaldo_credito(item.getSaldo_credito());
                 cliente.setLimite_credito(item.getLimite_credito());

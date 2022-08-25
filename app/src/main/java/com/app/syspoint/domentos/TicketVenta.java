@@ -2,11 +2,11 @@ package com.app.syspoint.domentos;
 
 import android.app.Activity;
 
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PartidasBean;
-import com.app.syspoint.db.bean.VentasBean;
-import com.app.syspoint.db.dao.ClienteDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PartidasBean;
+import com.app.syspoint.repository.database.bean.VentasBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.cache.CacheInteractor;
 

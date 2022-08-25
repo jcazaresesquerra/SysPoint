@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.InventarioBean;
-import com.app.syspoint.db.dao.InventarioDao;
+import com.app.syspoint.repository.database.bean.InventarioBean;
+import com.app.syspoint.repository.database.dao.InventarioDao;
 import com.app.syspoint.domentos.TicketInventario;
 import com.app.syspoint.utils.Utils;
 

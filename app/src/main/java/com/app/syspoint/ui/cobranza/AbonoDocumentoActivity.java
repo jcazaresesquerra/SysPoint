@@ -12,8 +12,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.dao.CobranzaDao;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 

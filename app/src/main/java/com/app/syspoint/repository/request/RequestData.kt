@@ -1,7 +1,7 @@
 package com.app.syspoint.repository.request
 
-import com.app.syspoint.db.bean.*
-import com.app.syspoint.db.dao.*
+import com.app.syspoint.repository.database.bean.*
+import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.http.ApiServices
 import com.app.syspoint.http.Data
 import com.app.syspoint.http.PointApi
@@ -12,9 +12,10 @@ import java.io.IOException
 
 class RequestData {
     companion object {
-        suspend fun requestAllData(onGetAllDataListener: GetAllDataInteractor.OnGetAllDataListener) {
+        fun requestAllData(onGetAllDataListener: GetAllDataInteractor.OnGetAllDataListener) {
             var response: Response<Data?>? = null
             val call: Call<Data> = ApiServices.getClientRestrofit().create(PointApi::class.java).allData
+
             try {
                 response = call.execute()
             } catch (e: IOException) {
@@ -22,7 +23,6 @@ class RequestData {
             }
 
             if (response?.body() == null) {
-
                 onGetAllDataListener.onGetAllDataError()
             }
 
@@ -220,11 +220,7 @@ class RequestData {
                             bean.categoria = item.categoria
                             bean.status = item.status == 1
                             bean.consec = item.consec
-                            if (bean.visitado == 0) {
-                                bean.visitado = 0
-                            } else if (bean.visitado == 1) {
-                                bean.visitado = 1
-                            }
+                            bean.visitado = if (bean.visitado == 1) 1 else  0
                             bean.region = item.region
                             bean.sector = item.sector
                             bean.rango = item.rango
@@ -298,21 +294,21 @@ class RequestData {
 
                         val preciosEspecialesDao = PreciosEspecialesDao()
                         val preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(
-                            productoBean.articulo,
-                            clientBean.cuenta
+                            productoBean?.articulo,
+                            clientBean?.cuenta
                         )
 
                         //Si no hay precios especiales entonces crea un precio
                         if (preciosEspecialesBean == null) {
                             val dao = PreciosEspecialesDao()
                             val bean = PreciosEspecialesBean()
-                            bean.cliente = clientBean.cuenta
+                            bean.cliente = clientBean?.cuenta
                             bean.articulo = productoBean.articulo
                             bean.precio = item.precio
                             bean.active = item.active == 1
                             dao.insert(bean)
                         } else {
-                            preciosEspecialesBean.cliente = clientBean.cuenta
+                            preciosEspecialesBean.cliente = clientBean?.cuenta
                             preciosEspecialesBean.articulo = productoBean.articulo
                             preciosEspecialesBean.precio = item.precio
                             preciosEspecialesBean.active = item.active == 1
@@ -320,9 +316,15 @@ class RequestData {
                         }
                     }
                 }
+                onGetAllDataListener.onGetAllDataSuccess()
+            } else {
+                onGetAllDataListener.onGetAllDataError()
             }
+        }
 
-            onGetAllDataListener.onGetAllDataSuccess()
+        fun requestAllDataByDate(onGetAllDataByDateListener: GetAllDataInteractor.OnGetAllDataByDateListener) {
+
+            onGetAllDataByDateListener.onGetAllDataByDateSuccess()
         }
     }
 }

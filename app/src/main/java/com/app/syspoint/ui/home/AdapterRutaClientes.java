@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 
 import java.util.Calendar;
 import java.util.List;

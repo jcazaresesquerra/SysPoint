@@ -5,7 +5,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClienteBean;
 
 import java.util.List;
 

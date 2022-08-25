@@ -16,8 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.dao.EmpleadoDao;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.dao.EmpleadoDao;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.ValidaCampos;
 

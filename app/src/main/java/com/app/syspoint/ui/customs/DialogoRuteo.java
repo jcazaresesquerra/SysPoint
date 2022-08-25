@@ -12,8 +12,8 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.RuteoBean;
-import com.app.syspoint.db.dao.RuteoDao;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.dao.RuteoDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;

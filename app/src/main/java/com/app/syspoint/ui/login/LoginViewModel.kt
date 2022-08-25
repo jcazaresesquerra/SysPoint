@@ -1,10 +1,8 @@
 package com.app.syspoint.ui.login
 
 import android.content.Context
-import com.app.syspoint.db.bean.*
-import com.app.syspoint.db.dao.*
-import com.app.syspoint.http.ApiServices
-import com.app.syspoint.http.PointApi
+import com.app.syspoint.repository.database.bean.*
+import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.interactor.GetAllDataInteractor
 import com.app.syspoint.interactor.GetAllDataInteractorImp
 import com.app.syspoint.utils.Utils

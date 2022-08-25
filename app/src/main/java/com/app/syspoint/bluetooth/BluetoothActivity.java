@@ -36,8 +36,8 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.dao.PrinterDao;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.dao.PrinterDao;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

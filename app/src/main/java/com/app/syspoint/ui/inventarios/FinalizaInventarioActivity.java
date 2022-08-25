@@ -30,12 +30,12 @@ import androidx.core.content.ContextCompat;
 import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.InventarioBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.InventarioDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.InventarioBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.InventarioDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.repository.database.dao.ProductoDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 

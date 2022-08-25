@@ -1,15 +1,15 @@
 package com.app.syspoint.http;
 
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.EmpleadoJson;
-import com.app.syspoint.json.PrecioEspecialJson;
-import com.app.syspoint.json.ProductoJson;
-import com.app.syspoint.json.RequestClients;
-import com.app.syspoint.json.RequestCobranza;
-import com.app.syspoint.json.RequestPrices;
-import com.app.syspoint.json.RolsJson;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.json.CobranzaJson;
+import com.app.syspoint.models.json.EmpleadoJson;
+import com.app.syspoint.models.json.PrecioEspecialJson;
+import com.app.syspoint.models.json.ProductoJson;
+import com.app.syspoint.models.json.RequestClients;
+import com.app.syspoint.models.json.RequestCobranza;
+import com.app.syspoint.models.json.RequestPrices;
+import com.app.syspoint.models.json.RolsJson;
+import com.app.syspoint.models.json.VisitaJson;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;

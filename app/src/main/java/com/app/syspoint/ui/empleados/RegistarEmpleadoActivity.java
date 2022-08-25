@@ -40,16 +40,16 @@ import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.dao.EmpleadoDao;
-import com.app.syspoint.db.dao.RolesDao;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.EmpleadoDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Empleado;
-import com.app.syspoint.json.EmpleadoJson;
-import com.app.syspoint.json.Role;
-import com.app.syspoint.json.RolsJson;
+import com.app.syspoint.models.Employee;
+import com.app.syspoint.models.json.EmpleadoJson;
+import com.app.syspoint.models.Role;
+import com.app.syspoint.models.json.RolsJson;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.ValidaCampos;
@@ -869,9 +869,9 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
         listaEmpleadosDB =  empleadoDao.getEmpleadoByID(id);
 
-        List<Empleado> listEmpleados = new ArrayList<>();
+        List<Employee> listEmpleados = new ArrayList<>();
         for (EmpleadoBean item : listaEmpleadosDB){
-            Empleado empleado = new Empleado();
+            Employee empleado = new Employee();
             empleado.setNombre(item.getNombre());
             if (item.getDireccion().isEmpty()){
                 empleado.setDireccion("-");

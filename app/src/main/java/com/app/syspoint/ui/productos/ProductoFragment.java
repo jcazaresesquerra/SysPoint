@@ -30,16 +30,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.RolesDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.ProductoDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Producto;
-import com.app.syspoint.json.ProductoJson;
+import com.app.syspoint.models.Product;
+import com.app.syspoint.models.json.ProductoJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 
@@ -285,7 +285,7 @@ public class ProductoFragment extends Fragment {
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Producto items : response.body().getProductos()) {
+                    for (Product items : response.body().getProductos()) {
 
                         final ProductoDao productoDao = new ProductoDao();
                         final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());

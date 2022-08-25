@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.CobranzaModelDao;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.CobranzaModelDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -226,7 +226,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
     }
     private void AddItems(int venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
         final CobranzaModel item = new CobranzaModel();
-        final com.app.syspoint.db.dao.CobranzaModelDao dao = new CobranzaModelDao();
+        final com.app.syspoint.repository.database.dao.CobranzaModelDao dao = new CobranzaModelDao();
         item.setVenta(venta);
         item.setCobranza(cobranza);
         item.setImporte(importe);

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.CobrosBean;
+import com.app.syspoint.repository.database.bean.CobrosBean;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;

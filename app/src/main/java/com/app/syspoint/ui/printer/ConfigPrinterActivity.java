@@ -20,8 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.dao.PrinterDao;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.dao.PrinterDao;
 
 import java.util.Set;
 

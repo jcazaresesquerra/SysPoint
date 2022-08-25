@@ -32,20 +32,20 @@ import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.bean.VisitasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.db.dao.VisitasDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.bean.VisitasBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.repository.database.dao.VisitasDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Visita;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Visit;
+import com.app.syspoint.models.json.VisitaJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -230,10 +230,10 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB = clienteDao.getByIDCliente(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -420,9 +420,9 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         List<VisitasBean> visitasBeanListBean = new ArrayList<>();
         visitasBeanListBean =  visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
 
-        List<Visita> listaVisitas = new ArrayList<>();
+        List<Visit> listaVisitas = new ArrayList<>();
         for (VisitasBean item : visitasBeanListBean){
-            Visita visita = new Visita();
+            Visit visita = new Visit();
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
 

@@ -1,7 +1,5 @@
 package com.app.syspoint.ui.cobranza;
 
-import static com.app.syspoint.utils.Utils.addActivity2Stack;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -29,24 +27,24 @@ import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.CobdetBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.CobrosBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.CobranzaModelDao;
-import com.app.syspoint.db.dao.CobrosDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.CobdetBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.CobrosBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.CobranzaModelDao;
+import com.app.syspoint.repository.database.dao.CobrosDao;
 import com.app.syspoint.domentos.TicketAbono;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.RequestCobranza;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.json.CobranzaJson;
+import com.app.syspoint.models.json.RequestCobranza;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -125,7 +123,7 @@ public class CobranzaActivity extends AppCompatActivity {
             public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
                 if (response.isSuccessful()) {
                     CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
+                    for (Payment item : response.body().getCobranzas()) {
 
                         CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
@@ -453,9 +451,9 @@ public class CobranzaActivity extends AppCompatActivity {
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
             cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
 
-            List<Cobranza> listaCobranza = new ArrayList<>();
+            List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
+                Payment cobranza = new Payment();
                 cobranza.setCobranza(item.getCobranza());
                 cobranza.setCuenta(item.getCliente());
                 cobranza.setImporte(item.getImporte());
@@ -498,10 +496,10 @@ public class CobranzaActivity extends AppCompatActivity {
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB = clienteDao.getByIDCliente(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -538,9 +536,9 @@ public class CobranzaActivity extends AppCompatActivity {
             cliente.setRecordatorio("" + item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()) {
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             } else {
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());

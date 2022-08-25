@@ -35,22 +35,22 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.TipoVisitaModel;
-import com.app.syspoint.db.AdapterTipoVisita;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.VisitasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.VisitasDao;
+import com.app.syspoint.models.VisitType;
+import com.app.syspoint.repository.database.AdapterTipoVisita;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.VisitasBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.ClientesRutaDao;
+import com.app.syspoint.repository.database.dao.VisitasDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Visita;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
+import com.app.syspoint.models.Visit;
+import com.app.syspoint.models.json.VisitaJson;
 import com.app.syspoint.ui.ventas.FinalizaPrecapturaActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
@@ -85,7 +85,7 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
     private TextView tv_visita_nombre_comercial;
     private  TextView tv_direcccion_precaptura;
     private String idCuenta;
-    private List<TipoVisitaModel> mData;
+    private List<VisitType> mData;
     private AdapterTipoVisita mAdapter;
     double latitud = 0;
     double longitud = 0;
@@ -143,9 +143,9 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
 
     void loadSpinnerTipoVisita(){
 
-        mData.add(new TipoVisitaModel(1, "No Recibio", false));
-        mData.add(new TipoVisitaModel(2, "Cerrado", false));
-        mData.add(new TipoVisitaModel(3, "No Visitado",false));
+        mData.add(new VisitType(1, "No Recibio", false));
+        mData.add(new VisitType(2, "Cerrado", false));
+        mData.add(new VisitType(3, "No Visitado",false));
         final RecyclerView recyclerView = findViewById(R.id.rv_tipo_visita);
         recyclerView.setHasFixedSize(true);
 
@@ -157,13 +157,13 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
             public void onItemClick(int position) {
 
                 for (int i = 0; i < mData.size(); i++) {
-                    TipoVisitaModel item = mData.get(i);
+                    VisitType item = mData.get(i);
                     item.setSelected(false);
                 }
                 recyclerView.getAdapter().notifyDataSetChanged();
 
                 if (position >= 0 && position < mData.size()) {
-                    TipoVisitaModel item = mData.get(position);
+                    VisitType item = mData.get(position);
                     concepto_visita_seleccioando = item.getName();
                     item.setSelected(true);
                 } else {
@@ -329,7 +329,7 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
         List<VisitasBean> visitasBeanListBean = new ArrayList<>();
         visitasBeanListBean =  visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
 
-        List<Visita> listaVisitas = new ArrayList<>();
+        List<Visit> listaVisitas = new ArrayList<>();
         EmpleadoBean vendedoresBean = AppBundle.getUserBean();
         if (vendedoresBean == null) {
             vendedoresBean = new CacheInteractor(PreCapturaActivity.this).getSeller();
@@ -338,7 +338,7 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
         final ClienteDao clienteDao = new ClienteDao();
 
         for (VisitasBean item : visitasBeanListBean){
-            Visita visita = new Visita();
+            Visit visita = new Visit();
             final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente().getCuenta());
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
@@ -381,10 +381,10 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB = clienteDao.getClientsByDay(Utils.fechaActual());
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -421,9 +421,9 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()) {
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             } else {
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());

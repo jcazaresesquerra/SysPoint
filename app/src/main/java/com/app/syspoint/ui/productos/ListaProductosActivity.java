@@ -22,10 +22,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.PersistenciaPrecioBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.PersistenciaPrecioDao;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.PersistenciaPrecioBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.PersistenciaPrecioDao;
+import com.app.syspoint.repository.database.dao.ProductoDao;
 import com.app.syspoint.ui.ventas.CantidadActivity;
 import com.app.syspoint.utils.Actividades;
 

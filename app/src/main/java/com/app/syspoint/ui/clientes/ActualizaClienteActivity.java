@@ -42,12 +42,12 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.dao.ClienteDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.ValidaCampos;
@@ -958,10 +958,10 @@ public class ActualizaClienteActivity extends AppCompatActivity {
         List<ClienteBean> listaClientesDB = new ArrayList<>();
         listaClientesDB =  clienteDao.getByIDCliente(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB){
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -998,9 +998,9 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()){
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             }else{
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());

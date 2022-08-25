@@ -2,10 +2,10 @@ package com.app.syspoint.domentos;
 
 import android.app.Activity;
 
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.InventarioBean;
-import com.app.syspoint.db.dao.InventarioDao;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.InventarioBean;
+import com.app.syspoint.repository.database.dao.InventarioDao;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.cache.CacheInteractor;
 

@@ -6,7 +6,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.app.syspoint.MainActivity
+import com.app.syspoint.BuildConfig
+import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
 import com.app.syspoint.utils.click
@@ -25,6 +26,7 @@ class LoginActivity: AppCompatActivity() {
 
         setContentView(binding.root)
 
+        binding.appVersion.text = getString(R.string.app_name) + "ver" + BuildConfig.VERSION_NAME
         setUpListeners()
         checkPermissions()
         viewModel.createUser()

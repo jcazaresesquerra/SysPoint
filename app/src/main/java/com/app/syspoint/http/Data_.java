@@ -2,12 +2,12 @@ package com.app.syspoint.http;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.Empleado;
-import com.app.syspoint.json.Precio;
-import com.app.syspoint.json.Producto;
-import com.app.syspoint.json.Role;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.Employee;
+import com.app.syspoint.models.Price;
+import com.app.syspoint.models.Product;
+import com.app.syspoint.models.Role;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class Data_ {
 
     @SerializedName("Empleados")
     @Expose
-    private List<Empleado> empleados = null;
+    private List<Employee> empleados = null;
 
     @SerializedName("Roles")
     @Expose
@@ -24,57 +24,57 @@ public class Data_ {
 
     @SerializedName("Productos")
     @Expose
-    private List<Producto> productos = null;
+    private List<Product> productos = null;
 
     @SerializedName("Clientes")
     @Expose
-    private List<Cliente> clientes = null;
+    private List<Client> clientes = null;
 
     @SerializedName("Precios")
     @Expose
-    private List<Precio> precios = null;
+    private List<Price> precios = null;
 
     @SerializedName("Cobranza")
     @Expose
-    private List<Cobranza> cobranzas = null;
+    private List<Payment> cobranzas = null;
 
-    public List<Cliente> getClientes() {
+    public List<Client> getClientes() {
         return clientes;
     }
 
-    public void setClientes(List<Cliente> clientes) {
+    public void setClientes(List<Client> clientes) {
         this.clientes = clientes;
     }
 
-    public List<Cobranza> getCobranzas() {
+    public List<Payment> getCobranzas() {
         return cobranzas;
     }
 
-    public void setCobranzas(List<Cobranza> cobranzas) {
+    public void setCobranzas(List<Payment> cobranzas) {
         this.cobranzas = cobranzas;
     }
 
-    public List<Empleado> getEmpleados() {
+    public List<Employee> getEmpleados() {
         return empleados;
     }
 
-    public void setEmpleados(List<Empleado> empleados) {
+    public void setEmpleados(List<Employee> empleados) {
         this.empleados = empleados;
     }
 
-    public List<Precio> getPrecios() {
+    public List<Price> getPrecios() {
         return precios;
     }
 
-    public void setPrecios(List<Precio> precios) {
+    public void setPrecios(List<Price> precios) {
         this.precios = precios;
     }
 
-    public List<Producto> getProductos() {
+    public List<Product> getProductos() {
         return productos;
     }
 
-    public void setProductos(List<Producto> productos) {
+    public void setProductos(List<Product> productos) {
         this.productos = productos;
     }
 

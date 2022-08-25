@@ -10,10 +10,10 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.RuteoBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.RuteoDao;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.ClientesRutaDao;
+import com.app.syspoint.repository.database.dao.RuteoDao;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.utils.Utils;
 

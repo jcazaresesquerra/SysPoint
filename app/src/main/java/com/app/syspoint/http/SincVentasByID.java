@@ -2,9 +2,9 @@ package com.app.syspoint.http;
 
 import android.app.Activity;
 
-import com.app.syspoint.db.bean.PartidasBean;
-import com.app.syspoint.db.bean.VentasBean;
-import com.app.syspoint.db.dao.VentasDao;
+import com.app.syspoint.repository.database.bean.PartidasBean;
+import com.app.syspoint.repository.database.bean.VentasBean;
+import com.app.syspoint.repository.database.dao.VentasDao;
 
 import org.json.JSONArray;
 import org.json.JSONException;

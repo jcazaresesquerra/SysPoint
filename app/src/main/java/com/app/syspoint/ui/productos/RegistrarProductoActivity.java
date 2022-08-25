@@ -40,12 +40,12 @@ import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.ProductoDao;
 import com.app.syspoint.http.ApiServices;
 import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Producto;
-import com.app.syspoint.json.ProductoJson;
+import com.app.syspoint.models.Product;
+import com.app.syspoint.models.json.ProductoJson;
 import com.app.syspoint.ui.clientes.ClienteFragment;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
@@ -514,10 +514,10 @@ public class RegistrarProductoActivity extends AppCompatActivity {
         List<ProductoBean> listaProductosDB = new ArrayList<>();
         listaProductosDB =  productoDao.getProductoByID(idProducto);
 
-        List<Producto> listaProductos = new ArrayList<>();
+        List<Product> listaProductos = new ArrayList<>();
 
         for (ProductoBean item : listaProductosDB){
-            Producto producto = new Producto();
+            Product producto = new Product();
             producto.setArticulo(item.getArticulo());
             producto.setDescripcion(item.getDescripcion());
             producto.setStatus(item.getStatus());
