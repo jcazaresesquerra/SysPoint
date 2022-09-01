@@ -6,11 +6,16 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
+import com.app.syspoint.models.sealed.LoginViewState
+import com.app.syspoint.models.sealed.LoginViewState.*
 import com.app.syspoint.utils.click
+import com.app.syspoint.viewmodel.login.LoginViewModel
 import libs.mjn.prettydialog.PrettyDialog
 
 class LoginActivity: AppCompatActivity() {
@@ -22,29 +27,29 @@ class LoginActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
-        viewModel = LoginViewModel()
+        viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
 
         setContentView(binding.root)
 
         binding.appVersion.text = getString(R.string.app_name) + "ver" + BuildConfig.VERSION_NAME
         setUpListeners()
         checkPermissions()
-        viewModel.createUser()
-        viewModel.validatePersistence()
-        viewModel.sync()
+
+        viewModel.loginViewState.observe(this, ::loginViewState)
+    }
+
+    private fun loginViewState(viewState: LoginViewState) {
+        when(viewState) {
+            LoggedIn -> showMainActivity()
+            LoginError -> showErrorDialog()
+        }
     }
 
     private fun setUpListeners() {
         binding.btnSignIn click {
             val email: String = binding.etLoginEmail.text.toString()
             val password: String = binding.etLoginPassword.text.toString()
-
-            if (viewModel.validateUser(email, password)) {
-                showMainActivity()
-            } else {
-                showErrorDialog()
-            }
-
+            viewModel.login(email, password)
         }
     }
 

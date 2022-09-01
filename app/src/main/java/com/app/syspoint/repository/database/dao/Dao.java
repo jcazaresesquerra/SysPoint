@@ -1,8 +1,8 @@
 package com.app.syspoint.repository.database.dao;
 
 import com.app.syspoint.repository.database.DBHelper;
-import com.app.syspoint.db.DaoSession;
 import com.app.syspoint.repository.database.bean.Bean;
+import com.app.syspoint.repository.database.bean.DaoSession;
 
 import org.greenrobot.greendao.AbstractDao;
 
@@ -17,7 +17,7 @@ public class Dao {
     public Dao(final String daoName) {
 
         if (daoExternalSession == null) {
-            daoSession = DBHelper.getSingleton().getDaoSession();
+            daoSession = DBHelper.Companion.getSingleton().getDaoSession();
         } else {
             daoSession = daoExternalSession;
         }
@@ -136,7 +136,7 @@ public class Dao {
     }
 
     final public static void beginExternalTransaction() {
-        daoExternalSession = DBHelper.getSingleton().getDaoSession();
+        daoExternalSession = DBHelper.Companion.getSingleton().getDaoSession();
         daoExternalSession.getDatabase().beginTransaction();
     }
 
@@ -168,6 +168,4 @@ public class Dao {
     public void save(Bean bean) {
         dao.save(bean);
     }
-
-
 }

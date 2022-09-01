@@ -25,6 +25,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.EmployeeJson;
+import com.app.syspoint.models.json.PaymentJson;
+import com.app.syspoint.models.json.ProductJson;
+import com.app.syspoint.models.json.RolJson;
+import com.app.syspoint.models.json.SpecialPriceJson;
+import com.app.syspoint.models.json.VisitJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -38,34 +45,27 @@ import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
 import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.bean.VisitasBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.ClientesRutaDao;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
-import com.app.syspoint.repository.database.dao.EmpleadoDao;
-import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
-import com.app.syspoint.repository.database.dao.ProductoDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.EmployeeDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.database.dao.RuteoDao;
-import com.app.syspoint.repository.database.dao.VisitasDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.Data;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.Servicio;
-import com.app.syspoint.http.SincVentas;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.VisitsDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.models.Data;
+import com.app.syspoint.repository.request.http.PointApi;
+import com.app.syspoint.repository.request.http.Servicio;
+import com.app.syspoint.repository.request.http.SincVentas;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.json.CobranzaJson;
 import com.app.syspoint.models.Employee;
-import com.app.syspoint.models.json.EmpleadoJson;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.json.PrecioEspecialJson;
 import com.app.syspoint.models.Product;
-import com.app.syspoint.models.json.ProductoJson;
 import com.app.syspoint.models.Role;
-import com.app.syspoint.models.json.RolsJson;
 import com.app.syspoint.models.Visit;
-import com.app.syspoint.models.json.VisitaJson;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
@@ -116,14 +116,14 @@ public class HomeFragment extends Fragment {
 
     private void updateCreditos() {
 
-        final ClienteDao clienteDao = new ClienteDao();
-        final List<ClienteBean> listaClientesCredito = clienteDao.getClientsByDay(Utils.fechaActual());
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final ClientDao clientDao = new ClientDao();
+        final List<ClienteBean> listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual());
+        final PaymentDao paymentDao = new PaymentDao();
         for (ClienteBean item : listaClientesCredito) {
 
             try {
-                final ClienteDao dao = new ClienteDao();
-                item.setSaldo_credito(cobranzaDao.getTotalSaldoDocumentosCliente(item.getCuenta()));
+                final ClientDao dao = new ClientDao();
+                item.setSaldo_credito(paymentDao.getTotalSaldoDocumentosCliente(item.getCuenta()));
                 dao.save(item);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,7 +146,7 @@ public class HomeFragment extends Fragment {
                 new loadClientes().execute();
                 new loadPreciosEspeciales().execute();
             }
-        }, getActivity()).execute(), 100);
+        }).execute(), 100);
     }
 
     private class donwloadGetDataAsync extends AsyncTask<Call, Void, String>{
@@ -185,15 +185,15 @@ public class HomeFragment extends Fragment {
                     for (Employee item : response.body().getData().getEmpleados()) {
 
                         //Instancia el DAO
-                        final EmpleadoDao dao = new EmpleadoDao();
+                        final EmployeeDao dao = new EmployeeDao();
 
                         //Validamos si existe el empleado en la base de datos en base al identificador
-                        final EmpleadoBean empleadoBean = dao.getEmpleadoByIdentificador(item.getIdentificador());
+                        final EmpleadoBean empleadoBean = dao.getEmployeeByIdentifier(item.getIdentificador());
 
                         //NO existe entonces lo creamos
                         if (empleadoBean == null) {
                             EmpleadoBean empleado = new EmpleadoBean();
-                            EmpleadoDao empleadoDao = new EmpleadoDao();
+                            EmployeeDao employeeDao = new EmployeeDao();
                             empleado.setNombre(item.getNombre());
                             empleado.setDireccion(item.getDireccion());
                             empleado.setEmail(item.getEmail());
@@ -217,7 +217,7 @@ public class HomeFragment extends Fragment {
                             empleado.setSueldo_diario(item.getSueldoDiario());
                             empleado.setTurno(item.getTurno());
                             empleado.setPath_image(item.getPathImage());
-                            empleadoDao.insert(empleado);
+                            employeeDao.insert(empleado);
                         }else {
                             empleadoBean.setNombre(item.getNombre());
                             empleadoBean.setDireccion(item.getDireccion());
@@ -256,8 +256,8 @@ public class HomeFragment extends Fragment {
                             final RolesBean bean = new RolesBean();
                             final RolesDao dao = new RolesDao();
 
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
+                            final EmployeeDao employeeDao = new EmployeeDao();
+                            final EmpleadoBean empleadoBean = employeeDao.getEmployeeByIdentifier(rol.getEmpleado());
 
                             bean.setEmpleado(empleadoBean);
                             bean.setModulo(rol.getModulo());
@@ -270,8 +270,8 @@ public class HomeFragment extends Fragment {
                             bean.setIdentificador(rol.getEmpleado());
                             dao.insert(bean);
                         }else {
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
+                            final EmployeeDao employeeDao = new EmployeeDao();
+                            final EmpleadoBean empleadoBean = employeeDao.getEmployeeByIdentifier(rol.getEmpleado());
 
                             rolesBean.setEmpleado(empleadoBean);
                             rolesBean.setModulo(rol.getModulo());
@@ -288,13 +288,13 @@ public class HomeFragment extends Fragment {
                     //Contiene la lista de productos
                     for (Product items : response.body().getData().getProductos()) {
 
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
+                        final ProductDao productDao = new ProductDao();
+                        final ProductoBean productoBean = productDao.getProductoByArticulo(items.getArticulo());
 
                         if (productoBean == null) {
                             //Creamos el producto
                             ProductoBean producto = new ProductoBean();
-                            ProductoDao dao = new ProductoDao();
+                            ProductDao dao = new ProductDao();
                             producto.setArticulo(items.getArticulo());
                             producto.setDescripcion(items.getDescripcion());
                             producto.setStatus(items.getStatus());
@@ -327,20 +327,20 @@ public class HomeFragment extends Fragment {
                             productoBean.setCodigo_alfa(items.getCodigoAlfa());
                             productoBean.setCodigo_barras(items.getCodigoBarras());
                             productoBean.setPath_img(items.getPathImage());
-                            productoDao.save(productoBean);
+                            productDao.save(productoBean);
                         }
                     }
 
                     for (Client item : response.body().getData().getClientes()) {
 
                         //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
+                        final ClientDao dao = new ClientDao();
+                        final ClienteBean bean = dao.getClientByAccount(item.getCuenta());
 
                         if (bean == null) {
 
                             final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
+                            final ClientDao clientDao = new ClientDao();
                             clienteBean.setNombre_comercial(item.getNombreComercial());
                             clienteBean.setCalle(item.getCalle());
                             clienteBean.setNumero(item.getNumero());
@@ -387,7 +387,7 @@ public class HomeFragment extends Fragment {
                             clienteBean.setLimite_credito(item.getLimite_credito());
                             clienteBean.setSaldo_credito(item.getSaldo_credito());
                             clienteBean.setMatriz(item.getMatriz());
-                            clienteDao.insert(clienteBean);
+                            clientDao.insert(clienteBean);
                         } else {
                             bean.setNombre_comercial(item.getNombreComercial());
                             bean.setCalle(item.getCalle());
@@ -443,11 +443,11 @@ public class HomeFragment extends Fragment {
 
 
                     for (Payment item : response.body().getData().getCobranzas()) {
-                        CobranzaDao cobranzaDao = new CobranzaDao();
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
+                        PaymentDao paymentDao = new PaymentDao();
+                        CobranzaBean cobranzaBean = paymentDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
                             final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
+                            final PaymentDao paymentDao1 = new PaymentDao();
                             cobranzaBean1.setCobranza(item.getCobranza());
                             cobranzaBean1.setCliente(item.getCuenta());
                             cobranzaBean1.setImporte(item.getImporte());
@@ -459,7 +459,7 @@ public class HomeFragment extends Fragment {
                             cobranzaBean1.setHora(item.getHora());
                             cobranzaBean1.setEmpleado(item.getIdentificador());
                             cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
+                            paymentDao1.insert(cobranzaBean1);
                         } else {
                             cobranzaBean.setCobranza(item.getCobranza());
                             cobranzaBean.setCliente(item.getCuenta());
@@ -472,34 +472,34 @@ public class HomeFragment extends Fragment {
                             cobranzaBean.setHora(item.getHora());
                             cobranzaBean.setEmpleado(item.getIdentificador());
                             cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
+                            paymentDao.save(cobranzaBean);
                         }
                     }
 
                     for (Price item : response.body().getData().getPrecios()) {
 
                         //Para obtener los datos del cliente
-                        final ClienteDao clienteDao = new ClienteDao();
-                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
+                        final ClientDao clientDao = new ClientDao();
+                        final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente());
                         if (clienteBean == null) {
                             return null;
                         }
 
                         //Para obtener los datos del producto
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+                        final ProductDao productDao = new ProductDao();
+                        final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
                         if (productoBean == null) {
                             return null;
                         }
 
-                        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+                        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+                        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                         //Si no hay precios especiales entonces crea un precio
                         if (preciosEspecialesBean == null) {
 
-                            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                            final SpecialPricesDao dao = new SpecialPricesDao();
                             final PreciosEspecialesBean bean = new PreciosEspecialesBean();
                             bean.setCliente(clienteBean.getCuenta());
                             bean.setArticulo(productoBean.getArticulo());
@@ -521,14 +521,14 @@ public class HomeFragment extends Fragment {
                             }else {
                                 preciosEspecialesBean.setActive(false);
                             }
-                            preciosEspecialesDao.save(preciosEspecialesBean);
+                            specialPricesDao.save(preciosEspecialesBean);
                         }
                     }
                 }
 
             }
 
-            return response.body().toString();
+            return response.body() != null? response.body().toString(): null;
         }
     }
 
@@ -538,9 +538,9 @@ public class HomeFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
+            cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
             List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
@@ -558,22 +558,22 @@ public class HomeFragment extends Fragment {
                 listaCobranza.add(cobranza);
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
+            PaymentJson cobranzaJson = new PaymentJson();
+            cobranzaJson.setPayments(listaCobranza);
             String json = new Gson().toJson(cobranzaJson);
             Log.d("Sin Cobranza", json);
 
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
+            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
 
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
+            loadCobranza.enqueue(new Callback<PaymentJson>() {
                 @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                     if (response.isSuccessful()) {
                     }
                 }
 
                 @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
+                public void onFailure(Call<PaymentJson> call, Throwable t) {
 
                 }
             });
@@ -583,7 +583,7 @@ public class HomeFragment extends Fragment {
 
 
     private void creaRutaSeleccionada() {
-        RuteoDao dao = new RuteoDao();
+        RoutingDao dao = new RoutingDao();
         RuteoBean bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
 
         if (bean != null) {
@@ -645,14 +645,14 @@ public class HomeFragment extends Fragment {
                             public void onClick() {
 
                                 //Clientes normales
-                                ClienteDao clienteDao = new ClienteDao();
-                                clienteDao.updateVisitado();
+                                ClientDao clientDao = new ClientDao();
+                                clientDao.updateVisited();
 
-                                ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                clientesRutaDao.clear();
+                                RuteClientDao ruteClientDao = new RuteClientDao();
+                                ruteClientDao.clear();
 
-                                RuteoDao ruteoDao = new RuteoDao();
-                                ruteoDao.clear();
+                                RoutingDao routingDao = new RoutingDao();
+                                routingDao.clear();
 
                                 RuteoBean ruteoBean = new RuteoBean();
 
@@ -675,7 +675,7 @@ public class HomeFragment extends Fragment {
                                 ruteoBean.setFecha(Utils.fechaActual());
                                 ruteoBean.setRuta(ruta);
 
-                                ruteoDao.insert(ruteoBean);
+                                routingDao.insert(ruteoBean);
                                 Toast.makeText(getActivity(), "La ruta se cargo con exito!", Toast.LENGTH_LONG).show();
                                 estableceRuta();
                                 dialog.dismiss();
@@ -738,12 +738,12 @@ public class HomeFragment extends Fragment {
             for (ClienteBean item : listaClientes) {
 
                 count += 1;
-                final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                final ClientesRutaBean clientesRutaBean = clientesRutaDao.getClienteByCuentaCliente(item.getCuenta());
+                final RuteClientDao ruteClientDao = new RuteClientDao();
+                final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(item.getCuenta());
                 //Guardamos al clientes en la ruta actual
                 if (clientesRutaBean == null) {
                     ClientesRutaBean bean = new ClientesRutaBean();
-                    ClientesRutaDao dao = new ClientesRutaDao();
+                    RuteClientDao dao = new RuteClientDao();
                     bean.setId(Long.valueOf(count));
                     bean.setNombre_comercial(item.getNombre_comercial());
                     bean.setCalle(item.getCalle());
@@ -771,11 +771,11 @@ public class HomeFragment extends Fragment {
 
     private void loadRuta() {
         mData = new ArrayList<>();
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
         }
         setDataList(mData);
     }
@@ -783,33 +783,33 @@ public class HomeFragment extends Fragment {
     private void estableceRuta() {
 
         mData = new ArrayList<>();
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
 
             if (ruteoBean.getDia() == 1) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaLunes(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1));
             } else if (ruteoBean.getDia() == 2) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 3) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 4) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 5) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 6) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 7) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
+                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
             }
 
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
         }
 
         loadRuta();
@@ -886,7 +886,7 @@ public class HomeFragment extends Fragment {
                     } else {
                         getData();
                     }
-                }, getActivity()).execute(), 100);
+                }).execute(), 100);
 
                 return true;
 
@@ -964,20 +964,20 @@ public class HomeFragment extends Fragment {
 
         progressshow();
 
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranza();
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
+        Call<PaymentJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranza();
+        getCobranza.enqueue(new Callback<PaymentJson>() {
             @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+            public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                 if (response.isSuccessful()) {
                     progresshide();
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Payment item : response.body().getCobranzas()) {
+                    PaymentDao paymentDao = new PaymentDao();
+                    for (Payment item : response.body().getPayments()) {
 
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
+                        CobranzaBean cobranzaBean = paymentDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
 
                             final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
+                            final PaymentDao paymentDao1 = new PaymentDao();
                             cobranzaBean1.setCobranza(item.getCobranza());
                             cobranzaBean1.setCliente(item.getCuenta());
                             cobranzaBean1.setImporte(item.getImporte());
@@ -988,7 +988,7 @@ public class HomeFragment extends Fragment {
                             cobranzaBean1.setFecha(item.getFecha());
                             cobranzaBean1.setHora(item.getHora());
                             cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaDao1.insert(cobranzaBean1);
+                            paymentDao1.insert(cobranzaBean1);
                         } else {
                             cobranzaBean.setCobranza(item.getCobranza());
                             cobranzaBean.setCliente(item.getCuenta());
@@ -1000,39 +1000,39 @@ public class HomeFragment extends Fragment {
                             cobranzaBean.setFecha(item.getFecha());
                             cobranzaBean.setHora(item.getHora());
                             cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaDao.save(cobranzaBean);
+                            paymentDao.save(cobranzaBean);
                         }
                     }
                 }
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
+            public void onFailure(Call<PaymentJson> call, Throwable t) {
                 progresshide();
             }
         });
 
-        Call<EmpleadoJson> getEmpleado = ApiServices.getClientRestrofit().create(PointApi.class).getAllEmpleados();
+        Call<EmployeeJson> getEmpleado = ApiServices.getClientRestrofit().create(PointApi.class).getAllEmpleados();
 
-        getEmpleado.enqueue(new Callback<EmpleadoJson>() {
+        getEmpleado.enqueue(new Callback<EmployeeJson>() {
             @Override
-            public void onResponse(Call<EmpleadoJson> call, Response<EmpleadoJson> response) {
+            public void onResponse(Call<EmployeeJson> call, Response<EmployeeJson> response) {
                 if (response.isSuccessful()) {
 
                     progresshide();
 
-                    for (Employee item : response.body().getEmpleados()) {
+                    for (Employee item : response.body().getEmployees()) {
 
                         //Instancia el DAO
-                        final EmpleadoDao dao = new EmpleadoDao();
+                        final EmployeeDao dao = new EmployeeDao();
 
                         //Validamos si existe el empleado en la base de datos en base al identificador
-                        final EmpleadoBean empleadoBean = dao.getEmpleadoByIdentificador(item.getIdentificador());
+                        final EmpleadoBean empleadoBean = dao.getEmployeeByIdentifier(item.getIdentificador());
 
                         //NO existe entonces lo creamos
                         if (empleadoBean == null) {
                             EmpleadoBean empleado = new EmpleadoBean();
-                            EmpleadoDao empleadoDao = new EmpleadoDao();
+                            EmployeeDao employeeDao = new EmployeeDao();
                             empleado.setNombre(item.getNombre());
                             empleado.setDireccion(item.getDireccion());
                             empleado.setEmail(item.getEmail());
@@ -1056,7 +1056,7 @@ public class HomeFragment extends Fragment {
                             empleado.setSueldo_diario(item.getSueldoDiario());
                             empleado.setTurno(item.getTurno());
                             empleado.setPath_image(item.getPathImage());
-                            empleadoDao.insert(empleado);
+                            employeeDao.insert(empleado);
                         } else {
                             empleadoBean.setNombre(item.getNombre());
                             empleadoBean.setDireccion(item.getDireccion());
@@ -1088,31 +1088,31 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<EmpleadoJson> call, Throwable t) {
+            public void onFailure(Call<EmployeeJson> call, Throwable t) {
                 progresshide();
             }
         });
 
 
         progressshow();
-        Call<ClienteJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
-        getClientes.enqueue(new Callback<ClienteJson>() {
+        Call<ClientJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
+        getClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
 
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Client item : response.body().getClientes()) {
+                    for (Client item : response.body().getClients()) {
 
                         //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
+                        final ClientDao dao = new ClientDao();
+                        final ClienteBean bean = dao.getClientByAccount(item.getCuenta());
 
                         if (bean == null) {
 
                             final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
+                            final ClientDao clientDao = new ClientDao();
                             clienteBean.setNombre_comercial(item.getNombreComercial());
                             clienteBean.setCalle(item.getCalle());
                             clienteBean.setNumero(item.getNumero());
@@ -1158,7 +1158,7 @@ public class HomeFragment extends Fragment {
                             clienteBean.setLimite_credito(item.getLimite_credito());
                             clienteBean.setSaldo_credito(item.getSaldo_credito());
                             clienteBean.setMatriz(item.getMatriz());
-                            clienteDao.insert(clienteBean);
+                            clientDao.insert(clienteBean);
                         } else {
                             bean.setNombre_comercial(item.getNombreComercial());
                             bean.setCalle(item.getCalle());
@@ -1215,30 +1215,30 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
                 progresshide();
             }
         });
 
 
         progressshow();
-        Call<ProductoJson> getProducto = ApiServices.getClientRestrofit().create(PointApi.class).getAllProductos();
-        getProducto.enqueue(new Callback<ProductoJson>() {
+        Call<ProductJson> getProducto = ApiServices.getClientRestrofit().create(PointApi.class).getAllProductos();
+        getProducto.enqueue(new Callback<ProductJson>() {
             @Override
-            public void onResponse(Call<ProductoJson> call, Response<ProductoJson> response) {
+            public void onResponse(Call<ProductJson> call, Response<ProductJson> response) {
 
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Product items : response.body().getProductos()) {
+                    for (Product items : response.body().getProducts()) {
 
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
+                        final ProductDao productDao = new ProductDao();
+                        final ProductoBean productoBean = productDao.getProductoByArticulo(items.getArticulo());
 
                         if (productoBean == null) {
                             //Creamos el producto
                             ProductoBean producto = new ProductoBean();
-                            ProductoDao dao = new ProductoDao();
+                            ProductDao dao = new ProductDao();
                             producto.setArticulo(items.getArticulo());
                             producto.setDescripcion(items.getDescripcion());
                             producto.setStatus(items.getStatus());
@@ -1271,23 +1271,23 @@ public class HomeFragment extends Fragment {
                             productoBean.setCodigo_alfa(items.getCodigoAlfa());
                             productoBean.setCodigo_barras(items.getCodigoBarras());
                             productoBean.setPath_img(items.getPathImage());
-                            productoDao.save(productoBean);
+                            productDao.save(productoBean);
                         }
                     }
                 }
             }
 
             @Override
-            public void onFailure(Call<ProductoJson> call, Throwable t) {
+            public void onFailure(Call<ProductJson> call, Throwable t) {
                 progresshide();
             }
         });
 
         progressshow();
-        Call<RolsJson> getRols = ApiServices.getClientRestrofit().create(PointApi.class).getAllRols();
-        getRols.enqueue(new Callback<RolsJson>() {
+        Call<RolJson> getRols = ApiServices.getClientRestrofit().create(PointApi.class).getAllRols();
+        getRols.enqueue(new Callback<RolJson>() {
             @Override
-            public void onResponse(Call<RolsJson> call, Response<RolsJson> response) {
+            public void onResponse(Call<RolJson> call, Response<RolJson> response) {
                 progresshide();
                 if (response.isSuccessful()) {
 
@@ -1301,8 +1301,8 @@ public class HomeFragment extends Fragment {
                             final RolesBean bean = new RolesBean();
                             final RolesDao dao = new RolesDao();
 
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
+                            final EmployeeDao employeeDao = new EmployeeDao();
+                            final EmpleadoBean empleadoBean = employeeDao.getEmployeeByIdentifier(rol.getEmpleado());
 
                             bean.setEmpleado(empleadoBean);
                             bean.setModulo(rol.getModulo());
@@ -1315,8 +1315,8 @@ public class HomeFragment extends Fragment {
                             bean.setIdentificador(rol.getEmpleado());
                             dao.insert(bean);
                         } else {
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
+                            final EmployeeDao employeeDao = new EmployeeDao();
+                            final EmpleadoBean empleadoBean = employeeDao.getEmployeeByIdentifier(rol.getEmpleado());
 
                             rolesBean.setEmpleado(empleadoBean);
                             rolesBean.setModulo(rol.getModulo());
@@ -1334,44 +1334,44 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<RolsJson> call, Throwable t) {
+            public void onFailure(Call<RolJson> call, Throwable t) {
                 progresshide();
             }
         });
 
 
         progressshow();
-        Call<PrecioEspecialJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPricesEspecial();
-        preciosJson.enqueue(new Callback<PrecioEspecialJson>() {
+        Call<SpecialPriceJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPricesEspecial();
+        preciosJson.enqueue(new Callback<SpecialPriceJson>() {
             @Override
-            public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+            public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
                 progresshide();
                 if (response.isSuccessful()) {
 
-                    for (Price item : response.body().getPrecios()) {
+                    for (Price item : response.body().getPrices()) {
 
                         //Para obtener los datos del cliente
-                        final ClienteDao clienteDao = new ClienteDao();
-                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
+                        final ClientDao clientDao = new ClientDao();
+                        final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente());
                         if (clienteBean == null) {
                             return;
                         }
 
                         //Para obtener los datos del producto
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+                        final ProductDao productDao = new ProductDao();
+                        final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
                         if (productoBean == null) {
                             return;
                         }
 
-                        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+                        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+                        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                         //Si no hay precios especiales entonces crea un precio
                         if (preciosEspecialesBean == null) {
 
-                            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                            final SpecialPricesDao dao = new SpecialPricesDao();
                             final PreciosEspecialesBean bean = new PreciosEspecialesBean();
                             bean.setCliente(clienteBean.getCuenta());
                             bean.setArticulo(productoBean.getArticulo());
@@ -1392,7 +1392,7 @@ public class HomeFragment extends Fragment {
                             }else {
                                 preciosEspecialesBean.setActive(false);
                             }
-                            preciosEspecialesDao.save(preciosEspecialesBean);
+                            specialPricesDao.save(preciosEspecialesBean);
                         }
                     }
                 }
@@ -1400,7 +1400,7 @@ public class HomeFragment extends Fragment {
 
 
             @Override
-            public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+            public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 progresshide();
             }
         });
@@ -1463,14 +1463,14 @@ public class HomeFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
 
-            final VisitasDao visitasDao = new VisitasDao();
+            final VisitsDao visitsDao = new VisitsDao();
             List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-            visitasBeanListBean = visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
-            final ClienteDao clienteDao = new ClienteDao();
+            visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+            final ClientDao clientDao = new ClientDao();
             EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
             if (vendedoresBean == null && getContext() != null) {
-                vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                vendedoresBean = new CacheInteractor().getSeller();
             }
 
             List<Visit> listaVisitas = new ArrayList<>();
@@ -1478,7 +1478,7 @@ public class HomeFragment extends Fragment {
                 Visit visita = new Visit();
                 visita.setFecha(item.getFecha());
                 visita.setHora(item.getHora());
-                final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente().getCuenta());
+                final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
                 visita.setCuenta(clienteBean.getCuenta());
                 visita.setLatidud(item.getLatidud());
                 visita.setLongitud(item.getLongitud());
@@ -1492,23 +1492,23 @@ public class HomeFragment extends Fragment {
                 listaVisitas.add(visita);
             }
 
-            VisitaJson visitaJsonRF = new VisitaJson();
-            visitaJsonRF.setVisitas(listaVisitas);
+            VisitJson visitaJsonRF = new VisitJson();
+            visitaJsonRF.setVisits(listaVisitas);
             String json = new Gson().toJson(visitaJsonRF);
             Log.d("SinEmpleados", json);
 
-            Call<VisitaJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
+            Call<VisitJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
 
-            loadVisitas.enqueue(new Callback<VisitaJson>() {
+            loadVisitas.enqueue(new Callback<VisitJson>() {
                 @Override
-                public void onResponse(Call<VisitaJson> call, Response<VisitaJson> response) {
+                public void onResponse(Call<VisitJson> call, Response<VisitJson> response) {
                     if (response.isSuccessful()) {
 
                     }
                 }
 
                 @Override
-                public void onFailure(Call<VisitaJson> call, Throwable t) {
+                public void onFailure(Call<VisitJson> call, Throwable t) {
 
                 }
             });
@@ -1521,9 +1521,9 @@ public class HomeFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getCobranzaFechaActual(Utils.fechaActual());
+            cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
 
             List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
@@ -1541,22 +1541,22 @@ public class HomeFragment extends Fragment {
                 listaCobranza.add(cobranza);
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
+            PaymentJson cobranzaJson = new PaymentJson();
+            cobranzaJson.setPayments(listaCobranza);
             String json = new Gson().toJson(cobranzaJson);
             Log.d("Sin Cobranza", json);
 
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
+            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
 
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
+            loadCobranza.enqueue(new Callback<PaymentJson>() {
                 @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                     if (response.isSuccessful()) {
                     }
                 }
 
                 @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
+                public void onFailure(Call<PaymentJson> call, Throwable t) {
 
                 }
             });
@@ -1571,7 +1571,7 @@ public class HomeFragment extends Fragment {
         protected String doInBackground(String... strings) {
 
             //Instancia la base de datos
-            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+            final SpecialPricesDao dao = new SpecialPricesDao();
 
             //Contiene la lista de precios de la db local
             List<PreciosEspecialesBean> listaDB = new ArrayList<>();
@@ -1600,23 +1600,23 @@ public class HomeFragment extends Fragment {
 
             }
 
-            final PrecioEspecialJson precioEspecialJson = new PrecioEspecialJson();
-            precioEspecialJson.setPrecios(listaPreciosServidor);
+            final SpecialPriceJson precioEspecialJson = new SpecialPriceJson();
+            precioEspecialJson.setPrices(listaPreciosServidor);
 
             String json = new Gson().toJson(precioEspecialJson);
             Log.d("Sinc especiales", json);
 
-            Call<PrecioEspecialJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-            sendPreciosServer.enqueue(new Callback<PrecioEspecialJson>() {
+            Call<SpecialPriceJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
+            sendPreciosServer.enqueue(new Callback<SpecialPriceJson>() {
                 @Override
-                public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+                public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
 
                     if (response.isSuccessful()) {
                     }
                 }
 
                 @Override
-                public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+                public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 }
             });
 
@@ -1629,9 +1629,9 @@ public class HomeFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
 
-            final ClienteDao clienteDao = new ClienteDao();
+            final ClientDao clientDao = new ClientDao();
             List<ClienteBean> listaClientesDB = new ArrayList<>();
-            listaClientesDB = clienteDao.getClientsByDay(Utils.fechaActual());
+            listaClientesDB = clientDao.getClientsByDay(Utils.fechaActual());
 
             List<Client> listaClientes = new ArrayList<>();
 
@@ -1688,22 +1688,22 @@ public class HomeFragment extends Fragment {
                 listaClientes.add(cliente);
             }
 
-            ClienteJson clienteRF = new ClienteJson();
-            clienteRF.setClientes(listaClientes);
+            ClientJson clienteRF = new ClientJson();
+            clienteRF.setClients(listaClientes);
             String json = new Gson().toJson(clienteRF);
             Log.d("Sinc Cientes", json);
 
-            Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+            Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-            loadClientes.enqueue(new Callback<ClienteJson>() {
+            loadClientes.enqueue(new Callback<ClientJson>() {
                 @Override
-                public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+                public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                     if (response.isSuccessful()) {
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ClienteJson> call, Throwable t) {
+                public void onFailure(Call<ClientJson> call, Throwable t) {
                 }
             });
             return null;

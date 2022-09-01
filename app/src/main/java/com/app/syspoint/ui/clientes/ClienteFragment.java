@@ -31,6 +31,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.PaymentJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -41,16 +43,14 @@ import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 import com.app.syspoint.repository.database.bean.CobranzaBean;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.ClientesRutaDao;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.json.CobranzaJson;
 import com.app.syspoint.models.json.RequestCobranza;
 import com.app.syspoint.ui.clientes.PreciosEspeciales.PreciosEspecialesActivity;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
@@ -150,7 +150,7 @@ public class ClienteFragment extends Fragment {
                     } else {
                         getData();
                     }
-                }, getActivity()).execute(), 100);
+                }).execute(), 100);
 
                 return true;
 
@@ -186,7 +186,7 @@ public class ClienteFragment extends Fragment {
 
     private void initRecyclerView(View root) {
 
-        mData = (List<ClienteBean>) (List<?>) new ClienteDao().list();
+        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
 
         if (mData.size() > 0) {
             lyt_clientes.setVisibility(View.GONE);
@@ -249,7 +249,7 @@ public class ClienteFragment extends Fragment {
                 EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                 if (vendedoresBean == null) {
-                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                    vendedoresBean = new CacheInteractor().getSeller();
                 }
 
                 if (vendedoresBean != null) {
@@ -284,7 +284,7 @@ public class ClienteFragment extends Fragment {
                             parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                             Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                         }
-                    }, getActivity()).execute(), 100);
+                    }).execute(), 100);
                 } else if (strName.compareToIgnoreCase("Ver Mapa") == 0) {
                     Intent intent = new Intent(Intent.ACTION_VIEW,
                             Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
@@ -303,19 +303,19 @@ public class ClienteFragment extends Fragment {
                     }
                 } else if (strName.compareToIgnoreCase("Agregar a ruta") == 0) {
 
-                        final ClientesRutaDao daoRuta = new ClientesRutaDao();
+                        final RuteClientDao daoRuta = new RuteClientDao();
                         final ClientesRutaBean bean = daoRuta.getClienteByCuentaCliente(clienteBean.getCuenta());
 
                         if (bean == null) {
 
-                            final ClientesRutaDao dao = new ClientesRutaDao();
+                            final RuteClientDao dao = new RuteClientDao();
                             final ClientesRutaBean beanCliente = dao.getClienteFirts();
 
                             long id = dao.getUltimoConsec();
 
                             if (beanCliente != null){
                                 final ClientesRutaBean clientesRutaBean = new ClientesRutaBean();
-                                final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
+                                final RuteClientDao ruteClientDao = new RuteClientDao();
 
                                 clientesRutaBean.setId(id);
                                 clientesRutaBean.setNombre_comercial(clienteBean.getNombre_comercial());
@@ -334,7 +334,7 @@ public class ClienteFragment extends Fragment {
                                 clientesRutaBean.setVisitado(0);
                                 clientesRutaBean.setLatitud(clienteBean.getLatitud());
                                 clientesRutaBean.setLongitud(clienteBean.getLongitud());
-                                clientesRutaDao.insert(clientesRutaBean);
+                                ruteClientDao.insert(clientesRutaBean);
 
                                 Toast.makeText(getContext(), "El cliente se agrego exitosamente", Toast.LENGTH_LONG).show();
                             }
@@ -373,12 +373,12 @@ public class ClienteFragment extends Fragment {
     private void donwloadCobranza(String cuenta) {
 
 
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final PaymentDao paymentDao = new PaymentDao();
         List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-        cobranzaBeanList = cobranzaDao.getDocumentsByCliente(cuenta);
+        cobranzaBeanList = paymentDao.getDocumentsByCliente(cuenta);
         for(CobranzaBean cob : cobranzaBeanList){
             if (cob.getCliente().compareToIgnoreCase(cuenta) == 0 && cob.getFecha().compareToIgnoreCase(Utils.fechaActual())!=0){
-                cobranzaDao.delete(cob);
+                paymentDao.delete(cob);
             }
         }
 
@@ -386,25 +386,25 @@ public class ClienteFragment extends Fragment {
         progressDialog.setMessage("Espere un momento obteniendo datos....");
         progressDialog.show();
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(cuenta);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(cuenta);
         RequestCobranza requestCobranza = new RequestCobranza();
         requestCobranza.setCuenta(clienteBean.getCuenta());
 
         //Obtiene la respuesta
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
+        Call<PaymentJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
+        getCobranza.enqueue(new Callback<PaymentJson>() {
             @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+            public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Payment item : response.body().getCobranzas()) {
+                    PaymentDao paymentDao = new PaymentDao();
+                    for (Payment item : response.body().getPayments()) {
 
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
+                        CobranzaBean cobranzaBean = paymentDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
                             final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
+                            final PaymentDao paymentDao1 = new PaymentDao();
                             cobranzaBean1.setCobranza(item.getCobranza());
                             cobranzaBean1.setCliente(item.getCuenta());
                             cobranzaBean1.setImporte(item.getImporte());
@@ -416,7 +416,7 @@ public class ClienteFragment extends Fragment {
                             cobranzaBean1.setHora(item.getHora());
                             cobranzaBean1.setEmpleado(item.getIdentificador());
                             cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
+                            paymentDao1.insert(cobranzaBean1);
                         } else {
                             cobranzaBean.setCobranza(item.getCobranza());
                             cobranzaBean.setCliente(item.getCuenta());
@@ -429,7 +429,7 @@ public class ClienteFragment extends Fragment {
                             cobranzaBean.setHora(item.getHora());
                             cobranzaBean.setEmpleado(item.getIdentificador());
                             cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
+                            paymentDao.save(cobranzaBean);
 
                         }
                     }
@@ -442,7 +442,7 @@ public class ClienteFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
+            public void onFailure(Call<PaymentJson> call, Throwable t) {
                 progressDialog.dismiss();
                 HashMap<String, String> parametros = new HashMap<>();
                 parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
@@ -486,10 +486,10 @@ public class ClienteFragment extends Fragment {
                 if (review.isEmpty()) {
                     Toast.makeText(getContext(), "Ingrese un recordatorio", Toast.LENGTH_SHORT).show();
                 } else {
-                    ClienteDao clienteDao = new ClienteDao();
+                    ClientDao clientDao = new ClientDao();
                     clienteBean.setRecordatorio(review);
                     clienteBean.setDate_sync(Utils.fechaActual());
-                    clienteDao.save(clienteBean);
+                    clientDao.save(clienteBean);
                     testLoadClientes(String.valueOf(clienteBean.getId()));
                 }
 
@@ -505,9 +505,9 @@ public class ClienteFragment extends Fragment {
 
     private void testLoadClientes(String idCliente) {
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -563,16 +563,16 @@ public class ClienteFragment extends Fragment {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("SinEmpleados", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                     progresshide();
 
@@ -580,7 +580,7 @@ public class ClienteFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
                 progresshide();
             }
         });
@@ -596,24 +596,24 @@ public class ClienteFragment extends Fragment {
     private void getData() {
 
         progressshow();
-        Call<ClienteJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
-        getClientes.enqueue(new Callback<ClienteJson>() {
+        Call<ClientJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
+        getClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
 
                 if (response.isSuccessful()) {
                     progresshide();
 
-                    for (Client item : response.body().getClientes()) {
+                    for (Client item : response.body().getClients()) {
 
                         //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
+                        final ClientDao dao = new ClientDao();
+                        final ClienteBean bean = dao.getClientByAccount(item.getCuenta());
 
                         if (bean == null) {
 
                             final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
+                            final ClientDao clientDao = new ClientDao();
                             clienteBean.setNombre_comercial(item.getNombreComercial());
                             clienteBean.setCalle(item.getCalle());
                             clienteBean.setNumero(item.getNumero());
@@ -655,7 +655,7 @@ public class ClienteFragment extends Fragment {
                             clienteBean.setLimite_credito(item.getLimite_credito());
                             clienteBean.setSaldo_credito(item.getSaldo_credito());
 
-                            clienteDao.insert(clienteBean);
+                            clientDao.insert(clienteBean);
                             mData.add(clienteBean);
                             mAdapter.setClients(mData);
 
@@ -670,7 +670,7 @@ public class ClienteFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
                 progresshide();
             }
         });
@@ -687,7 +687,7 @@ public class ClienteFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mData = (List<ClienteBean>) (List<?>) new ClienteDao().list();
+        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
         mAdapter.setClients(mData);
 
         if (mData.size() > 0) {

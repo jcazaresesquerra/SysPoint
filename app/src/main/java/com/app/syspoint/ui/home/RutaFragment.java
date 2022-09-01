@@ -11,9 +11,9 @@ import androidx.fragment.app.Fragment;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.ClientesRutaDao;
-import com.app.syspoint.repository.database.dao.RuteoDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.utils.Utils;
 
@@ -55,14 +55,14 @@ public class RutaFragment extends Fragment {
                             public void onClick() {
 
                                 //Clientes normales
-                                ClienteDao clienteDao = new ClienteDao();
-                                clienteDao.updateVisitado();
+                                ClientDao clientDao = new ClientDao();
+                                clientDao.updateVisited();
 
-                                ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                clientesRutaDao.clear();
+                                RuteClientDao ruteClientDao = new RuteClientDao();
+                                ruteClientDao.clear();
 
-                                RuteoDao ruteoDao = new RuteoDao();
-                                ruteoDao.clear();
+                                RoutingDao routingDao = new RoutingDao();
+                                routingDao.clear();
 
                                 RuteoBean ruteoBean = new RuteoBean();
 
@@ -85,7 +85,7 @@ public class RutaFragment extends Fragment {
                                 ruteoBean.setFecha(Utils.fechaActual());
                                 ruteoBean.setRuta(ruta);
 
-                                ruteoDao.insert(ruteoBean);
+                                routingDao.insert(ruteoBean);
                                 Toast.makeText(getActivity(), "Dia: " + dia + " Ruta: " + ruta, Toast.LENGTH_LONG).show();
 
                                 dialog.dismiss();

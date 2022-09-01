@@ -31,9 +31,9 @@ import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.ClientesRutaDao;
-import com.app.syspoint.repository.database.dao.RuteoDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.ui.dialogs.DialogOptionsClients;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
@@ -162,8 +162,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void updateLastLocation(boolean move) {
 
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
 
@@ -187,7 +187,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             //if (ruteoBean.getDia() == 7) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
             //}
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
 
 
         }
@@ -213,8 +213,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     void getDataRuteo(){
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
 
@@ -239,7 +239,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
            //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
            //}
 
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
         }
 
     }
@@ -277,8 +277,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta( marker.getSnippet());
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount( marker.getSnippet());
 
 
         final PrettyDialog dialog = new PrettyDialog(this);

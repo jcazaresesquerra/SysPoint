@@ -21,19 +21,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.models.json.SpecialPriceJson;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
 import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
-import com.app.syspoint.repository.database.dao.ProductoDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.json.PrecioEspecialJson;
 import com.app.syspoint.models.json.RequestClients;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
@@ -69,8 +69,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         Intent intent = getIntent();
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
         if (clienteBean != null) {
             cuentaCliente = clienteBean.getCuenta();
@@ -92,41 +92,41 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
 
-            ClienteDao clienteDao = new ClienteDao();
-            ClienteBean clienteBean = clienteDao.getClienteByCuenta(cuentaCliente);
+            ClientDao clientDao = new ClientDao();
+            ClienteBean clienteBean = clientDao.getClientByAccount(cuentaCliente);
 
             RequestClients requestPrices = new RequestClients();
             requestPrices.setCuenta(clienteBean.getCuenta());
 
-            Call<PrecioEspecialJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
-            preciosJson.enqueue(new Callback<PrecioEspecialJson>() {
+            Call<SpecialPriceJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
+            preciosJson.enqueue(new Callback<SpecialPriceJson>() {
                 @Override
-                public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+                public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
                     if (response.isSuccessful()) {
-                        for (Price item : response.body().getPrecios()) {
+                        for (Price item : response.body().getPrices()) {
 
                             //Para obtener los datos del cliente
-                            final ClienteDao clienteDao = new ClienteDao();
-                            final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
+                            final ClientDao clientDao = new ClientDao();
+                            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente());
                             if (clienteBean == null) {
                                 return;
                             }
 
                             //Para obtener los datos del producto
-                            final ProductoDao productoDao = new ProductoDao();
-                            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+                            final ProductDao productDao = new ProductDao();
+                            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
                             if (productoBean == null) {
                                 return;
                             }
 
-                            final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                            final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+                            final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+                            final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                             //Si no hay precios especiales entonces crea un precio
                             if (preciosEspecialesBean == null) {
 
-                                final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                                final SpecialPricesDao dao = new SpecialPricesDao();
                                 final PreciosEspecialesBean bean = new PreciosEspecialesBean();
                                 bean.setCliente(clienteBean.getCuenta());
                                 bean.setArticulo(productoBean.getArticulo());
@@ -148,7 +148,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                                 }else {
                                     preciosEspecialesBean.setActive(false);
                                 }
-                                preciosEspecialesDao.save(preciosEspecialesBean);
+                                specialPricesDao.save(preciosEspecialesBean);
                             }
                         }
                     }
@@ -156,7 +156,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
 
                 @Override
-                public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+                public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 }
             });
 
@@ -256,7 +256,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         mData = new ArrayList<>();
 
         //Poner el filtro por clinete
-        mData = (List<PreciosEspecialesBean>) (List<?>) new PreciosEspecialesDao().getListaPrecioPorCliente(cuentaCliente);
+        mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -275,7 +275,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
             public void onItemClick(int position) {
 
                 PreciosEspecialesBean bean = mData.get(position);
-                PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                SpecialPricesDao dao = new SpecialPricesDao();
                 //Cremos laa pregunta
 
                 final PrettyDialog dialog = new PrettyDialog(PreciosEspecialesActivity.this);
@@ -302,7 +302,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                                 } else {
                                     enviaPrecioServidor();
                                 }
-                                mData = (List<PreciosEspecialesBean>) (List<?>) new PreciosEspecialesDao().getListaPrecioPorCliente(clienteID);
+                                mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
                                 mAdapter.setPrecios(mData);
                                 dialog.dismiss();
 
@@ -327,7 +327,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mData = (List<PreciosEspecialesBean>) (List<?>) new PreciosEspecialesDao().getListaPrecioPorCliente(clienteID);
+        mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
         mAdapter.setPrecios(mData);
         goneBackground();
     }
@@ -347,7 +347,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         progressshow();
 
         //Instancia la base de datos
-        final PreciosEspecialesDao dao =  new PreciosEspecialesDao();
+        final SpecialPricesDao dao =  new SpecialPricesDao();
 
         //Contiene la lista de precios de la db local
         List<PreciosEspecialesBean> listaDB = new ArrayList<>();
@@ -376,16 +376,16 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
         }
 
-        final PrecioEspecialJson precioEspecialJson = new PrecioEspecialJson();
-        precioEspecialJson.setPrecios(listaPreciosServidor);
+        final SpecialPriceJson precioEspecialJson = new SpecialPriceJson();
+        precioEspecialJson.setPrices(listaPreciosServidor);
 
         String json = new Gson().toJson(precioEspecialJson);
         Log.d("Sinc especiales", json);
 
-        Call<PrecioEspecialJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-        sendPreciosServer.enqueue(new Callback<PrecioEspecialJson>() {
+        Call<SpecialPriceJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
+        sendPreciosServer.enqueue(new Callback<SpecialPriceJson>() {
             @Override
-            public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+            public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
 
                 if (response.isSuccessful()) {
                     progresshide();
@@ -394,7 +394,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                 }
             }
             @Override
-            public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+            public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 progresshide();
                 Toast.makeText(PreciosEspecialesActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
             }

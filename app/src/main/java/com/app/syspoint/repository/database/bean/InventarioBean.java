@@ -1,14 +1,11 @@
 package com.app.syspoint.repository.database.bean;
 
-import com.app.syspoint.db.DaoSession;
-
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.ToOne;
-
 
 @Entity(nameInDb = "inventario")
 public class InventarioBean extends Bean {
@@ -161,17 +158,17 @@ public class InventarioBean extends Bean {
         }
         myDao.update(this);
     }
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 187329257)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getInventarioBeanDao() : null;
-    }
     public String getArticulo_clave() {
         return this.articulo_clave;
     }
     public void setArticulo_clave(String articulo_clave) {
         this.articulo_clave = articulo_clave;
+    }
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 187329257)
+    public void __setDaoSession(DaoSession daoSession) {
+        this.daoSession = daoSession;
+        myDao = daoSession != null ? daoSession.getInventarioBeanDao() : null;
     }
 
    

@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.PaymentJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -33,17 +35,15 @@ import com.app.syspoint.repository.database.bean.CobdetBean;
 import com.app.syspoint.repository.database.bean.CobranzaBean;
 import com.app.syspoint.repository.database.bean.CobrosBean;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
-import com.app.syspoint.repository.database.dao.CobranzaModelDao;
-import com.app.syspoint.repository.database.dao.CobrosDao;
-import com.app.syspoint.domentos.TicketAbono;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.PaymentModelDao;
+import com.app.syspoint.repository.database.dao.ChargesDao;
+import com.app.syspoint.doments.DepositTicket;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.json.CobranzaJson;
 import com.app.syspoint.models.json.RequestCobranza;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
@@ -88,16 +88,16 @@ public class CobranzaActivity extends AppCompatActivity {
 
     private void eliminaPartidas() {
 
-        List<CobranzaBean> listaDocumentosSeleccionados = new CobranzaDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
+        List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
 
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final PaymentDao paymentDao = new PaymentDao();
         for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
-            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(cobranzaItems.getCobranza());
+            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
             cobranzaBean.setIsCheck(false);
-            cobranzaDao.save(cobranzaBean);
+            paymentDao.save(cobranzaBean);
         }
 
-        CobranzaModelDao dao = new CobranzaModelDao();
+        PaymentModelDao dao = new PaymentModelDao();
         dao.clear();
     }
 
@@ -117,18 +117,18 @@ public class CobranzaActivity extends AppCompatActivity {
     private void donwloadCobranza() {
         RequestCobranza requestCobranza = new RequestCobranza();
         requestCobranza.setCuenta(clienteGlobal);
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
+        Call<PaymentJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
+        getCobranza.enqueue(new Callback<PaymentJson>() {
             @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+            public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                 if (response.isSuccessful()) {
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Payment item : response.body().getCobranzas()) {
+                    PaymentDao paymentDao = new PaymentDao();
+                    for (Payment item : response.body().getPayments()) {
 
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
+                        CobranzaBean cobranzaBean = paymentDao.getByCobranza(item.getCobranza());
                         if (cobranzaBean == null) {
                             final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
+                            final PaymentDao paymentDao1 = new PaymentDao();
                             cobranzaBean1.setCobranza(item.getCobranza());
                             cobranzaBean1.setCliente(item.getCuenta());
                             cobranzaBean1.setImporte(item.getImporte());
@@ -140,7 +140,7 @@ public class CobranzaActivity extends AppCompatActivity {
                             cobranzaBean1.setHora(item.getHora());
                             cobranzaBean1.setEmpleado(item.getIdentificador());
                             cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
+                            paymentDao1.insert(cobranzaBean1);
                         } else {
                             cobranzaBean.setCobranza(item.getCobranza());
                             cobranzaBean.setCliente(item.getCuenta());
@@ -153,7 +153,7 @@ public class CobranzaActivity extends AppCompatActivity {
                             cobranzaBean.setHora(item.getHora());
                             cobranzaBean.setEmpleado(item.getIdentificador());
                             cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
+                            paymentDao.save(cobranzaBean);
                         }
                     }
                     //Toast.makeText(Ma, "Cobranza sincronizada", Toast.LENGTH_LONG).show();
@@ -161,7 +161,7 @@ public class CobranzaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
+            public void onFailure(Call<PaymentJson> call, Throwable t) {
 
             }
         });
@@ -210,7 +210,7 @@ public class CobranzaActivity extends AppCompatActivity {
 
                 try {
                     //Eliminamos el cobro temporal para que no se guarde en memoria
-                    final CobranzaModelDao dao = new CobranzaModelDao();
+                    final PaymentModelDao dao = new PaymentModelDao();
                     dao.clear();
                 } catch (Exception e) {
                     //Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
@@ -272,11 +272,11 @@ public class CobranzaActivity extends AppCompatActivity {
                 Utils.addActivity2Stack(CobranzaActivity.this);
 
 
-                    final CobrosDao cobrosDao = new CobrosDao();
+                    final ChargesDao chargesDao = new ChargesDao();
 
 
-                    final ClienteDao clientesDao = new ClienteDao();
-                    final ClienteBean clienteBean = clientesDao.getClienteByCuenta(clienteGlobal);
+                    final ClientDao clientesDao = new ClientDao();
+                    final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
 
                     if (clienteBean == null) {
                         final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);
@@ -307,7 +307,7 @@ public class CobranzaActivity extends AppCompatActivity {
                     EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                     if (vendedoresBean == null) {
-                        vendedoresBean = new CacheInteractor(CobranzaActivity.this).getSeller();
+                        vendedoresBean = new CacheInteractor().getSeller();
                     }
 
                     if (vendedoresBean == null) {
@@ -338,8 +338,8 @@ public class CobranzaActivity extends AppCompatActivity {
                     for (int x = 0; x < partidas.size(); x++) {
 
                         //Actualiza la cobranza
-                        final CobranzaDao cobranzaDao = new CobranzaDao();
-                        final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(partidas.get(x).getCobranza());
+                        final PaymentDao paymentDao = new PaymentDao();
+                        final CobranzaBean cobranzaBean = paymentDao.getByCobranza(partidas.get(x).getCobranza());
 
                         if (cobranzaBean != null) {
                             if (cobranzaBean.getSaldo() == partidas.get(x).getAcuenta()) {
@@ -351,7 +351,7 @@ public class CobranzaActivity extends AppCompatActivity {
                                 cobranzaBean.setAbono(true);
                             }
                             cobranzaBean.setFecha(Utils.fechaActual());
-                            cobranzaDao.save(cobranzaBean);
+                            paymentDao.save(cobranzaBean);
                         }
 
                         final CobdetBean cobdetBean = new CobdetBean();
@@ -368,7 +368,7 @@ public class CobranzaActivity extends AppCompatActivity {
                     }
 
                     CobrosBean cobrosBean = new CobrosBean();
-                    int folioCobranza = cobrosDao.getUltimoFolio();
+                    int folioCobranza = chargesDao.getUltimoFolio();
                     cobrosBean.setCobro(folioCobranza);
 
                     //Creamos el encabezado de la venta
@@ -382,7 +382,7 @@ public class CobranzaActivity extends AppCompatActivity {
                     cobrosBean.setSinc(0);
 
                     //Creamos el documento con la relacion de sus documentos
-                    cobrosDao.CreaCobro(cobrosBean, lista);
+                    chargesDao.createCharge(cobrosBean, lista);
 
                     ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
                     progressDialog.setMessage("Espere un momento");
@@ -396,8 +396,8 @@ public class CobranzaActivity extends AppCompatActivity {
 
                                 String ventaID = String.valueOf(cobrosBean.getId());
 
-                                final CobranzaDao cobranzaDao = new CobranzaDao();
-                                double nuevoSaldo = cobranzaDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+                                final PaymentDao paymentDao = new PaymentDao();
+                                double nuevoSaldo = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
 
                                 //Actualizamos el saldo del cliente
                                 clienteBean.setSaldo_credito(nuevoSaldo);
@@ -405,16 +405,16 @@ public class CobranzaActivity extends AppCompatActivity {
                                 clientesDao.save(clienteBean);
 
                                 //Creamos el template del timbre
-                                TicketAbono ticketAbono = new TicketAbono(CobranzaActivity.this);
-                                ticketAbono.setCobrosBean(cobrosBean);
-                                ticketAbono.template();
+                                DepositTicket depositTicket = new DepositTicket();
+                                depositTicket.setBean(cobrosBean);
+                                depositTicket.template();
 
-                                String ticket = ticketAbono.getDocumento();
+                                String ticket = depositTicket.getDocument();
 
                                 testLoadClientes(String.valueOf(clienteBean.getId()));
 
                                 //Elimina las partidas
-                                final CobranzaModelDao dao = new CobranzaModelDao();
+                                final PaymentModelDao dao = new PaymentModelDao();
                                 dao.clear();
                                 Intent intent = new Intent(CobranzaActivity.this, ImprimeAbonoActivity.class);
                                 intent.putExtra("ticket", ticket);
@@ -426,7 +426,7 @@ public class CobranzaActivity extends AppCompatActivity {
                                     e.printStackTrace();
                             }
                         }
-                        }, CobranzaActivity.this).execute(), 100);
+                        }).execute(), 100);
 
             }
         }).addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
@@ -447,9 +447,9 @@ public class CobranzaActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
+            cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
             List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
@@ -467,23 +467,23 @@ public class CobranzaActivity extends AppCompatActivity {
                 listaCobranza.add(cobranza);
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
+            PaymentJson cobranzaJson = new PaymentJson();
+            cobranzaJson.setPayments(listaCobranza);
             String json = new Gson().toJson(cobranzaJson);
             Log.d("Sin Cobranza", json);
 
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
+            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
 
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
+            loadCobranza.enqueue(new Callback<PaymentJson>() {
                 @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                     if (response.isSuccessful()) {
                         Toast.makeText(CobranzaActivity.this, "Cobranza sincroniza", Toast.LENGTH_LONG).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
+                public void onFailure(Call<PaymentJson> call, Throwable t) {
 
                 }
             });
@@ -492,9 +492,9 @@ public class CobranzaActivity extends AppCompatActivity {
     }
 
     private void testLoadClientes(String idCliente) {
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -550,22 +550,22 @@ public class CobranzaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("ClientesCobranza", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                 }
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
             }
         });
     }
@@ -619,8 +619,8 @@ public class CobranzaActivity extends AppCompatActivity {
 
         try {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(cobranzaSeleccionada);
+            final PaymentDao paymentDao = new PaymentDao();
+            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaSeleccionada);
 
             int venta = cobranzaBean.getVenta();
             String cobranza = cobranzaBean.getCobranza();
@@ -641,7 +641,7 @@ public class CobranzaActivity extends AppCompatActivity {
 
 
         final CobranzaModel item = new CobranzaModel();
-        final CobranzaModelDao dao = new CobranzaModelDao();
+        final PaymentModelDao dao = new PaymentModelDao();
         item.setVenta(venta);
         item.setCobranza(cobranza);
         item.setImporte(importe);
@@ -698,12 +698,12 @@ public class CobranzaActivity extends AppCompatActivity {
 
         try {
 
-            final ClienteDao clientesDao = new ClienteDao();
-            final ClienteBean clientesBean = clientesDao.getClienteByCuenta(clienteGlobal);
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final ClientDao clientesDao = new ClientDao();
+            final ClienteBean clientesBean = clientesDao.getClientByAccount(clienteGlobal);
+            final PaymentDao paymentDao = new PaymentDao();
 
             if (clientesBean != null) {
-                double saldoDocumentos = cobranzaDao.getTotalSaldoDocumentosCliente(clientesBean.getCuenta());
+                double saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.getCuenta());
                 clientesBean.setSaldo_credito(saldoDocumentos);
                 clientesDao.save(clientesBean);
                 testLoadClientes(String.valueOf(clientesBean.getId()));
@@ -732,7 +732,7 @@ public class CobranzaActivity extends AppCompatActivity {
     private void initRecyclerViews() {
 
         partidas = new ArrayList<>();
-        partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+        partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
 
         /*** ----- Obtiene el recyclador ------ ****/
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_cobranza);
@@ -763,9 +763,9 @@ public class CobranzaActivity extends AppCompatActivity {
                         .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
                             @Override
                             public void onClick() {
-                                CobranzaModelDao dao = new CobranzaModelDao();
+                                PaymentModelDao dao = new PaymentModelDao();
                                 dao.delete(item);
-                                partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+                                partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
                                 mAdapter.setItems(partidas);
                                 CalcularImportes();
                                 dialog.dismiss();
@@ -789,7 +789,7 @@ public class CobranzaActivity extends AppCompatActivity {
     }
 
     private void setData() {
-        partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+        partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
         mAdapter.setItems(partidas);
         CalcularImportes();
     }

@@ -20,9 +20,9 @@ import androidx.core.content.FileProvider;
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.ResponseVenta;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
+import com.app.syspoint.models.ResponseVenta;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 

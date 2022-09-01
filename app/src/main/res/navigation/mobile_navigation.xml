@@ -15,14 +15,14 @@
     <fragment
         android:screenOrientation="portrait"
         android:id="@+id/nav_empleado"
-        android:name="com.app.syspoint.ui.empleados.EmpleadoFragment"
+        android:name="com.app.syspoint.ui.employees.EmployeeFragment"
         android:label="@string/menu_empleados"
-        tools:layout="@layout/fragment_empleado" />
+        tools:layout="@layout/fragment_employee" />
 
     <fragment
         android:screenOrientation="portrait"
         android:id="@+id/nav_producto"
-        android:name="com.app.syspoint.ui.productos.ProductoFragment"
+        android:name="com.app.syspoint.ui.products.ProductFragment"
         android:label="@string/menu_productos"
         tools:layout="@layout/fragment_producto" />
 
@@ -60,9 +60,9 @@
     <fragment
         android:screenOrientation="portrait"
         android:id="@+id/nav_inventario"
-        android:name="com.app.syspoint.ui.inventarios.InventarioFragment"
+        android:name="com.app.syspoint.ui.stock.StockFragment"
         android:label="Inventario"
-        tools:layout="@layout/activity_inventario" />
+        tools:layout="@layout/fragment_stock" />
 
 
 

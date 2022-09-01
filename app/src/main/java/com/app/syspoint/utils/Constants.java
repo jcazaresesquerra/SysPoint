@@ -6,5 +6,11 @@ public class Constants {
     public static final String BASE_URL = "https://api.ocsistems.com/public/api/";
     public static int permission_Read_data = 789;
     public static boolean solictaRuta = false;
+
+    public static String newLine = "\n";
+    public static String divider = "****************";
+
+
+    public static int REQUEST_PERMISSION_CALL = 992;
 }
 

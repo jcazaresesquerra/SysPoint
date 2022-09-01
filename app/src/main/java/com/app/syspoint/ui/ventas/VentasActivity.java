@@ -45,11 +45,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.SpecialPriceJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.VentasModelBean;
+import com.app.syspoint.repository.database.bean.VentasModelBean;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.ClientesRutaBean;
@@ -59,24 +61,21 @@ import com.app.syspoint.repository.database.bean.PartidasBean;
 import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
 import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.ClientesRutaDao;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
-import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
-import com.app.syspoint.repository.database.dao.ProductoDao;
-import com.app.syspoint.repository.database.dao.VentasDao;
-import com.app.syspoint.repository.database.dao.VentasModelDao;
-import com.app.syspoint.domentos.TicketVenta;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.database.dao.SellsDao;
+import com.app.syspoint.repository.database.dao.SellsModelDao;
+import com.app.syspoint.doments.SellTicket;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.json.PrecioEspecialJson;
 import com.app.syspoint.models.json.RequestClients;
-import com.app.syspoint.templates.ViewPDFActivity;
-import com.app.syspoint.ui.PreCapturaActivity;
-import com.app.syspoint.ui.productos.ListaProductosActivity;
+import com.app.syspoint.ui.templates.ViewPDFActivity;
+import com.app.syspoint.ui.precaptura.PreCapturaActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -147,41 +146,41 @@ public class VentasActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
 
-            ClienteDao clienteDao = new ClienteDao();
-            ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+            ClientDao clientDao = new ClientDao();
+            ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
             RequestClients requestPrices = new RequestClients();
             requestPrices.setCuenta(clienteBean.getCuenta());
 
-            Call<PrecioEspecialJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
-            preciosJson.enqueue(new Callback<PrecioEspecialJson>() {
+            Call<SpecialPriceJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
+            preciosJson.enqueue(new Callback<SpecialPriceJson>() {
                 @Override
-                public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+                public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
                     if (response.isSuccessful()) {
-                        for (Price item : response.body().getPrecios()) {
+                        for (Price item : response.body().getPrices()) {
 
                             //Para obtener los datos del cliente
-                            final ClienteDao clienteDao = new ClienteDao();
-                            final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
+                            final ClientDao clientDao = new ClientDao();
+                            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente());
                             if (clienteBean == null) {
                                 return;
                             }
 
                             //Para obtener los datos del producto
-                            final ProductoDao productoDao = new ProductoDao();
-                            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+                            final ProductDao productDao = new ProductDao();
+                            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
                             if (productoBean == null) {
                                 return;
                             }
 
-                            final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                            final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+                            final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+                            final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                             //Si no hay precios especiales entonces crea un precio
                             if (preciosEspecialesBean == null) {
 
-                                final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                                final SpecialPricesDao dao = new SpecialPricesDao();
                                 final PreciosEspecialesBean bean = new PreciosEspecialesBean();
                                 bean.setCliente(clienteBean.getCuenta());
                                 bean.setArticulo(productoBean.getArticulo());
@@ -202,7 +201,7 @@ public class VentasActivity extends AppCompatActivity {
                                 }else {
                                     preciosEspecialesBean.setActive(false);
                                 }
-                                preciosEspecialesDao.save(preciosEspecialesBean);
+                                specialPricesDao.save(preciosEspecialesBean);
                             }
                         }
                     }
@@ -210,7 +209,7 @@ public class VentasActivity extends AppCompatActivity {
 
 
                 @Override
-                public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+                public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 }
             });
 
@@ -223,14 +222,14 @@ public class VentasActivity extends AppCompatActivity {
         Intent intent = getIntent();
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
 
-        ClienteDao clienteDao = new ClienteDao();
+        ClientDao clientDao = new ClientDao();
 
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
-        CobranzaDao cobranzaDao1 = new CobranzaDao();
-        double saldoCliente =  cobranzaDao1.getSaldoByCliente(clienteBean.getCuenta());
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+        PaymentDao paymentDao1 = new PaymentDao();
+        double saldoCliente =  paymentDao1.getSaldoByCliente(clienteBean.getCuenta());
         clienteBean.setSaldo_credito(saldoCliente);
         clienteBean.setDate_sync(Utils.fechaActual());
-        clienteDao.save(clienteBean);
+        clientDao.save(clienteBean);
 
 
         imageViewVentas = findViewById(R.id.img_btn_finish_sale);
@@ -293,14 +292,14 @@ public class VentasActivity extends AppCompatActivity {
 
                     double saldo_disponible = 0;
 
-                    ClienteDao clienteDao = new ClienteDao();
-                    ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                    ClientDao clientDao = new ClientDao();
+                    ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
                     if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
                         if (clienteBean != null) {
                             if (clienteBean.getIs_credito()) {
                                 if (clienteBean.getMatriz() != null && clienteBean.getMatriz().length() > 0) {
-                                    ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(clienteBean.getMatriz());
+                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                                     if (clienteMatriz != null) {
                                         isCreditMatriz = true;
                                         cuentaMatriz = clienteMatriz.getCuenta();
@@ -387,17 +386,17 @@ public class VentasActivity extends AppCompatActivity {
 
                                     final ArrayList<PartidasBean> lista = new ArrayList<>();
 
-                                    final VentasDao ventasDao = new VentasDao();
+                                    final SellsDao sellsDao = new SellsDao();
                                     final VentasBean ventasBean = new VentasBean();
 
 
-                                    int ultimoFolio = ventasDao.getUltimoFolio();
+                                    int ultimoFolio = sellsDao.getUltimoFolio();
 
-                                    final ProductoDao productoDao = new ProductoDao();
+                                    final ProductDao productDao = new ProductDao();
                                     //Recorremos las partidas
                                     for (int x = 0; x < mData.size(); x++) {
                                         //Validamos si el articulo existe en la base de datos
-                                        final ProductoBean productosBean = productoDao.getProductoByArticulo(mData.get(x).getArticulo());
+                                        final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
                                         final PartidasBean partida = new PartidasBean();
                                         partida.setArticulo(productosBean);
                                         partida.setCantidad(mData.get(x).getCantidad());
@@ -413,13 +412,13 @@ public class VentasActivity extends AppCompatActivity {
                                     }
 
                                     //Le indicamos al sistema que el cliente ya se ah visitado
-                                    final ClienteDao clienteDao = new ClienteDao();
-                                    final ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                                    final ClientDao clientDao = new ClientDao();
+                                    final ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
                                     final String clienteID = String.valueOf(clienteBean.getId());
                                     clienteBean.setVisitado(1);
                                     clienteBean.setVisitasNoefectivas(0);
                                     clienteBean.setDate_sync(Utils.fechaActual());
-                                    clienteDao.save(clienteBean);
+                                    clientDao.save(clienteBean);
 
                                     ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
                                     progressDialog.setMessage("Espere un momento");
@@ -429,18 +428,18 @@ public class VentasActivity extends AppCompatActivity {
                                         progressDialog.dismiss();
                                         if (connected) testLoadClientes(String.valueOf(clienteBean.getId()));
 
-                                        final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                        final ClientesRutaBean clientesRutaBean = clientesRutaDao.getClienteByCuentaCliente(idCliente);
+                                        final RuteClientDao ruteClientDao = new RuteClientDao();
+                                        final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
                                         if (clientesRutaBean != null) {
                                             clientesRutaBean.setVisitado(1);
-                                            clientesRutaDao.save(clientesRutaBean);
+                                            ruteClientDao.save(clientesRutaBean);
                                         }
 
                                         //Obtiene el nombre del vendedor
                                         EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                                         if (vendedoresBean == null) {
-                                            vendedoresBean = new CacheInteractor(VentasActivity.this).getSeller();
+                                            vendedoresBean = new CacheInteractor().getSeller();
                                         }
 
                                         ventasBean.setTipo_doc("TIK");
@@ -474,7 +473,7 @@ public class VentasActivity extends AppCompatActivity {
                                             //Si la cobranza es de matriz entonces creamos la cobranza a matriz
                                             if (isCreditMatriz) {
                                                 CobranzaBean cobranzaBean = new CobranzaBean();
-                                                CobranzaDao cobranzaDao = new CobranzaDao();
+                                                PaymentDao paymentDao = new PaymentDao();
                                                 cobranzaBean.setCobranza(ticketRamdom);
                                                 cobranzaBean.setCliente(cuentaMatriz);
                                                 cobranzaBean.setImporte(totalVenta);
@@ -488,25 +487,25 @@ public class VentasActivity extends AppCompatActivity {
                                                     cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
                                                 }
                                                 cobranzaBean.setAbono(false);
-                                                cobranzaDao.save(cobranzaBean);
+                                                paymentDao.save(cobranzaBean);
 
                                                 //Actualizamos el documento de la venta con el de la cobranza
                                                 ventasBean.setCobranza(ticketRamdom);
                                                 //ventasDao.save(ventasBean);
 
                                                 //Actualizamos el saldo del cliente
-                                                ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(cuentaMatriz);
+                                                ClienteBean clienteMatriz = clientDao.getClientByAccount(cuentaMatriz);
                                                 double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
                                                 clienteMatriz.setSaldo_credito(saldoNuevo);
                                                 clienteMatriz.setDate_sync(Utils.fechaActual());
 
-                                                clienteDao.save(clienteMatriz);
+                                                clientDao.save(clienteMatriz);
 
                                                 if (connected) testLoadClientes(String.valueOf(clienteMatriz.getId()));
 
                                             } else {
                                                 CobranzaBean cobranzaBean = new CobranzaBean();
-                                                CobranzaDao cobranzaDao = new CobranzaDao();
+                                                PaymentDao paymentDao = new PaymentDao();
                                                 cobranzaBean.setCobranza(ticketRamdom);
                                                 cobranzaBean.setCliente(clienteBean.getCuenta());
                                                 cobranzaBean.setImporte(totalVenta);
@@ -519,7 +518,7 @@ public class VentasActivity extends AppCompatActivity {
                                                 if (vendedoresBean != null) {
                                                     cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
                                                 }
-                                                cobranzaDao.save(cobranzaBean);
+                                                paymentDao.save(cobranzaBean);
 
                                                 //Actualizamos el documento de la venta con el de la cobranza
                                                 ventasBean.setCobranza(ticketRamdom);
@@ -531,26 +530,26 @@ public class VentasActivity extends AppCompatActivity {
                                                 clienteBean.setVisitasNoefectivas(0);
                                                 clienteBean.setDate_sync(Utils.fechaActual());
 
-                                                clienteDao.save(clienteBean);
+                                                clientDao.save(clienteBean);
 
                                                 if (connected) testLoadClientes(clienteID);
                                             }
                                         }
 
-                                        ventasDao.save(ventasBean);
+                                        sellsDao.save(ventasBean);
 
 
                                         //Creamos la venta
-                                        ventasDao.creaVenta(ventasBean, lista);
+                                        sellsDao.creaVenta(ventasBean, lista);
 
                                         String ventaID = String.valueOf(ventasBean.getVenta());
 
                                         //Creamos el template del timbre
-                                        TicketVenta ticketVenta = new TicketVenta(VentasActivity.this);
-                                        ticketVenta.setVentasBean(ventasBean);
-                                        ticketVenta.template();
+                                        SellTicket sellTicket = new SellTicket(VentasActivity.this);
+                                        sellTicket.setBean(ventasBean);
+                                        sellTicket.template();
 
-                                        String ticket = ticketVenta.getDocumento();
+                                        String ticket = sellTicket.getDocument();
 
                                         Intent intent = new Intent(VentasActivity.this, ViewPDFActivity.class);
                                         intent.putExtra("ticket", ticket);
@@ -561,7 +560,7 @@ public class VentasActivity extends AppCompatActivity {
 
                                         dialogo.dismiss();
                                         imageViewVentas.setEnabled(true);
-                                    }, VentasActivity.this).execute(), 100);
+                                    }).execute(), 100);
                                 }
                             })
                             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
@@ -607,8 +606,8 @@ public class VentasActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewVisitas.setEnabled(false);
-                ClienteDao clienteDao = new ClienteDao();
-                ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                ClientDao clientDao = new ClientDao();
+                ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
                 HashMap<String, String> parametros = new HashMap<>();
                 parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                 parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
@@ -644,7 +643,7 @@ public class VentasActivity extends AppCompatActivity {
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
             } else {
 
-                ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(clienteBean.getMatriz());
+                ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
             }
             if (clienteBean.getRecordatorio() == null || clienteBean.getRecordatorio() == "null" || clienteBean.getRecordatorio().isEmpty()) {
@@ -688,7 +687,7 @@ public class VentasActivity extends AppCompatActivity {
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             progressDialog.dismiss();
             if (connected) new getPreciosEspeciales().execute();
-        }, VentasActivity.this).execute(), 100);
+        }).execute(), 100);
     }
 
     private boolean validaCredito() {
@@ -704,7 +703,7 @@ public class VentasActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_recordatorio);
         dialog.setCancelable(true);
 
-        ClienteDao clienteDao = new ClienteDao();
+        ClientDao clientDao = new ClientDao();
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.copyFrom(dialog.getWindow().getAttributes());
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -727,7 +726,7 @@ public class VentasActivity extends AppCompatActivity {
             public void onClick(View v) {
                 clienteBean.setRecordatorio("");
                 clienteBean.setIs_recordatorio(true);
-                clienteDao.save(clienteBean);
+                clientDao.save(clienteBean);
 
                 ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
                 progressDialog.setMessage("Espere un momento");
@@ -737,7 +736,7 @@ public class VentasActivity extends AppCompatActivity {
                     progressDialog.dismiss();
                     if (connected)
                         testLoadClientes(String.valueOf(clienteBean.getId()));
-                }, VentasActivity.this).execute(), 100);
+                }).execute(), 100);
 
                 dialog.dismiss();
             }
@@ -748,9 +747,9 @@ public class VentasActivity extends AppCompatActivity {
     }
 
     private void testLoadClientes(String idCliente) {
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -806,22 +805,22 @@ public class VentasActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("ClientesVentas", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                 }
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
             }
         });
     }
@@ -844,7 +843,7 @@ public class VentasActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
 
-        mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
+        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_ventas);
         recyclerView.setHasFixedSize(true);
@@ -874,9 +873,9 @@ public class VentasActivity extends AppCompatActivity {
                             @Override
                             public void onClick() {
                                 VentasModelBean item = mData.get(position);
-                                VentasModelDao dao = new VentasModelDao();
+                                SellsModelDao dao = new SellsModelDao();
                                 dao.delete(item);
-                                mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
+                                mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
                                 mAdapter.setItems(mData);
                                 ocultaLinearLayouth();
                                 calculaImportes();
@@ -943,11 +942,11 @@ public class VentasActivity extends AppCompatActivity {
                             return;
                         }
 
-                        final VentasModelDao dao = new VentasModelDao();
+                        final SellsModelDao dao = new SellsModelDao();
                         item.setCantidad(cantidadVenta);
                         dao.save(item);
 
-                        mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
+                        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
                         mAdapter.setItems(mData);
                         ocultaLinearLayouth();
                         calculaImportes();
@@ -1069,8 +1068,8 @@ public class VentasActivity extends AppCompatActivity {
         String cantidad = data.getStringExtra(Actividades.PARAM_1);
         String articulo = data.getStringExtra(Actividades.PARAM_2);
 
-        final ProductoDao productoDao = new ProductoDao();
-        final ProductoBean productoBean = productoDao.getProductoByArticulo(articulo);
+        final ProductDao productDao = new ProductDao();
+        final ProductoBean productoBean = productDao.getProductoByArticulo(articulo);
 
         if (productoBean == null) {
             return;
@@ -1130,12 +1129,12 @@ public class VentasActivity extends AppCompatActivity {
         int cantidadVendida = Integer.parseInt(cantidad);
 
         //Validamos los datos del cliente
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
         //Validamos si hay precio especial del cliente
-        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
         //Hay precio especial entonces aplica el precio especial
 
@@ -1151,7 +1150,7 @@ public class VentasActivity extends AppCompatActivity {
                          int impuesto, int cantidad) {
 
         final VentasModelBean item = new VentasModelBean();
-        final VentasModelDao dao = new VentasModelDao();
+        final SellsModelDao dao = new SellsModelDao();
 
         item.setArticulo(articulo);
         item.setDescripcion(descripcion);
@@ -1233,7 +1232,7 @@ public class VentasActivity extends AppCompatActivity {
     }
 
     private void deleteVentaTemp() {
-        VentasModelDao dao = new VentasModelDao();
+        SellsModelDao dao = new SellsModelDao();
         dao.clear();
     }
 

@@ -33,10 +33,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.PaymentJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.bluetooth.BluetoothActivity;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
@@ -48,22 +50,20 @@ import com.app.syspoint.repository.database.bean.PrinterBean;
 import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
 import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
-import com.app.syspoint.repository.database.dao.InventarioHistorialDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductoDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.database.dao.VentasDao;
-import com.app.syspoint.domentos.TicketVenta;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.Servicio;
-import com.app.syspoint.http.SincVentasByID;
+import com.app.syspoint.repository.database.dao.SellsDao;
+import com.app.syspoint.doments.SellTicket;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
+import com.app.syspoint.repository.request.http.Servicio;
+import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.json.CobranzaJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -172,7 +172,7 @@ public class ListaVentasFragment extends Fragment {
     private void initRecyclerView(View root) {
 
         mData = new ArrayList<>();
-        mData = (List<VentasBean>) (List<?>) new VentasDao().getListVentasByDate(Utils.fechaActual());
+        mData = (List<VentasBean>) (List<?>) new SellsDao().getListVentasByDate(Utils.fechaActual());
 
         if (mData.size() > 0) {
             lyt_empleados.setVisibility(View.GONE);
@@ -233,7 +233,7 @@ public class ListaVentasFragment extends Fragment {
                 EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                 if (vendedoresBean == null && getContext() != null) {
-                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                    vendedoresBean = new CacheInteractor().getSeller();
                 }
 
                 if (vendedoresBean != null){
@@ -303,15 +303,15 @@ public class ListaVentasFragment extends Fragment {
                                     EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
 
                                     if (cancelaUsuario == null && getContext() != null) {
-                                        cancelaUsuario = new CacheInteractor(getContext()).getSeller();
+                                        cancelaUsuario = new CacheInteractor().getSeller();
                                     }
 
-                                    VentasDao ventasDao = new VentasDao();
+                                    SellsDao sellsDao = new SellsDao();
                                     venta.setEstado("CA");
                                     venta.setUsuario_cancelo(cancelaUsuario.getNombre());
-                                    ventasDao.save(venta);
+                                    sellsDao.save(venta);
 
-                                    mData = (List<VentasBean>) (List<?>) new VentasDao().getListVentasByDate(Utils.fechaActual());
+                                    mData = (List<VentasBean>) (List<?>) new SellsDao().getListVentasByDate(Utils.fechaActual());
                                     mAdapter.setVentas(mData);
 
                                     ProgressDialog progressDialog = new ProgressDialog(getActivity());
@@ -326,16 +326,16 @@ public class ListaVentasFragment extends Fragment {
 
                                         if (venta.getCobranza() != null) {
                                             //Actualiza el documento de la cobranza
-                                            final CobranzaDao cobranzaDao = new CobranzaDao();
-                                            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(venta.getCobranza());
+                                            final PaymentDao paymentDao = new PaymentDao();
+                                            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(venta.getCobranza());
                                             if (cobranzaBean != null) {
                                                 cobranzaBean.setEstado("CA");
-                                                cobranzaDao.save(cobranzaBean);
-                                                final ClienteDao clienteDao = new ClienteDao();
-                                                final ClienteBean clienteBean = clienteDao.getClienteByCuenta(venta.getCliente().getCuenta());
+                                                paymentDao.save(cobranzaBean);
+                                                final ClientDao clientDao = new ClientDao();
+                                                final ClienteBean clienteBean = clientDao.getClientByAccount(venta.getCliente().getCuenta());
                                                 if (clienteBean != null) {
                                                     clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
-                                                    clienteDao.save(clienteBean);
+                                                    clientDao.save(clienteBean);
                                                     testLoadClientes(String.valueOf(clienteBean.getId()));
                                                     new loadCobranza().execute();
                                                 }
@@ -346,30 +346,30 @@ public class ListaVentasFragment extends Fragment {
                                         }
 
 
-                                        final VentasBean ventasBean = ventasDao.getVentaByInventario(venta.getVenta());
+                                        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta.getVenta());
 
                                         for (PartidasBean item : ventasBean.getListaPartidas()){
-                                            final ProductoDao productoDao = new ProductoDao();
-                                            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                                            final ProductDao productDao = new ProductDao();
+                                            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
                                             if (productoBean != null){
 
                                                 productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
-                                                productoDao.save(productoBean);
+                                                productDao.save(productoBean);
 
 
-                                                final InventarioHistorialDao inventarioHistorialDao = new InventarioHistorialDao();
-                                                final InventarioHistorialBean inventarioHistorialBean = inventarioHistorialDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                                                final StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                                                final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                                                 if (inventarioHistorialBean != null){
                                                     inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
-                                                    inventarioHistorialDao.save(inventarioHistorialBean);
+                                                    stockHistoryDao.save(inventarioHistorialBean);
 
                                                 }
                                             }
                                         }
                                         dialogs.dismiss();
-                                    }, getActivity()).execute(), 100);
+                                    }).execute(), 100);
                                 }
                             })
                             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
@@ -382,12 +382,12 @@ public class ListaVentasFragment extends Fragment {
                     dialogs.show();
                 } else {
 
-                    TicketVenta ticketVenta = new TicketVenta(getActivity());
-                    ticketVenta.setVentasBean(venta);
-                    ticketVenta.template();
+                    SellTicket sellTicket = new SellTicket(getActivity());
+                    sellTicket.setBean(venta);
+                    sellTicket.template();
 
                     if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write(ticketVenta.getDocumento());
+                        mConnectedThread.write(sellTicket.getDocument());
 
                 }
                 dialog.dismiss();
@@ -403,9 +403,9 @@ public class ListaVentasFragment extends Fragment {
         @Override
         protected String doInBackground(String... strings) {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getCobranzaFechaActual(Utils.fechaActual());
+            cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
             List<Payment> listaCobranza = new ArrayList<>();
             for (CobranzaBean item : cobranzaBeanList) {
                 Payment cobranza = new Payment();
@@ -422,22 +422,22 @@ public class ListaVentasFragment extends Fragment {
                 listaCobranza.add(cobranza);
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
+            PaymentJson cobranzaJson = new PaymentJson();
+            cobranzaJson.setPayments(listaCobranza);
             String json = new Gson().toJson(cobranzaJson);
             Log.d("Sin Cobranza", json);
 
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
+            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
 
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
+            loadCobranza.enqueue(new Callback<PaymentJson>() {
                 @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
                     if (response.isSuccessful()) {
                     }
                 }
 
                 @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
+                public void onFailure(Call<PaymentJson> call, Throwable t) {
 
                 }
             });
@@ -448,9 +448,9 @@ public class ListaVentasFragment extends Fragment {
 
 
     private void testLoadClientes(String idCliente) {
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -506,22 +506,22 @@ public class ListaVentasFragment extends Fragment {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("ClientesCobranza", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                 }
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
             }
         });
     }

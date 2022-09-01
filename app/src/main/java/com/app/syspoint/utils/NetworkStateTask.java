@@ -7,6 +7,8 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.app.syspoint.App;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -14,10 +16,10 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
     private final NetworkStateListener mNetworkStateListener;
     private final ConnectivityManager mConnectivityManager;
 
-    public NetworkStateTask(NetworkStateListener networkStateListener, Activity activity) {
+    public NetworkStateTask(NetworkStateListener networkStateListener) {
         mNetworkStateListener = networkStateListener;
         mConnectivityManager = (ConnectivityManager)
-                activity.getSystemService(Context.CONNECTIVITY_SERVICE);;
+                App.Companion.getINSTANCE().getBaseContext().getSystemService(Context.CONNECTIVITY_SERVICE);;
     }
 
     @Override

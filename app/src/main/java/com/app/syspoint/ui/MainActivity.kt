@@ -74,7 +74,7 @@ class MainActivity: AppCompatActivity() {
                 NetworkStateTask({ connected: Boolean ->
                     progressDialog.dismiss()
                     if (!connected) showDialogNotInternet()
-                }, this@MainActivity).execute()
+                }).execute()
             }, 100)
             if (destination.id == R.id.nav_ruta) {
                 Constants.solictaRuta = true

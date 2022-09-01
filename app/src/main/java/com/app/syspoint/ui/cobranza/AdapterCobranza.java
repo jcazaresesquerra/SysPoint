@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.dao.CobranzaDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;
@@ -92,8 +92,8 @@ public class AdapterCobranza extends RecyclerView.Adapter<AdapterCobranza.Holder
             textViewSaldo.setText(Utils.FDinero(items.getSaldo()));
 
             try  {
-                final CobranzaDao cobranzaDao = new CobranzaDao();
-                final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(""+items.getCobranza());
+                final PaymentDao paymentDao = new PaymentDao();
+                final CobranzaBean cobranzaBean = paymentDao.getByCobranza(""+items.getCobranza());
                 textViewFecha.setText(cobranzaBean.getFecha());
                 textViewAbono.setText(Utils.FDinero(items.getAcuenta()));
                 textViewSaldoNuevo.setText(Utils.FDinero(saldoNuevo));

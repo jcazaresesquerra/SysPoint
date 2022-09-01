@@ -40,14 +40,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.models.json.ClientJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.ValidaCampos;
@@ -155,8 +155,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
         Intent intent = getIntent();
         clienteGlobal = intent.getStringExtra(Actividades.PARAM_1);
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(clienteGlobal);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(clienteGlobal);
 
         if (clienteBean != null) {
             editText_nombre_actualiza_cliente.setText(clienteBean.getNombre_comercial());
@@ -829,8 +829,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
         boolean valida = true;
 
-        ClienteDao dao = new ClienteDao();
-        ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+        ClientDao dao = new ClientDao();
+        ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_actualiza_cliente.getText().toString());
 
         valida = bean != null;
         return valida;
@@ -843,8 +843,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
         String sec = inp_secuencia_actualiza_cliente.getText().toString();
 
         if (cp != null && !cp.isEmpty() && sec != null && !sec.isEmpty() && periodo_seleccionado != null && !periodo_seleccionado.isEmpty()) {
-            ClienteDao dao = new ClienteDao();
-            ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+            ClientDao dao = new ClientDao();
+            ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_actualiza_cliente.getText().toString());
             bean.setNombre_comercial(editText_nombre_actualiza_cliente.getText().toString());
             bean.setCalle(editText_calle_actualiza_cliente.getText().toString());
             bean.setNumero(editText_numero_actualiza_cliente.getText().toString());
@@ -954,9 +954,9 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
     private void testLoadClientes(String idCliente){
         progressshow();
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB =  clienteDao.getByIDCliente(idCliente);
+        listaClientesDB =  clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -1013,16 +1013,16 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("SinEmpleados", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if(response.isSuccessful()){
                     progresshide();
                     Toast.makeText(ActualizaClienteActivity.this, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
@@ -1031,7 +1031,7 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
                 progresshide();
                 finish();
             }

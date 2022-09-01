@@ -27,25 +27,25 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.models.json.ClientJson;
+import com.app.syspoint.models.json.VisitJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.bluetooth.BluetoothActivity;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.PrinterBean;
 import com.app.syspoint.repository.database.bean.VisitasBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
+import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.VisitasDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.VisitsDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.models.Visit;
-import com.app.syspoint.models.json.VisitaJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -207,7 +207,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
             if(mConnectedThread != null) //First check to make sure thread created
                 // mConnectedThread.printTicketVisita("Hola");
-                mConnectedThread.printTicketVisita(templateTicket, motivoVisita, vendedor, hora, fecha);
+                mConnectedThread.printTicketVisit(templateTicket, motivoVisita, vendedor, hora, fecha);
 
 
         } else if (id == android.R.id.home) {
@@ -226,9 +226,9 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
 
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -272,22 +272,22 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("SinEmpleados", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                 }
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
             }
         });
     }
@@ -416,9 +416,9 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
     private void loadVisitas(){
 
-        final VisitasDao visitasDao = new VisitasDao();
+        final VisitsDao visitsDao = new VisitsDao();
         List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-        visitasBeanListBean =  visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
+        visitasBeanListBean =  visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
 
         List<Visit> listaVisitas = new ArrayList<>();
         for (VisitasBean item : visitasBeanListBean){
@@ -426,8 +426,8 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
 
-            final ClienteDao clienteDao = new ClienteDao();
-            final ClienteBean clienteBean = clienteDao.getClienteByCuenta(cuenta_cliente);
+            final ClientDao clientDao = new ClientDao();
+            final ClienteBean clienteBean = clientDao.getClientByAccount(cuenta_cliente);
             visita.setCuenta(clienteBean.getCuenta());
             visita.setLatidud(item.getLatidud());
             visita.setLongitud(item.getLongitud());
@@ -436,7 +436,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
             if (vendedoresBean == null) {
-                vendedoresBean = new CacheInteractor(FinalizaPrecapturaActivity.this).getSeller();
+                vendedoresBean = new CacheInteractor().getSeller();
             }
 
             if (vendedoresBean != null) {
@@ -446,16 +446,16 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaVisitas.add(visita);
         }
 
-        VisitaJson visitaJsonRF = new VisitaJson();
-        visitaJsonRF.setVisitas(listaVisitas);
+        VisitJson visitaJsonRF = new VisitJson();
+        visitaJsonRF.setVisits(listaVisitas);
         String json = new Gson().toJson(visitaJsonRF);
         Log.d("SinEmpleados", json);
 
-        Call<VisitaJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
+        Call<VisitJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
 
-        loadVisitas.enqueue(new Callback<VisitaJson>() {
+        loadVisitas.enqueue(new Callback<VisitJson>() {
             @Override
-            public void onResponse(Call<VisitaJson> call, Response<VisitaJson> response) {
+            public void onResponse(Call<VisitJson> call, Response<VisitJson> response) {
                 if(response.isSuccessful()){
                     //Toast.makeText(FinalizaPrecapturaActivity.this, "Visita Sincronizada", Toast.LENGTH_LONG).show();
 
@@ -463,7 +463,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<VisitaJson> call, Throwable t) {
+            public void onFailure(Call<VisitJson> call, Throwable t) {
 
             }
         });

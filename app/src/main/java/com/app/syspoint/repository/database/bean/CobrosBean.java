@@ -1,7 +1,5 @@
 package com.app.syspoint.repository.database.bean;
 
-import com.app.syspoint.db.DaoSession;
-
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
@@ -291,9 +289,7 @@ public class CobrosBean extends Bean {
         myDao.update(this);
     }
 
-    /**
-     * called by internal mechanisms, do not call yourself.
-     */
+    /** called by internal mechanisms, do not call yourself. */
     @Generated(hash = 237796536)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;

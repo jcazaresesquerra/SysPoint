@@ -25,19 +25,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.models.json.SpecialPriceJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
 import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.repository.database.dao.PreciosEspecialesDao;
-import com.app.syspoint.repository.database.dao.ProductoDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.json.PrecioEspecialJson;
-import com.app.syspoint.ui.productos.AdapterListaProductos;
+import com.app.syspoint.ui.products.adapters.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -144,7 +144,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
     private void initRecyclerView() {
 
         mData = new ArrayList<>();
-        mData = (List<ProductoBean>) (List<?>) new ProductoDao().list();
+        mData = (List<ProductoBean>) (List<?>) new ProductDao().list();
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -160,9 +160,8 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
         mAdapter = new AdapterListaProductos(mData, new AdapterListaProductos.OnItemClickListener() {
             @Override
-            public void onItemClick(int position) {
-                ProductoBean producto = mData.get(position);
-                articuloSeleccionado = producto.getArticulo();
+            public void onItemClick(ProductoBean productoBean) {
+                articuloSeleccionado = productoBean.getArticulo();
                 showDialogo();
             }
         });
@@ -212,21 +211,21 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
                 final String precio = edittext_precio_especial.getText().toString();
 
-                ProductoDao productoDao = new ProductoDao();
-                ProductoBean productoBean = productoDao.getProductoByArticulo(articuloSeleccionado);
+                ProductDao productDao = new ProductDao();
+                ProductoBean productoBean = productDao.getProductoByArticulo(articuloSeleccionado);
 
-                ClienteDao clienteDao = new ClienteDao();
-                ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                ClientDao clientDao = new ClientDao();
+                ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
                 if (precio != null ){
 
                     //Validamos si existe el precio
-                    final PreciosEspecialesDao dao = new PreciosEspecialesDao();
+                    final SpecialPricesDao dao = new SpecialPricesDao();
                     final PreciosEspecialesBean bean = dao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                     if (bean == null) {
                         //Crea
-                        PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
+                        SpecialPricesDao specialPricesDao = new SpecialPricesDao();
                         PreciosEspecialesBean preciosEspecialesBean = new PreciosEspecialesBean();
 
                         preciosEspecialesBean.setArticulo(productoBean.getArticulo());
@@ -234,7 +233,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
                         preciosEspecialesBean.setPrecio(Double.parseDouble(precio));
                         preciosEspecialesBean.setActive(true);
                         preciosEspecialesBean.setFecha_sync(Utils.fechaActual());
-                        preciosEspecialesDao.save(preciosEspecialesBean);
+                        specialPricesDao.save(preciosEspecialesBean);
                         //Sincroniza la información con el servidor
 
 
@@ -344,7 +343,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
         progressshow();
 
         //Instancia la base de datos
-        final PreciosEspecialesDao dao =  new PreciosEspecialesDao();
+        final SpecialPricesDao dao =  new SpecialPricesDao();
 
         //Contiene la lista de precios de la db local
         List<PreciosEspecialesBean> listaDB = new ArrayList<>();
@@ -373,16 +372,16 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
         }
 
-        final PrecioEspecialJson precioEspecialJson = new PrecioEspecialJson();
-        precioEspecialJson.setPrecios(listaPreciosServidor);
+        final SpecialPriceJson precioEspecialJson = new SpecialPriceJson();
+        precioEspecialJson.setPrices(listaPreciosServidor);
 
         String json = new Gson().toJson(precioEspecialJson);
         Log.d("Sinc especiales", json);
 
-        Call<PrecioEspecialJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-        sendPreciosServer.enqueue(new Callback<PrecioEspecialJson>() {
+        Call<SpecialPriceJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
+        sendPreciosServer.enqueue(new Callback<SpecialPriceJson>() {
             @Override
-            public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
+            public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
 
                 if (response.isSuccessful()) {
                     progresshide();
@@ -391,7 +390,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
                 }
             }
             @Override
-            public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
+            public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
                 progresshide();
                 Toast.makeText(ListadoProductosActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
                 finish();

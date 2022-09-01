@@ -7,7 +7,7 @@ class App: Application() {
     private lateinit var dbHelper: DBHelper
 
     companion object {
-        private var INSTANCE: App? = null
+        var INSTANCE: App? = null
     }
 
     override fun onCreate() {

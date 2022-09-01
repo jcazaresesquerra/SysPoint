@@ -1,14 +1,11 @@
 package com.app.syspoint.repository.database.bean;
 
-import com.app.syspoint.db.DaoSession;
-
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.ToOne;
-
 
 @Entity(nameInDb = "sesion")
 public class SesionBean extends Bean {

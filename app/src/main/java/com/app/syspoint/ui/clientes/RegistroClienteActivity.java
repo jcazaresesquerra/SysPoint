@@ -40,14 +40,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.models.json.ClientJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.dao.ClienteDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
-import com.app.syspoint.models.json.ClienteJson;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.utils.ValidaCampos;
@@ -277,8 +277,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     private void loadConsecCuenta() {
 
-        final ClienteDao clienteDao = new ClienteDao();
-        no_cuenta = clienteDao.getUltimoConsec();
+        final ClientDao clientDao = new ClientDao();
+        no_cuenta = clientDao.getLastConsec();
         String consectivo = "";
         if (no_cuenta < 10) {
             consectivo = "000" + no_cuenta;
@@ -784,8 +784,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         boolean valida = true;
 
-        ClienteDao dao = new ClienteDao();
-        ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_registro_cliente.getText().toString());
+        ClientDao dao = new ClientDao();
+        ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_registro_cliente.getText().toString());
 
         if (bean == null) {
             valida = false;
@@ -800,7 +800,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private void registraCliente() {
 
         final ClienteBean clienteBean = new ClienteBean();
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
         clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
         clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
@@ -887,7 +887,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
         clienteBean.setSaldo_credito(0.00);
         clienteBean.setDate_sync(Utils.fechaActual());
 
-        clienteDao.insert(clienteBean);
+        clientDao.insert(clienteBean);
 
         idCliente = String.valueOf(clienteBean.getId());
         if (!Utils.isNetworkAvailable(getApplication())) {
@@ -926,9 +926,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         progressshow();
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
@@ -984,16 +984,16 @@ public class RegistroClienteActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
+        ClientJson clienteRF = new ClientJson();
+        clienteRF.setClients(listaClientes);
         String json = new Gson().toJson(clienteRF);
         Log.d("SinEmpleados", json);
 
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
+        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        loadClientes.enqueue(new Callback<ClientJson>() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
                 if (response.isSuccessful()) {
                     progresshide();
                     Toast.makeText(RegistroClienteActivity.this, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
@@ -1002,7 +1002,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onFailure(Call<ClientJson> call, Throwable t) {
                 progresshide();
                 finish();
             }

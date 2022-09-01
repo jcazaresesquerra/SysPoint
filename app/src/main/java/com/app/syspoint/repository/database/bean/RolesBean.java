@@ -1,7 +1,5 @@
 package com.app.syspoint.repository.database.bean;
 
-import com.app.syspoint.db.DaoSession;
-
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
@@ -147,19 +145,19 @@ public class RolesBean extends Bean {
         myDao.update(this);
     }
 
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 118007675)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getRolesBeanDao() : null;
-    }
-
     public String getIdentificador() {
         return this.identificador;
     }
 
     public void setIdentificador(String identificador) {
         this.identificador = identificador;
+    }
+
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 118007675)
+    public void __setDaoSession(DaoSession daoSession) {
+        this.daoSession = daoSession;
+        myDao = daoSession != null ? daoSession.getRolesBeanDao() : null;
     }
 
 

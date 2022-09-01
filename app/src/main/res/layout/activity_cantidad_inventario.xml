@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/green_50"
-    tools:context=".ui.inventarios.CantidadInventarioActivity">
+    tools:context=".ui.stock.activities.CantidadInventarioActivity">
 
     <androidx.cardview.widget.CardView
         android:background="@color/white"
