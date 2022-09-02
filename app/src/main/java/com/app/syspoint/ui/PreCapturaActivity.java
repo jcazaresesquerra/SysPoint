@@ -75,6 +75,8 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
     Spinner spinner_tipo_visita;
     Spinner spinner_resultado_visita;
     private static final int REQUEST_PERMISSION_LOCATION = 991;
+    private boolean isPreventaCLicked = false;
+    private boolean confirmCapture = false;
 
     private String concepto_visita_seleccioando;
     private String tipo_inventario_seleccionado;
@@ -202,118 +204,121 @@ public class PreCapturaActivity extends AppCompatActivity implements OnMapReadyC
 
             case R.id.finish_preventa:
 
+                if (!isPreventaCLicked) {
+                    isPreventaCLicked = true;
+                    if (concepto_visita_seleccioando == null || concepto_visita_seleccioando.isEmpty() || concepto_visita_seleccioando == "") {
+                        final PrettyDialog dialogo = new PrettyDialog(this);
+                        dialogo.setTitle("Sin Concepto")
+                                .setTitleColor(R.color.purple_500)
+                                .setMessage("No ha seleccionado el motivo de la visita")
+                                .setMessageColor(R.color.purple_700)
+                                .setAnimationEnabled(false)
+                                .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
+                                    @Override
+                                    public void onClick() {
+                                        dialogo.dismiss();
+                                        isPreventaCLicked = false;
+                                    }
+                                }).addButton("OK", R.color.white, R.color.red_800, new PrettyDialogCallback() {
+                                    @Override
+                                    public void onClick() {
+                                        dialogo.dismiss();
+                                        isPreventaCLicked = false;
+                                    }
+                                });
+                        dialogo.show();
+
+                        return false;
+                    }
 
 
-                if (concepto_visita_seleccioando == null || concepto_visita_seleccioando.isEmpty() || concepto_visita_seleccioando == ""){
                     final PrettyDialog dialogo = new PrettyDialog(this);
-                    dialogo.setTitle("Sin Concepto")
+                    dialogo.setTitle("Confirmar accion")
                             .setTitleColor(R.color.purple_500)
-                            .setMessage("No ha seleccionado el motivo de la visita")
+                            .setMessage("¿Esta seguro de registrar esta accion?")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
                             .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
                                 @Override
                                 public void onClick() {
                                     dialogo.dismiss();
+                                    isPreventaCLicked = false;
                                 }
-                            }).addButton("OK", R.color.white, R.color.red_800, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialogo.dismiss();
-                        }
-                    });
+                            })
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+
+                                    if (!confirmCapture) {
+                                        confirmCapture = true;
+                                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                        if (vendedoresBean == null) {
+                                            vendedoresBean = new CacheInteractor(PreCapturaActivity.this).getSeller();
+                                        }
+
+                                        //Le indicamos al sistema que el cliente ya se ah visitado
+                                        final ClienteDao clienteDao = new ClienteDao();
+                                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCuenta);
+                                        clienteBean.setVisitado(1);
+                                        clienteBean.setDate_sync(Utils.fechaActual());
+                                        clienteBean.setVisitasNoefectivas(clienteBean.getVisitasNoefectivas() + 1);
+                                        clienteDao.save(clienteBean);
+
+                                        final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
+                                        final ClientesRutaBean clientesRutaBean = clientesRutaDao.getClienteByCuentaCliente(idCuenta);
+
+                                        if (clientesRutaBean != null) {
+                                            clientesRutaBean.setVisitado(1);
+                                            clientesRutaDao.save(clientesRutaBean);
+                                        }
+
+                                        sincronizaCliente(String.valueOf(clienteBean.getId()));
+
+                                        VisitasBean visitasBean = new VisitasBean();
+                                        VisitasDao visitasDao = new VisitasDao();
+
+                                        visitasBean.setMotivo_visita(concepto_visita_seleccioando);
+                                        visitasBean.setEmpleado(vendedoresBean);
+                                        visitasBean.setCliente(clienteBean);
+                                        visitasBean.setHora(Utils.getHoraActual());
+                                        visitasBean.setFecha(Utils.fechaActual());
+                                        visitasBean.setLatidud(clienteBean.getLatitud());
+                                        visitasBean.setLongitud(clienteBean.getLatitud());
+                                        visitasDao.insert(visitasBean);
+
+                                        loadVisitas();
+
+                                        HashMap<String, String> parametros = new HashMap<>();
+                                        parametros.put(Actividades.PARAM_1, concepto_visita_seleccioando);
+                                        parametros.put(Actividades.PARAM_2, tipo_inventario_seleccionado);
+                                        if (vendedoresBean != null) {
+                                            parametros.put(Actividades.PARAM_3, vendedoresBean.getNombre());
+                                        }
+                                        parametros.put(Actividades.PARAM_4, Utils.fechaActual());
+                                        parametros.put(Actividades.PARAM_5, Utils.getHoraActual());
+                                        parametros.put(Actividades.PARAM_6, String.valueOf(latitud));
+                                        parametros.put(Actividades.PARAM_7, String.valueOf(longitud));
+                                        parametros.put(Actividades.PARAM_8, clienteBean.getCuenta());
+
+                                        Actividades.getSingleton(PreCapturaActivity.this, FinalizaPrecapturaActivity.class).muestraActividad(parametros);
+
+                                        dialogo.dismiss();
+                                        finish();
+                                        isPreventaCLicked = false;
+                                        confirmCapture = false;
+                                    }
+                                }
+                            })
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                    isPreventaCLicked = false;
+                                }
+                            });
+                    dialogo.setCancelable(false);
                     dialogo.show();
-
-                    return false;
                 }
-
-
-
-
-                final PrettyDialog dialogo = new PrettyDialog(this);
-                dialogo.setTitle("Confirmar accion")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("¿Esta seguro de registrar esta accion?")
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialogo.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-
-                                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-                                if (vendedoresBean == null) {
-                                    vendedoresBean = new CacheInteractor(PreCapturaActivity.this).getSeller();
-                                }
-
-                                //Le indicamos al sistema que el cliente ya se ah visitado
-                                final ClienteDao clienteDao = new ClienteDao();
-                                final ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCuenta);
-                                clienteBean.setVisitado(1);
-                                clienteBean.setDate_sync(Utils.fechaActual());
-                                clienteBean.setVisitasNoefectivas(clienteBean.getVisitasNoefectivas() + 1);
-                                clienteDao.save(clienteBean);
-
-                                final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                final ClientesRutaBean clientesRutaBean =  clientesRutaDao.getClienteByCuentaCliente(idCuenta);
-
-                                if (clientesRutaBean != null) {
-                                    clientesRutaBean.setVisitado(1);
-                                    clientesRutaDao.save(clientesRutaBean);
-                                }
-
-                                sincronizaCliente(String.valueOf(clienteBean.getId()));
-
-                                VisitasBean visitasBean = new VisitasBean();
-                                VisitasDao visitasDao= new VisitasDao();
-
-                                visitasBean.setMotivo_visita(concepto_visita_seleccioando);
-                                visitasBean.setEmpleado(vendedoresBean);
-                                visitasBean.setCliente(clienteBean);
-                                visitasBean.setHora(Utils.getHoraActual());
-                                visitasBean.setFecha(Utils.fechaActual());
-                                visitasBean.setLatidud(clienteBean.getLatitud());
-                                visitasBean.setLongitud(clienteBean.getLatitud());
-                                visitasDao.insert(visitasBean);
-
-                                loadVisitas();
-
-                                HashMap<String, String> parametros = new HashMap<>();
-                                parametros.put(Actividades.PARAM_1, concepto_visita_seleccioando);
-                                parametros.put(Actividades.PARAM_2, tipo_inventario_seleccionado);
-                                if (vendedoresBean != null) {
-                                    parametros.put(Actividades.PARAM_3, vendedoresBean.getNombre());
-                                }
-                                parametros.put(Actividades.PARAM_4, Utils.fechaActual());
-                                parametros.put(Actividades.PARAM_5, Utils.getHoraActual());
-                                parametros.put(Actividades.PARAM_6, String.valueOf(latitud));
-                                parametros.put(Actividades.PARAM_7, String.valueOf(longitud));
-                                parametros.put(Actividades.PARAM_8, clienteBean.getCuenta());
-
-                                Actividades.getSingleton(PreCapturaActivity.this, FinalizaPrecapturaActivity.class).muestraActividad(parametros);
-
-
-                                dialogo.dismiss();
-
-                                finish();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialogo.dismiss();
-
-                            }
-                        });
-                dialogo.setCancelable(false);
-                dialogo.show();
-
-
 
                 return true;
 
