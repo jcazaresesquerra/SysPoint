@@ -1,11 +1,14 @@
 package com.app.syspoint.repository.request
 
+import android.util.Log
 import com.app.syspoint.interactor.product.GetProductInteractor
+import com.app.syspoint.models.Product
 import com.app.syspoint.models.json.ProductJson
 import com.app.syspoint.repository.database.bean.ProductoBean
 import com.app.syspoint.repository.database.dao.ProductDao
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -59,6 +62,36 @@ class RequestProducts {
                 }
 
             })
+        }
+
+        fun requestProductById(product: String, onGetProductByIdListener: GetProductInteractor.OnGetProductByIdListener) {
+
+        }
+
+        fun saveProducts(productList: List<Product>, onSaveProductsListener: GetProductInteractor.OnSaveProductsListener) {
+            val productJson = ProductJson()
+            productJson.products = productList
+            val json = Gson().toJson(productJson)
+            Log.d("SinProductos", json)
+
+            val saveProducts = ApiServices.getClientRestrofit().create(
+                PointApi::class.java
+            ).sendProducto(productJson)
+
+            saveProducts.enqueue(object: Callback<ProductJson> {
+                override fun onResponse(call: Call<ProductJson>, response: Response<ProductJson>) {
+                    if (response.isSuccessful) {
+                        onSaveProductsListener.onSaveProductsSuccess()
+                    } else {
+                        onSaveProductsListener.onSaveProductsError()
+                    }
+                }
+
+                override fun onFailure(call: Call<ProductJson>, t: Throwable) {
+                    onSaveProductsListener.onSaveProductsError()
+                }
+            })
+
         }
     }
 }

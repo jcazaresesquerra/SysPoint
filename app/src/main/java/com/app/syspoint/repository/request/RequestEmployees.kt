@@ -1,11 +1,14 @@
 package com.app.syspoint.repository.request
 
+import android.util.Log
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
+import com.app.syspoint.models.Employee
 import com.app.syspoint.models.json.EmployeeJson
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.repository.database.dao.EmployeeDao
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -69,6 +72,34 @@ class RequestEmployees {
                     getEmployeesListener.onGetEmployeesError()
                 }
             })
+        }
+
+
+        fun saveEmployee(employeeList: List<Employee>, onSaveEmployeeListener: GetEmployeeInteractor.SaveEmployeeListener) {
+
+            val employeeJson = EmployeeJson()
+            employeeJson.employees = employeeList
+            val json = Gson().toJson(employeeJson)
+            Log.d("SinEmpleados", json)
+
+            val sendEmployees = ApiServices.getClientRestrofit().create(
+                PointApi::class.java
+            ).sendEmpleado(employeeJson)
+
+            sendEmployees.enqueue(object : Callback<EmployeeJson> {
+                override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
+                    if(response.isSuccessful){
+                        onSaveEmployeeListener.onSaveEmployeeSuccess()
+                    } else {
+                        onSaveEmployeeListener.onSaveEmployeeError()
+                    }
+                }
+
+                override fun onFailure(call: Call<EmployeeJson>, t: Throwable) {
+                    onSaveEmployeeListener.onSaveEmployeeError()
+                }
+            })
+
         }
     }
 }

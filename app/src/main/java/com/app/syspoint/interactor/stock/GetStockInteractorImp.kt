@@ -5,8 +5,8 @@ import kotlinx.coroutines.launch
 
 class GetStockInteractorImp: GetStockInteractor() {
 
-    override fun executeGetStock() {
-        super.executeGetStock()
+    override fun executeGetStock(onGetStockListener: OnGetStockListener) {
+        super.executeGetStock(onGetStockListener)
         GlobalScope.launch {
 
         }
