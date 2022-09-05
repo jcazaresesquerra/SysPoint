@@ -1,5 +1,7 @@
 package com.app.syspoint.interactor.file
 
+import java.io.File
+
 abstract class FileInteractor {
 
     interface OnPostFileListener {
@@ -7,5 +9,5 @@ abstract class FileInteractor {
         fun onPostFileError()
     }
 
-    open fun executePostFile(onPostFileListener: OnPostFileListener) {}
+    open fun executePostFile(image: File, sellId: String, onPostFileListener: OnPostFileListener) {}
 }

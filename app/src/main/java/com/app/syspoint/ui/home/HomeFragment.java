@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.interactor.data.GetAllDataInteractor;
+import com.app.syspoint.interactor.data.GetAllDataInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.app.syspoint.models.json.EmployeeJson;
 import com.app.syspoint.models.json.PaymentJson;
@@ -137,6 +139,20 @@ public class HomeFragment extends Fragment {
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             progressDialog.dismiss();
             if (connected) {
+                /*progressDialog.setMessage("Obteniendo actualizaciones...");
+
+                progressDialog.show();
+                new GetAllDataInteractorImp().executeGetAllDataByDate(new GetAllDataInteractor.OnGetAllDataByDateListener() {
+                    @Override
+                    public void onGetAllDataByDateSuccess() {
+                        progressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onGetAllDataByDateError() {
+                        progressDialog.dismiss();
+                    }
+                });*/
                 Call<Data> getData = ApiServices.getClientRestrofit().create(PointApi.class).getAllDataByDate();
                 new donwloadGetDataAsync().execute(getData);
                 new SendVentas().execute();

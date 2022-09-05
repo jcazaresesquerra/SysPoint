@@ -26,14 +26,14 @@ import retrofit2.http.Query;
 public interface PointApi {
 
 
-    //TODO GET AL DATA RESONSE
+    // GET AL DATA RESONSE
     @GET("getAllData")
     Call<Data> getAllData();
 
     @GET("getAllDataByDate")
     Call<Data> getAllDataByDate();
 
-    //Todo Empleados
+    // Empleados
     @GET("getAllEmpleados")
     Call<EmployeeJson> getAllEmpleados();
 
@@ -43,7 +43,7 @@ public interface PointApi {
     @POST("saveEmpleado")
     Call<EmployeeJson> sendEmpleado(@Body EmployeeJson param);
 
-    //TODO PRODUCTOS
+    // PRODUCTOS
     @GET("getAllProductos")
     Call<ProductJson> getAllProductos();
 
@@ -53,7 +53,7 @@ public interface PointApi {
     @POST("saveProducto")
     Call<ProductJson> sendProducto(@Body ProductJson param);
 
-    //TODO CLIENTES
+    // CLIENTES
     @GET("getAllClientes")
     Call<ClientJson> getAllClientes();
 
@@ -63,14 +63,14 @@ public interface PointApi {
     @POST("saveCliente")
     Call<ClientJson> sendCliente(@Body ClientJson param);
     
-    //TODO ROLES
+    // ROLES
     @GET("getAllRols")
     Call<RolJson> getAllRols();
 
     @POST("saveRol")
     Call<RolJson> saveRoles(@Body RolJson param);
 
-    //TODO PRECIOS ESPECIALES
+    // PRECIOS ESPECIALES
     @POST("savePrice")
     Call<SpecialPriceJson> sendPrecios(@Body SpecialPriceJson param);
 
@@ -83,9 +83,11 @@ public interface PointApi {
     @POST("getPricesByClient")
     Call<SpecialPriceJson>getPreciosByClient(@Body RequestClients paramt);
 
+    // VISITAS
     @POST("saveVisita")
     Call<VisitJson> sendVisita(@Body VisitJson param);
 
+    //COBRANZA
     @POST("saveCobranza")
     Call<PaymentJson> sendCobranza(@Body PaymentJson param);
 
@@ -98,12 +100,9 @@ public interface PointApi {
    @POST("getAllByCliente")
    Call<PaymentJson> getCobranzaByCliente(@Body RequestCobranza paramt);
 
-
+   //FILE
     @Multipart
     @POST("loadImage")
     Call<ResponseVenta> postFile(@Part("cobranza") RequestBody cobranza,
                                  @Part MultipartBody.Part imagen);
-
-
-
 }

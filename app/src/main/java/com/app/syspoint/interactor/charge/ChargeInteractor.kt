@@ -1,13 +1,17 @@
 package com.app.syspoint.interactor.charge
 
+import com.app.syspoint.models.Payment
+import com.app.syspoint.models.json.PaymentJson
+import retrofit2.Response
+
 abstract class ChargeInteractor {
     interface OnGetChargeListener {
-        fun onGetChargeSuccess()
+        fun onGetChargeSuccess(response: Response<PaymentJson>)
         fun onGetChargeError()
     }
 
     interface OnGetChargeByClientListener {
-        fun onGetChargeByClientSuccess()
+        fun onGetChargeByClientSuccess(response: Response<PaymentJson>)
         fun onGetChargeByClientError()
     }
 
@@ -22,7 +26,7 @@ abstract class ChargeInteractor {
     }
 
     open fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {}
-    open fun executeGetChargeByClient(onGetChargeByClientListener: OnGetChargeByClientListener) {}
-    open fun executeSaveCharge(onSaveChargeListener: OnSaveChargeListener) {}
-    open fun executeUpdateCharge(onUpdateChargeListener: OnUpdateChargeListener) {}
+    open fun executeGetChargeByClient(account: String, onGetChargeByClientListener: OnGetChargeByClientListener) {}
+    open fun executeSaveCharge(charges: List<Payment>, onSaveChargeListener: OnSaveChargeListener) {}
+    open fun executeUpdateCharge(charges: List<Payment>, onUpdateChargeListener: OnUpdateChargeListener) {}
 }

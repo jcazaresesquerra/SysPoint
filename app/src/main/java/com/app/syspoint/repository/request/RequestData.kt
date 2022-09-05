@@ -655,6 +655,7 @@ class RequestData {
                             bean.precio = item.precio
                             bean.active = item.active == 1
                             dao.insert(bean)
+                            specialPricesDao.save(bean)
                         } else {
                             preciosEspecialesBean.cliente = clienteBean.cuenta
                             preciosEspecialesBean.articulo = productoBean.articulo
@@ -663,6 +664,7 @@ class RequestData {
                             specialPricesDao.save(preciosEspecialesBean)
                         }
                     }
+                    onGetAllDataByDateListener.onGetAllDataByDateSuccess()
 
                 } else {
                     onGetAllDataByDateListener.onGetAllDataByDateError()

@@ -1,5 +1,7 @@
 package com.app.syspoint.interactor.visit
 
+import com.app.syspoint.models.Visit
+
 abstract class VisitInteractor {
 
     interface OnSaveVisitListener {
@@ -7,5 +9,5 @@ abstract class VisitInteractor {
         fun onSaveVisitError()
     }
 
-    open fun executeSaveVisit(onSaveVisitListener: OnSaveVisitListener) {}
+    open fun executeSaveVisit(visits: List<Visit>, onSaveVisitListener: OnSaveVisitListener) {}
 }
