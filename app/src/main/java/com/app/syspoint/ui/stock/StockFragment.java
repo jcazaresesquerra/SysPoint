@@ -38,7 +38,7 @@ import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.doments.CloseTicket;
+import com.app.syspoint.documents.CloseTicket;
 import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;

@@ -25,6 +25,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.interactor.prices.PriceInteractor;
+import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.models.json.SpecialPriceJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -372,25 +374,16 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
         }
 
-        final SpecialPriceJson precioEspecialJson = new SpecialPriceJson();
-        precioEspecialJson.setPrices(listaPreciosServidor);
-
-        String json = new Gson().toJson(precioEspecialJson);
-        Log.d("Sinc especiales", json);
-
-        Call<SpecialPriceJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-        sendPreciosServer.enqueue(new Callback<SpecialPriceJson>() {
+        new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
             @Override
-            public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
-
-                if (response.isSuccessful()) {
-                    progresshide();
-                    Toast.makeText(ListadoProductosActivity.this, "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSendPricesSuccess() {
+                progresshide();
+                Toast.makeText(ListadoProductosActivity.this, "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                finish();
             }
+
             @Override
-            public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
+            public void onSendPricesError() {
                 progresshide();
                 Toast.makeText(ListadoProductosActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
                 finish();

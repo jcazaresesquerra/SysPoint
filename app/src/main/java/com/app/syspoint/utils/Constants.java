@@ -10,7 +10,9 @@ public class Constants {
     public static String newLine = "\n";
     public static String divider = "****************";
 
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
     public static int REQUEST_PERMISSION_CALL = 992;
+    public static int REQUEST_PERMISSION_LOCATION = 991;
 }
 

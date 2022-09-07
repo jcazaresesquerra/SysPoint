@@ -21,6 +21,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.interactor.prices.PriceInteractor;
+import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.models.json.SpecialPriceJson;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -87,84 +89,6 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         initRecyclerView();
     }
 
-    private class getPreciosEspeciales extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            ClientDao clientDao = new ClientDao();
-            ClienteBean clienteBean = clientDao.getClientByAccount(cuentaCliente);
-
-            RequestClients requestPrices = new RequestClients();
-            requestPrices.setCuenta(clienteBean.getCuenta());
-
-            Call<SpecialPriceJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
-            preciosJson.enqueue(new Callback<SpecialPriceJson>() {
-                @Override
-                public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
-                    if (response.isSuccessful()) {
-                        for (Price item : response.body().getPrices()) {
-
-                            //Para obtener los datos del cliente
-                            final ClientDao clientDao = new ClientDao();
-                            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente());
-                            if (clienteBean == null) {
-                                return;
-                            }
-
-                            //Para obtener los datos del producto
-                            final ProductDao productDao = new ProductDao();
-                            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
-
-                            if (productoBean == null) {
-                                return;
-                            }
-
-                            final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
-                            final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
-
-                            //Si no hay precios especiales entonces crea un precio
-                            if (preciosEspecialesBean == null) {
-
-                                final SpecialPricesDao dao = new SpecialPricesDao();
-                                final PreciosEspecialesBean bean = new PreciosEspecialesBean();
-                                bean.setCliente(clienteBean.getCuenta());
-                                bean.setArticulo(productoBean.getArticulo());
-                                bean.setPrecio(item.getPrecio());
-                                if (item.getActive() ==1){
-                                    bean.setActive(true);
-                                }else {
-                                    bean.setActive(false);
-                                }
-
-                                dao.insert(bean);
-
-                            } else {
-                                preciosEspecialesBean.setCliente(clienteBean.getCuenta());
-                                preciosEspecialesBean.setArticulo(productoBean.getArticulo());
-                                preciosEspecialesBean.setPrecio(item.getPrecio());
-                                if (item.getActive() ==1){
-                                    preciosEspecialesBean.setActive(true);
-                                }else {
-                                    preciosEspecialesBean.setActive(false);
-                                }
-                                specialPricesDao.save(preciosEspecialesBean);
-                            }
-                        }
-                    }
-                }
-
-
-                @Override
-                public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
-                }
-            });
-
-            initRecyclerView();
-            return null;
-        }
-    }
-
 
     private void initControls() {
         FloatingActionButton button = findViewById(R.id.fab_add_precioEspecial);
@@ -176,7 +100,25 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                 Actividades.getSingleton(PreciosEspecialesActivity.this, ListadoProductosActivity.class ).muestraActividad(parametros);
             }
         });
-        new getPreciosEspeciales().execute();
+
+        progressshow();
+        new PriceInteractorImp().executeGetPricesByClient(cuentaCliente, new PriceInteractor.GetPricesByClientListener() {
+            @Override
+            public void onGetPricesByClientSuccess(@NonNull List<? extends PreciosEspecialesBean> pricesByClientList) {
+                mData = new ArrayList<>();
+                mData = (List<PreciosEspecialesBean>) pricesByClientList;
+
+                initRecyclerView();
+                progresshide();
+            }
+
+            @Override
+            public void onGGetPricesByClientError() {
+                progresshide();
+                Toast.makeText(getBaseContext(), "Ha ocurrido un problema al obtener precios", Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
 
     private void initToolBar() {
@@ -253,10 +195,10 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
     private void initRecyclerView(){
 
-        mData = new ArrayList<>();
-
-        //Poner el filtro por clinete
-        mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
+        if (mData == null) {
+            mData = new ArrayList<>();
+            mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
+        }
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -376,27 +318,17 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
         }
 
-        final SpecialPriceJson precioEspecialJson = new SpecialPriceJson();
-        precioEspecialJson.setPrices(listaPreciosServidor);
-
-        String json = new Gson().toJson(precioEspecialJson);
-        Log.d("Sinc especiales", json);
-
-        Call<SpecialPriceJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-        sendPreciosServer.enqueue(new Callback<SpecialPriceJson>() {
+        new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
             @Override
-            public void onResponse(Call<SpecialPriceJson> call, Response<SpecialPriceJson> response) {
-
-                if (response.isSuccessful()) {
-                    progresshide();
-                    Toast.makeText(PreciosEspecialesActivity.this, "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
-
-                }
-            }
-            @Override
-            public void onFailure(Call<SpecialPriceJson> call, Throwable t) {
+            public void onSendPricesSuccess() {
                 progresshide();
-                Toast.makeText(PreciosEspecialesActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSendPricesError() {
+                progresshide();
+                Toast.makeText(getApplicationContext(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -4,7 +4,7 @@ android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:orientation="vertical"
 xmlns:tools="http://schemas.android.com/tools"
-tools:context=".ui.printer.ConfigPrinterActivity">
+tools:context=".ui.printer.ConfigurePrinterFragment">
 
 
 <!--Layouy Principal-->

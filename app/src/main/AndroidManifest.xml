@@ -96,7 +96,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.precaptura.PreCapturaActivity"
+            android:name=".ui.precaptura.PrecaptureActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity

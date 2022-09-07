@@ -40,6 +40,8 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -1013,26 +1015,18 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClientJson clienteRF = new ClientJson();
-        clienteRF.setClients(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClientJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
-                if(response.isSuccessful()){
-                    progresshide();
-                    Toast.makeText(ActualizaClienteActivity.this, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSaveClientSuccess() {
+                progresshide();
+                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
-            public void onFailure(Call<ClientJson> call, Throwable t) {
+            public void onSaveClientError() {
                 progresshide();
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

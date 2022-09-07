@@ -38,6 +38,8 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.interactor.product.GetProductInteractor;
+import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.models.json.ProductJson;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -568,26 +570,18 @@ public class RegistrarProductoActivity extends AppCompatActivity {
             listaProductos.add(producto);
         }
 
-        ProductJson productoRF = new ProductJson();
-        productoRF.setProducts(listaProductos);
-        String json = new Gson().toJson(productoRF);
-        Log.d("SinProductos", json);
-
-        Call<ProductJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendProducto(productoRF);
-
-        loadClientes.enqueue(new Callback<ProductJson>() {
+        new GetProductsInteractorImp().executeSaveProducts(listaProductos, new GetProductInteractor.OnSaveProductsListener() {
             @Override
-            public void onResponse(Call<ProductJson> call, Response<ProductJson> response) {
-                if(response.isSuccessful()){
-                    progresshide();
-                    Toast.makeText(RegistrarProductoActivity.this, "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSaveProductsSuccess() {
+                progresshide();
+                Toast.makeText(getApplicationContext(), "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
-            public void onFailure(Call<ProductJson> call, Throwable t) {
+            public void onSaveProductsError() {
                 progresshide();
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los productos", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

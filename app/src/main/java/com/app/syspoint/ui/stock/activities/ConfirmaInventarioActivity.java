@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.InventarioBean;
 import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.doments.StockTicket;
+import com.app.syspoint.documents.StockTicket;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
 import com.app.syspoint.utils.Utils;
 

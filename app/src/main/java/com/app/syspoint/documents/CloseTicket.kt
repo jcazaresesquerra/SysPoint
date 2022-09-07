@@ -1,4 +1,4 @@
-package com.app.syspoint.doments
+package com.app.syspoint.documents
 
 import android.app.Activity
 import com.app.syspoint.repository.database.bean.AppBundle

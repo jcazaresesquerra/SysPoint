@@ -17,12 +17,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.app.syspoint.models.json.PaymentJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
@@ -39,12 +44,11 @@ import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.PaymentModelDao;
 import com.app.syspoint.repository.database.dao.ChargesDao;
-import com.app.syspoint.doments.DepositTicket;
+import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.repository.request.http.ApiServices;
 import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.json.RequestCobranza;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -77,7 +81,7 @@ public class CobranzaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cobranza);
 
-        donwloadCobranza();
+        downloadCharge();
         initToolbar();
         initControls();
         initRecyclerViews();
@@ -114,58 +118,19 @@ public class CobranzaActivity extends AppCompatActivity {
         }
     }
 
-    private void donwloadCobranza() {
-        RequestCobranza requestCobranza = new RequestCobranza();
-        requestCobranza.setCuenta(clienteGlobal);
-        Call<PaymentJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
-        getCobranza.enqueue(new Callback<PaymentJson>() {
-            @Override
-            public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
-                if (response.isSuccessful()) {
-                    PaymentDao paymentDao = new PaymentDao();
-                    for (Payment item : response.body().getPayments()) {
+    private void downloadCharge() {
 
-                        CobranzaBean cobranzaBean = paymentDao.getByCobranza(item.getCobranza());
-                        if (cobranzaBean == null) {
-                            final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final PaymentDao paymentDao1 = new PaymentDao();
-                            cobranzaBean1.setCobranza(item.getCobranza());
-                            cobranzaBean1.setCliente(item.getCuenta());
-                            cobranzaBean1.setImporte(item.getImporte());
-                            cobranzaBean1.setSaldo(item.getSaldo());
-                            cobranzaBean1.setVenta(item.getVenta());
-                            cobranzaBean1.setEstado(item.getEstado());
-                            cobranzaBean1.setObservaciones(item.getObservaciones());
-                            cobranzaBean1.setFecha(item.getFecha());
-                            cobranzaBean1.setHora(item.getHora());
-                            cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaBean1.setIsCheck(false);
-                            paymentDao1.insert(cobranzaBean1);
-                        } else {
-                            cobranzaBean.setCobranza(item.getCobranza());
-                            cobranzaBean.setCliente(item.getCuenta());
-                            cobranzaBean.setImporte(item.getImporte());
-                            cobranzaBean.setSaldo(item.getSaldo());
-                            cobranzaBean.setVenta(item.getVenta());
-                            cobranzaBean.setEstado(item.getEstado());
-                            cobranzaBean.setObservaciones(item.getObservaciones());
-                            cobranzaBean.setFecha(item.getFecha());
-                            cobranzaBean.setHora(item.getHora());
-                            cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaBean.setIsCheck(false);
-                            paymentDao.save(cobranzaBean);
-                        }
-                    }
-                    //Toast.makeText(Ma, "Cobranza sincronizada", Toast.LENGTH_LONG).show();
-                }
+        new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
+            @Override
+            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                Toast.makeText(getApplicationContext(), "Cobranza sincronizada", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<PaymentJson> call, Throwable t) {
-
+            public void onGetChargeByClientError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar las cobranzas", Toast.LENGTH_LONG).show();
             }
         });
-
     }
 
     private void initControls() {
@@ -467,26 +432,18 @@ public class CobranzaActivity extends AppCompatActivity {
                 listaCobranza.add(cobranza);
             }
 
-            PaymentJson cobranzaJson = new PaymentJson();
-            cobranzaJson.setPayments(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<PaymentJson>() {
+            new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
                 @Override
-                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CobranzaActivity.this, "Cobranza sincroniza", Toast.LENGTH_LONG).show();
-                    }
+                public void onUpdateChargeSuccess() {
+                    Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
-                public void onFailure(Call<PaymentJson> call, Throwable t) {
-
+                public void onUpdateChargeError() {
+                    Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
+
             return null;
         }
     }
@@ -550,22 +507,15 @@ public class CobranzaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClientJson clienteRF = new ClientJson();
-        clienteRF.setClients(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("ClientesCobranza", json);
-
-        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClientJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClientJson> call, Throwable t) {
+            public void onSaveClientError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

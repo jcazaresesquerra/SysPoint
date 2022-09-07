@@ -36,7 +36,7 @@ import com.app.syspoint.repository.database.bean.CobrosBean;
 import com.app.syspoint.repository.database.bean.PrinterBean;
 import com.app.syspoint.repository.database.dao.ChargesDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.doments.DepositTicket;
+import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
 import com.app.syspoint.utils.Actividades;
 

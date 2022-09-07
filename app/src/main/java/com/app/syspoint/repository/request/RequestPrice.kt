@@ -5,6 +5,10 @@ import com.app.syspoint.interactor.prices.PriceInteractor
 import com.app.syspoint.models.Price
 import com.app.syspoint.models.json.RequestClients
 import com.app.syspoint.models.json.SpecialPriceJson
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean
+import com.app.syspoint.repository.database.dao.ClientDao
+import com.app.syspoint.repository.database.dao.ProductDao
+import com.app.syspoint.repository.database.dao.SpecialPricesDao
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
@@ -52,7 +56,43 @@ class RequestPrice {
             specialPrices.enqueue(object: Callback<SpecialPriceJson> {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
                     if (response.isSuccessful) {
-                        onGetSpecialPricesListener.onGetSpecialPricesSuccess(response)
+                        val priceList = arrayListOf<PreciosEspecialesBean>()
+                        for (item in response.body()!!.prices!!) {
+
+                            //Para obtener los datos del cliente
+                            val clientDao = ClientDao()
+                            val clienteBean = clientDao.getClientByAccount(item!!.cliente) ?: return
+
+                            //Para obtener los datos del producto
+                            val productDao = ProductDao()
+                            val productoBean =
+                                productDao.getProductoByArticulo(item.articulo) ?: return
+                            val specialPricesDao = SpecialPricesDao()
+                            val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
+                                productoBean.articulo,
+                                clienteBean.cuenta
+                            )
+
+                            //Si no hay precios especiales entonces crea un precio
+                            if (preciosEspecialesBean == null) {
+                                val dao = SpecialPricesDao()
+                                val bean = PreciosEspecialesBean()
+                                bean.cliente = clienteBean.cuenta
+                                bean.articulo = productoBean.articulo
+                                bean.precio = item.precio
+                                bean.active = item.active == 1
+                                dao.insert(bean)
+                                priceList.add(bean)
+                            } else {
+                                preciosEspecialesBean.cliente = clienteBean.cuenta
+                                preciosEspecialesBean.articulo = productoBean.articulo
+                                preciosEspecialesBean.precio = item.precio
+                                preciosEspecialesBean.active = item.active == 1
+                                specialPricesDao.save(preciosEspecialesBean)
+                                priceList.add(preciosEspecialesBean)
+                            }
+                        }
+                        onGetSpecialPricesListener.onGetSpecialPricesSuccess(priceList)
                     } else {
                         onGetSpecialPricesListener.onGetSpecialPricesError()
                     }
@@ -76,7 +116,43 @@ class RequestPrice {
             pricesByClient.enqueue(object: Callback<SpecialPriceJson> {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
                     if (response.isSuccessful) {
-                        onGetPricesByClientListener.onGetPricesByClientSuccess(response)
+                        val pricesByClientList = arrayListOf<PreciosEspecialesBean>()
+                        for (item in response.body()!!.prices!!) {
+
+                            //Para obtener los datos del cliente
+                            val clientDao = ClientDao()
+                            val clienteBean = clientDao.getClientByAccount(item!!.cliente) ?: return
+
+                            //Para obtener los datos del producto
+                            val productDao = ProductDao()
+                            val productoBean =
+                                productDao.getProductoByArticulo(item!!.articulo) ?: return
+                            val specialPricesDao = SpecialPricesDao()
+                            val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
+                                productoBean.articulo,
+                                clienteBean.cuenta
+                            )
+
+                            //Si no hay precios especiales entonces crea un precio
+                            if (preciosEspecialesBean == null) {
+                                val dao = SpecialPricesDao()
+                                val bean = PreciosEspecialesBean()
+                                bean.cliente = clienteBean.cuenta
+                                bean.articulo = productoBean.articulo
+                                bean.precio = item.precio
+                                bean.active = item.active == 1
+                                dao.insert(bean)
+                                pricesByClientList.add(bean)
+                            } else {
+                                preciosEspecialesBean.cliente = clienteBean.cuenta
+                                preciosEspecialesBean.articulo = productoBean.articulo
+                                preciosEspecialesBean.precio = item.precio
+                                preciosEspecialesBean.active = item.active == 1
+                                specialPricesDao.save(preciosEspecialesBean)
+                                pricesByClientList.add(preciosEspecialesBean)
+                            }
+                        }
+                        onGetPricesByClientListener.onGetPricesByClientSuccess(pricesByClientList)
                     } else {
                         onGetPricesByClientListener.onGGetPricesByClientError()
                     }

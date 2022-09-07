@@ -33,6 +33,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.app.syspoint.models.json.PaymentJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
@@ -57,7 +61,7 @@ import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.repository.database.dao.SellsDao;
-import com.app.syspoint.doments.SellTicket;
+import com.app.syspoint.documents.SellTicket;
 import com.app.syspoint.repository.request.http.ApiServices;
 import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.repository.request.http.Servicio;
@@ -422,25 +426,18 @@ public class ListaVentasFragment extends Fragment {
                 listaCobranza.add(cobranza);
             }
 
-            PaymentJson cobranzaJson = new PaymentJson();
-            cobranzaJson.setPayments(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<PaymentJson>() {
+            new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
                 @Override
-                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
-                    if (response.isSuccessful()) {
-                    }
+                public void onSaveChargeSuccess() {
+                    Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
-                public void onFailure(Call<PaymentJson> call, Throwable t) {
-
+                public void onSaveChargeError() {
+                    Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
+
             return null;
         }
     }
@@ -506,22 +503,15 @@ public class ListaVentasFragment extends Fragment {
             listaClientes.add(cliente);
         }
 
-        ClientJson clienteRF = new ClientJson();
-        clienteRF.setClients(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("ClientesCobranza", json);
-
-        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClientJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClientJson> call, Throwable t) {
+            public void onSaveClientError() {
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

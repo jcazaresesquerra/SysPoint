@@ -27,6 +27,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.visit.VisitInteractor;
+import com.app.syspoint.interactor.visit.VisitInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.app.syspoint.models.json.VisitJson;
 import com.app.syspoint.utils.cache.CacheInteractor;
@@ -272,22 +276,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClientJson clienteRF = new ClientJson();
-        clienteRF.setClients(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClientJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClientJson> call, Throwable t) {
+            public void onSaveClientError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -446,25 +443,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaVisitas.add(visita);
         }
 
-        VisitJson visitaJsonRF = new VisitJson();
-        visitaJsonRF.setVisits(listaVisitas);
-        String json = new Gson().toJson(visitaJsonRF);
-        Log.d("SinEmpleados", json);
-
-        Call<VisitJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
-
-        loadVisitas.enqueue(new Callback<VisitJson>() {
+        new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
             @Override
-            public void onResponse(Call<VisitJson> call, Response<VisitJson> response) {
-                if(response.isSuccessful()){
-                    //Toast.makeText(FinalizaPrecapturaActivity.this, "Visita Sincronizada", Toast.LENGTH_LONG).show();
-
-                }
+            public void onSaveVisitSuccess() {
+                Toast.makeText(getApplicationContext(), "Visita sincroniza", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<VisitJson> call, Throwable t) {
-
+            public void onSaveVisitError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
             }
         });
     }

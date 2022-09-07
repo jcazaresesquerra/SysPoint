@@ -1,4 +1,4 @@
-package com.app.syspoint.doments
+package com.app.syspoint.documents
 
 import com.app.syspoint.repository.database.bean.CobrosBean
 import com.app.syspoint.utils.Utils

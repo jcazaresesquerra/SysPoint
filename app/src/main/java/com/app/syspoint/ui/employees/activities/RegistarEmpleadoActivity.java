@@ -38,6 +38,10 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
+import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
+import com.app.syspoint.interactor.roles.RolInteractor;
+import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.models.json.EmployeeJson;
 import com.app.syspoint.models.json.RolJson;
 import com.google.gson.Gson;
@@ -840,26 +844,17 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             listaRoles.add(role);
         }
 
-
-        final RolJson rolsJson = new RolJson();
-        rolsJson.setRoles(listaRoles);
-
-        Call<RolJson> enviaRoles = ApiServices.getClientRestrofit().create(PointApi.class).saveRoles(rolsJson);
-        String json = new Gson().toJson(rolsJson);
-        Log.d("Roles", json);
-        enviaRoles.enqueue(new Callback<RolJson>() {
+        new RolInteractorImp().executeSaveRoles(listaRoles, new RolInteractor.OnSaveRolesListener() {
             @Override
-            public void onResponse(Call<RolJson> call, Response<RolJson> response) {
-
-                if (response.isSuccessful()){
-                }
+            public void onSaveRolesSuccess() {
+                Toast.makeText(getApplicationContext(), "Rol sincronizado", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<RolJson> call, Throwable t) {
+            public void onSaveRolesError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar el rol", Toast.LENGTH_LONG).show();
             }
         });
-
     }
 
     private void testLoadEmpleado(String id){
@@ -984,26 +979,18 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             listEmpleados.add(empleado);
         }
 
-        EmployeeJson empleadoRF = new EmployeeJson();
-        empleadoRF.setEmployees(listEmpleados);
-        String json = new Gson().toJson(empleadoRF);
-        Log.d("SinEmpleados", json);
-
-        Call<EmployeeJson> loadEmleado = ApiServices.getClientRestrofit().create(PointApi.class).sendEmpleado(empleadoRF);
-
-        loadEmleado.enqueue(new Callback<EmployeeJson>() {
+        new GetEmployeesInteractorImp().executeSaveEmployees(listEmpleados, new GetEmployeeInteractor.SaveEmployeeListener() {
             @Override
-            public void onResponse(Call<EmployeeJson> call, Response<EmployeeJson> response) {
-                if(response.isSuccessful()){
-                    progresshide();
-                    Toast.makeText(RegistarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSaveEmployeeSuccess() {
+                progresshide();
+                Toast.makeText(getApplicationContext(), "Empleados sincronizados", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
-            public void onFailure(Call<EmployeeJson> call, Throwable t) {
+            public void onSaveEmployeeError() {
                 progresshide();
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

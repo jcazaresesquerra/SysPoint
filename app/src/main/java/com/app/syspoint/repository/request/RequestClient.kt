@@ -64,8 +64,50 @@ class RequestClient {
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
+                            } else {
+                                bean.nombre_comercial = item.nombreComercial
+                                bean.calle = item.calle
+                                bean.numero = item.numero
+                                bean.colonia = item.colonia
+                                bean.ciudad = item.ciudad
+                                bean.codigo_postal = item.codigoPostal
+                                bean.fecha_registro = item.fechaRegistro
+                                bean.fecha_baja = item.fechaBaja
+                                bean.cuenta = item.cuenta
+                                bean.grupo = item.grupo
+                                bean.categoria = item.categoria
+                                bean.status = item.status == 1
+                                bean.consec = item.consec
+                                if (bean.visitado == 0) {
+                                    bean.visitado = 0
+                                } else if (bean.visitado == 1) {
+                                    bean.visitado = 1
+                                }
+                                bean.region = item.region
+                                bean.sector = item.sector
+                                bean.rango = item.rango
+                                bean.secuencia = item.secuencia
+                                bean.periodo = item.periodo
+                                bean.ruta = item.ruta
+                                bean.lun = item.lun
+                                bean.mar = item.mar
+                                bean.mie = item.mie
+                                bean.jue = item.jue
+                                bean.vie = item.vie
+                                bean.sab = item.sab
+                                bean.dom = item.dom
+                                bean.latitud = item.latitud
+                                bean.longitud = item.longitud
+                                bean.contacto_phone = item.phone_contacto
+                                bean.recordatorio = item.recordatorio
+                                bean.visitasNoefectivas = item.visitas
+                                bean.is_credito = item.isCredito == 1
+                                bean.limite_credito = item.limite_credito
+                                bean.saldo_credito = item.saldo_credito
+                                bean.matriz = item.matriz
+                                dao.save(bean)
+                                clientList.add(bean)
                             }
-
                         }
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
                     } else {

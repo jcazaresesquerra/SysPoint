@@ -45,7 +45,7 @@
     <fragment
         android:screenOrientation="portrait"
         android:id="@+id/nav_printer"
-        android:name="com.app.syspoint.ui.printer.ConfigPrinterActivity"
+        android:name="com.app.syspoint.ui.printer.ConfigurePrinterFragment"
         android:label="@string/imprimir"
         tools:layout="@layout/activity_config_printer"/>
 

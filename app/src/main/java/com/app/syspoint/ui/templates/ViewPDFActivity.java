@@ -29,6 +29,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.models.json.ClientJson;
 import com.app.syspoint.models.json.PaymentJson;
 import com.google.gson.Gson;
@@ -229,26 +233,18 @@ public class ViewPDFActivity extends AppCompatActivity {
                 listaCobranza.add(cobranza);
             }
 
-            PaymentJson cobranzaJson = new PaymentJson();
-            cobranzaJson.setPayments(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<PaymentJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<PaymentJson>() {
+            new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
                 @Override
-                public void onResponse(Call<PaymentJson> call, Response<PaymentJson> response) {
-                    if (response.isSuccessful()) {
-                        //Toast.makeText(ViewPDFActivity.this, "Cobranza sincroniza", Toast.LENGTH_LONG).show();
-                    }
+                public void onSaveChargeSuccess() {
+                    Toast.makeText(getApplicationContext(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
-                public void onFailure(Call<PaymentJson> call, Throwable t) {
-
+                public void onSaveChargeError() {
+                    Toast.makeText(getApplicationContext(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
+
             return null;
         }
     }
@@ -358,22 +354,15 @@ public class ViewPDFActivity extends AppCompatActivity {
             listaClientes.add(client);
         }
 
-        ClientJson clienteRF = new ClientJson();
-        clienteRF.setClients(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClientJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClientJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClientJson> call, Response<ClientJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClientJson> call, Throwable t) {
+            public void onSaveClientError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

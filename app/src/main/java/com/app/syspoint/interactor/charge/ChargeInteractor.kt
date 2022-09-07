@@ -2,16 +2,17 @@ package com.app.syspoint.interactor.charge
 
 import com.app.syspoint.models.Payment
 import com.app.syspoint.models.json.PaymentJson
+import com.app.syspoint.repository.database.bean.CobranzaBean
 import retrofit2.Response
 
 abstract class ChargeInteractor {
     interface OnGetChargeListener {
-        fun onGetChargeSuccess(response: Response<PaymentJson>)
+        fun onGetChargeSuccess(chargeList: List<CobranzaBean>)
         fun onGetChargeError()
     }
 
     interface OnGetChargeByClientListener {
-        fun onGetChargeByClientSuccess(response: Response<PaymentJson>)
+        fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>)
         fun onGetChargeByClientError()
     }
 
