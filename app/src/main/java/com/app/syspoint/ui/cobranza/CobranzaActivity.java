@@ -81,12 +81,12 @@ public class CobranzaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cobranza);
 
-        downloadCharge();
         initToolbar();
         initControls();
         initRecyclerViews();
         initParametros();
         eliminaPartidas();
+        downloadCharge();
 
     }
 
