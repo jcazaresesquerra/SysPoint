@@ -9,6 +9,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.models.VisitType
+import com.app.syspoint.utils.click
 
 class ViewTypeAdapter(data: List<VisitType>, onItemClickListener: OnItemClickListener): RecyclerView.Adapter<ViewTypeAdapter.Holder>() {
 
@@ -38,9 +39,13 @@ class ViewTypeAdapter(data: List<VisitType>, onItemClickListener: OnItemClickLis
         private val textViewTipo: TextView
         private val card_tipo_seleccion: CardView
 
-        fun bind(item: VisitType, onItemClickListener: ViewTypeAdapter.OnItemClickListener) {
+        fun bind(item: VisitType, onItemClickListener: OnItemClickListener) {
             textViewTipo.text = "" + item.name
-            itemView.setOnClickListener { onItemClickListener.onItemClick(adapterPosition) }
+            itemView click {
+                itemView.isEnabled = false
+                onItemClickListener.onItemClick(adapterPosition)
+                itemView.isEnabled = true
+            }
             if (item.isSelected) {
                 card_tipo_seleccion.setBackgroundColor(Color.CYAN)
             } else {

@@ -459,7 +459,7 @@ public class VentasActivity extends AppCompatActivity {
                                         String ventaID = String.valueOf(ventasBean.getVenta());
 
                                         //Creamos el template del timbre
-                                        SellTicket sellTicket = new SellTicket(VentasActivity.this);
+                                        SellTicket sellTicket = new SellTicket();
                                         sellTicket.setBean(ventasBean);
                                         sellTicket.template();
 
@@ -1305,6 +1305,7 @@ public class VentasActivity extends AppCompatActivity {
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();

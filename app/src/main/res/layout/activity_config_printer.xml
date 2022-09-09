@@ -50,15 +50,9 @@ tools:context=".ui.printer.ConfigurePrinterFragment">
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:text="Dispositivos encontrados:"
             android:textColor="#000" />
-
-
     </TableRow>
 
-
-
-
     <ListView
-
         android:id="@+id/paired_devices"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

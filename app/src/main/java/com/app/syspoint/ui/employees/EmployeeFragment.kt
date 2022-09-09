@@ -141,7 +141,9 @@ class EmployeeFragment: Fragment() {
 
     private fun setUpListeners() {
         binding.floatingActionButton click {
+            binding.floatingActionButton.isEnabled = false
             showRegisterEmployee()
+            binding.floatingActionButton.isEnabled = true
         }
     }
 

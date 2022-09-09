@@ -385,7 +385,7 @@ public class ListaVentasFragment extends Fragment {
                     dialogs.show();
                 } else {
 
-                    SellTicket sellTicket = new SellTicket(getActivity());
+                    SellTicket sellTicket = new SellTicket();
                     sellTicket.setBean(venta);
                     sellTicket.template();
 

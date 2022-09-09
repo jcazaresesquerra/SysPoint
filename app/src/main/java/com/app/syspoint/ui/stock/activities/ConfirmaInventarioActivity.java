@@ -117,7 +117,7 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
                                 final InventarioBean inventarioBean = new InventarioBean();
 
-                                StockTicket stockTicket = new StockTicket(ConfirmaInventarioActivity.this);
+                                StockTicket stockTicket = new StockTicket();
                                 stockTicket.setBean(inventarioBean);
                                 stockTicket.template();
 

@@ -30,6 +30,8 @@ class ProductFragment: Fragment() {
     private lateinit var adapter: AdapterListaProductos
     private lateinit var progressDialog: ProgressDialog
 
+    private var syncProductsClicked = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -76,7 +78,10 @@ class ProductFragment: Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId) {
             R.id.syncProductos -> {
-                viewModel.checkConnectivity()
+                if (!syncProductsClicked) {
+                    syncProductsClicked = true
+                    viewModel.checkConnectivity()
+                }
                 true
             }
             else -> {
@@ -104,6 +109,7 @@ class ProductFragment: Fragment() {
                     progressDialog.dismiss()
             }
             is ProductViewState.NetworkDisconnectedState -> {
+                syncProductsClicked = false
                 showDialogNotConnectionInternet()
             }
             is ProductViewState.EditProductState -> {
@@ -123,9 +129,11 @@ class ProductFragment: Fragment() {
                 binding.rlprogressProductos.setInvisible()
             }
             is ProductViewState.GetProductsSuccess -> {
+                syncProductsClicked = false
                 refreshRecyclerView(productViewState.products)
             }
             is ProductViewState.GetProductsError -> {
+                syncProductsClicked = false
                 Toast.makeText(
                     requireContext(),
                     "Ha ocurrido un problema, vuelve a intentarlo",
@@ -137,7 +145,9 @@ class ProductFragment: Fragment() {
 
     private fun setUpListeners() {
         binding.fabAddProducto click {
+            binding.fabAddProducto.isEnabled = false
             showRegisterProduct()
+            binding.fabAddProducto.isEnabled = true
         }
     }
 

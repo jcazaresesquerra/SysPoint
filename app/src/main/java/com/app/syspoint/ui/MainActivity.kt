@@ -9,15 +9,17 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.navigation.Navigation
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
+import com.app.syspoint.databinding.NavHeaderMainBinding
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.NetworkStateTask
-import kotlinx.android.synthetic.main.app_bar_main.view.*
 
 class MainActivity: AppCompatActivity() {
 
@@ -35,7 +37,8 @@ class MainActivity: AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
-        setSupportActionBar(binding.root.app_bar_layout.toolbar)
+        setSupportActionBar(binding.appBarMain.toolbar)
+        setUpLogo()
 
         val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
 
@@ -71,10 +74,10 @@ class MainActivity: AppCompatActivity() {
             progressDialog.setCancelable(false)
             progressDialog.show()
             Handler().postDelayed({
-                NetworkStateTask({ connected: Boolean ->
+                NetworkStateTask { connected: Boolean ->
                     progressDialog.dismiss()
                     if (!connected) showDialogNotInternet()
-                }).execute()
+                }.execute()
             }, 100)
             if (destination.id == R.id.nav_ruta) {
                 Constants.solictaRuta = true
@@ -120,5 +123,19 @@ class MainActivity: AppCompatActivity() {
         (dialog.findViewById<View>(R.id.bt_close) as AppCompatButton).setOnClickListener { dialog.dismiss() }
         dialog.show()
         dialog.window!!.attributes = lp
+    }
+
+    private fun setUpLogo() {
+        val navHeaderMainBinding = NavHeaderMainBinding.bind(binding.navView.getHeaderView(0))
+
+        when (BuildConfig.FLAVOR) {
+            "donaqui" -> {
+                navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
+                navHeaderMainBinding.imageView.setImageResource(R.drawable.logo_donaqui)
+            }
+            else -> {
+                navHeaderMainBinding.imageView.setImageResource(R.drawable.logo)
+            }
+        }
     }
 }

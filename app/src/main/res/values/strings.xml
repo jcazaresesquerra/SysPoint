@@ -3,7 +3,6 @@
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
         AIzaSyCfsjZFl9Pn19TTtb3uSfPlr-aQPqlThJU
     </string>
-    <string name="app_name">App Point</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>

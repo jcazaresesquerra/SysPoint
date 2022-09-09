@@ -49,6 +49,9 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     private var conceptSelectedView: String? = null
     private var direccion: String? = null
 
+    private var finishPreSellClicked = false
+    private var confirmPrecaptureClicked = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -116,11 +119,15 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 return true
             }
             R.id.finish_preventa -> {
-                if (conceptSelectedView == null || conceptSelectedView!!.isEmpty() || conceptSelectedView === "") {
-                    showNotChecked()
-                    return false
-                } else {
-                    handleConfirmAction()
+                if (!finishPreSellClicked) {
+                    finishPreSellClicked = true
+                    if (conceptSelectedView == null || conceptSelectedView!!.isEmpty() || conceptSelectedView === "") {
+                        showNotChecked()
+                        return false
+                    } else {
+                        handleConfirmAction()
+                    }
+                    finishPreSellClicked = false
                 }
                 return true
             }
@@ -154,6 +161,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
             is PrecaptureViewState.PrecaptureFinished -> {
                 Actividades.getSingleton(this, FinalizaPrecapturaActivity::class.java).muestraActividad(precaptureViewState.params)
                 finish()
+                confirmPrecaptureClicked = false
             }
             is PrecaptureViewState.SaveClientSuccessState -> {
                 Toast.makeText(applicationContext, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show()
@@ -192,8 +200,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
         val manager = LinearLayoutManager(this)
         binding.rvTipoVisita.layoutManager = manager
 
-        adapter =
-            ViewTypeAdapter(data, object: ViewTypeAdapter.OnItemClickListener {
+        adapter = ViewTypeAdapter(data, object: ViewTypeAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int) {
                     for (i in data.indices) {
                         val item: VisitType = data[i]
@@ -247,8 +254,11 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 dialog.dismiss()
             }
             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
-                viewModel.confirmPrecapture(accountId, conceptSelectedView, latitud, longitud)
-                dialog.dismiss()
+                if (!confirmPrecaptureClicked) {
+                    confirmPrecaptureClicked = true
+                    viewModel.confirmPrecapture(accountId, conceptSelectedView, latitud, longitud)
+                    dialog.dismiss()
+                }
             }
             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) {
                 dialog.dismiss()

@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.ui.MainActivity
@@ -31,7 +31,9 @@ class LoginActivity: AppCompatActivity() {
 
         setContentView(binding.root)
 
-        binding.appVersion.text = getString(R.string.app_name) + "ver" + BuildConfig.VERSION_NAME
+        binding.appVersion.text = getString(R.string.app_name) + " Ver. " + BuildConfig.VERSION_NAME
+
+        setUpLogo()
         setUpListeners()
         checkPermissions()
 
@@ -47,9 +49,11 @@ class LoginActivity: AppCompatActivity() {
 
     private fun setUpListeners() {
         binding.btnSignIn click {
+            binding.btnSignIn.isEnabled = false
             val email: String = binding.etLoginEmail.text.toString()
             val password: String = binding.etLoginPassword.text.toString()
             viewModel.login(email, password)
+            binding.btnSignIn.isEnabled = true
         }
     }
 
@@ -107,5 +111,16 @@ class LoginActivity: AppCompatActivity() {
 
         dialog.setCancelable(false)
         dialog.show()
+    }
+
+    private fun setUpLogo() {
+        when (BuildConfig.FLAVOR) {
+            "donaqui" -> {
+                binding.imageView.setImageResource(R.drawable.logo_donaqui)
+            }
+            else -> {
+                binding.imageView.setImageResource(R.drawable.logo)
+            }
+        }
     }
 }

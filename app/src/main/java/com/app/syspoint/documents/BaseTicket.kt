@@ -7,4 +7,12 @@ abstract class BaseTicket {
     open lateinit var bean: Bean
 
     open fun template() {}
+
+    open fun buildSyspointHeader(): String {
+       return ""
+    }
+
+    open fun buildDonAquiHeader(): String {
+        return ""
+    }
 }

@@ -19,13 +19,13 @@ android {
     lintOptions {
         checkReleaseBuilds false
     }
-    compileSdkVersion 32
-    buildToolsVersion "30.0.2"
+    compileSdkVersion 33
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.app.syspoint"
         minSdkVersion 22
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 4
         versionName "2.0"
 
@@ -36,6 +36,43 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+
+        /**
+         * The `initWith` property allows you to copy configurations from other build types,
+         * then configure only the settings you want to change. This one copies the debug build
+         * type, and then changes the manifest placeholder and application ID.
+         */
+        staging {
+            initWith debug
+            manifestPlaceholders = [hostName:"internal.example.com"]
+        }
+    }
+
+    flavorDimensions "version"
+    productFlavors {
+        syspoint {
+            // Assigns this product flavor to the "version" flavor dimension.
+            // If you are using only one dimension, this property is optional,
+            // and the plugin automatically assigns all the module's flavors to
+            // that dimension.
+            dimension "version"
+            resValue "string", "app_name", "App Point"
+            manifestPlaceholders = [
+                    appIcon: "@drawable/logo",
+                    appIconRound: "@drawable/logo"
+            ]
+        }
+        donaqui {
+            dimension "version"
+            resValue "string", "app_name", "Aguas Don Aqui"
+            manifestPlaceholders = [
+                    appIcon: "@drawable/logo_donaqui",
+                    appIconRound: "@drawable/logo_donaqui"
+            ]
         }
     }
     compileOptions {

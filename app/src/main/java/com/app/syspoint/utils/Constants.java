@@ -9,6 +9,8 @@ public class Constants {
 
     public static String newLine = "\n";
     public static String divider = "****************";
+    //Contiene la línea
+    public static String line = "================================";
 
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
 

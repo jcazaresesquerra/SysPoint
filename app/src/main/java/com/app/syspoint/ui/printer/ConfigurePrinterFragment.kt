@@ -1,6 +1,5 @@
 package com.app.syspoint.ui.printer
 
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
@@ -23,6 +22,9 @@ class ConfigurePrinterFragment: Fragment() {
 
     private var mBluetoothAdapter: BluetoothAdapter? = null
     private var mPairedDevicesArrayAdapter: ArrayAdapter<String>? = null
+
+    private var findPrinterClicked = false
+    private var confirmPrinterClicked = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -55,12 +57,16 @@ class ConfigurePrinterFragment: Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.buscarImpresoras -> {
-                Toast.makeText(context, "Buscando...", Toast.LENGTH_SHORT).show()
-                if (mBluetoothAdapter!!.isEnabled) {
-                    setUpBluetoothAdapter()
-                } else {
-                    val enableBluetooth = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                    startActivityForResult(enableBluetooth, 0)
+                if (!findPrinterClicked) {
+                    findPrinterClicked = true
+                    Toast.makeText(context, "Buscando...", Toast.LENGTH_SHORT).show()
+                    if (mBluetoothAdapter!!.isEnabled) {
+                        setUpBluetoothAdapter()
+                    } else {
+                        val enableBluetooth = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        startActivityForResult(enableBluetooth, 0)
+                    }
+                    findPrinterClicked = false
                 }
                 true
             }
@@ -81,6 +87,7 @@ class ConfigurePrinterFragment: Fragment() {
 
         binding.pairedDevices.adapter = mPairedDevicesArrayAdapter
         binding.pairedDevices.setOnItemClickListener { adapterView, view, i, l ->
+            binding.pairedDevices.isEnabled = false
             try {
                 mBluetoothAdapter!!.cancelDiscovery()
                 val mDeviceInfo = (view as TextView).text.toString()
@@ -93,18 +100,26 @@ class ConfigurePrinterFragment: Fragment() {
                     .setAnimationEnabled(false)
                     .setIcon(R.drawable.ic_print_black, R.color.purple_500) {
                         dialog.dismiss()
+                        binding.pairedDevices.isEnabled = true
                     }
                     .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
-                        viewModel.configurePrinter(mDeviceAddress, mDeviceInfo)
-                        dialog.dismiss()
+                        if (!confirmPrinterClicked) {
+                            confirmPrinterClicked = true
+                            viewModel.configurePrinter(mDeviceAddress, mDeviceInfo)
+                            dialog.dismiss()
+                            confirmPrinterClicked = false
+                        }
+                        binding.pairedDevices.isEnabled = true
                     }
                     .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) {
                         dialog.dismiss()
+                        binding.pairedDevices.isEnabled = true
                     }
                 dialog.setCancelable(false)
                 dialog.show()
             } catch (ex: Exception) {
                 ex.printStackTrace()
+                binding.pairedDevices.isEnabled = true
             }
         }
 
