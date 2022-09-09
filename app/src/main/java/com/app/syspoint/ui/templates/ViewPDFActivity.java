@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,9 +32,6 @@ import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.app.syspoint.models.json.PaymentJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
@@ -54,8 +50,6 @@ import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.SellsDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
@@ -73,10 +67,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class ViewPDFActivity extends AppCompatActivity {
@@ -148,7 +138,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         if (Utils.isNetworkAvailable(getApplication())){
             syncCloudVenta(venta);
             sincronizaCliente(clienteID);
-            new loadCobranza().execute();
+            loadCobranza();
         }
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -207,11 +197,7 @@ public class ViewPDFActivity extends AppCompatActivity {
     }
 
 
-    public class loadCobranza extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-
+    public void loadCobranza() {
 
             final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -244,9 +230,6 @@ public class ViewPDFActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
-
-            return null;
-        }
     }
 
 

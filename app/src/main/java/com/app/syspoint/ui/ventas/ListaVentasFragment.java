@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -341,11 +340,11 @@ public class ListaVentasFragment extends Fragment {
                                                     clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
                                                     clientDao.save(clienteBean);
                                                     testLoadClientes(String.valueOf(clienteBean.getId()));
-                                                    new loadCobranza().execute();
+                                                    loadCobranza();
                                                 }
                                             }
                                             if (connected) {
-                                                new loadCobranza().execute();
+                                                loadCobranza();
                                             }
                                         }
 
@@ -402,10 +401,7 @@ public class ListaVentasFragment extends Fragment {
     }
 
 
-    public class loadCobranza extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
+    private void loadCobranza() {
 
             final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -437,9 +433,6 @@ public class ListaVentasFragment extends Fragment {
                     Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
-
-            return null;
-        }
     }
 
 

@@ -2,7 +2,6 @@ package com.app.syspoint.ui.home;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -169,54 +168,49 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-                new SendVentas().execute();
-                new loadCobranza().execute();
-                new loadAbonos().execute();
-                new loadVisitas().execute();
-                new loadClientes().execute();
-                new loadPreciosEspeciales().execute();
+                sendVentas();
+                loadCobranza();
+                loadAbonos();
+                loadVisitas();
+                loadClientes();
+                loadPreciosEspeciales();
             }
         }).execute(), 100);
     }
 
-    private class loadAbonos extends AsyncTask<String, Void, String>{
+    private void loadAbonos() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
+        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
-            final PaymentDao paymentDao = new PaymentDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
 
-            List<Payment> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Payment cobranza = new Payment();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
             }
 
-            new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
-                @Override
-                public void onUpdateChargeSuccess() {
-                    Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onUpdateChargeError() {
-                    Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
-                }
-            });
-            return null;
-        }
+            @Override
+            public void onUpdateChargeError() {
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
@@ -697,102 +691,85 @@ public class HomeFragment extends Fragment {
         rlprogress.setVisibility(View.GONE);
     }
 
-    public class SendVentas extends AsyncTask<String, Void, String> {
+    private void sendVentas() {
+        try {
+            final SincVentas sincVentas = new SincVentas(getActivity());
 
-        @Override
-        protected String doInBackground(String... strings) {
-
-
-            try {
-                final SincVentas sincVentas = new SincVentas(getActivity());
-
-                sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
-                    @Override
-                    public void onSuccess(JSONArray response) throws JSONException {
-                    }
-
-                    @Override
-                    public void onSuccessObject(JSONObject response) throws Exception {
-
-                    }
-                });
-
-                sincVentas.setOnError(new Servicio.ResponseOnError() {
-                    @Override
-                    public void onError(ANError error) {
-
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                    }
-                });
-
-                sincVentas.postObject();
-
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-    }
-
-    public class loadVisitas extends AsyncTask<String, Void, String> {
-
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            final VisitsDao visitsDao = new VisitsDao();
-            List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-            visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
-            final ClientDao clientDao = new ClientDao();
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-
-            if (vendedoresBean == null && getContext() != null) {
-                vendedoresBean = new CacheInteractor().getSeller();
-            }
-
-            List<Visit> listaVisitas = new ArrayList<>();
-            for (VisitasBean item : visitasBeanListBean) {
-                Visit visita = new Visit();
-                visita.setFecha(item.getFecha());
-                visita.setHora(item.getHora());
-                final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
-                visita.setCuenta(clienteBean.getCuenta());
-                visita.setLatidud(item.getLatidud());
-                visita.setLongitud(item.getLongitud());
-                visita.setMotivo_visita(item.getMotivo_visita());
-                if (vendedoresBean != null) {
-                    visita.setIdentificador(vendedoresBean.getIdentificador());
-                } else {
-                    Log.e(TAG, "vendedoresBean is null");
-                }
-
-                listaVisitas.add(visita);
-            }
-
-            new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
+            sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override
-                public void onSaveVisitSuccess() {
-                    Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+                public void onSuccess(JSONArray response) throws JSONException {
                 }
 
                 @Override
-                public void onSaveVisitError() {
-                    Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+                public void onSuccessObject(JSONObject response) throws Exception {
+
                 }
             });
 
-            return null;
+            sincVentas.setOnError(new Servicio.ResponseOnError() {
+                @Override
+                public void onError(ANError error) {
+
+                }
+
+                @Override
+                public void onError(String error) {
+
+                }
+            });
+
+            sincVentas.postObject();
+
+        } catch (Exception e) {
+
         }
     }
 
-    public class loadCobranza extends AsyncTask<String, Void, String> {
+    private void loadVisitas() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        final VisitsDao visitsDao = new VisitsDao();
+        List<VisitasBean> visitasBeanListBean = new ArrayList<>();
+        visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        final ClientDao clientDao = new ClientDao();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean == null && getContext() != null) {
+            vendedoresBean = new CacheInteractor().getSeller();
+        }
+
+        List<Visit> listaVisitas = new ArrayList<>();
+        for (VisitasBean item : visitasBeanListBean) {
+            Visit visita = new Visit();
+            visita.setFecha(item.getFecha());
+            visita.setHora(item.getHora());
+            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
+            visita.setCuenta(clienteBean.getCuenta());
+            visita.setLatidud(item.getLatidud());
+            visita.setLongitud(item.getLongitud());
+            visita.setMotivo_visita(item.getMotivo_visita());
+            if (vendedoresBean != null) {
+                visita.setIdentificador(vendedoresBean.getIdentificador());
+            } else {
+                Log.e(TAG, "vendedoresBean is null");
+            }
+
+            listaVisitas.add(visita);
+        }
+
+        new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
+            @Override
+            public void onSaveVisitSuccess() {
+                Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveVisitError() {
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void loadCobranza() {
 
             final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -825,142 +802,128 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
                 }
             });
-
-            return null;
-        }
     }
 
 
-    public class loadPreciosEspeciales extends AsyncTask<String, Void, String> {
+    private void loadPreciosEspeciales() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        //Instancia la base de datos
+        final SpecialPricesDao dao = new SpecialPricesDao();
 
-            //Instancia la base de datos
-            final SpecialPricesDao dao = new SpecialPricesDao();
+        //Contiene la lista de precios de la db local
+        List<PreciosEspecialesBean> listaDB = new ArrayList<>();
 
-            //Contiene la lista de precios de la db local
-            List<PreciosEspecialesBean> listaDB = new ArrayList<>();
-
-            //Obtenemos la lista por id cliente
-            listaDB = dao.getPreciosBydate(Utils.fechaActual());
+        //Obtenemos la lista por id cliente
+        listaDB = dao.getPreciosBydate(Utils.fechaActual());
 
 
-            //Contiene la lista de lo que se envia al servidor
-            final List<Price> listaPreciosServidor = new ArrayList<>();
+        //Contiene la lista de lo que se envia al servidor
+        final List<Price> listaPreciosServidor = new ArrayList<>();
 
-            //Contien la lista de precios especiales locales
-            for (PreciosEspecialesBean items : listaDB) {
+        //Contien la lista de precios especiales locales
+        for (PreciosEspecialesBean items : listaDB) {
 
-                final Price precio = new Price();
-                if (items.getActive() == true) {
-                    precio.setActive(1);
-                } else {
-                    precio.setActive(0);
-                }
-
-                precio.setArticulo(items.getArticulo());
-                precio.setCliente(items.getCliente());
-                precio.setPrecio(items.getPrecio());
-                listaPreciosServidor.add(precio);
-
+            final Price precio = new Price();
+            if (items.getActive() == true) {
+                precio.setActive(1);
+            } else {
+                precio.setActive(0);
             }
 
-            new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
-                @Override
-                public void onSendPricesSuccess() {
-                    progresshide();
-                    Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
-                }
+            precio.setArticulo(items.getArticulo());
+            precio.setCliente(items.getCliente());
+            precio.setPrecio(items.getPrecio());
+            listaPreciosServidor.add(precio);
 
-                @Override
-                public void onSendPricesError() {
-                    progresshide();
-                    Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
-                }
-            });
-
-            return null;
         }
+
+        new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
+            @Override
+            public void onSendPricesSuccess() {
+                progresshide();
+                Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSendPricesError() {
+                progresshide();
+                Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    public class loadClientes extends AsyncTask<String, Void, String> {
+    public void loadClientes() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        final ClientDao clientDao = new ClientDao();
+        List<ClienteBean> listaClientesDB = new ArrayList<>();
+        listaClientesDB = clientDao.getClientsByDay(Utils.fechaActual());
 
-            final ClientDao clientDao = new ClientDao();
-            List<ClienteBean> listaClientesDB = new ArrayList<>();
-            listaClientesDB = clientDao.getClientsByDay(Utils.fechaActual());
+        List<Client> listaClientes = new ArrayList<>();
 
-            List<Client> listaClientes = new ArrayList<>();
-
-            for (ClienteBean item : listaClientesDB) {
-                Client cliente = new Client();
-                cliente.setNombreComercial(item.getNombre_comercial());
-                cliente.setCalle(item.getCalle());
-                cliente.setNumero(item.getNumero());
-                cliente.setColonia(item.getColonia());
-                cliente.setCiudad(item.getCiudad());
-                cliente.setCodigoPostal(item.getCodigo_postal());
-                cliente.setFechaRegistro(item.getFecha_registro());
-                cliente.setFechaBaja(item.getFecha_baja());
-                cliente.setCuenta(item.getCuenta());
-                cliente.setGrupo(item.getGrupo());
-                cliente.setCategoria(item.getCategoria());
-                if (item.getStatus() == false) {
-                    cliente.setStatus(0);
-                } else {
-                    cliente.setStatus(1);
-                }
-                cliente.setConsec(item.getConsec());
-                cliente.setRegion(item.getRegion());
-                cliente.setSector(item.getSector());
-                cliente.setRango(item.getRango());
-                cliente.setSecuencia(item.getSecuencia());
-                cliente.setPeriodo(item.getPeriodo());
-                cliente.setRuta(item.getRuta());
-                cliente.setLun(item.getLun());
-                cliente.setMar(item.getMar());
-                cliente.setMie(item.getMie());
-                cliente.setJue(item.getJue());
-                cliente.setVie(item.getVie());
-                cliente.setSab(item.getSab());
-                cliente.setDom(item.getDom());
-                cliente.setLatitud(item.getLatitud());
-                cliente.setLongitud(item.getLongitud());
-                cliente.setPhone_contacto("" + item.getContacto_phone());
-                cliente.setRecordatorio("" + item.getRecordatorio());
-                cliente.setVisitas(item.getVisitasNoefectivas());
-                if (item.getIs_credito()) {
-                    cliente.setCredito(1);
-                } else {
-                    cliente.setCredito(0);
-                }
-                cliente.setSaldo_credito(item.getSaldo_credito());
-                cliente.setLimite_credito(item.getLimite_credito());
-                if (item.getMatriz() == "null" && item.getMatriz() == null) {
-                    cliente.setMatriz("null");
-                } else {
-                    cliente.setMatriz(item.getMatriz());
-                }
-
-                listaClientes.add(cliente);
+        for (ClienteBean item : listaClientesDB) {
+            Client cliente = new Client();
+            cliente.setNombreComercial(item.getNombre_comercial());
+            cliente.setCalle(item.getCalle());
+            cliente.setNumero(item.getNumero());
+            cliente.setColonia(item.getColonia());
+            cliente.setCiudad(item.getCiudad());
+            cliente.setCodigoPostal(item.getCodigo_postal());
+            cliente.setFechaRegistro(item.getFecha_registro());
+            cliente.setFechaBaja(item.getFecha_baja());
+            cliente.setCuenta(item.getCuenta());
+            cliente.setGrupo(item.getGrupo());
+            cliente.setCategoria(item.getCategoria());
+            if (item.getStatus() == false) {
+                cliente.setStatus(0);
+            } else {
+                cliente.setStatus(1);
+            }
+            cliente.setConsec(item.getConsec());
+            cliente.setRegion(item.getRegion());
+            cliente.setSector(item.getSector());
+            cliente.setRango(item.getRango());
+            cliente.setSecuencia(item.getSecuencia());
+            cliente.setPeriodo(item.getPeriodo());
+            cliente.setRuta(item.getRuta());
+            cliente.setLun(item.getLun());
+            cliente.setMar(item.getMar());
+            cliente.setMie(item.getMie());
+            cliente.setJue(item.getJue());
+            cliente.setVie(item.getVie());
+            cliente.setSab(item.getSab());
+            cliente.setDom(item.getDom());
+            cliente.setLatitud(item.getLatitud());
+            cliente.setLongitud(item.getLongitud());
+            cliente.setPhone_contacto("" + item.getContacto_phone());
+            cliente.setRecordatorio("" + item.getRecordatorio());
+            cliente.setVisitas(item.getVisitasNoefectivas());
+            if (item.getIs_credito()) {
+                cliente.setCredito(1);
+            } else {
+                cliente.setCredito(0);
+            }
+            cliente.setSaldo_credito(item.getSaldo_credito());
+            cliente.setLimite_credito(item.getLimite_credito());
+            if (item.getMatriz() == "null" && item.getMatriz() == null) {
+                cliente.setMatriz("null");
+            } else {
+                cliente.setMatriz(item.getMatriz());
             }
 
-            new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
-                @Override
-                public void onSaveClientSuccess() {
-                    Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onSaveClientError() {
-                    Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
-                }
-            });
-            return null;
+            listaClientes.add(cliente);
         }
+
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
+            @Override
+            public void onSaveClientSuccess() {
+                Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveClientError() {
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 }

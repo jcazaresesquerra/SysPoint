@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,9 +32,6 @@ import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.app.syspoint.models.json.PaymentJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
@@ -54,8 +50,6 @@ import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.SellsDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
@@ -74,10 +68,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ImprimeAbonoActivity extends AppCompatActivity {
 
@@ -109,7 +99,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_imprime_abono);
         initToolBar();
         textViewStatus = findViewById(R.id.tvStatusPrinterCobro);
-        new loadAbonos().execute();
+        loadAbonos();
         Bundle bundle = getIntent().getExtras();
 
         if (bundle != null) {
@@ -180,45 +170,38 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     }
 
 
-    private class loadAbonos extends AsyncTask<String, Void, String>{
+    private void loadAbonos() {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
+        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
-        @Override
-        protected String doInBackground(String... strings) {
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
 
-            final PaymentDao paymentDao = new PaymentDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
-
-            List<Payment> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Payment cobranza = new Payment();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
             }
 
-            new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
-                @Override
-                public void onUpdateChargeSuccess() {
-                    Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onUpdateChargeError() {
-                    Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
-                }
-            });
-
-            return null;
-        }
+            @Override
+            public void onUpdateChargeError() {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
     private void initToolBar() {
 
