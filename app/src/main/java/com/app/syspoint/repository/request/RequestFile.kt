@@ -21,7 +21,7 @@ class RequestFile {
                 val imagenBody = RequestBody.create(MediaType.parse("image/jpg"), image)
                 imagen = MultipartBody.Part.createFormData("imagen", image.name, imagenBody)
             }
-            val sendFile = ApiServices.getClientRestrofit().create(
+            val sendFile = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).postFile(cobranza, imagen)
 

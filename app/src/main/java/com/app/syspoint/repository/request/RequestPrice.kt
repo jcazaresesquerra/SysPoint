@@ -25,7 +25,7 @@ class RequestPrice {
             val json = Gson().toJson(priceJson)
             Log.d("Sinc especiales", json)
 
-            val savePrice = ApiServices.getClientRestrofit().create(
+            val savePrice = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendPrecios(priceJson)
 
@@ -49,9 +49,9 @@ class RequestPrice {
         }
 
         fun requestAllPrices(onGetSpecialPricesListener: PriceInteractor.GetSpecialPricesListener) {
-            val specialPrices = ApiServices.getClientRestrofit().create(
+            val specialPrices = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).pricesEspecial
+            ).getPricesEspecial()
 
             specialPrices.enqueue(object: Callback<SpecialPriceJson> {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
@@ -108,7 +108,7 @@ class RequestPrice {
             val requestPrices = RequestClients()
             requestPrices.cuenta = client
 
-            val pricesByClient = ApiServices.getClientRestrofit().create(
+            val pricesByClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getPreciosByClient(requestPrices)
 

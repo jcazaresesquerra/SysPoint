@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class SincVentasByID extends Servicio{
+public class SincVentasByID extends Servicio {
 
     private  Response responseVentas;
 

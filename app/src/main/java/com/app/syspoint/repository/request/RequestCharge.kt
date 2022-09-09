@@ -18,9 +18,9 @@ import retrofit2.Response
 class RequestCharge {
     companion object {
         fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener) {
-            val getCharge = ApiServices.getClientRestrofit().create(
+            val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).cobranza
+            ).getCobranza()
 
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
@@ -80,7 +80,7 @@ class RequestCharge {
             requestCobranza.cuenta = clienteBean!!.cuenta
 
             //Obtiene la respuesta
-            val getChargeByClient = ApiServices.getClientRestrofit().create(
+            val getChargeByClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getCobranzaByCliente(requestCobranza)
 
@@ -143,7 +143,7 @@ class RequestCharge {
             val json = Gson().toJson(chargeJson)
             Log.d("Sin Cobranza", json)
 
-            val saveCharges = ApiServices.getClientRestrofit().create(
+            val saveCharges = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendCobranza(chargeJson)
 
@@ -169,7 +169,7 @@ class RequestCharge {
             val json = Gson().toJson(chargeJson)
             Log.d("Sin Cobranza", json)
 
-            val updateCharge = ApiServices.getClientRestrofit().create(
+            val updateCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).updateCobranza(chargeJson)
 

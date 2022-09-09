@@ -19,7 +19,7 @@ class RequestVisit {
             val json = Gson().toJson(visitaJsonRF)
             Log.d("SinEmpleados", json)
 
-            val loadVisits = ApiServices.getClientRestrofit().create(
+            val loadVisits = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendVisita(visitaJsonRF)
 

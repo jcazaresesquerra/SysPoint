@@ -14,10 +14,10 @@ class RequestData {
     companion object {
         fun requestAllData(onGetAllDataListener: GetAllDataInteractor.OnGetAllDataListener) {
             var response: Response<Data?>? = null
-            val call: Call<Data> = ApiServices.getClientRestrofit()
+            val call: Call<Data> = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).allData
+                ).getAllData()
 
             try {
                 response = call.execute()
@@ -343,10 +343,9 @@ class RequestData {
 
         fun requestAllDataByDate(onGetAllDataByDateListener: GetAllDataInteractor.OnGetAllDataByDateListener) {
             var response: Response<Data?>? = null
-            val getDataByDate = ApiServices.getClientRestrofit().create(
+            val getDataByDate = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).allDataByDate
-
+            ).getAllDataByDate()
 
             try {
                 response = getDataByDate.execute()

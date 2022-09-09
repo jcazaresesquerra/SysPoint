@@ -17,7 +17,11 @@ class RequestProducts {
     companion object {
 
         fun requestProducts(onGetProductsListener: GetProductInteractor.OnGetProductsListener) {
-            val getProducts = ApiServices.getClientRestrofit().create(PointApi::class.java).allProductos
+            val getProducts = ApiServices.getClientRetrofit()
+                .create(
+                    PointApi::class.java
+                ).getAllProductos()
+
             getProducts.enqueue(object: Callback<ProductJson> {
                 override fun onResponse(call: Call<ProductJson>, response: Response<ProductJson>) {
                     if (response.isSuccessful) {
@@ -90,7 +94,7 @@ class RequestProducts {
             val json = Gson().toJson(productJson)
             Log.d("SinProductos", json)
 
-            val saveProducts = ApiServices.getClientRestrofit().create(
+            val saveProducts = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendProducto(productJson)
 

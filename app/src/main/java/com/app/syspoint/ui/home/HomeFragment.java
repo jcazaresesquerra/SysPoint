@@ -96,7 +96,7 @@ public class HomeFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
 
-        if (Constants.solictaRuta) {
+        if (Constants.Companion.getSolictaRuta()) {
             creaRutaSeleccionada();
         }
 

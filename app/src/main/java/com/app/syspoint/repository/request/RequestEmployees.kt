@@ -16,7 +16,10 @@ import retrofit2.Response
 class RequestEmployees {
     companion object {
         fun requestEmployees(getEmployeesListener: GetEmployeeInteractor.GetEmployeesListener) {
-            val getEmployees: Call<EmployeeJson> = ApiServices.getClientRestrofit().create(PointApi::class.java).allEmpleados
+            val getEmployees: Call<EmployeeJson> = ApiServices.getClientRetrofit()
+                .create(
+                    PointApi::class.java
+                ).getAllEmpleados()
 
             getEmployees.enqueue(object: Callback<EmployeeJson> {
                 override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
@@ -106,7 +109,7 @@ class RequestEmployees {
             val json = Gson().toJson(employeeJson)
             Log.d("SinEmpleados", json)
 
-            val sendEmployees = ApiServices.getClientRestrofit().create(
+            val sendEmployees = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendEmpleado(employeeJson)
 

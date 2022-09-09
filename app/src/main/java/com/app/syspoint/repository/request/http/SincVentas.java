@@ -1,7 +1,5 @@
 package com.app.syspoint.repository.request.http;
 
-import android.app.Activity;
-
 import com.app.syspoint.repository.database.bean.PartidasBean;
 import com.app.syspoint.repository.database.bean.VentasBean;
 import com.app.syspoint.repository.database.dao.SellsDao;
@@ -12,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
-
 
 public class SincVentas extends Servicio {
 

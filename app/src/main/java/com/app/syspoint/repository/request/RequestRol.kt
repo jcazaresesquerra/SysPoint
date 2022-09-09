@@ -17,9 +17,9 @@ import retrofit2.Response
 class RequestRol {
     companion object {
         fun requestAllRoles(onGetAllRolesListener: RolInteractor.OnGetAllRolesListener) {
-            val getRoles = ApiServices.getClientRestrofit().create(
+            val getRoles = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).allRols
+            ).getAllRols()
 
             getRoles.enqueue(object: Callback<RolJson> {
                 override fun onResponse(call: Call<RolJson>, response: Response<RolJson>) {
@@ -69,7 +69,7 @@ class RequestRol {
             val rolesJson = RolJson()
             rolesJson.roles = roles
 
-            val saveRoles = ApiServices.getClientRestrofit().create(
+            val saveRoles = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).saveRoles(rolesJson)
             val json = Gson().toJson(rolesJson)

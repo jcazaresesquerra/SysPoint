@@ -16,9 +16,9 @@ import retrofit2.Response
 class RequestClient {
     companion object {
         fun requestAllClients(onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
-            val getClients = ApiServices.getClientRestrofit().create(
+            val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).allClientes
+            ).getAllClientes()
 
             getClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
@@ -133,7 +133,7 @@ class RequestClient {
             val json = Gson().toJson(clientJson)
             Log.d("SinEmpleados", json)
 
-            val saveClients = ApiServices.getClientRestrofit().create(
+            val saveClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendCliente(clientJson)
 
