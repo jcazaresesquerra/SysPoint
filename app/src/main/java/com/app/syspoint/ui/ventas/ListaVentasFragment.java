@@ -36,10 +36,7 @@ import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.app.syspoint.models.json.PaymentJson;
-import com.app.syspoint.utils.cache.CacheInteractor;
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
@@ -61,8 +58,6 @@ import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.repository.database.dao.SellsDao;
 import com.app.syspoint.documents.SellTicket;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
@@ -86,9 +81,6 @@ import java.util.UUID;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ListaVentasFragment extends Fragment {
 

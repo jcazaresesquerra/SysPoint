@@ -1,7 +1,7 @@
-package com.app.syspoint.utils.cache
+package com.app.syspoint.interactor.cache
 
-import android.content.Context
 import com.app.syspoint.App
+import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.utils.JsonParser
 

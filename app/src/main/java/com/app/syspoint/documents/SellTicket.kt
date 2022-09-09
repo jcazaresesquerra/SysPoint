@@ -4,7 +4,7 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.repository.database.bean.VentasBean
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 
 class SellTicket: BaseTicket() {
 

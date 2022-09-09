@@ -3,13 +3,11 @@ package com.app.syspoint.documents
 import android.app.Activity
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.Bean
 import com.app.syspoint.repository.database.bean.CorteBean
-import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.repository.database.dao.SellsDao
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 
 class CloseTicket(activity: Activity): BaseTicket() {
 

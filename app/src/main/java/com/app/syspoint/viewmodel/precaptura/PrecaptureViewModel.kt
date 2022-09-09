@@ -16,7 +16,7 @@ import com.app.syspoint.repository.database.dao.RuteClientDao
 import com.app.syspoint.repository.database.dao.VisitsDao
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 
 class PrecaptureViewModel: ViewModel() {
 

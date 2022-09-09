@@ -42,17 +42,12 @@ import androidx.core.app.ActivityCompat;
 
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
-import com.app.syspoint.utils.ValidaCampos;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +103,7 @@ public class ActualizaClienteActivity extends AppCompatActivity {
     String rutaSeleccionadoDB;
     String periodoSeleccionadoDB;
 
-    private List<ValidaCampos> listaCamposValidos;
+    private List<String> listaCamposValidos;
     private int mYear, mMonth, mDay;
     int no_cuenta = 0;
     String clienteGlobal;
@@ -300,9 +295,9 @@ public class ActualizaClienteActivity extends AppCompatActivity {
                     }
                 } else {
 
-                    String campos = "";
-                    for (ValidaCampos elemento : listaCamposValidos) {
-                        campos += "" + elemento.getCampo() + "\n";
+                    StringBuilder campos = new StringBuilder();
+                    for (String validItem : listaCamposValidos) {
+                        campos.append(validItem).append("\n");
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
@@ -573,10 +568,10 @@ public class ActualizaClienteActivity extends AppCompatActivity {
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();
-                return;
             }
         }
     }
@@ -787,41 +782,41 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
         if (nombre.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("nombre"));
+            listaCamposValidos.add("nombre");
         }
 
         if (calle.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (colonia.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("colonia"));
+            listaCamposValidos.add("colonia");
         }
         if (ciudad.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
         if (cp.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("C.P"));
+            listaCamposValidos.add("C.P");
         }
 
         return valida;

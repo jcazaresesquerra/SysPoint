@@ -6,7 +6,7 @@ import com.app.syspoint.repository.database.bean.InventarioBean
 import com.app.syspoint.repository.database.dao.StockDao
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 
 class StockTicket: BaseTicket() {
 

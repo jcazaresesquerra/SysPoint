@@ -1,4 +1,4 @@
-package com.app.syspoint.utils.cache
+package com.app.syspoint.repository.cache
 
 import android.content.Context
 

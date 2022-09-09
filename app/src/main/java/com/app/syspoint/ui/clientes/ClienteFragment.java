@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,10 +34,8 @@ import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.app.syspoint.utils.cache.CacheInteractor;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
@@ -50,8 +47,6 @@ import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.ui.clientes.PreciosEspeciales.PreciosEspecialesActivity;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
@@ -63,10 +58,6 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ClienteFragment extends Fragment {
 

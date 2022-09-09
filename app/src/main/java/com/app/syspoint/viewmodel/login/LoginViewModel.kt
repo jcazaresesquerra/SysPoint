@@ -8,7 +8,7 @@ import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class LoginViewModel: BaseViewModel() {

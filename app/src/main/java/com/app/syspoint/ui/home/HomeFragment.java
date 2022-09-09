@@ -40,15 +40,7 @@ import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.interactor.visit.VisitInteractor;
 import com.app.syspoint.interactor.visit.VisitInteractorImp;
-import com.app.syspoint.models.json.ClientJson;
-import com.app.syspoint.models.json.EmployeeJson;
-import com.app.syspoint.models.json.PaymentJson;
-import com.app.syspoint.models.json.ProductJson;
-import com.app.syspoint.models.json.RolJson;
-import com.app.syspoint.models.json.SpecialPriceJson;
-import com.app.syspoint.models.json.VisitJson;
-import com.app.syspoint.utils.cache.CacheInteractor;
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
@@ -63,23 +55,14 @@ import com.app.syspoint.repository.database.bean.VisitasBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.SpecialPricesDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.repository.database.dao.VisitsDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.models.Data;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentas;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.Product;
-import com.app.syspoint.models.Role;
 import com.app.syspoint.models.Visit;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.ventas.VentasActivity;
@@ -92,16 +75,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 

@@ -6,9 +6,9 @@ import com.app.syspoint.ui.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 import com.app.syspoint.utils.gmap.Directions;
 import com.app.syspoint.utils.gmap.GMapDirection;
-import com.app.syspoint.utils.gmap.directions.Leg;
-import com.app.syspoint.utils.gmap.directions.Route;
-import com.app.syspoint.utils.gmap.directions.Step;
+import com.app.syspoint.models.directions.Leg;
+import com.app.syspoint.models.directions.Route;
+import com.app.syspoint.models.directions.Step;
 
 import java.util.List;
 

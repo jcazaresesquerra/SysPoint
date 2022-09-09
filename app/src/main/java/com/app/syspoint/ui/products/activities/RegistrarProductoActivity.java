@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,20 +39,15 @@ import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
-import com.app.syspoint.models.json.ProductJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Product;
 import com.app.syspoint.ui.clientes.ClienteFragment;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
-import com.app.syspoint.utils.ValidaCampos;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,9 +60,6 @@ import java.util.Objects;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class RegistrarProductoActivity extends AppCompatActivity {
 
@@ -90,7 +81,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
     private String unidad_medida_seleccionada;
     private String region_seleccionada;
     private ImageButton imageButtonScanner;
-    private List<ValidaCampos> listaCamposValidos;
+    private List<String> listaCamposValidos;
     ImageView imageView;
     private RelativeLayout rlprogress;
 
@@ -147,9 +138,9 @@ public class RegistrarProductoActivity extends AppCompatActivity {
             case R.id.guardaProducto:
 
                 if (!validaCamposRequeridos()){
-                    String campos = "";
-                    for (ValidaCampos elemento : listaCamposValidos) {
-                        campos += "" + elemento.getCampo() + "\n";
+                    StringBuilder campos = new StringBuilder();
+                    for (String validItem : listaCamposValidos) {
+                        campos.append(validItem).append("\n");
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
@@ -368,27 +359,27 @@ public class RegistrarProductoActivity extends AppCompatActivity {
 
         if (articulo.isEmpty()){
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("articulo"));
+            listaCamposValidos.add("articulo");
         }
 
         if (descripcion.isEmpty()){
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("descripcion"));
+            listaCamposValidos.add("descripcion");
         }
 
         if (precio.isEmpty()){
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("precio"));
+            listaCamposValidos.add("precio");
         }
 
         if (iva.isEmpty()){
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("iva"));
+            listaCamposValidos.add("iva");
 
         }
         if (ieps.isEmpty()){
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ieps"));
+            listaCamposValidos.add("ieps");
         }
 
         return valida;

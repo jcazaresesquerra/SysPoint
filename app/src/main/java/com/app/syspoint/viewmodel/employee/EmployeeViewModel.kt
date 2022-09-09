@@ -1,6 +1,5 @@
 package com.app.syspoint.viewmodel.employee
 
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
@@ -10,7 +9,7 @@ import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.repository.database.dao.EmployeeDao
 import com.app.syspoint.repository.database.dao.RolesDao
 import com.app.syspoint.utils.NetworkStateTask
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class EmployeeViewModel: BaseViewModel() {

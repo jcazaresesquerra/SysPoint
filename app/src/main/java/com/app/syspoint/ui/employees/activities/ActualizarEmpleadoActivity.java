@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,22 +41,16 @@ import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
 import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
-import com.app.syspoint.models.json.EmployeeJson;
-import com.app.syspoint.models.json.RolJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
 import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
-import com.app.syspoint.utils.ValidaCampos;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,9 +65,6 @@ import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
@@ -113,7 +103,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private ImageButton imageButtonFechaEgreso;
     private ImageButton imageButtonFechaNacimiento;
     private int mYear, mMonth, mDay;
-    private List<ValidaCampos> listaCamposValidos;
+    private List<String> listaCamposValidos;
     private String empladoGlobal;
     EmpleadoBean empleadoBean = null;
     CircleImageView circleImageView;
@@ -486,9 +476,9 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                     }
                 }else {
 
-                    String campos = "";
-                    for (ValidaCampos elemento : listaCamposValidos) {
-                        campos += "" + elemento.getCampo() + "\n";
+                    StringBuilder campos = new StringBuilder();
+                    for (String validItem : listaCamposValidos) {
+                        campos.append(validItem).append("\n");
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
@@ -534,17 +524,17 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
         if (nombre.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("nombre"));
+            listaCamposValidos.add("nombre");
         }
 
         if (contrasenia.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("contrasenia"));
+            listaCamposValidos.add("contrasenia");
         }
 
         if (confirmar.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("confirmar"));
+            listaCamposValidos.add("confirmar");
         }
 
         return valida;

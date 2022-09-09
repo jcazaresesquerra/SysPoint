@@ -3,11 +3,11 @@ package com.app.syspoint.utils.gmap;
 import android.content.Context;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.app.syspoint.utils.gmap.directions.Distance;
-import com.app.syspoint.utils.gmap.directions.Duration;
-import com.app.syspoint.utils.gmap.directions.Leg;
-import com.app.syspoint.utils.gmap.directions.Route;
-import com.app.syspoint.utils.gmap.directions.Step;
+import com.app.syspoint.models.directions.Distance;
+import com.app.syspoint.models.directions.Duration;
+import com.app.syspoint.models.directions.Leg;
+import com.app.syspoint.models.directions.Route;
+import com.app.syspoint.models.directions.Step;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,7 +75,7 @@ public class Directions {
             Route route;
             JSONObject routesJSONObject;
             for (int m = 0; m < routeJSONArray.length(); m++) {
-                route = new Route(context);
+                route = new Route();
                 routesJSONObject = routeJSONArray.getJSONObject(m);
                 JSONArray legsJSONArray;
                 route.setSummary(routesJSONObject.getString(SUMMARY));
@@ -112,9 +112,9 @@ public class Directions {
                         stepStartLocationJSONObject = stepJSONObject.getJSONObject(START_LOCATION);
                         stepStartLocationLatLng = new LatLng(stepStartLocationJSONObject.getDouble(LATITUDE), stepStartLocationJSONObject.getDouble(LONGITUDE));
                         step.setStartLocation(stepStartLocationLatLng);
-                        leg.addStep(step);
+                        leg.getSteps().add(step);
                     }
-                    route.addLeg(leg);
+                    route.getLegs().add(leg);
                 }
                 routeList.add(route);
             }

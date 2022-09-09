@@ -9,7 +9,7 @@ import com.app.syspoint.repository.database.bean.ProductoBean
 import com.app.syspoint.repository.database.dao.ProductDao
 import com.app.syspoint.repository.database.dao.RolesDao
 import com.app.syspoint.utils.NetworkStateTask
-import com.app.syspoint.utils.cache.CacheInteractor
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class ProductViewModel: BaseViewModel() {

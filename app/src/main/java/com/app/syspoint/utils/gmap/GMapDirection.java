@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.app.syspoint.ui.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
-import com.app.syspoint.utils.gmap.directions.Direction;
+import com.app.syspoint.models.directions.Direction;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -276,16 +276,16 @@ public class GMapDirection {
                 Node locationNode = nl2.item(getNodeIndex(nl2, "duration"));
                 nl3 = locationNode.getChildNodes();
                 Node latNode = nl3.item(getNodeIndex(nl3, "text"));
-                d.durationText = latNode.getTextContent();
+                d.setDurationText(latNode.getTextContent());
 
 
                 locationNode = nl2.item(getNodeIndex(nl2, "html_instructions"));
-                d.html_instructions = locationNode.getTextContent();
+                d.setHtml_instructions(locationNode.getTextContent());
 
                 locationNode = nl2.item(getNodeIndex(nl2, "distance"));
                 nl3 = locationNode.getChildNodes();
                 latNode = nl3.item(getNodeIndex(nl3, "text"));
-                d.distanceText = latNode.getTextContent();
+                d.setDistanceText(latNode.getTextContent());
 
                 listDirections.add(d);
             }
