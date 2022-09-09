@@ -1,5 +1,9 @@
 package com.app.syspoint.repository.request.http;
 
+import static com.app.syspoint.utils.Constants.BASE_URL_DONAQUI;
+import static com.app.syspoint.utils.Constants.BASE_URL_SYSPOINT;
+
+import com.app.syspoint.BuildConfig;
 import com.app.syspoint.utils.Constants;
 
 import java.util.concurrent.TimeUnit;
@@ -22,12 +26,20 @@ public class ApiServices {
 
         if (retrofit == null){
             retrofit = new Retrofit.Builder()
-                    .baseUrl(Constants.BASE_URL)
+                    .baseUrl(getBaseURL())
                     .client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
         return retrofit;
+    }
+
+    private static String getBaseURL() {
+        if (BuildConfig.FLAVOR.equals("donaqui")) {
+            return BASE_URL_DONAQUI;
+        } else {
+            return BASE_URL_SYSPOINT;
+        }
     }
 
 }

@@ -672,7 +672,7 @@ public class HomeFragment extends Fragment {
 
     private void sendVentas() {
         try {
-            final SincVentas sincVentas = new SincVentas(getActivity());
+            final SincVentas sincVentas = new SincVentas();
 
             sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override

@@ -504,7 +504,7 @@ public class ListaVentasFragment extends Fragment {
     private void syncCloudVenta(Long venta){
 
         try{
-            final SincVentasByID sincVentasByID = new SincVentasByID(getActivity(), Long.parseLong(String.valueOf(venta)));
+            final SincVentasByID sincVentasByID = new SincVentasByID(Long.parseLong(String.valueOf(venta)));
 
             sincVentasByID.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override

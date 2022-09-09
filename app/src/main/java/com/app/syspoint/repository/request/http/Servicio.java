@@ -1,12 +1,13 @@
 package com.app.syspoint.repository.request.http;
 
-import android.app.Activity;
+import static com.app.syspoint.utils.Constants.BASE_URL_DONAQUI;
+import static com.app.syspoint.utils.Constants.BASE_URL_SYSPOINT;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
-import com.app.syspoint.utils.Constants;
+import com.app.syspoint.BuildConfig;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,12 +20,10 @@ public class Servicio {
     protected JSONObject jsonObject = new JSONObject();
     protected ResponseOnSuccess onSuccess;
     protected ResponseOnError onError;
-    private Activity activity;
 
-    public Servicio (Activity activity, final String servicio){
-        this.activity = activity;
+    public Servicio (final String servicio){
         this.servicio = servicio;
-        host = Constants.BASE_URL ;
+        host = getBaseURL();
     }
 
     final public void postObject(){
@@ -113,4 +112,11 @@ public class Servicio {
         this.jsonObject = jsonObject;
     }
 
+    private String getBaseURL() {
+        if (BuildConfig.FLAVOR.equals("donaqui")) {
+            return BASE_URL_DONAQUI;
+        } else {
+            return BASE_URL_SYSPOINT;
+        }
+    }
 }

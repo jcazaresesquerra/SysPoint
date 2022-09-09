@@ -19,9 +19,9 @@ public class SincVentas extends Servicio {
 
     private Response responseVentas;
 
-    public SincVentas(Activity activity) throws Exception {
+    public SincVentas() throws Exception {
 
-        super(activity, "saveSale");
+        super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
         final List<VentasBean> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());

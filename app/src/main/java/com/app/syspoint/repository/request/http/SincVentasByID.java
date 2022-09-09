@@ -1,7 +1,5 @@
 package com.app.syspoint.repository.request.http;
 
-import android.app.Activity;
-
 import com.app.syspoint.repository.database.bean.PartidasBean;
 import com.app.syspoint.repository.database.bean.VentasBean;
 import com.app.syspoint.repository.database.dao.SellsDao;
@@ -16,9 +14,9 @@ public class SincVentasByID extends Servicio{
 
     private  Response responseVentas;
 
-    public SincVentasByID (Activity activity, Long id) throws Exception {
+    public SincVentasByID (Long id) throws Exception {
 
-        super(activity, "saveSale");
+        super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
         final List<VentasBean> listaVentas = sellsDao.getSincVentaByID(id);

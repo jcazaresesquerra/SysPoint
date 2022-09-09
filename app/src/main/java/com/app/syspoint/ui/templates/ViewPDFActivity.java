@@ -454,7 +454,7 @@ public class ViewPDFActivity extends AppCompatActivity {
     private void syncCloudVenta(Integer venta){
 
         try{
-            final SincVentasByID sincVentasByID = new SincVentasByID(this, Long.parseLong(String.valueOf(venta)));
+            final SincVentasByID sincVentasByID = new SincVentasByID(Long.parseLong(String.valueOf(venta)));
 
             sincVentasByID.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override
