@@ -5,9 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import com.app.syspoint.App;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -18,7 +16,7 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
     public NetworkStateTask(NetworkStateListener networkStateListener) {
         mNetworkStateListener = networkStateListener;
         mConnectivityManager = (ConnectivityManager)
-                App.Companion.getINSTANCE().getBaseContext().getSystemService(Context.CONNECTIVITY_SERVICE);;
+                App.Companion.getINSTANCE().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);;
     }
 
     @Override
@@ -34,8 +32,7 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
                     urlc.setConnectTimeout(1000);
                     urlc.setReadTimeout(1000);
                     urlc.connect();
-                    boolean connected = (urlc.getResponseCode() == 200);
-                    return connected;
+                    return urlc.getResponseCode() == 200;
                 } catch (Exception e) {
                     Log.e("TAG", "Error checking internet connection", e);
                 }

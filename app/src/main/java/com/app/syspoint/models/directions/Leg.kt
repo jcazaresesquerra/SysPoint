@@ -9,7 +9,7 @@ data class Leg(
     var endLocation: LatLng,
     var startAddress: String,
     var startLocation: LatLng,
-    var steps: List<Step>
+    var steps: ArrayList<Step>
 ) {
     constructor(): this(Distance(), Duration(), "", LatLng(0.0, 0.0),
         "", LatLng(0.0,0.0), arrayListOf())

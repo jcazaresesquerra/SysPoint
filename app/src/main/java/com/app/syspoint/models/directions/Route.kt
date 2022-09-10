@@ -6,7 +6,7 @@ data class Route(
     val serialVersionUID: Long = 1L,
     var bound: Bound,
     var copyrights: String,
-    var legs: List<Leg>,
+    var legs: ArrayList<Leg>,
     var overviewPolyLine: List<LatLng>,
     var summary: String
 ) {
