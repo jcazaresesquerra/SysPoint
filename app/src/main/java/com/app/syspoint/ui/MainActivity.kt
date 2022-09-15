@@ -20,8 +20,9 @@ import com.app.syspoint.databinding.ActivityMainBinding
 import com.app.syspoint.databinding.NavHeaderMainBinding
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.NetworkStateTask
+import com.google.android.material.snackbar.Snackbar
 
-class MainActivity: AppCompatActivity() {
+class MainActivity: BaseActivity() {
 
     companion object {
         @JvmStatic
@@ -109,6 +110,10 @@ class MainActivity: AppCompatActivity() {
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         return NavigationUI.navigateUp(navController, mAppBarConfiguration!!)
                 || super.onSupportNavigateUp()
+    }
+
+    override fun getView(): View {
+        return binding.root
     }
 
     private fun showDialogNotInternet() {

@@ -9,7 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,7 +33,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
@@ -57,10 +56,6 @@ import java.util.List;
 import java.util.Objects;
 
 import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ActualizaProductoActivity extends AppCompatActivity {
 
@@ -80,9 +75,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     private String status_seleccionado;
     private String unidad_medida_seleccionada;
     private String region_seleccionada;
-    private ImageButton imageButtonScanner;
     private List<String> listaCamposValidos;
-    private String productoGlobal;
     Spinner spinner_producto_status;
     ImageView imgView;
     private String statusSeleccioandoDB;
@@ -107,7 +100,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     private void getData() {
 
         Intent intent = getIntent();
-        productoGlobal = intent.getStringExtra(Actividades.PARAM_1);
+        String productoGlobal = intent.getStringExtra(Actividades.PARAM_1);
 
         ProductDao productDao = new ProductDao();
         ProductoBean productoBean = productDao.getProductoByArticulo(productoGlobal);
@@ -118,13 +111,13 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             editTextDescripcion.setText(productoBean.getDescripcion());
             editTextClaveSAT.setText(productoBean.getClave_sat());
             editTextUnidadSAT.setText(productoBean.getUnidad_sat());
-            editTextPrecio.setText(""+ productoBean.getPrecio());
-            editTextCosto.setText(""+ productoBean.getCosto());
-            editTextIVA.setText(""+ productoBean.getIva());
-            editTextIEPS.setText(""+ productoBean.getIeps());
-            editTextPrioridad.setText(""+ productoBean.getPrioridad());
-            editTextCodigoAlfa.setText(""+ productoBean.getCodigo_alfa());
-            editTextCodigoDeBarras.setText(""+productoBean.getCodigo_barras());
+            editTextPrecio.setText(String.valueOf(productoBean.getPrecio()));
+            editTextCosto.setText(String.valueOf(productoBean.getCosto()));
+            editTextIVA.setText(String.valueOf(productoBean.getIva()));
+            editTextIEPS.setText(String.valueOf(productoBean.getIeps()));
+            editTextPrioridad.setText(String.valueOf(productoBean.getPrioridad()));
+            editTextCodigoAlfa.setText(String.valueOf(productoBean.getCodigo_alfa()));
+            editTextCodigoDeBarras.setText(String.valueOf(productoBean.getCodigo_barras()));
             statusSeleccioandoDB = productoBean.getStatus();
             unidadSeleccionadaDB = productoBean.getUnidad_medida();
             regionSeleccionadaDB = productoBean.getRegion();
@@ -141,13 +134,8 @@ public class ActualizaProductoActivity extends AppCompatActivity {
 
     private void initConstrols() {
 
-        imageButtonScanner = findViewById(R.id.img_scanner_actualiza);
-        imageButtonScanner.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Actividades.getSingleton(ActualizaProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-            }
-        });
+        ImageButton imageButtonScanner = findViewById(R.id.img_scanner_actualiza);
+        imageButtonScanner.setOnClickListener(v -> Actividades.getSingleton(ActualizaProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1));
     }
 
     @Override
@@ -182,18 +170,8 @@ public class ActualizaProductoActivity extends AppCompatActivity {
                             .setMessage("Debe de completar los campos requeridos " + "\n" + campos)
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, dialog::dismiss);
 
                     dialog.setCancelable(false);
                     dialog.show();
@@ -209,27 +187,12 @@ public class ActualizaProductoActivity extends AppCompatActivity {
                             .setMessage("Desea actualizar el producto")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
+                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, dialog::dismiss)
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
+                                saveProducto();
+                                dialog.dismiss();
                             })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    saveProducto();
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-
-                                    dialog.dismiss();
-
-                                }
-                            });
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
                     dialog.setCancelable(false);
                     dialog.show();
 
@@ -399,18 +362,10 @@ public class ActualizaProductoActivity extends AppCompatActivity {
 
 
     private boolean exitProduct(){
-
-        boolean valida = false;
         ProductDao dao = new ProductDao();
         ProductoBean producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
 
-        if (producto == null){
-            valida = false;
-        }else {
-            valida = true;
-        }
-
-        return valida;
+        return producto != null;
     }
 
     private String idProducto;
@@ -419,31 +374,35 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         ProductDao dao = new ProductDao();
         ProductoBean producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
 
-        producto.setArticulo(editTextArticulo.getText().toString());
-        producto.setDescripcion(editTextDescripcion.getText().toString());
-        producto.setStatus(status_seleccionado);
-        producto.setUnidad_medida(unidad_medida_seleccionada);
-        producto.setClave_sat(editTextClaveSAT.getText().toString());
-        producto.setUnidad_sat(editTextUnidadSAT.getText().toString());
-        producto.setPrecio(Double.parseDouble(editTextPrecio.getText().toString()));
-        producto.setCosto(Double.parseDouble(editTextCosto.getText().toString()));
-        producto.setIva(Integer.parseInt(editTextIVA.getText().toString()));
-        producto.setIeps(Integer.parseInt(editTextIEPS.getText().toString()));
-        producto.setPrioridad(Integer.parseInt(editTextPrioridad.getText().toString()));
-        producto.setRegion(region_seleccionada);
-        producto.setCodigo_alfa(editTextCodigoAlfa.getText().toString());
-        producto.setCodigo_barras(editTextCodigoDeBarras.getText().toString());
-        if (decoded != null) {
-            producto.setPath_img(getStringImage(decoded));
-        }
-        dao.save(producto);
+        if (producto != null) {
+            producto.setArticulo(editTextArticulo.getText().toString());
+            producto.setDescripcion(editTextDescripcion.getText().toString());
+            producto.setStatus(status_seleccionado);
+            producto.setUnidad_medida(unidad_medida_seleccionada);
+            producto.setClave_sat(editTextClaveSAT.getText().toString());
+            producto.setUnidad_sat(editTextUnidadSAT.getText().toString());
+            producto.setPrecio(Double.parseDouble(editTextPrecio.getText().toString()));
+            producto.setCosto(Double.parseDouble(editTextCosto.getText().toString()));
+            producto.setIva(Integer.parseInt(editTextIVA.getText().toString()));
+            producto.setIeps(Integer.parseInt(editTextIEPS.getText().toString()));
+            producto.setPrioridad(Integer.parseInt(editTextPrioridad.getText().toString()));
+            producto.setRegion(region_seleccionada);
+            producto.setCodigo_alfa(editTextCodigoAlfa.getText().toString());
+            producto.setCodigo_barras(editTextCodigoDeBarras.getText().toString());
+            if (decoded != null) {
+                producto.setPath_img(getStringImage(decoded));
+            }
+            dao.save(producto);
 
-        idProducto = String.valueOf(producto.getId());
+            idProducto = String.valueOf(producto.getId());
 
-        if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
-        }else {
-            testLoadProductos(idProducto);
+            if (!Utils.isNetworkAvailable(getApplication())) {
+                showDialogNotConnectionInternet();
+            } else {
+                testLoadProductos(idProducto);
+            }
+        } else {
+            Toast.makeText(this, "Ha ocurrido un error, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -459,20 +418,17 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        (dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
 
-                ProgressDialog progressDialog = new ProgressDialog(ActualizaProductoActivity.this);
-                progressDialog.setMessage("Espere un momento");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
-                new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                    progressDialog.dismiss();
-                    if (connected) testLoadProductos(idProducto);
-                }).execute(), 100);
-                dialog.dismiss();
-            }
+            ProgressDialog progressDialog = new ProgressDialog(ActualizaProductoActivity.this);
+            progressDialog.setMessage("Espere un momento");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+            new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                progressDialog.dismiss();
+                if (connected) testLoadProductos(idProducto);
+            }).execute(), 100);
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -482,8 +438,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     private void testLoadProductos(String idProducto){
          progressshow();
         final ProductDao productDao = new ProductDao();
-        List<ProductoBean> listaProductosDB = new ArrayList<>();
-        listaProductosDB =  productDao.getProductoByID(idProducto);
+        List<ProductoBean> listaProductosDB =  productDao.getProductoByID(idProducto);
 
         List<Product> listaProductos = new ArrayList<>();
 
@@ -654,7 +609,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
                 String resultadoLector = data.getStringExtra(Actividades.PARAM_1);
 
                 if (!resultadoLector.isEmpty()){
-                    editTextCodigoDeBarras.setText(""+resultadoLector);
+                    editTextCodigoDeBarras.setText(resultadoLector);
                 }
             }
         }
