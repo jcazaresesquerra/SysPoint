@@ -38,7 +38,7 @@ class RequestCharge {
                                 chargeBean.saldo = item.saldo
                                 chargeBean.venta = item.venta
                                 chargeBean.estado = item.estado
-                                chargeBean.observaciones = item!!.observaciones
+                                chargeBean.observaciones = item.observaciones
                                 chargeBean.fecha = item.fecha
                                 chargeBean.hora = item.hora
                                 chargeBean.empleado = item.identificador

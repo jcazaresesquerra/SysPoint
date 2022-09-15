@@ -117,6 +117,10 @@ public class VentasActivity extends AppCompatActivity {
     private String sucursalMatriz = "";
     private TextView textView_credito_cliente_vents_view;
     RelativeLayout rlprogress_venta;
+
+    private boolean confirmPrecaptureClicked = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -297,185 +301,191 @@ public class VentasActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick() {
 
-                                    Utils.addActivity2Stack(activity);
+                                    if (!confirmPrecaptureClicked) {
+                                        confirmPrecaptureClicked = true;
+                                        Utils.addActivity2Stack(activity);
 
-                                    final ArrayList<PartidasBean> lista = new ArrayList<>();
+                                        final ArrayList<PartidasBean> lista = new ArrayList<>();
 
-                                    final SellsDao sellsDao = new SellsDao();
-                                    final VentasBean ventasBean = new VentasBean();
+                                        final SellsDao sellsDao = new SellsDao();
+                                        final VentasBean ventasBean = new VentasBean();
 
 
-                                    int ultimoFolio = sellsDao.getUltimoFolio();
+                                        int ultimoFolio = sellsDao.getUltimoFolio();
 
-                                    final ProductDao productDao = new ProductDao();
-                                    //Recorremos las partidas
-                                    for (int x = 0; x < mData.size(); x++) {
-                                        //Validamos si el articulo existe en la base de datos
-                                        final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
-                                        final PartidasBean partida = new PartidasBean();
-                                        partida.setArticulo(productosBean);
-                                        partida.setCantidad(mData.get(x).getCantidad());
-                                        partida.setPrecio(mData.get(x).getPrecio());
-                                        partida.setCosto(mData.get(x).getCosto());
-                                        partida.setImpuesto(mData.get(x).getImpuesto());
-                                        partida.setObserv(productosBean.getDescripcion());
-                                        partida.setFecha(new Date());
-                                        partida.setHora(Utils.getHoraActual());
-                                        partida.setVenta(Long.valueOf(ultimoFolio));
-                                        partida.setDescripcion(productosBean.getDescripcion());
-                                        lista.add(partida);
-                                    }
-
-                                    //Le indicamos al sistema que el cliente ya se ah visitado
-                                    final ClientDao clientDao = new ClientDao();
-                                    final ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
-                                    final String clienteID = String.valueOf(clienteBean.getId());
-                                    clienteBean.setVisitado(1);
-                                    clienteBean.setVisitasNoefectivas(0);
-                                    clienteBean.setDate_sync(Utils.fechaActual());
-                                    clientDao.save(clienteBean);
-
-                                    ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
-                                    progressDialog.setMessage("Espere un momento");
-                                    progressDialog.setCancelable(false);
-                                    progressDialog.show();
-                                    new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                                        progressDialog.dismiss();
-                                        if (connected) testLoadClientes(String.valueOf(clienteBean.getId()));
-
-                                        final RuteClientDao ruteClientDao = new RuteClientDao();
-                                        final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
-                                        if (clientesRutaBean != null) {
-                                            clientesRutaBean.setVisitado(1);
-                                            ruteClientDao.save(clientesRutaBean);
+                                        final ProductDao productDao = new ProductDao();
+                                        //Recorremos las partidas
+                                        for (int x = 0; x < mData.size(); x++) {
+                                            //Validamos si el articulo existe en la base de datos
+                                            final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
+                                            final PartidasBean partida = new PartidasBean();
+                                            partida.setArticulo(productosBean);
+                                            partida.setCantidad(mData.get(x).getCantidad());
+                                            partida.setPrecio(mData.get(x).getPrecio());
+                                            partida.setCosto(mData.get(x).getCosto());
+                                            partida.setImpuesto(mData.get(x).getImpuesto());
+                                            partida.setObserv(productosBean.getDescripcion());
+                                            partida.setFecha(new Date());
+                                            partida.setHora(Utils.getHoraActual());
+                                            partida.setVenta(Long.valueOf(ultimoFolio));
+                                            partida.setDescripcion(productosBean.getDescripcion());
+                                            lista.add(partida);
                                         }
 
-                                        //Obtiene el nombre del vendedor
-                                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                        //Le indicamos al sistema que el cliente ya se ah visitado
+                                        final ClientDao clientDao = new ClientDao();
+                                        final ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+                                        final String clienteID = String.valueOf(clienteBean.getId());
+                                        clienteBean.setVisitado(1);
+                                        clienteBean.setVisitasNoefectivas(0);
+                                        clienteBean.setDate_sync(Utils.fechaActual());
+                                        clientDao.save(clienteBean);
 
-                                        if (vendedoresBean == null) {
-                                            vendedoresBean = new CacheInteractor().getSeller();
-                                        }
+                                        ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
+                                        progressDialog.setMessage("Espere un momento");
+                                        progressDialog.setCancelable(false);
+                                        progressDialog.show();
+                                        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                                            progressDialog.dismiss();
+                                            if (connected)
+                                                testLoadClientes(String.valueOf(clienteBean.getId()));
 
-                                        ventasBean.setTipo_doc("TIK");
-                                        ventasBean.setFecha(Utils.fechaActual());
-                                        ventasBean.setHora(Utils.getHoraActual());
-                                        ventasBean.setCliente(clienteBean);
-                                        ventasBean.setEmpleado(vendedoresBean);
-                                        ventasBean.setImporte(Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")));
-                                        ventasBean.setImpuesto(Double.parseDouble(textViewImpuesto.getText().toString().replace(",", "")));
-                                        ventasBean.setDatos(clienteBean.getNombre_comercial());
-                                        ventasBean.setEstado("CO");
-                                        ventasBean.setCorte("N");
-                                        ventasBean.setTemporal(1);
-                                        ventasBean.setVenta(ultimoFolio);
-                                        ventasBean.setLatidud(latidud);
-                                        ventasBean.setLatidud(latidud);
-                                        ventasBean.setSync(0);
-                                        ventasBean.setTipo_venta(tipoVenta);
-                                        ventasBean.setUsuario_cancelo("");
-                                        if (cuentaMatriz.length() == 0) {
-                                            ventasBean.setFactudado("");
-                                        } else {
-                                            ventasBean.setFactudado(cuentaMatriz);
-                                        }
-                                        ventasBean.setTicket(Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", ""));
-
-
-                                        double totalVenta = Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")) + Double.parseDouble(textViewImpuesto.getText().toString().replace(",", ""));
-                                        String ticketRamdom = ticketRamdom() + ventasBean.getFecha().replace("-", "") + "" + ventasBean.getHora().replace(":", "");
-                                        if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
-                                            //Si la cobranza es de matriz entonces creamos la cobranza a matriz
-                                            if (isCreditMatriz) {
-                                                CobranzaBean cobranzaBean = new CobranzaBean();
-                                                PaymentDao paymentDao = new PaymentDao();
-                                                cobranzaBean.setCobranza(ticketRamdom);
-                                                cobranzaBean.setCliente(cuentaMatriz);
-                                                cobranzaBean.setImporte(totalVenta);
-                                                cobranzaBean.setSaldo(totalVenta);
-                                                cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
-                                                cobranzaBean.setEstado("PE");
-                                                cobranzaBean.setObservaciones("Se realiza la venta a crédito para sucursal \n " + clienteBean.getCuenta() + " " + clienteBean.getNombre_comercial() + " \n con cargo a Matriz " + cuentaMatriz + " " + sucursalMatriz + "\n" + ventasBean.getFecha() + " hora " + ventasBean.getHora());
-                                                cobranzaBean.setFecha(ventasBean.getFecha());
-                                                cobranzaBean.setHora(ventasBean.getHora());
-                                                if (vendedoresBean != null) {
-                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
-                                                }
-                                                cobranzaBean.setAbono(false);
-                                                paymentDao.save(cobranzaBean);
-
-                                                //Actualizamos el documento de la venta con el de la cobranza
-                                                ventasBean.setCobranza(ticketRamdom);
-                                                //ventasDao.save(ventasBean);
-
-                                                //Actualizamos el saldo del cliente
-                                                ClienteBean clienteMatriz = clientDao.getClientByAccount(cuentaMatriz);
-                                                double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
-                                                clienteMatriz.setSaldo_credito(saldoNuevo);
-                                                clienteMatriz.setDate_sync(Utils.fechaActual());
-
-                                                clientDao.save(clienteMatriz);
-
-                                                if (connected) testLoadClientes(String.valueOf(clienteMatriz.getId()));
-
-                                            } else {
-                                                CobranzaBean cobranzaBean = new CobranzaBean();
-                                                PaymentDao paymentDao = new PaymentDao();
-                                                cobranzaBean.setCobranza(ticketRamdom);
-                                                cobranzaBean.setCliente(clienteBean.getCuenta());
-                                                cobranzaBean.setImporte(totalVenta);
-                                                cobranzaBean.setSaldo(totalVenta);
-                                                cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
-                                                cobranzaBean.setEstado("PE");
-                                                cobranzaBean.setObservaciones("Venta a crédito " + ventasBean.getFecha() + " hora " + ventasBean.getHora());
-                                                cobranzaBean.setFecha(ventasBean.getFecha());
-                                                cobranzaBean.setHora(ventasBean.getHora());
-                                                if (vendedoresBean != null) {
-                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
-                                                }
-                                                paymentDao.save(cobranzaBean);
-
-                                                //Actualizamos el documento de la venta con el de la cobranza
-                                                ventasBean.setCobranza(ticketRamdom);
-                                                //ventasDao.save(ventasBean);
-
-                                                //Actualizamos el saldo del cliente
-                                                double saldoNuevo = clienteBean.getSaldo_credito() + totalVenta;
-                                                clienteBean.setSaldo_credito(saldoNuevo);
-                                                clienteBean.setVisitasNoefectivas(0);
-                                                clienteBean.setDate_sync(Utils.fechaActual());
-
-                                                clientDao.save(clienteBean);
-
-                                                if (connected) testLoadClientes(clienteID);
+                                            final RuteClientDao ruteClientDao = new RuteClientDao();
+                                            final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
+                                            if (clientesRutaBean != null) {
+                                                clientesRutaBean.setVisitado(1);
+                                                ruteClientDao.save(clientesRutaBean);
                                             }
-                                        }
 
-                                        sellsDao.save(ventasBean);
+                                            //Obtiene el nombre del vendedor
+                                            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+                                            if (vendedoresBean == null) {
+                                                vendedoresBean = new CacheInteractor().getSeller();
+                                            }
+
+                                            ventasBean.setTipo_doc("TIK");
+                                            ventasBean.setFecha(Utils.fechaActual());
+                                            ventasBean.setHora(Utils.getHoraActual());
+                                            ventasBean.setCliente(clienteBean);
+                                            ventasBean.setEmpleado(vendedoresBean);
+                                            ventasBean.setImporte(Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")));
+                                            ventasBean.setImpuesto(Double.parseDouble(textViewImpuesto.getText().toString().replace(",", "")));
+                                            ventasBean.setDatos(clienteBean.getNombre_comercial());
+                                            ventasBean.setEstado("CO");
+                                            ventasBean.setCorte("N");
+                                            ventasBean.setTemporal(1);
+                                            ventasBean.setVenta(ultimoFolio);
+                                            ventasBean.setLatidud(latidud);
+                                            ventasBean.setLatidud(latidud);
+                                            ventasBean.setSync(0);
+                                            ventasBean.setTipo_venta(tipoVenta);
+                                            ventasBean.setUsuario_cancelo("");
+                                            if (cuentaMatriz.length() == 0) {
+                                                ventasBean.setFactudado("");
+                                            } else {
+                                                ventasBean.setFactudado(cuentaMatriz);
+                                            }
+                                            ventasBean.setTicket(Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", ""));
 
 
-                                        //Creamos la venta
-                                        sellsDao.creaVenta(ventasBean, lista);
+                                            double totalVenta = Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")) + Double.parseDouble(textViewImpuesto.getText().toString().replace(",", ""));
+                                            String ticketRamdom = ticketRamdom() + ventasBean.getFecha().replace("-", "") + "" + ventasBean.getHora().replace(":", "");
+                                            if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
+                                                //Si la cobranza es de matriz entonces creamos la cobranza a matriz
+                                                if (isCreditMatriz) {
+                                                    CobranzaBean cobranzaBean = new CobranzaBean();
+                                                    PaymentDao paymentDao = new PaymentDao();
+                                                    cobranzaBean.setCobranza(ticketRamdom);
+                                                    cobranzaBean.setCliente(cuentaMatriz);
+                                                    cobranzaBean.setImporte(totalVenta);
+                                                    cobranzaBean.setSaldo(totalVenta);
+                                                    cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
+                                                    cobranzaBean.setEstado("PE");
+                                                    cobranzaBean.setObservaciones("Se realiza la venta a crédito para sucursal \n " + clienteBean.getCuenta() + " " + clienteBean.getNombre_comercial() + " \n con cargo a Matriz " + cuentaMatriz + " " + sucursalMatriz + "\n" + ventasBean.getFecha() + " hora " + ventasBean.getHora());
+                                                    cobranzaBean.setFecha(ventasBean.getFecha());
+                                                    cobranzaBean.setHora(ventasBean.getHora());
+                                                    if (vendedoresBean != null) {
+                                                        cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                    }
+                                                    cobranzaBean.setAbono(false);
+                                                    paymentDao.save(cobranzaBean);
 
-                                        String ventaID = String.valueOf(ventasBean.getVenta());
+                                                    //Actualizamos el documento de la venta con el de la cobranza
+                                                    ventasBean.setCobranza(ticketRamdom);
+                                                    //ventasDao.save(ventasBean);
 
-                                        //Creamos el template del timbre
-                                        SellTicket sellTicket = new SellTicket();
-                                        sellTicket.setBean(ventasBean);
-                                        sellTicket.template();
+                                                    //Actualizamos el saldo del cliente
+                                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(cuentaMatriz);
+                                                    double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
+                                                    clienteMatriz.setSaldo_credito(saldoNuevo);
+                                                    clienteMatriz.setDate_sync(Utils.fechaActual());
 
-                                        String ticket = sellTicket.getDocument();
+                                                    clientDao.save(clienteMatriz);
 
-                                        Intent intent = new Intent(VentasActivity.this, ViewPDFActivity.class);
-                                        intent.putExtra("ticket", ticket);
-                                        intent.putExtra("venta", ventaID);
-                                        intent.putExtra("clienteID", clienteID);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
+                                                    if (connected)
+                                                        testLoadClientes(String.valueOf(clienteMatriz.getId()));
 
-                                        dialogo.dismiss();
-                                        imageViewVentas.setEnabled(true);
-                                    }).execute(), 100);
+                                                } else {
+                                                    CobranzaBean cobranzaBean = new CobranzaBean();
+                                                    PaymentDao paymentDao = new PaymentDao();
+                                                    cobranzaBean.setCobranza(ticketRamdom);
+                                                    cobranzaBean.setCliente(clienteBean.getCuenta());
+                                                    cobranzaBean.setImporte(totalVenta);
+                                                    cobranzaBean.setSaldo(totalVenta);
+                                                    cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
+                                                    cobranzaBean.setEstado("PE");
+                                                    cobranzaBean.setObservaciones("Venta a crédito " + ventasBean.getFecha() + " hora " + ventasBean.getHora());
+                                                    cobranzaBean.setFecha(ventasBean.getFecha());
+                                                    cobranzaBean.setHora(ventasBean.getHora());
+                                                    if (vendedoresBean != null) {
+                                                        cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                    }
+                                                    paymentDao.save(cobranzaBean);
+
+                                                    //Actualizamos el documento de la venta con el de la cobranza
+                                                    ventasBean.setCobranza(ticketRamdom);
+                                                    //ventasDao.save(ventasBean);
+
+                                                    //Actualizamos el saldo del cliente
+                                                    double saldoNuevo = clienteBean.getSaldo_credito() + totalVenta;
+                                                    clienteBean.setSaldo_credito(saldoNuevo);
+                                                    clienteBean.setVisitasNoefectivas(0);
+                                                    clienteBean.setDate_sync(Utils.fechaActual());
+
+                                                    clientDao.save(clienteBean);
+
+                                                    if (connected) testLoadClientes(clienteID);
+                                                }
+                                            }
+
+                                            sellsDao.save(ventasBean);
+
+
+                                            //Creamos la venta
+                                            sellsDao.creaVenta(ventasBean, lista);
+
+                                            String ventaID = String.valueOf(ventasBean.getVenta());
+
+                                            //Creamos el template del timbre
+                                            SellTicket sellTicket = new SellTicket();
+                                            sellTicket.setBean(ventasBean);
+                                            sellTicket.template();
+
+                                            String ticket = sellTicket.getDocument();
+
+                                            Intent intent = new Intent(VentasActivity.this, ViewPDFActivity.class);
+                                            intent.putExtra("ticket", ticket);
+                                            intent.putExtra("venta", ventaID);
+                                            intent.putExtra("clienteID", clienteID);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            startActivity(intent);
+
+                                            dialogo.dismiss();
+                                            imageViewVentas.setEnabled(true);
+                                            confirmPrecaptureClicked = false;
+                                        }).execute(), 100);
+                                    }
                                 }
                             })
                             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
@@ -773,48 +783,45 @@ public class VentasActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterItemsVenta(mData, new AdapterItemsVenta.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
+        mAdapter = new AdapterItemsVenta(mData, position -> {
 
-                VentasModelBean item = mData.get(position);
+            VentasModelBean item = mData.get(position);
 
-                final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
-                dialog.setTitle("Eliminar")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                VentasModelBean item = mData.get(position);
-                                SellsModelDao dao = new SellsModelDao();
-                                dao.delete(item);
-                                mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                                mAdapter.setItems(mData);
-                                ocultaLinearLayouth();
-                                calculaImportes();
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
+            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
+            dialog.setTitle("Eliminar")
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            VentasModelBean item = mData.get(position);
+                            SellsModelDao dao = new SellsModelDao();
+                            dao.delete(item);
+                            mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
+                            mAdapter.setItems(mData);
+                            ocultaLinearLayouth();
+                            calculaImportes();
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
 
-                            }
-                        });
-                dialog.setCancelable(false);
-                dialog.show();
-                return false;
-            }
+                        }
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+            return false;
         }, new AdapterItemsVenta.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
