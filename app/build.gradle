@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId "com.app.syspoint"
-        minSdkVersion 22
+        minSdkVersion 24
         targetSdkVersion 33
         versionCode 4
         versionName "2.0"

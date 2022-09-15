@@ -192,6 +192,8 @@ public class ClienteFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
 
+        mData.removeIf(item -> !item.getStatus());
+
         mAdapter = new AdapterListaClientes(
                 mData,
                 (view, obj, position, onDialogShownListener) -> {
