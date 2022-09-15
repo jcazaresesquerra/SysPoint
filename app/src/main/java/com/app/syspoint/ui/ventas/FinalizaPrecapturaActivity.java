@@ -106,8 +106,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             latitud = bundle.getString(Actividades.PARAM_6);
             longitud = bundle.getString(Actividades.PARAM_7);
             cuenta_cliente = bundle.getString(Actividades.PARAM_8);
-
-
         }
 
 
@@ -141,7 +139,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
 
-
         mHandler = new Handler(Looper.myLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -169,7 +166,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void initToolBar() {
-
         Toolbar toolbar = findViewById(R.id.toolbar_finaliza_visita);
         toolbar.setTitle("Visita exitosa");
         setSupportActionBar(toolbar);

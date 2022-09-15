@@ -131,10 +131,10 @@ class MainActivity: AppCompatActivity() {
         when (BuildConfig.FLAVOR) {
             "donaqui" -> {
                 navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
-                navHeaderMainBinding.imageView.setImageResource(R.drawable.logo_donaqui)
+                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo_donaqui) }
             }
             else -> {
-                navHeaderMainBinding.imageView.setImageResource(R.drawable.logo)
+                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo) }
             }
         }
     }

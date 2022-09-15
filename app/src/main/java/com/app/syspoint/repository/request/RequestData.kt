@@ -23,14 +23,22 @@ class RequestData {
                 response = call.execute()
             } catch (e: IOException) {
                 e.printStackTrace()
-            }
-
-            if (response?.body() == null) {
                 onGetAllDataListener.onGetAllDataError()
+                return
+            }
+
+            if (response == null) {
+                onGetAllDataListener.onGetAllDataError()
+                return
+            }
+
+            if (response.body() == null) {
+                onGetAllDataListener.onGetAllDataError()
+                return
             }
 
 
-            if (response!!.isSuccessful) {
+            if (response.isSuccessful) {
                 if (response.code() == 200) {
 
                     //Contiene la lista de empledos
@@ -667,6 +675,7 @@ class RequestData {
 
                 } else {
                     onGetAllDataByDateListener.onGetAllDataByDateError()
+                    return
                 }
             } else {
                 onGetAllDataByDateListener.onGetAllDataByDateError()

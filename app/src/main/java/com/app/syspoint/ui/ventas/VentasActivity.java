@@ -82,6 +82,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 
 import libs.mjn.prettydialog.PrettyDialog;
@@ -552,15 +553,14 @@ public class VentasActivity extends AppCompatActivity {
             credito = clienteBean.getLimite_credito();
             textViewNombre.setText(clienteBean.getNombre_comercial());
 
-            if (clienteBean.getMatriz().compareToIgnoreCase("null") == 0) {
+            if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
                 textViewCliente.setText(clienteBean.getCuenta());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
             } else {
-
                 ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
             }
-            if (clienteBean.getRecordatorio() == null || clienteBean.getRecordatorio() == "null" || clienteBean.getRecordatorio().isEmpty()) {
+            if (clienteBean.getRecordatorio() == null || clienteBean.getRecordatorio().compareToIgnoreCase("null") == 0 || clienteBean.getRecordatorio().isEmpty()) {
                 testLoadClientes(String.valueOf(clienteBean.getId()));
             } else {
                 if (clienteBean.getRecordatorio().compareToIgnoreCase("null") == 0 || clienteBean.getRecordatorio() == null) {
@@ -834,7 +834,7 @@ public class VentasActivity extends AppCompatActivity {
 
                         String cantidad = editTextCantidad.getText().toString();
 
-                        if (cantidad == null) {
+                        if (cantidad == null || cantidad.isEmpty()) {
                             return;
                         }
 
@@ -994,6 +994,7 @@ public class VentasActivity extends AppCompatActivity {
         final ProductoBean productoBean = productDao.getProductoByArticulo(articulo);
 
         if (productoBean == null) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1047,6 +1048,11 @@ public class VentasActivity extends AppCompatActivity {
         //     dialogo.show();
         //     return;
         // }
+
+        if (cantidad == null || cantidad.isEmpty()) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         int cantidadVendida = Integer.parseInt(cantidad);
 
