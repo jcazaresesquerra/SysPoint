@@ -11,6 +11,13 @@ data class Leg(
     var startLocation: LatLng,
     var steps: ArrayList<Step>
 ) {
-    constructor(): this(Distance(), Duration(), "", LatLng(0.0, 0.0),
-        "", LatLng(0.0,0.0), arrayListOf())
+    constructor(): this(
+        distance = Distance(),
+        duration = Duration(),
+        endAddress = "",
+        endLocation = LatLng(0.0, 0.0),
+        startAddress = "",
+        startLocation = LatLng(0.0,0.0),
+        steps = arrayListOf()
+    )
 }

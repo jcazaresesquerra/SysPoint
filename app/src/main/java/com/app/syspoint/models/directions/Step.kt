@@ -11,6 +11,13 @@ data class Step(
     var travelMode: String,
     var points: List<LatLng>
 ) {
-    constructor(): this(Distance(), Duration(), LatLng(0.0,0.0),
-        LatLng(0.0,0.0), "", "", arrayListOf())
+    constructor(): this(
+        distance = Distance(),
+        duration = Duration(),
+        endLocation = LatLng(0.0,0.0),
+        startLocation = LatLng(0.0,0.0),
+        htmlInstructions = "",
+        travelMode = "",
+        points = arrayListOf()
+    )
 }

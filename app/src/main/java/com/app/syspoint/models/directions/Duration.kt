@@ -4,5 +4,8 @@ data class Duration(
     var text: String,
     var value: Long
 ) {
-    constructor(): this("", 0L)
+    constructor(): this(
+        text = "",
+        value = 0L
+    )
 }

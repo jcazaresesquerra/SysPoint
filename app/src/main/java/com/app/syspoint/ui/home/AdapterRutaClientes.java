@@ -74,59 +74,46 @@ public class AdapterRutaClientes  extends RecyclerView.Adapter<AdapterRutaClient
 
         private void bind(final ClientesRutaBean clienteBean, final OnItemClickListener onItemClickListener, final OnItemLongClickListener onItemLongClickListener){
 
-            textViewCliente.setText(""+ clienteBean.getNombre_comercial());
-            textViewDireccion.setText(""+ clienteBean.getCalle() + " " + clienteBean.getNumero());
+            textViewCliente.setText(clienteBean.getNombre_comercial());
+            textViewDireccion.setText(clienteBean.getCalle() + " " + clienteBean.getNumero());
             textViewColonia.setText("Col. " + clienteBean.getColonia());
 
 
 
-            imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    PopupMenu popup = new PopupMenu(itemView.getContext(), imageView);
-                    //Inflating the Popup using xml file
-                    popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+            imageView.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(itemView.getContext(), imageView);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
 
-                    //registering popup with OnMenuItemClickListener
-                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        public boolean onMenuItemClick(MenuItem item) {
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(item -> {
 
-                            if (clienteBean.getPhone_contact() == null || clienteBean.getPhone_contact() == "" || clienteBean.getPhone_contact() == "null"){
+                    if (clienteBean.getPhone_contact() == null || clienteBean.getPhone_contact().isEmpty() || clienteBean.getPhone_contact().equals( "null")){
 
-                                Toast.makeText(itemView.getContext(), "El cliente no cuenta con número de contacto", Toast.LENGTH_LONG).show();
+                        Toast.makeText(itemView.getContext(), "El cliente no cuenta con número de contacto", Toast.LENGTH_LONG).show();
 
-                                return false;
-                            }else {
-                                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getPhone_contact()));
-                                itemView.getContext().startActivity(intent);
+                        return false;
+                    }else {
+                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getPhone_contact()));
+                        itemView.getContext().startActivity(intent);
 
-                            }
+                    }
 
 
-                            return true;
-                        }
-                    });
+                    return true;
+                });
 
-                    popup.show();//showing popup menu
-                }
+                popup.show();//showing popup menu
             });
 
 
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
+            itemView.setOnLongClickListener(v -> {
 
-                    onItemLongClickListener.onItemLongClicked(getAdapterPosition());
-                    return false;
-                }
+                onItemLongClickListener.onItemLongClicked(getAdapterPosition());
+                return false;
             });
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onItemClickListener.onItemClick(getAdapterPosition());
-                }
-            });
+            itemView.setOnClickListener(v -> onItemClickListener.onItemClick(getAdapterPosition()));
 
 
             Calendar calendar = Calendar.getInstance();

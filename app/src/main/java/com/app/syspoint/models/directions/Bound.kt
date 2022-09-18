@@ -6,5 +6,8 @@ data class Bound(
     var northEast: LatLng,
     var southWest: LatLng
 ) {
-    constructor(): this(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
+    constructor(): this(
+        northEast = LatLng(0.0, 0.0),
+        southWest = LatLng(0.0, 0.0)
+    )
 }

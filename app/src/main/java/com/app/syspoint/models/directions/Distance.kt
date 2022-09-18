@@ -4,5 +4,8 @@ data class Distance(
     var text: String,
     var value: Long
 ) {
-    constructor(): this("", 0L)
+    constructor(): this(
+        text = "",
+        value = 0L
+    )
 }

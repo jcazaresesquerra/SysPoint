@@ -8,5 +8,10 @@ data class Direction(
     var html_instructions: String,
     var distanceText: String
 ): Serializable {
-    constructor(): this(-4198690398884769235L, "", "", "")
+    constructor(): this(
+        serialVersionUID = -4198690398884769235L,
+        durationText = "",
+        html_instructions = "",
+        distanceText = ""
+    )
 }
