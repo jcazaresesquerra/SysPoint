@@ -148,11 +148,11 @@ public class HomeFragment extends Fragment {
                 });
 
                 sendVentas();
-                loadCobranza();
+                saveCobranza();
                 loadAbonos();
-                loadVisitas();
+                saveVisitas();
                 loadClientes();
-                loadPreciosEspeciales();
+                savePreciosEspeciales();
             }
         }).execute(), 100);
     }
@@ -400,27 +400,27 @@ public class HomeFragment extends Fragment {
         if (ruteoBean != null) {
 
             if (ruteoBean.getDia() == 1) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1));
             } else if (ruteoBean.getDia() == 2) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 3) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 4) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 5) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 6) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 7) {
-                saveData((List<ClienteBean>) (List<?>) new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
             }
 
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
+            mData = new RuteClientDao().getAllRutaClientes();
         }
 
         loadRuta();
@@ -430,7 +430,7 @@ public class HomeFragment extends Fragment {
 
         mData = new ArrayList<>();
 
-        if (mData.size() > 0) {
+        if (!mData.isEmpty()) {
             lyt_clientes.setVisibility(View.GONE);
         } else {
             lyt_clientes.setVisibility(View.VISIBLE);
@@ -442,30 +442,24 @@ public class HomeFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterRutaClientes(mData, new AdapterRutaClientes.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                ClientesRutaBean clienteBean = mData.get(position);
-                HashMap<String, String> parametros = new HashMap<>();
-                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
-            }
-        }, new AdapterRutaClientes.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
-                // ClientesRutaBean clienteBean = mData.get(position);
-                // HashMap<String, String> parametros = new HashMap<>();
-                // parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                // parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
-                // parametros.put(Actividades.PARAM_3, clienteBean.getNumero());
-                // parametros.put(Actividades.PARAM_4, clienteBean.getColonia());
-                // parametros.put(Actividades.PARAM_5, clienteBean.getNombre_comercial());
-                // parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
-                // parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
-                // Actividades.getSingleton(getActivity(), PreCapturaActivity.class).muestraActividad(parametros);
+        mAdapter = new AdapterRutaClientes(mData, position -> {
+            ClientesRutaBean clienteBean = mData.get(position);
+            HashMap<String, String> parametros = new HashMap<>();
+            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+            Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+        }, position -> {
+            // ClientesRutaBean clienteBean = mData.get(position);
+            // HashMap<String, String> parametros = new HashMap<>();
+            // parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+            // parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
+            // parametros.put(Actividades.PARAM_3, clienteBean.getNumero());
+            // parametros.put(Actividades.PARAM_4, clienteBean.getColonia());
+            // parametros.put(Actividades.PARAM_5, clienteBean.getNombre_comercial());
+            // parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
+            // parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
+            // Actividades.getSingleton(getActivity(), PreCapturaActivity.class).muestraActividad(parametros);
 
-                return false;
-            }
+            return false;
         });
 
         recyclerView.setAdapter(mAdapter);
@@ -583,7 +577,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetChargeError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener cobranzas", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener cobranzas", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -597,7 +591,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetEmployeesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener empleados", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener empleados", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -611,7 +605,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetAllClientsError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -626,7 +620,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetProductsError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener productos", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener productos", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -642,7 +636,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetAllRolesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -656,7 +650,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetSpecialPricesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -704,7 +698,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void loadVisitas() {
+    private void saveVisitas() {
 
         final VisitsDao visitsDao = new VisitsDao();
         List<VisitasBean> visitasBeanListBean = new ArrayList<>();
@@ -748,7 +742,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    public void loadCobranza() {
+    public void saveCobranza() {
 
             final PaymentDao paymentDao = new PaymentDao();
             List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -784,7 +778,7 @@ public class HomeFragment extends Fragment {
     }
 
 
-    private void loadPreciosEspeciales() {
+    private void savePreciosEspeciales() {
 
         //Instancia la base de datos
         final SpecialPricesDao dao = new SpecialPricesDao();
