@@ -46,8 +46,7 @@ class RequestData {
                     for (item in response.body()!!.data.empleados) {
 
                         //Instancia el DAO
-                        val dao =
-                            EmployeeDao()
+                        val dao = EmployeeDao()
 
                         //Validamos si existe el empleado en la base de datos en base al identificador
                         val employeeBean = dao.getEmployeeByIdentifier(item.identificador)
@@ -55,8 +54,7 @@ class RequestData {
                         //NO existe entonces lo creamos
                         if (employeeBean == null) {
                             val employee = EmpleadoBean()
-                            val employeeDao =
-                                EmployeeDao()
+                            val employeeDao = EmployeeDao()
                             employee.setNombre(item.nombre)
                             employee.setDireccion(item.direccion)
                             employee.setEmail(item.email)
@@ -110,24 +108,22 @@ class RequestData {
                     }
                     //Contiene la lista de permidos
                     for (rol in response.body()!!.data.roles) {
-                        val rolesDao =
-                            RolesDao()
+                        val rolesDao = RolesDao()
                         val rolesBean = rolesDao.getRolByModule(rol.empleado, rol.modulo)
+                        if (rol.empleado.equals("E151")) {
+                            EmployeeDao()
+                        }
                         if (rolesBean == null) {
                             val bean = RolesBean()
-                            val dao =
-                                RolesDao()
-                            val employeeDao =
-                                EmployeeDao()
+                            val employeeDao = EmployeeDao()
                             val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
                             bean.empleado = empleadoBean
                             bean.modulo = rol.modulo
                             bean.active = rol.activo == 1
                             bean.identificador = rol.empleado
-                            dao.insert(bean)
+                            rolesDao.insert(bean)
                         } else {
-                            val employeeDao =
-                                EmployeeDao()
+                            val employeeDao = EmployeeDao()
                             val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
                             rolesBean.empleado = empleadoBean
                             rolesBean.modulo = rol.modulo
@@ -310,37 +306,38 @@ class RequestData {
                             ClientDao()
 
                         val clientBean = clientDao.getClientByAccount(item.cliente)
-                        if (clientBean == null) onGetAllDataListener.onGetAllDataError()
+                        if (clientBean != null) {
 
-                        //Para obtener los datos del producto
-                        val productDao =
-                            ProductDao()
-                        val productoBean = productDao.getProductoByArticulo(item.articulo)
-                        if (productoBean == null) onGetAllDataListener.onGetAllDataError()
+                            //Para obtener los datos del producto
+                            val productDao =
+                                ProductDao()
+                            val productoBean = productDao.getProductoByArticulo(item.articulo)
+                            if (productoBean == null) onGetAllDataListener.onGetAllDataError()
 
-                        val specialPricesDao =
-                            SpecialPricesDao()
-                        val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
-                            productoBean?.articulo,
-                            clientBean?.cuenta
-                        )
-
-                        //Si no hay precios especiales entonces crea un precio
-                        if (preciosEspecialesBean == null) {
-                            val dao =
+                            val specialPricesDao =
                                 SpecialPricesDao()
-                            val bean = PreciosEspecialesBean()
-                            bean.cliente = clientBean?.cuenta
-                            bean.articulo = productoBean?.articulo
-                            bean.precio = item.precio
-                            bean.active = item.active == 1
-                            dao.insert(bean)
-                        } else {
-                            preciosEspecialesBean.cliente = clientBean?.cuenta
-                            preciosEspecialesBean.articulo = productoBean?.articulo
-                            preciosEspecialesBean.precio = item.precio
-                            preciosEspecialesBean.active = item.active == 1
-                            specialPricesDao.save(preciosEspecialesBean)
+                            val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
+                                productoBean?.articulo,
+                                clientBean.cuenta
+                            )
+
+                            //Si no hay precios especiales entonces crea un precio
+                            if (preciosEspecialesBean == null) {
+                                val dao =
+                                    SpecialPricesDao()
+                                val bean = PreciosEspecialesBean()
+                                bean.cliente = clientBean.cuenta
+                                bean.articulo = productoBean?.articulo
+                                bean.precio = item.precio
+                                bean.active = item.active == 1
+                                dao.insert(bean)
+                            } else {
+                                preciosEspecialesBean.cliente = clientBean.cuenta
+                                preciosEspecialesBean.articulo = productoBean?.articulo
+                                preciosEspecialesBean.precio = item.precio
+                                preciosEspecialesBean.active = item.active == 1
+                                specialPricesDao.save(preciosEspecialesBean)
+                            }
                         }
                     }
                 }

@@ -15,6 +15,8 @@ import com.app.syspoint.databinding.ActivityLoginBinding
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
 import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.login.LoginViewModel
 import libs.mjn.prettydialog.PrettyDialog
 
@@ -44,6 +46,8 @@ class LoginActivity: AppCompatActivity() {
         when(viewState) {
             LoggedIn -> showMainActivity()
             LoginError -> showErrorDialog()
+            LoadingDataStart -> binding.rlprogressLogin.setVisible()
+            LoadingDataFinish -> binding.rlprogressLogin.setInvisible()
         }
     }
 

@@ -342,10 +342,9 @@ public class ClienteFragment extends Fragment {
                     if (rolesBean != null) {
                         if (rolesBean.getActive() == true) {
 
-                                HashMap<String, String> parametros = new HashMap<>();
-                                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                                Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
-
+                            HashMap<String, String> parametros = new HashMap<>();
+                            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                            Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
 
                         } else {
                             Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();

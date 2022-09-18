@@ -151,65 +151,58 @@ class LoginViewModel: BaseViewModel() {
     }
 
     private fun sync() {
-        if (!existTask()) {
-            GetAllDataInteractorImp().executeGetAllData(object: GetAllDataInteractor.OnGetAllDataListener {
-                override fun onGetAllDataSuccess() {
+        //cleanTask()
+        loginViewState.value = LoginViewState.LoadingDataStart
+        GetAllDataInteractorImp().executeGetAllData(object: GetAllDataInteractor.OnGetAllDataListener {
+            override fun onGetAllDataSuccess() {
+                loginViewState.postValue(LoginViewState.LoadingDataFinish)
+            }
 
-                }
-
-                override fun onGetAllDataError() {
-
-                }
-            })
-        }
+            override fun onGetAllDataError() {
+                loginViewState.postValue(LoginViewState.LoadingDataFinish)
+            }
+        })
     }
 
-    private fun existTask(): Boolean {
-        var exist = false
+    private fun cleanTask() {
         val taskDao = TaskDao()
         val taskBean = taskDao.getTask(Utils.fechaActual())
-        if (taskBean == null) {
-            val stockDao = StockDao()
-            stockDao.clear()
-            val historialDao =
-                StockHistoryDao()
-            historialDao.clear()
-            val ventasDao = SellsDao()
-            ventasDao.clear()
-            val itemDao = ItemDao()
-            itemDao.clear()
-            val visitasDao = VisitsDao()
-            visitasDao.clear()
-            val cobranzaDao =
-                PaymentDao()
-            cobranzaDao.clear()
-            val chargesDao =
-                ChargesDao()
-            chargesDao.clear()
-            val routingDao =
-                RoutingDao()
-            routingDao.clear()
-            val employeeDao =
-                EmployeeDao()
-            employeeDao.clear()
-            val rolesDao = RolesDao()
-            rolesDao.clear()
-            val clientesRutaDao =
-                RuteClientDao()
-            clientesRutaDao.clear()
-            val specialPricesDao =
-                SpecialPricesDao()
-            specialPricesDao.clear()
-            val dao = TaskDao()
-            dao.clear()
-            val bean = TaskBean()
-            bean.date = Utils.fechaActual()
-            bean.task = "Sincronización"
-            dao.insert(bean)
-            exist = false
-        } else {
-            exist = true
-        }
-        return exist
+        val stockDao = StockDao()
+        stockDao.clear()
+        val historialDao =
+            StockHistoryDao()
+        historialDao.clear()
+        val ventasDao = SellsDao()
+        ventasDao.clear()
+        val itemDao = ItemDao()
+        itemDao.clear()
+        val visitasDao = VisitsDao()
+        visitasDao.clear()
+        val cobranzaDao =
+            PaymentDao()
+        cobranzaDao.clear()
+        val chargesDao =
+            ChargesDao()
+        chargesDao.clear()
+        val routingDao =
+            RoutingDao()
+        routingDao.clear()
+        val employeeDao =
+            EmployeeDao()
+        employeeDao.clear()
+        val rolesDao = RolesDao()
+        rolesDao.clear()
+        val clientesRutaDao =
+            RuteClientDao()
+        clientesRutaDao.clear()
+        val specialPricesDao =
+            SpecialPricesDao()
+        specialPricesDao.clear()
+        val dao = TaskDao()
+        dao.clear()
+        val bean = TaskBean()
+        bean.date = Utils.fechaActual()
+        bean.task = "Sincronización"
+        dao.insert(bean)
     }
 }
