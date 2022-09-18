@@ -1,4 +1,4 @@
-package com.app.syspoint.ui.home;
+package com.app.syspoint.ui.home.activities;
 
 import android.Manifest;
 import android.content.Intent;

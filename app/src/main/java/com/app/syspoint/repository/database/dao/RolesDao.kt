@@ -6,9 +6,10 @@ import com.app.syspoint.repository.database.bean.RolesBeanDao
 class RolesDao: Dao("RolesBean") {
 
     fun getListaRolesByEmpleado(identificador: String?): List<RolesBean> {
-        return dao.queryBuilder()
+        val roles =  dao.queryBuilder()
             .where(RolesBeanDao.Properties.Identificador.eq(identificador))
             .list() as List<RolesBean>
+        return  roles
     }
 
     //Retorna el empleado por identificador

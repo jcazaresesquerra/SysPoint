@@ -250,7 +250,7 @@ public class ClienteFragment extends Fragment {
                     identificador = vendedoresBean.getIdentificador();
                 }
                 final RolesDao rolesDao = new RolesDao();
-                final RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
+                RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
 
                 if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
                     if (rolesBean != null) {
@@ -337,21 +337,19 @@ public class ClienteFragment extends Fragment {
                         }
                 }else if (strName.compareToIgnoreCase("Recordatorio") == 0) {
                     showCustomDialog(clienteBean);
-                }else if(strName.compareToIgnoreCase("Cobranza") == 0 ){
+                }else if (strName.compareToIgnoreCase("Cobranza") == 0 ){
+                    rolesBean = rolesDao.getRolByEmpleado(identificador, "Cobranza");
 
-                    if (rolesBean != null) {
-                        if (rolesBean.getActive() == true) {
+                    if (rolesBean != null && rolesBean.getActive()) {
 
                             HashMap<String, String> parametros = new HashMap<>();
                             parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                             Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
 
-                        } else {
-                            Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    } else {
+                        Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
+                        return;
                     }
-
                 }
 
                 dialog.dismiss();
@@ -467,10 +465,10 @@ public class ClienteFragment extends Fragment {
             cliente.setCuenta(item.getCuenta());
             cliente.setGrupo(item.getGrupo());
             cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
+            if (item.getStatus()) {
                 cliente.setStatus(1);
+            } else {
+                cliente.setStatus(0);
             }
             cliente.setConsec(item.getConsec());
             cliente.setRegion(item.getRegion());

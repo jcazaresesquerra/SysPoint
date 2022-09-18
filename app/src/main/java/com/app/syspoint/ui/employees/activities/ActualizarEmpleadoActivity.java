@@ -161,14 +161,14 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 ip_actualiza_empleado_hora_salida.setText(empleadoBean.getHora_salida());
                 ip_actualiza_empleado_salida_comida.setText(empleadoBean.getSalida_comer());
                 ip_actualiza_empleado_entrada_comida.setText(empleadoBean.entrada_comer);
-                ip_actualiza_empleado_sueldo.setText("" +empleadoBean.getSueldo_diario());
+                ip_actualiza_empleado_sueldo.setText(String.valueOf(empleadoBean.getSueldo_diario()));
                 ip_actualiza_empleado_turno.setText(empleadoBean.getTurno());
 
                 tipo_contrato_seleccionado = empleadoBean.getTipo_contrato();
-                if (empleadoBean.getStatus() ==  false) {
-                    status_seleccionado = "Activo";
-                }else {
+                if (empleadoBean.getStatus()) {
                     status_seleccionado = "InActivo";
+                } else {
+                    status_seleccionado = "Activo";
                 }
 
 
@@ -178,18 +178,23 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 //Contiene la lista de roles
                 for(RolesBean item: listRoles){
 
-                    if (item.getModulo().compareToIgnoreCase("Clientes") ==  0 && item.getActive() == true){
-                        checkbor_clientes_actualiza_empleado.setChecked(true);
-                    }else if (item.getModulo().compareToIgnoreCase("Productos") ==  0 && item.getActive() == true){
-                        checkbor_productos_actualiza_empleado.setChecked(true);
-                    }else if (item.getModulo().compareToIgnoreCase("Ventas") ==  0 && item.getActive() == true){
-                        checkbor_ventas_actualiza_empleado.setChecked(true);
-                    }else if (item.getModulo().compareToIgnoreCase("Empleados") ==  0 && item.getActive() == true){
-                        checkbor_empleados_actualiza_empleado.setChecked(true);
-                    }else if (item.getModulo().compareToIgnoreCase("Inventarios") ==  0 && item.getActive() == true){
-                        checkbor_inventario_actualiza_empleado.setChecked(true);
-                    }else if(item.getModulo().compareToIgnoreCase("Cobranza") == 0 && item.getActive() == true){
-                        checkbor_cobranza_actualiza_empleado.setChecked(true);
+                    if (item.getModulo().compareToIgnoreCase("Clientes") == 0){
+                        checkbor_clientes_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if (item.getModulo().compareToIgnoreCase("Productos") == 0){
+                        checkbor_productos_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if (item.getModulo().compareToIgnoreCase("Ventas") == 0){
+                        checkbor_ventas_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if (item.getModulo().compareToIgnoreCase("Empleados") == 0){
+                        checkbor_empleados_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if (item.getModulo().compareToIgnoreCase("Inventarios") == 0){
+                        checkbor_inventario_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if(item.getModulo().compareToIgnoreCase("Cobranza") == 0){
+                        checkbor_cobranza_actualiza_empleado.setChecked(item.getActive());
                     }
                 }
 

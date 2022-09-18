@@ -53,12 +53,10 @@ class EmployeeViewModel: BaseViewModel() {
         val rolesDao = RolesDao()
         val rolesBean = rolesDao.getRolByEmpleado(identificador, "Empleados")
         if (name == null || name.compareTo("Editar", ignoreCase = true) == 0) {
-            if (rolesBean != null) {
-                if (rolesBean.active) {
+            if (rolesBean != null && rolesBean.active) {
                     employeeViewState.postValue(EmployeeViewState.ShowEditEmployeeState(employeeBean.identificador))
-                } else {
-                    employeeViewState.postValue(EmployeeViewState.CanNotEditEmployeeState)
-                }
+            } else {
+                employeeViewState.postValue(EmployeeViewState.CanNotEditEmployeeState)
             }
         } else if (name.compareTo("Llamar", ignoreCase = true) == 0) {
             employeeViewState.postValue(EmployeeViewState.CallEmployeeState(employeeBean.telefono))

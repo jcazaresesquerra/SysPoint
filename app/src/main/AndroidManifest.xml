@@ -85,7 +85,7 @@
             android:theme="@style/Theme.Custom" />
         <activity android:name=".ui.stock.activities.ListaProductosInventarioActivity" />
         <activity
-            android:name=".ui.home.MapsRuteoActivity"
+            android:name=".ui.home.activities.MapsRuteoActivity"
             android:exported="true"
             android:label="@string/title_activity_maps_ruteo"
             android:screenOrientation="portrait"
@@ -111,7 +111,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.ListaRutaClientesActivity"
+            android:name=".ui.home.activities.ListaRutaClientesActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
