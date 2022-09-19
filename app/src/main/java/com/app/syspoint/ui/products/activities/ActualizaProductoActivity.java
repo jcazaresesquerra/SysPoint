@@ -498,14 +498,14 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             @Override
             public void onSaveProductsSuccess() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onSaveProductsError() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los productos", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los productos", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

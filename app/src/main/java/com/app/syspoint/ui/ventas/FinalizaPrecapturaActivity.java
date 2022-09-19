@@ -266,12 +266,12 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
             public void onSaveClientSuccess() {
-                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveClientError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -433,12 +433,12 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
             @Override
             public void onSaveVisitSuccess() {
-                Toast.makeText(getApplicationContext(), "Visita sincroniza", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Visita sincroniza", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveVisitError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
             }
         });
     }

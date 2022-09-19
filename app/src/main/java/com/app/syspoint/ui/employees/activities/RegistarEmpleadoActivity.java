@@ -837,12 +837,12 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         new RolInteractorImp().executeSaveRoles(listaRoles, new RolInteractor.OnSaveRolesListener() {
             @Override
             public void onSaveRolesSuccess() {
-                Toast.makeText(getApplicationContext(), "Rol sincronizado", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Rol sincronizado", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveRolesError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar el rol", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar el rol", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -973,14 +973,14 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             @Override
             public void onSaveEmployeeSuccess() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Empleados sincronizados", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Empleados sincronizados", Toast.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onSaveEmployeeError() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

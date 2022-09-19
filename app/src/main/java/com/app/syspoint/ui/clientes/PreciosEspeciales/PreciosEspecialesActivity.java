@@ -113,7 +113,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
             @Override
             public void onGGetPricesByClientError() {
                 progresshide();
-                Toast.makeText(getBaseContext(), "Ha ocurrido un problema al obtener precios", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getBaseContext(), "Ha ocurrido un problema al obtener precios", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -320,13 +320,13 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
             @Override
             public void onSendPricesSuccess() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSendPricesError() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
             }
         });
     }

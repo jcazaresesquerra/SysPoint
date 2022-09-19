@@ -107,12 +107,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
         initTextView();
 
         imageButtonScanner = findViewById(R.id.img_scanner);
-        imageButtonScanner.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Actividades.getSingleton(RegistrarProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-            }
-        });
+        imageButtonScanner.setOnClickListener(v -> Actividades.getSingleton(RegistrarProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1));
     }
 
     @Override
@@ -149,18 +144,8 @@ public class RegistrarProductoActivity extends AppCompatActivity {
                             .setMessage("Debe de completar los campos requeridos " + "\n" + campos)
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, dialog::dismiss);
 
                     dialog.setCancelable(false);
                     dialog.show();
@@ -176,27 +161,12 @@ public class RegistrarProductoActivity extends AppCompatActivity {
                             .setMessage("Desea registar el producto")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
+                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, dialog::dismiss)
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
+                                saveProducto();
+                                dialog.dismiss();
                             })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    saveProducto();
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-
-                                    dialog.dismiss();
-
-                                }
-                            });
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
                     dialog.setCancelable(false);
                     dialog.show();
 
@@ -565,14 +535,14 @@ public class RegistrarProductoActivity extends AppCompatActivity {
             @Override
             public void onSaveProductsSuccess() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de productos exitosa", Toast.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onSaveProductsError() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los productos", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los productos", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

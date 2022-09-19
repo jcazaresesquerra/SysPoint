@@ -27,8 +27,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
-import com.app.syspoint.models.json.SpecialPriceJson;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
@@ -36,8 +34,6 @@ import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.SpecialPricesDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Price;
 import com.app.syspoint.ui.products.adapters.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
@@ -48,9 +44,6 @@ import java.util.List;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ListadoProductosActivity extends AppCompatActivity {
 
@@ -378,14 +371,14 @@ public class ListadoProductosActivity extends AppCompatActivity {
             @Override
             public void onSendPricesSuccess() {
                 progresshide();
-                Toast.makeText(ListadoProductosActivity.this, "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(ListadoProductosActivity.this, "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onSendPricesError() {
                 progresshide();
-                Toast.makeText(ListadoProductosActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                //Toast.makeText(ListadoProductosActivity.this, "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

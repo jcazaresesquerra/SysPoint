@@ -184,12 +184,12 @@ public class HomeFragment extends Fragment {
         new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
             @Override
             public void onUpdateChargeSuccess() {
-                Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onUpdateChargeError() {
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -512,32 +512,15 @@ public class HomeFragment extends Fragment {
 
 
     private void closeBox() {
-        final PrettyDialog dialog = new PrettyDialog(getContext());
+        final PrettyDialog dialog = new PrettyDialog(requireActivity());
         dialog.setTitle("Corte del día")
                 .setTitleColor(R.color.purple_500)
                 .setMessage("Desea realizar el corte del día")
                 .setMessageColor(R.color.purple_700)
                 .setAnimationEnabled(false)
-                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-                    }
-                })
-                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-
-                        dialog.dismiss();
-                    }
-                })
-                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-
-                    }
-                });
+                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, dialog::dismiss)
+                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
         dialog.setCancelable(false);
         dialog.show();
 
@@ -555,12 +538,9 @@ public class HomeFragment extends Fragment {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getData();
-                dialog.dismiss();
-            }
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
+            getData();
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -579,7 +559,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetChargeError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener cobranzas", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener cobranzas", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -593,7 +573,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetEmployeesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener empleados", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener empleados", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -607,7 +587,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetAllClientsError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -622,7 +602,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetProductsError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener productos", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener productos", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -638,7 +618,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetAllRolesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -652,8 +632,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onGetSpecialPricesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_SHORT).show();
-
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -703,8 +682,7 @@ public class HomeFragment extends Fragment {
     private void saveVisitas() {
 
         final VisitsDao visitsDao = new VisitsDao();
-        List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-        visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        List<VisitasBean> visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
         final ClientDao clientDao = new ClientDao();
         EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
@@ -712,7 +690,7 @@ public class HomeFragment extends Fragment {
             vendedoresBean = new CacheInteractor().getSeller();
         }
 
-        List<Visit> listaVisitas = new ArrayList<>();
+        List<Visit> visitList = new ArrayList<>();
         for (VisitasBean item : visitasBeanListBean) {
             Visit visita = new Visit();
             visita.setFecha(item.getFecha());
@@ -728,55 +706,54 @@ public class HomeFragment extends Fragment {
                 Log.e(TAG, "vendedoresBean is null");
             }
 
-            listaVisitas.add(visita);
+            visitList.add(visita);
         }
 
-        new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
+        new VisitInteractorImp().executeSaveVisit(visitList, new VisitInteractor.OnSaveVisitListener() {
             @Override
             public void onSaveVisitSuccess() {
-                Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveVisitError() {
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
             }
         });
     }
 
     public void saveCobranza() {
 
-            final PaymentDao paymentDao = new PaymentDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
 
-            List<Payment> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Payment cobranza = new Payment();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
+
+        new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
+            @Override
+            public void onSaveChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
             }
 
-            new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
-                @Override
-                public void onSaveChargeSuccess() {
-                    Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onSaveChargeError() {
-                    Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
-                }
-            });
+            @Override
+            public void onSaveChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
@@ -799,7 +776,7 @@ public class HomeFragment extends Fragment {
         for (PreciosEspecialesBean items : listaDB) {
 
             final Price precio = new Price();
-            if (items.getActive() == true) {
+            if (items.getActive()) {
                 precio.setActive(1);
             } else {
                 precio.setActive(0);
@@ -816,13 +793,13 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSendPricesSuccess() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSendPricesError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -830,73 +807,72 @@ public class HomeFragment extends Fragment {
     public void loadClientes() {
 
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getClientsByDay(Utils.fechaActual());
+        List<ClienteBean> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
 
-        List<Client> listaClientes = new ArrayList<>();
+        List<Client> clientList = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
-            Client cliente = new Client();
-            cliente.setNombreComercial(item.getNombre_comercial());
-            cliente.setCalle(item.getCalle());
-            cliente.setNumero(item.getNumero());
-            cliente.setColonia(item.getColonia());
-            cliente.setCiudad(item.getCiudad());
-            cliente.setCodigoPostal(item.getCodigo_postal());
-            cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
-            cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
+        for (ClienteBean item : clientListDB) {
+            Client client = new Client();
+            client.setNombreComercial(item.getNombre_comercial());
+            client.setCalle(item.getCalle());
+            client.setNumero(item.getNumero());
+            client.setColonia(item.getColonia());
+            client.setCiudad(item.getCiudad());
+            client.setCodigoPostal(item.getCodigo_postal());
+            client.setFechaRegistro(item.getFecha_registro());
+            client.setFechaBaja(item.getFecha_baja());
+            client.setCuenta(item.getCuenta());
+            client.setGrupo(item.getGrupo());
+            client.setCategoria(item.getCategoria());
+            if (item.getStatus()) {
+                client.setStatus(1);
             } else {
-                cliente.setStatus(1);
+                client.setStatus(0);
             }
-            cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
-            cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
-            cliente.setLun(item.getLun());
-            cliente.setMar(item.getMar());
-            cliente.setMie(item.getMie());
-            cliente.setJue(item.getJue());
-            cliente.setVie(item.getVie());
-            cliente.setSab(item.getSab());
-            cliente.setDom(item.getDom());
-            cliente.setLatitud(item.getLatitud());
-            cliente.setLongitud(item.getLongitud());
-            cliente.setPhone_contacto("" + item.getContacto_phone());
-            cliente.setRecordatorio("" + item.getRecordatorio());
-            cliente.setVisitas(item.getVisitasNoefectivas());
+            client.setConsec(item.getConsec());
+            client.setRegion(item.getRegion());
+            client.setSector(item.getSector());
+            client.setRango(item.getRango());
+            client.setSecuencia(item.getSecuencia());
+            client.setPeriodo(item.getPeriodo());
+            client.setRuta(item.getRuta());
+            client.setLun(item.getLun());
+            client.setMar(item.getMar());
+            client.setMie(item.getMie());
+            client.setJue(item.getJue());
+            client.setVie(item.getVie());
+            client.setSab(item.getSab());
+            client.setDom(item.getDom());
+            client.setLatitud(item.getLatitud());
+            client.setLongitud(item.getLongitud());
+            client.setPhone_contacto("" + item.getContacto_phone());
+            client.setRecordatorio("" + item.getRecordatorio());
+            client.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()) {
-                cliente.setCredito(1);
+                client.setCredito(1);
             } else {
-                cliente.setCredito(0);
+                client.setCredito(0);
             }
-            cliente.setSaldo_credito(item.getSaldo_credito());
-            cliente.setLimite_credito(item.getLimite_credito());
-            if (item.getMatriz() == "null" && item.getMatriz() == null) {
-                cliente.setMatriz("null");
+            client.setSaldo_credito(item.getSaldo_credito());
+            client.setLimite_credito(item.getLimite_credito());
+            if (item.getMatriz().equals("null") && item.getMatriz() == null) {
+                client.setMatriz("null");
             } else {
-                cliente.setMatriz(item.getMatriz());
+                client.setMatriz(item.getMatriz());
             }
 
-            listaClientes.add(cliente);
+            clientList.add(client);
         }
 
-        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
+        new ClientInteractorImp().executeSaveClient(clientList, new ClientInteractor.SaveClientListener() {
             @Override
             public void onSaveClientSuccess() {
-                Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveClientError() {
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

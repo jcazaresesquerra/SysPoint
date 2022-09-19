@@ -113,12 +113,12 @@ public class CobranzaActivity extends AppCompatActivity {
         new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
             @Override
             public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
-                Toast.makeText(getApplicationContext(), "Cobranza sincronizada", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Cobranza sincronizada", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onGetChargeByClientError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar las cobranzas", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar las cobranzas", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -422,12 +422,12 @@ public class CobranzaActivity extends AppCompatActivity {
         new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
             @Override
             public void onUpdateChargeSuccess() {
-                Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onUpdateChargeError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -494,12 +494,12 @@ public class CobranzaActivity extends AppCompatActivity {
         new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
             public void onSaveClientSuccess() {
-                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveClientError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

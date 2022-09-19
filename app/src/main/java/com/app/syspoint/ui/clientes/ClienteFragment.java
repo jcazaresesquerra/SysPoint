@@ -254,7 +254,7 @@ public class ClienteFragment extends Fragment {
 
                 if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
                     if (rolesBean != null) {
-                        if (rolesBean.getActive() == true) {
+                        if (rolesBean.getActive()) {
                             editCliente(clienteBean.getCuenta());
                         } else {
 
@@ -508,13 +508,13 @@ public class ClienteFragment extends Fragment {
             @Override
             public void onSaveClientSuccess() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveClientError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -547,7 +547,7 @@ public class ClienteFragment extends Fragment {
             @Override
             public void onGetAllClientsError() {
                 progresshide();
-                Toast.makeText(requireActivity(), "Ha ocurrido un problema al obtener clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al obtener clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -619,7 +619,7 @@ public class VentasActivity extends AppCompatActivity {
                     @Override
                     public void onGGetPricesByClientError() {
                         progressDialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_LONG).show();
                     }
                 });
             } else {
@@ -747,12 +747,12 @@ public class VentasActivity extends AppCompatActivity {
         new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
             public void onSaveClientSuccess() {
-                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onSaveClientError() {
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }

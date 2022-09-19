@@ -1014,14 +1014,14 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             @Override
             public void onSaveClientSuccess() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
                 finish();
             }
 
             @Override
             public void onSaveClientError() {
                 progresshide();
-                Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
                 finish();
             }
         });
