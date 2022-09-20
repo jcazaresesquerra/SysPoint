@@ -123,11 +123,12 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                     finishPreSellClicked = true
                     if (conceptSelectedView == null || conceptSelectedView!!.isEmpty() || conceptSelectedView === "") {
                         showNotChecked()
+                        finishPreSellClicked = false
                         return false
                     } else {
                         handleConfirmAction()
+                        finishPreSellClicked = false
                     }
-                    finishPreSellClicked = false
                 }
                 return true
             }

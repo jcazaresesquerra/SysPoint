@@ -1249,21 +1249,27 @@ public class VentasActivity extends AppCompatActivity {
 
         @Override
         public void onLocationChanged(Location location) {
-            if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
-                try {
-                    /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                    List<Address> list = geocoder.getFromLocation(
-                            location.getLatitude(), location.getLongitude(), 1);
-                    if (!list.isEmpty()) {
-                        latidud = "" + list.get(0).getLatitude();
-                        longitud = "" + list.get(0).getLongitude();
-                    }
+            /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+            try {
+                new Thread(() -> {
+                    if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+                        try {
+                            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                            List<Address> list = geocoder.getFromLocation(
+                                    location.getLatitude(), location.getLongitude(), 1);
+                            if (!list.isEmpty()) {
+                                latidud = "" + list.get(0).getLatitude();
+                                longitud = "" + list.get(0).getLongitude();
+                            }
 
-                } catch (Exception e) {
-                    Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                }
+                        } catch (Exception e) {
+                            Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             this.registrarClientesController.setLocation(location);
         }
@@ -1299,20 +1305,27 @@ public class VentasActivity extends AppCompatActivity {
     /* obtener la direccion*/
     public void setLocation(Location loc) {
         //Obtener la direccion de la calle a partir de la latitud y la longitud
-        if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
-            try {
-                /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<Address> list = geocoder.getFromLocation(
-                        loc.getLatitude(), loc.getLongitude(), 1);
-                if (!list.isEmpty()) {
-                    Address DirCalle = list.get(0);
-                    // editTextDireccion.setText(DirCalle.getAddressLine(0));
-                }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            new Thread(() -> {
+                if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
+                    try {
+                        /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+                        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                        List<Address> list = geocoder.getFromLocation(
+                                loc.getLatitude(), loc.getLongitude(), 1);
+                        if (!list.isEmpty()) {
+                            Address DirCalle = list.get(0);
+                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

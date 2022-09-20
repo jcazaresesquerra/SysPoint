@@ -653,7 +653,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
                 String resultadoLector = data.getStringExtra(Actividades.PARAM_1);
 
                 if (!resultadoLector.isEmpty()){
-                    editTextCodigoDeBarras.setText(""+resultadoLector);
+                    editTextCodigoDeBarras.setText(resultadoLector);
                 }
             }
         }
