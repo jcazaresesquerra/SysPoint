@@ -1,6 +1,7 @@
 package com.app.syspoint.ui.cobranza;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -214,177 +217,141 @@ public class CobranzaActivity extends AppCompatActivity {
                 .setMessage("¿Desea terminal la cobranza?")
                 .setMessageColor(R.color.purple_700)
                 .setAnimationEnabled(false)
-                .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialogo.dismiss();
-                    }
-                }).addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-            @Override
-            public void onClick() {
+                .setIcon(R.drawable.ic_save_white, R.color.purple_500, dialogo::dismiss)
+                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
 
-                dialogo.dismiss();
-                Utils.addActivity2Stack(CobranzaActivity.this);
+                    dialogo.dismiss();
+                    Utils.addActivity2Stack(CobranzaActivity.this);
 
+                        final ChargesDao chargesDao = new ChargesDao();
 
-                    final ChargesDao chargesDao = new ChargesDao();
+                        final ClientDao clientesDao = new ClientDao();
+                        final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
 
-
-                    final ClientDao clientesDao = new ClientDao();
-                    final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
-
-                    if (clienteBean == null) {
-                        final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);
-                        dialogo.setTitle("Cliente")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Cliente no encontrado")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        return;
-                    }
-
-
-                    //Obtiene el nombre del vendedor
-                    EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-
-                    if (vendedoresBean == null) {
-                        vendedoresBean = new CacheInteractor().getSeller();
-                    }
-
-                    if (vendedoresBean == null) {
-                        final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);
-                        dialogo.setTitle("Vendedor")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Vendedor no encontrado")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        return;
-                    }
-
-                    final ArrayList<CobdetBean> lista = new ArrayList<>();
-                    for (int x = 0; x < partidas.size(); x++) {
-
-                        //Actualiza la cobranza
-                        final PaymentDao paymentDao = new PaymentDao();
-                        final CobranzaBean cobranzaBean = paymentDao.getByCobranza(partidas.get(x).getCobranza());
-
-                        if (cobranzaBean != null) {
-                            if (cobranzaBean.getSaldo() == partidas.get(x).getAcuenta()) {
-                                cobranzaBean.setEstado("CO");
-                                cobranzaBean.setSaldo(0);
-                                cobranzaBean.setAbono(true);
-                            } else {
-                                cobranzaBean.setSaldo(cobranzaBean.getSaldo() - partidas.get(x).getAcuenta());
-                                cobranzaBean.setAbono(true);
-                            }
-                            cobranzaBean.setFecha(Utils.fechaActual());
-                            paymentDao.save(cobranzaBean);
+                        if (clienteBean == null) {
+                            final PrettyDialog dialogo1 = new PrettyDialog(CobranzaActivity.this);
+                            dialogo1.setTitle("Cliente")
+                                    .setTitleColor(R.color.purple_500)
+                                    .setMessage("Cliente no encontrado")
+                                    .setMessageColor(R.color.purple_700)
+                                    .setAnimationEnabled(false)
+                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    })
+                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    });
+                            dialogo1.setCancelable(false);
+                            dialogo1.show();
+                            return;
                         }
 
-                        final CobdetBean cobdetBean = new CobdetBean();
-                        cobdetBean.setCobranza(partidas.get(x).getCobranza());
-                        cobdetBean.setCliente(clienteBean);
-                        cobdetBean.setFecha(Utils.fechaActual());
-                        cobdetBean.setImporte(partidas.get(x).getAcuenta());
-                        cobdetBean.setVenta(partidas.get(x).getVenta());
-                        cobdetBean.setEmpleado(vendedoresBean);
-                        cobdetBean.setAbono(0);
-                        cobdetBean.setHora(Utils.getHoraActual());
-                        cobdetBean.setSaldo(partidas.get(x).getSaldo());
-                        lista.add(cobdetBean);
-                    }
 
-                    CobrosBean cobrosBean = new CobrosBean();
-                    int folioCobranza = chargesDao.getUltimoFolio();
-                    cobrosBean.setCobro(folioCobranza);
+                        //Obtiene el nombre del vendedor
+                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
-                    //Creamos el encabezado de la venta
-                    cobrosBean.setFecha(Utils.fechaActual());
-                    cobrosBean.setHora(Utils.getHoraActual());
-                    cobrosBean.setCliente(clienteBean);
-                    cobrosBean.setEmpleado(vendedoresBean);
-                    cobrosBean.setImporte(Double.parseDouble(textView_impuesto_cobranza_view.getText().toString().replace("$", "").replace(",", "").trim()));
-                    cobrosBean.setEstado("CO");
-                    cobrosBean.setTemporal(0);
-                    cobrosBean.setSinc(0);
+                        if (vendedoresBean == null) {
+                            vendedoresBean = new CacheInteractor().getSeller();
+                        }
 
-                    //Creamos el documento con la relacion de sus documentos
-                    chargesDao.createCharge(cobrosBean, lista);
+                        if (vendedoresBean == null) {
+                            final PrettyDialog dialogo1 = new PrettyDialog(CobranzaActivity.this);
+                            dialogo1.setTitle("Vendedor")
+                                    .setTitleColor(R.color.purple_500)
+                                    .setMessage("Vendedor no encontrado")
+                                    .setMessageColor(R.color.purple_700)
+                                    .setAnimationEnabled(false)
+                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    })
+                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    });
+                            dialogo1.setCancelable(false);
+                            dialogo1.show();
+                            return;
+                        }
 
-                    ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
-                    progressDialog.setMessage("Espere un momento");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
-                    new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                        progressDialog.dismiss();
-                        if (connected) {
+                        final ArrayList<CobdetBean> lista = new ArrayList<>();
+                        for (int x = 0; x < partidas.size(); x++) {
+
+                            //Actualiza la cobranza
+                            final PaymentDao paymentDao = new PaymentDao();
+                            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(partidas.get(x).getCobranza());
+
+                            if (cobranzaBean != null) {
+                                if (cobranzaBean.getSaldo() == partidas.get(x).getAcuenta()) {
+                                    cobranzaBean.setEstado("CO");
+                                    cobranzaBean.setSaldo(0);
+                                    cobranzaBean.setAbono(true);
+                                } else {
+                                    cobranzaBean.setSaldo(cobranzaBean.getSaldo() - partidas.get(x).getAcuenta());
+                                    cobranzaBean.setAbono(true);
+                                }
+                                cobranzaBean.setFecha(Utils.fechaActual());
+                                paymentDao.save(cobranzaBean);
+                            }
+
+                            final CobdetBean cobdetBean = new CobdetBean();
+                            cobdetBean.setCobranza(partidas.get(x).getCobranza());
+                            cobdetBean.setCliente(clienteBean);
+                            cobdetBean.setFecha(Utils.fechaActual());
+                            cobdetBean.setImporte(partidas.get(x).getAcuenta());
+                            cobdetBean.setVenta(partidas.get(x).getVenta());
+                            cobdetBean.setEmpleado(vendedoresBean);
+                            cobdetBean.setAbono(0);
+                            cobdetBean.setHora(Utils.getHoraActual());
+                            cobdetBean.setSaldo(partidas.get(x).getSaldo());
+                            lista.add(cobdetBean);
+                        }
+
+                        CobrosBean cobrosBean = new CobrosBean();
+                        int folioCobranza = chargesDao.getUltimoFolio();
+                        cobrosBean.setCobro(folioCobranza);
+
+                        //Creamos el encabezado de la venta
+                        cobrosBean.setFecha(Utils.fechaActual());
+                        cobrosBean.setHora(Utils.getHoraActual());
+                        cobrosBean.setCliente(clienteBean);
+                        cobrosBean.setEmpleado(vendedoresBean);
+                        cobrosBean.setImporte(Double.parseDouble(textView_impuesto_cobranza_view.getText().toString().replace("$", "").replace(",", "").trim()));
+                        cobrosBean.setEstado("CO");
+                        cobrosBean.setTemporal(0);
+                        cobrosBean.setSinc(0);
+
+                        //Creamos el documento con la relacion de sus documentos
+                        chargesDao.createCharge(cobrosBean, lista);
+
+                        ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
+                        progressDialog.setMessage("Espere un momento");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+                        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                            progressDialog.dismiss();
                             try {
-                                loadAbonos();
-
-                                String ventaID = String.valueOf(cobrosBean.getId());
-
-                                final PaymentDao paymentDao = new PaymentDao();
-                                double nuevoSaldo = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
-
-                                //Actualizamos el saldo del cliente
-                                clienteBean.setSaldo_credito(nuevoSaldo);
-                                clienteBean.setDate_sync(Utils.fechaActual());
-                                clientesDao.save(clienteBean);
-
-                                //Creamos el template del timbre
-                                DepositTicket depositTicket = new DepositTicket();
-                                depositTicket.setBean(cobrosBean);
-                                depositTicket.template();
-
-                                String ticket = depositTicket.getDocument();
-
-                                testLoadClientes(String.valueOf(clienteBean.getId()));
-
-                                //Elimina las partidas
-                                final PaymentModelDao dao = new PaymentModelDao();
-                                dao.clear();
-                                Intent intent = new Intent(CobranzaActivity.this, ImprimeAbonoActivity.class);
-                                intent.putExtra("ticket", ticket);
-                                intent.putExtra("cobranza", ventaID);
-                                intent.putExtra("clienteID", String.valueOf(clienteBean.getId()));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
+                                if (connected) {
+                                    saveClientAbono(cobrosBean);
+                                } else  {
+                                    showDialogNotConnectionInternet();
+                                }
                             } catch (Exception e) {
-                                    e.printStackTrace();
+                                e.printStackTrace();
                             }
-                        }
-                        }).execute(), 100);
+                            }).execute(), 100);
 
-            }
-        }).addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                }).addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
             @Override
             public void onClick() {
                 dialogo.dismiss();
@@ -397,7 +364,7 @@ public class CobranzaActivity extends AppCompatActivity {
 
 
 
-    private void loadAbonos() {
+    private void saveAbono() {
 
         final PaymentDao paymentDao = new PaymentDao();
         List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -452,10 +419,10 @@ public class CobranzaActivity extends AppCompatActivity {
             cliente.setCuenta(item.getCuenta());
             cliente.setGrupo(item.getGrupo());
             cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
+            if (item.getStatus()) {
                 cliente.setStatus(1);
+            } else {
+                cliente.setStatus(0);
             }
             cliente.setConsec(item.getConsec());
             cliente.setRegion(item.getRegion());
@@ -500,6 +467,17 @@ public class CobranzaActivity extends AppCompatActivity {
             @Override
             public void onSaveClientError() {
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
+        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
+            @Override
+            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+
+            }
+
+            @Override
+            public void onGetAllClientsError() {
+
             }
         });
     }
@@ -720,6 +698,67 @@ public class CobranzaActivity extends AppCompatActivity {
         });
         /*** ----- Dale memoria al adaptador ------ ****/
         recyclerView.setAdapter(mAdapter);
+    }
+
+    private void showDialogNotConnectionInternet() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
+        dialog.setContentView(R.layout.dialog_warning);
+        dialog.setCancelable(true);
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TerminarCobranza();
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setAttributes(lp);
+    }
+
+
+    private void saveClientAbono(CobrosBean cobrosBean) throws Exception {
+        final ClientDao clientesDao = new ClientDao();
+        final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
+
+        saveAbono();
+
+        String ventaID = String.valueOf(cobrosBean.getId());
+
+        final PaymentDao paymentDao = new PaymentDao();
+        double nuevoSaldo = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+
+        //Actualizamos el saldo del cliente
+        clienteBean.setSaldo_credito(nuevoSaldo);
+        clienteBean.setDate_sync(Utils.fechaActual());
+        clientesDao.save(clienteBean);
+
+        //Creamos el template del timbre
+        DepositTicket depositTicket = new DepositTicket();
+        depositTicket.setBean(cobrosBean);
+        depositTicket.template();
+
+        String ticket = depositTicket.getDocument();
+
+        testLoadClientes(String.valueOf(clienteBean.getId()));
+
+        //Elimina las partidas
+        final PaymentModelDao dao = new PaymentModelDao();
+        dao.clear();
+        Intent intent = new Intent(CobranzaActivity.this, ImprimeAbonoActivity.class);
+        intent.putExtra("ticket", ticket);
+        intent.putExtra("cobranza", ventaID);
+        intent.putExtra("clienteID", String.valueOf(clienteBean.getId()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void setData() {

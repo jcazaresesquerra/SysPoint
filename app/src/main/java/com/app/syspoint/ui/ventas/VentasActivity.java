@@ -563,6 +563,24 @@ public class VentasActivity extends AppCompatActivity {
             credito = clienteBean.getLimite_credito();
             textViewNombre.setText(clienteBean.getNombre_comercial());
 
+            new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
+                @Override
+                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                    ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+                    if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
+                        textViewCliente.setText(clienteBean.getCuenta());
+                        textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
+                    } else {
+                        ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                        textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
+                    }
+                }
+
+                @Override
+                public void onGetAllClientsError() {
+
+                }
+            });
             if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
                 textViewCliente.setText(clienteBean.getCuenta());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");

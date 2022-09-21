@@ -332,11 +332,11 @@ public class ListaVentasFragment extends Fragment {
                                                     clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
                                                     clientDao.save(clienteBean);
                                                     testLoadClientes(String.valueOf(clienteBean.getId()));
-                                                    loadCobranza();
+                                                    saveCharge();
                                                 }
                                             }
                                             if (connected) {
-                                                loadCobranza();
+                                                saveCharge();
                                             }
                                         }
 
@@ -392,42 +392,38 @@ public class ListaVentasFragment extends Fragment {
 
     }
 
+    private void saveCharge() {
 
-    private void loadCobranza() {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> chargeBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
+        List<Payment> chargeList = new ArrayList<>();
+        for (CobranzaBean item : chargeBeanList) {
+            Payment charge = new Payment();
+            charge.setCobranza(item.getCobranza());
+            charge.setCuenta(item.getCliente());
+            charge.setImporte(item.getImporte());
+            charge.setSaldo(item.getSaldo());
+            charge.setVenta(item.getVenta());
+            charge.setEstado(item.getEstado());
+            charge.setObservaciones(item.getObservaciones());
+            charge.setFecha(item.getFecha());
+            charge.setHora(item.getHora());
+            charge.setIdentificador(item.getEmpleado());
+            chargeList.add(charge);
+        }
 
-            final PaymentDao paymentDao = new PaymentDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
-            List<Payment> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Payment cobranza = new Payment();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        new ChargeInteractorImp().executeSaveCharge(chargeList, new ChargeInteractor.OnSaveChargeListener() {
+            @Override
+            public void onSaveChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
             }
 
-            new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
-                @Override
-                public void onSaveChargeSuccess() {
-                    //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onSaveChargeError() {
-                    //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
-                }
-            });
+            @Override
+            public void onSaveChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
-
-
 
     private void testLoadClientes(String idCliente) {
         final ClientDao clientDao = new ClientDao();

@@ -165,13 +165,13 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 confirmPrecaptureClicked = false
             }
             is PrecaptureViewState.SaveClientSuccessState -> {
-                Toast.makeText(applicationContext, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveClientErrorState -> {
                 Toast.makeText(applicationContext, "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveVisitSuccessState -> {
-                Toast.makeText(applicationContext, "Visita sincroniza", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "Visita sincroniza", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveVisitErrorState -> {
                 Toast.makeText(applicationContext, "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show()
