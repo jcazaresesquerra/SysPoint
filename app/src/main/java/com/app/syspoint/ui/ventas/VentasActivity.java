@@ -1281,7 +1281,9 @@ public class VentasActivity extends AppCompatActivity {
                             }
 
                         } catch (Exception e) {
-                            Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
+                            runOnUiThread(()->{
+                                Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
+                            });
                             e.printStackTrace();
                         }
                     }

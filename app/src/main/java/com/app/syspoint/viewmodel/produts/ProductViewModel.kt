@@ -35,7 +35,7 @@ class ProductViewModel: BaseViewModel() {
             if (!connected) {
                 productViewState.value = ProductViewState.NetworkDisconnectedState
             } else {
-                getData()
+                getProducts()
             }
         }.execute()
     }
@@ -64,7 +64,7 @@ class ProductViewModel: BaseViewModel() {
         }
     }
 
-    fun getData() {
+    fun getProducts() {
         productViewState.value = ProductViewState.LoadingStartState
         GetProductsInteractorImp().executeGetProducts(object: GetProductInteractor.OnGetProductsListener {
             override fun onGetProductsSuccess(products: List<ProductoBean?>) {
@@ -75,7 +75,6 @@ class ProductViewModel: BaseViewModel() {
             override fun onGetProductsError() {
                 productViewState.value = ProductViewState.LoadingFinishState
                 productViewState.value = ProductViewState.GetProductsError("")
-
             }
         })
     }

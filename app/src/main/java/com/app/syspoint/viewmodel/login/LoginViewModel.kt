@@ -1,6 +1,7 @@
 package com.app.syspoint.viewmodel.login
 
 import android.content.Context
+import android.os.Handler
 import androidx.lifecycle.MutableLiveData
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
@@ -9,6 +10,7 @@ import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class LoginViewModel: BaseViewModel() {
@@ -152,16 +154,22 @@ class LoginViewModel: BaseViewModel() {
 
     private fun sync() {
         //cleanTask()
-        loginViewState.value = LoginViewState.LoadingDataStart
-        GetAllDataInteractorImp().executeGetAllData(object: GetAllDataInteractor.OnGetAllDataListener {
-            override fun onGetAllDataSuccess() {
-                loginViewState.postValue(LoginViewState.LoadingDataFinish)
-            }
+        Handler().postDelayed({
+            NetworkStateTask { connected ->
+                if (connected) {
+                    loginViewState.value = LoginViewState.LoadingDataStart
+                    GetAllDataInteractorImp().executeGetAllData(object :
+                        GetAllDataInteractor.OnGetAllDataListener {
+                        override fun onGetAllDataSuccess() {
+                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                        }
 
-            override fun onGetAllDataError() {
-                loginViewState.postValue(LoginViewState.LoadingDataFinish)
-            }
-        })
+                        override fun onGetAllDataError() {
+                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                        }
+                    })
+                }
+            }.execute() }, 100)
     }
 
     private fun cleanTask() {

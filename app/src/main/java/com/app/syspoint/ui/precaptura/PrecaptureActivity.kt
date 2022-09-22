@@ -71,8 +71,8 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
 
         binding.tvDirecccionPrecaptura.text = direccion
 
-        latitud = intent.getStringExtra(Actividades.PARAM_6)!!.toDouble()
-        longitud = intent.getStringExtra(Actividades.PARAM_7)!!.toDouble()
+        latitud = intent.getStringExtra(Actividades.PARAM_6)?.toDouble() ?: 0.0
+        longitud = intent.getStringExtra(Actividades.PARAM_7)?.toDouble() ?: 0.0
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.mapViewPre) as SupportMapFragment?

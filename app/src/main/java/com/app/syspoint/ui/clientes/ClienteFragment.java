@@ -192,6 +192,7 @@ public class ClienteFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
 
+        // remove inactive users
         mData.removeIf(item -> !item.getStatus());
 
         mAdapter = new AdapterListaClientes(
@@ -534,6 +535,10 @@ public class ClienteFragment extends Fragment {
             public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
                 mData = new ArrayList<>();
                 mData.addAll(clientList);
+
+                // remove inactive users
+                mData.removeIf(item -> !item.getStatus());
+
                 mAdapter.setClients((List<ClienteBean>) clientList);
 
                 if (mData.size() > 0) {
@@ -564,6 +569,8 @@ public class ClienteFragment extends Fragment {
     public void onResume() {
         super.onResume();
         mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        // remove inactive users
+        mData.removeIf(item -> !item.getStatus());
         mAdapter.setClients(mData);
 
         if (mData.size() > 0) {

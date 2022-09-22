@@ -117,6 +117,9 @@ public class ListaClientesActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
+        // remove inactive users
+        mData.removeIf(item -> !item.getStatus());
+
         mAdapter = new AdapterListaClientes(
                 mData,
                 (view, obj, position, onDialogShownListener) -> {

@@ -217,7 +217,7 @@ class ProductFragment: Fragment() {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT
         (dialog.findViewById<View>(R.id.bt_close) as AppCompatButton) click  {
-            viewModel.getData()
+            viewModel.getProducts()
             dialog.dismiss()
         }
         dialog.show()

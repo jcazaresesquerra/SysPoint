@@ -855,7 +855,7 @@ public class HomeFragment extends Fragment {
             }
             client.setSaldo_credito(item.getSaldo_credito());
             client.setLimite_credito(item.getLimite_credito());
-            if (item.getMatriz().equals("null") && item.getMatriz() == null) {
+            if (item.getMatriz() == null || (item.getMatriz() != null && item.getMatriz().equals("null"))) {
                 client.setMatriz("null");
             } else {
                 client.setMatriz(item.getMatriz());
