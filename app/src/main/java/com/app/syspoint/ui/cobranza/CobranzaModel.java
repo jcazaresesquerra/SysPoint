@@ -1,7 +1,7 @@
 package com.app.syspoint.ui.cobranza;
 
 
-import com.app.syspoint.db.bean.Bean;
+import com.app.syspoint.repository.database.bean.Bean;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;

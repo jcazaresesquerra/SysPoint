@@ -35,16 +35,12 @@
     <application
         android:name=".App"
         android:allowBackup="true"
-        android:icon="@drawable/logo"
-        android:label="@string/app_name"
-        android:roundIcon="@drawable/logo"
+        android:icon="${appIcon}"
+        android:roundIcon="${appIconRound}"
         android:supportsRtl="true"
         android:theme="@style/Theme.SisVentasPoint"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name=".ui.SincCloudActivity"
-            android:exported="true"
-            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".ui.ventas.CApturaComprobanteActivity"
             android:exported="true"
@@ -69,27 +65,27 @@
             android:name=".ui.cobranza.AbonoDocumentoActivity"
             android:exported="true"
             android:screenOrientation="portrait"/>
-        <activity android:name=".MainAdminActivity"
+        <activity android:name=".ui.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.SisVentasPoint.NoActionBar"
             />
         <activity
-            android:name=".ui.inventarios.FinalizaInventarioActivity"
+            android:name=".ui.stock.activities.FinalizaInventarioActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.inventarios.ConfirmaInventarioActivity"
+            android:name=".ui.stock.activities.ConfirmaInventarioActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.inventarios.CantidadInventarioActivity"
+            android:name=".ui.stock.activities.CantidadInventarioActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Custom" />
-        <activity android:name=".ui.productos.ListaProductosInventarioActivity" />
+        <activity android:name=".ui.stock.activities.ListaProductosInventarioActivity" />
         <activity
-            android:name=".ui.home.MapsRuteoActivity"
+            android:name=".ui.home.activities.MapsRuteoActivity"
             android:exported="true"
             android:label="@string/title_activity_maps_ruteo"
             android:screenOrientation="portrait"
@@ -99,7 +95,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.PreCapturaActivity"
+            android:name=".ui.precaptura.PrecaptureActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -115,11 +111,11 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.ListaRutaClientesActivity"
+            android:name=".ui.home.activities.ListaRutaClientesActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.productos.ActualizaProductoActivity"
+            android:name=".ui.products.activities.ActualizaProductoActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -127,15 +123,15 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.empleados.ActualizarEmpleadoActivity"
+            android:name=".ui.employees.activities.ActualizarEmpleadoActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".templates.DeviceListActivity"
+            android:name=".ui.templates.DeviceListActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".templates.ViewPDFActivity"
+            android:name=".ui.templates.ViewPDFActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -147,15 +143,11 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.empleados.EditarEmpleadoActivity"
+            android:name=".ui.products.activities.ScannerActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.productos.ScannerActivity"
-            android:exported="true"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.productos.ListaProductosActivity"
+            android:name=".ui.ventas.ListaProductosActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -164,21 +156,17 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.SisVentasPoint.NoActionBar" />
         <activity
-            android:name=".ui.productos.RegistrarProductoActivity"
+            android:name=".ui.products.activities.RegistrarProductoActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.empleados.RegistarEmpleadoActivity"
+            android:name=".ui.employees.activities.RegistarEmpleadoActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".bluetooth.BluetoothActivity"
+            android:name=".ui.bluetooth.BluetoothActivity"
             android:exported="true"
             android:label="Dispositivos bluetooth"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.login.LoginActivity"

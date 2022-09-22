@@ -4,7 +4,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context=".ui.home.ListaRutaClientesActivity">
+tools:context=".ui.home.activities.ListaRutaClientesActivity">
 
 
 <androidx.recyclerview.widget.RecyclerView

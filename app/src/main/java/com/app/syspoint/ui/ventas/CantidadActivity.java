@@ -35,69 +35,56 @@ public class CantidadActivity extends AppCompatActivity {
 
         Button buttonAceptar = (Button) findViewById(R.id.button_seleccionar_cantidad_venta);
 
-        buttonAceptar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonAceptar.setOnClickListener(v -> {
 
-                String cantidad = editTextCantidad.getText().toString();
-                if (cantidad.isEmpty()){
-                    final PrettyDialog dialog = new PrettyDialog(CantidadActivity.this);
-                    dialog.setTitle("Cantidad")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe ingresar la cantidad a vender")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
+            String cantidad = editTextCantidad.getText().toString();
+            if (cantidad.isEmpty()){
+                final PrettyDialog dialog = new PrettyDialog(CantidadActivity.this);
+                dialog.setTitle("Cantidad")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe ingresar la cantidad a vender")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialog.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialog.dismiss();
+                            }
+                        });
 
-                    dialog.setCancelable(false);
-                    dialog.show();
-                    return;
-                }
+                dialog.setCancelable(false);
+                dialog.show();
+                return;
+            }
 
-                if (cantidad != null ){
+            if (cantidad != null ){
 
-                    //Establece el resultado que debe de regresar
-                    Intent intent = new Intent();
-                    intent.putExtra(Actividades.PARAM_1, cantidad);
-                    setResult(Activity.RESULT_OK, intent);
+                //Establece el resultado que debe de regresar
+                Intent intent = new Intent();
+                intent.putExtra(Actividades.PARAM_1, cantidad);
+                setResult(Activity.RESULT_OK, intent);
 
-                    //Cierra la actividad
-                    finish();
-                }else{
-                    final PrettyDialog dialog = new PrettyDialog(CantidadActivity.this);
-                    dialog.setTitle("Cantidad")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe ingresar la cantidad a vender")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
+                //Cierra la actividad
+                finish();
+            }else{
+                final PrettyDialog dialog = new PrettyDialog(CantidadActivity.this);
+                dialog.setTitle("Cantidad")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe ingresar la cantidad a vender")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, dialog::dismiss);
 
-                    dialog.setCancelable(false);
-                    dialog.show();
-                    return;
-                }
+                dialog.setCancelable(false);
+                dialog.show();
+                return;
             }
         });
 

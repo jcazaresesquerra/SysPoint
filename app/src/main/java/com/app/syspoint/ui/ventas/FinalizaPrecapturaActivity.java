@@ -27,25 +27,24 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.app.syspoint.utils.cache.CacheInteractor;
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.visit.VisitInteractor;
+import com.app.syspoint.interactor.visit.VisitInteractorImp;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
-import com.app.syspoint.bluetooth.BluetoothActivity;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.bean.VisitasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.db.dao.VisitasDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Visita;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.bean.VisitasBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.repository.database.dao.VisitsDao;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Visit;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -55,10 +54,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
@@ -111,8 +106,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             latitud = bundle.getString(Actividades.PARAM_6);
             longitud = bundle.getString(Actividades.PARAM_7);
             cuenta_cliente = bundle.getString(Actividades.PARAM_8);
-
-
         }
 
 
@@ -146,7 +139,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
 
-
         mHandler = new Handler(Looper.myLooper()){
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -174,7 +166,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void initToolBar() {
-
         Toolbar toolbar = findViewById(R.id.toolbar_finaliza_visita);
         toolbar.setTitle("Visita exitosa");
         setSupportActionBar(toolbar);
@@ -207,7 +198,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
             if(mConnectedThread != null) //First check to make sure thread created
                 // mConnectedThread.printTicketVisita("Hola");
-                mConnectedThread.printTicketVisita(templateTicket, motivoVisita, vendedor, hora, fecha);
+                mConnectedThread.printTicketVisit(templateTicket, motivoVisita, vendedor, hora, fecha);
 
 
         } else if (id == android.R.id.home) {
@@ -226,14 +217,14 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
 
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -272,22 +263,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -416,18 +400,18 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
     private void loadVisitas(){
 
-        final VisitasDao visitasDao = new VisitasDao();
+        final VisitsDao visitsDao = new VisitsDao();
         List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-        visitasBeanListBean =  visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
+        visitasBeanListBean =  visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
 
-        List<Visita> listaVisitas = new ArrayList<>();
+        List<Visit> listaVisitas = new ArrayList<>();
         for (VisitasBean item : visitasBeanListBean){
-            Visita visita = new Visita();
+            Visit visita = new Visit();
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
 
-            final ClienteDao clienteDao = new ClienteDao();
-            final ClienteBean clienteBean = clienteDao.getClienteByCuenta(cuenta_cliente);
+            final ClientDao clientDao = new ClientDao();
+            final ClienteBean clienteBean = clientDao.getClientByAccount(cuenta_cliente);
             visita.setCuenta(clienteBean.getCuenta());
             visita.setLatidud(item.getLatidud());
             visita.setLongitud(item.getLongitud());
@@ -436,7 +420,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
             if (vendedoresBean == null) {
-                vendedoresBean = new CacheInteractor(FinalizaPrecapturaActivity.this).getSeller();
+                vendedoresBean = new CacheInteractor().getSeller();
             }
 
             if (vendedoresBean != null) {
@@ -446,25 +430,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             listaVisitas.add(visita);
         }
 
-        VisitaJson visitaJsonRF = new VisitaJson();
-        visitaJsonRF.setVisitas(listaVisitas);
-        String json = new Gson().toJson(visitaJsonRF);
-        Log.d("SinEmpleados", json);
-
-        Call<VisitaJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
-
-        loadVisitas.enqueue(new Callback<VisitaJson>() {
+        new VisitInteractorImp().executeSaveVisit(listaVisitas, new VisitInteractor.OnSaveVisitListener() {
             @Override
-            public void onResponse(Call<VisitaJson> call, Response<VisitaJson> response) {
-                if(response.isSuccessful()){
-                    //Toast.makeText(FinalizaPrecapturaActivity.this, "Visita Sincronizada", Toast.LENGTH_LONG).show();
-
-                }
+            public void onSaveVisitSuccess() {
+                //Toast.makeText(getApplicationContext(), "Visita sincroniza", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<VisitaJson> call, Throwable t) {
-
+            public void onSaveVisitError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
             }
         });
     }

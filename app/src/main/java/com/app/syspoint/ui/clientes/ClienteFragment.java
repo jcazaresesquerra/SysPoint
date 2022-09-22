@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,27 +30,24 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.syspoint.utils.cache.CacheInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.RolesDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.RequestCobranza;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
+import com.app.syspoint.models.Client;
 import com.app.syspoint.ui.clientes.PreciosEspeciales.PreciosEspecialesActivity;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.ui.ventas.VentasActivity;
@@ -62,10 +58,6 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ClienteFragment extends Fragment {
 
@@ -150,7 +142,7 @@ public class ClienteFragment extends Fragment {
                     } else {
                         getData();
                     }
-                }, getActivity()).execute(), 100);
+                }).execute(), 100);
 
                 return true;
 
@@ -186,7 +178,7 @@ public class ClienteFragment extends Fragment {
 
     private void initRecyclerView(View root) {
 
-        mData = (List<ClienteBean>) (List<?>) new ClienteDao().list();
+        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
 
         if (mData.size() > 0) {
             lyt_clientes.setVisibility(View.GONE);
@@ -199,6 +191,9 @@ public class ClienteFragment extends Fragment {
 
         final LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
+
+        // remove inactive users
+        mData.removeIf(item -> !item.getStatus());
 
         mAdapter = new AdapterListaClientes(
                 mData,
@@ -249,18 +244,18 @@ public class ClienteFragment extends Fragment {
                 EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                 if (vendedoresBean == null) {
-                    vendedoresBean = new CacheInteractor(getContext()).getSeller();
+                    vendedoresBean = new CacheInteractor().getSeller();
                 }
 
                 if (vendedoresBean != null) {
                     identificador = vendedoresBean.getIdentificador();
                 }
                 final RolesDao rolesDao = new RolesDao();
-                final RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
+                RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
 
                 if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
                     if (rolesBean != null) {
-                        if (rolesBean.getActive() == true) {
+                        if (rolesBean.getActive()) {
                             editCliente(clienteBean.getCuenta());
                         } else {
 
@@ -278,13 +273,13 @@ public class ClienteFragment extends Fragment {
                     new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
                         progressDialog.dismiss();
                         if (connected) {
-                            donwloadCobranza(clienteBean.getCuenta());
+                            downloadCharge(clienteBean.getCuenta());
                         }else {
                             HashMap<String, String> parametros = new HashMap<>();
                             parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                             Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                         }
-                    }, getActivity()).execute(), 100);
+                    }).execute(), 100);
                 } else if (strName.compareToIgnoreCase("Ver Mapa") == 0) {
                     Intent intent = new Intent(Intent.ACTION_VIEW,
                             Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
@@ -303,19 +298,19 @@ public class ClienteFragment extends Fragment {
                     }
                 } else if (strName.compareToIgnoreCase("Agregar a ruta") == 0) {
 
-                        final ClientesRutaDao daoRuta = new ClientesRutaDao();
+                        final RuteClientDao daoRuta = new RuteClientDao();
                         final ClientesRutaBean bean = daoRuta.getClienteByCuentaCliente(clienteBean.getCuenta());
 
                         if (bean == null) {
 
-                            final ClientesRutaDao dao = new ClientesRutaDao();
+                            final RuteClientDao dao = new RuteClientDao();
                             final ClientesRutaBean beanCliente = dao.getClienteFirts();
 
                             long id = dao.getUltimoConsec();
 
                             if (beanCliente != null){
                                 final ClientesRutaBean clientesRutaBean = new ClientesRutaBean();
-                                final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
+                                final RuteClientDao ruteClientDao = new RuteClientDao();
 
                                 clientesRutaBean.setId(id);
                                 clientesRutaBean.setNombre_comercial(clienteBean.getNombre_comercial());
@@ -334,7 +329,7 @@ public class ClienteFragment extends Fragment {
                                 clientesRutaBean.setVisitado(0);
                                 clientesRutaBean.setLatitud(clienteBean.getLatitud());
                                 clientesRutaBean.setLongitud(clienteBean.getLongitud());
-                                clientesRutaDao.insert(clientesRutaBean);
+                                ruteClientDao.insert(clientesRutaBean);
 
                                 Toast.makeText(getContext(), "El cliente se agrego exitosamente", Toast.LENGTH_LONG).show();
                             }
@@ -343,22 +338,19 @@ public class ClienteFragment extends Fragment {
                         }
                 }else if (strName.compareToIgnoreCase("Recordatorio") == 0) {
                     showCustomDialog(clienteBean);
-                }else if(strName.compareToIgnoreCase("Cobranza") == 0 ){
+                }else if (strName.compareToIgnoreCase("Cobranza") == 0 ){
+                    rolesBean = rolesDao.getRolByEmpleado(identificador, "Cobranza");
 
-                    if (rolesBean != null) {
-                        if (rolesBean.getActive() == true) {
+                    if (rolesBean != null && rolesBean.getActive()) {
 
-                                HashMap<String, String> parametros = new HashMap<>();
-                                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                                Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
+                            HashMap<String, String> parametros = new HashMap<>();
+                            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                            Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
 
-
-                        } else {
-                            Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    } else {
+                        Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
+                        return;
                     }
-
                 }
 
                 dialog.dismiss();
@@ -370,15 +362,14 @@ public class ClienteFragment extends Fragment {
     }
 
 
-    private void donwloadCobranza(String cuenta) {
+    private void downloadCharge(String cuenta) {
 
-
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final PaymentDao paymentDao = new PaymentDao();
         List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-        cobranzaBeanList = cobranzaDao.getDocumentsByCliente(cuenta);
+        cobranzaBeanList = paymentDao.getDocumentsByCliente(cuenta);
         for(CobranzaBean cob : cobranzaBeanList){
             if (cob.getCliente().compareToIgnoreCase(cuenta) == 0 && cob.getFecha().compareToIgnoreCase(Utils.fechaActual())!=0){
-                cobranzaDao.delete(cob);
+                paymentDao.delete(cob);
             }
         }
 
@@ -386,74 +377,25 @@ public class ClienteFragment extends Fragment {
         progressDialog.setMessage("Espere un momento obteniendo datos....");
         progressDialog.show();
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(cuenta);
-        RequestCobranza requestCobranza = new RequestCobranza();
-        requestCobranza.setCuenta(clienteBean.getCuenta());
 
-        //Obtiene la respuesta
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
+        new ChargeInteractorImp().executeGetChargeByClient(cuenta, new ChargeInteractor.OnGetChargeByClientListener() {
             @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
+            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
                 progressDialog.dismiss();
-                if (response.isSuccessful()) {
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
-
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
-                        if (cobranzaBean == null) {
-                            final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
-                            cobranzaBean1.setCobranza(item.getCobranza());
-                            cobranzaBean1.setCliente(item.getCuenta());
-                            cobranzaBean1.setImporte(item.getImporte());
-                            cobranzaBean1.setSaldo(item.getSaldo());
-                            cobranzaBean1.setVenta(item.getVenta());
-                            cobranzaBean1.setEstado(item.getEstado());
-                            cobranzaBean1.setObservaciones(item.getObservaciones());
-                            cobranzaBean1.setFecha(item.getFecha());
-                            cobranzaBean1.setHora(item.getHora());
-                            cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
-                        } else {
-                            cobranzaBean.setCobranza(item.getCobranza());
-                            cobranzaBean.setCliente(item.getCuenta());
-                            cobranzaBean.setImporte(item.getImporte());
-                            cobranzaBean.setSaldo(item.getSaldo());
-                            cobranzaBean.setVenta(item.getVenta());
-                            cobranzaBean.setEstado(item.getEstado());
-                            cobranzaBean.setObservaciones(item.getObservaciones());
-                            cobranzaBean.setFecha(item.getFecha());
-                            cobranzaBean.setHora(item.getHora());
-                            cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
-
-                        }
-                    }
-
-                    progressDialog.dismiss();
-                    HashMap<String, String> parametros = new HashMap<>();
-                    parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                    Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
-                }
+                HashMap<String, String> parametros = new HashMap<>();
+                parametros.put(Actividades.PARAM_1, cuenta);
+                Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
+            public void onGetChargeByClientError() {
                 progressDialog.dismiss();
                 HashMap<String, String> parametros = new HashMap<>();
-                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                parametros.put(Actividades.PARAM_1, cuenta);
                 Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
             }
         });
-
     }
-
-
-
 
     private void showCustomDialog(ClienteBean clienteBean) {
         final Dialog dialog = new Dialog(getContext());
@@ -486,10 +428,10 @@ public class ClienteFragment extends Fragment {
                 if (review.isEmpty()) {
                     Toast.makeText(getContext(), "Ingrese un recordatorio", Toast.LENGTH_SHORT).show();
                 } else {
-                    ClienteDao clienteDao = new ClienteDao();
+                    ClientDao clientDao = new ClientDao();
                     clienteBean.setRecordatorio(review);
                     clienteBean.setDate_sync(Utils.fechaActual());
-                    clienteDao.save(clienteBean);
+                    clientDao.save(clienteBean);
                     testLoadClientes(String.valueOf(clienteBean.getId()));
                 }
 
@@ -505,14 +447,14 @@ public class ClienteFragment extends Fragment {
 
     private void testLoadClientes(String idCliente) {
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -524,10 +466,10 @@ public class ClienteFragment extends Fragment {
             cliente.setCuenta(item.getCuenta());
             cliente.setGrupo(item.getGrupo());
             cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
+            if (item.getStatus()) {
                 cliente.setStatus(1);
+            } else {
+                cliente.setStatus(0);
             }
             cliente.setConsec(item.getConsec());
             cliente.setRegion(item.getRegion());
@@ -549,9 +491,9 @@ public class ClienteFragment extends Fragment {
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()){
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             }else{
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -563,25 +505,17 @@ public class ClienteFragment extends Fragment {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                    progresshide();
-
-                }
+            public void onSaveClientSuccess() {
+                progresshide();
+                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -596,82 +530,29 @@ public class ClienteFragment extends Fragment {
     private void getData() {
 
         progressshow();
-        Call<ClienteJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
-        getClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
+            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                mData = new ArrayList<>();
+                mData.addAll(clientList);
 
-                if (response.isSuccessful()) {
-                    progresshide();
+                // remove inactive users
+                mData.removeIf(item -> !item.getStatus());
 
-                    for (Cliente item : response.body().getClientes()) {
+                mAdapter.setClients((List<ClienteBean>) clientList);
 
-                        //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
-
-                        if (bean == null) {
-
-                            final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
-                            clienteBean.setNombre_comercial(item.getNombreComercial());
-                            clienteBean.setCalle(item.getCalle());
-                            clienteBean.setNumero(item.getNumero());
-                            clienteBean.setColonia(item.getColonia());
-                            clienteBean.setCiudad(item.getCiudad());
-                            clienteBean.setCodigo_postal(item.getCodigoPostal());
-                            clienteBean.setFecha_registro(item.getFechaRegistro());
-                            clienteBean.setFecha_baja(item.getFechaBaja());
-                            clienteBean.setCuenta(item.getCuenta());
-                            clienteBean.setGrupo(item.getGrupo());
-                            clienteBean.setCategoria(item.getCategoria());
-                            if (item.getStatus() == 1) {
-                                clienteBean.setStatus(true);
-                            } else {
-                                clienteBean.setStatus(false);
-                            }
-                            clienteBean.setConsec(item.getConsec());
-                            clienteBean.setVisitado(0);
-                            clienteBean.setRegion(item.getRegion());
-                            clienteBean.setSector(item.getSector());
-                            clienteBean.setRango(item.getRango());
-                            clienteBean.setSecuencia(item.getSecuencia());
-                            clienteBean.setPeriodo(item.getPeriodo());
-                            clienteBean.setRuta(item.getRuta());
-                            clienteBean.setLun(item.getLun());
-                            clienteBean.setMar(item.getMar());
-                            clienteBean.setMie(item.getMie());
-                            clienteBean.setJue(item.getJue());
-                            clienteBean.setVie(item.getVie());
-                            clienteBean.setSab(item.getSab());
-                            clienteBean.setDom(item.getDom());
-
-                            if (item.getIsCredito() == 1){
-                                clienteBean.setIs_credito(true);
-                            }else{
-                                clienteBean.setIs_credito(false);
-                            }
-
-                            clienteBean.setLimite_credito(item.getLimite_credito());
-                            clienteBean.setSaldo_credito(item.getSaldo_credito());
-
-                            clienteDao.insert(clienteBean);
-                            mData.add(clienteBean);
-                            mAdapter.setClients(mData);
-
-                            if (mData.size() > 0) {
-                                lyt_clientes.setVisibility(View.GONE);
-                            } else {
-                                lyt_clientes.setVisibility(View.VISIBLE);
-                            }
-                        }
-                    }
+                if (mData.size() > 0) {
+                    lyt_clientes.setVisibility(View.GONE);
+                } else {
+                    lyt_clientes.setVisibility(View.VISIBLE);
                 }
+                progresshide();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onGetAllClientsError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al obtener clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -687,7 +568,9 @@ public class ClienteFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mData = (List<ClienteBean>) (List<?>) new ClienteDao().list();
+        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        // remove inactive users
+        mData.removeIf(item -> !item.getStatus());
         mAdapter.setClients(mData);
 
         if (mData.size() > 0) {

@@ -12,8 +12,8 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.RuteoBean;
-import com.app.syspoint.db.dao.RuteoDao;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;
@@ -29,8 +29,8 @@ public class DialogoRuteo extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_ruteo_condional);
 
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
             rutaSeleccionada = ruteoBean.getRuta();

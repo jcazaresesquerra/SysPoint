@@ -4,7 +4,7 @@ android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:orientation="vertical"
 xmlns:tools="http://schemas.android.com/tools"
-tools:context=".ui.printer.ConfigPrinterActivity">
+tools:context=".ui.printer.ConfigurePrinterFragment">
 
 
 <!--Layouy Principal-->
@@ -50,15 +50,9 @@ tools:context=".ui.printer.ConfigPrinterActivity">
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:text="Dispositivos encontrados:"
             android:textColor="#000" />
-
-
     </TableRow>
 
-
-
-
     <ListView
-
         android:id="@+id/paired_devices"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

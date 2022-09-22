@@ -2,9 +2,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_view_confirm_stock"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.inventarios.ConfirmaInventarioActivity">
+    tools:context=".ui.stock.activities.ConfirmaInventarioActivity">
 
 
     <androidx.appcompat.widget.Toolbar

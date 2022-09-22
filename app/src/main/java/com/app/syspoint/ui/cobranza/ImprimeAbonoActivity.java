@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,34 +28,33 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.androidnetworking.error.ANError;
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.bluetooth.BluetoothActivity;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.InventarioBean;
-import com.app.syspoint.db.bean.InventarioHistorialBean;
-import com.app.syspoint.db.bean.PartidasBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.VentasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.InventarioDao;
-import com.app.syspoint.db.dao.InventarioHistorialDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.VentasDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.Servicio;
-import com.app.syspoint.http.SincVentasByID;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.templates.ViewPDFActivity;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.InventarioBean;
+import com.app.syspoint.repository.database.bean.InventarioHistorialBean;
+import com.app.syspoint.repository.database.bean.PartidasBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.VentasBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.StockDao;
+import com.app.syspoint.repository.database.dao.StockHistoryDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.database.dao.SellsDao;
+import com.app.syspoint.repository.request.http.Servicio;
+import com.app.syspoint.repository.request.http.SincVentasByID;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.ui.templates.ViewPDFActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -70,10 +68,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ImprimeAbonoActivity extends AppCompatActivity {
 
@@ -105,7 +99,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_imprime_abono);
         initToolBar();
         textViewStatus = findViewById(R.id.tvStatusPrinterCobro);
-        new loadAbonos().execute();
+        loadAbonos();
         Bundle bundle = getIntent().getExtras();
 
         if (bundle != null) {
@@ -176,53 +170,38 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     }
 
 
-    private class loadAbonos extends AsyncTask<String, Void, String>{
+    private void loadAbonos() {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
+        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
-        @Override
-        protected String doInBackground(String... strings) {
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
-
-            List<Cobranza> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                //Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
-                @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(ImprimeAbonoActivity.this, "Cobranza sincroniza", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
-
-                }
-            });
-            return null;
-        }
+            @Override
+            public void onUpdateChargeError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
     private void initToolBar() {
 
@@ -276,14 +255,14 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     private void sincronizaCliente(String idCliente) {
 
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -322,22 +301,15 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -445,7 +417,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     private void syncCloudVenta(Integer venta) {
 
         try {
-            final SincVentasByID sincVentasByID = new SincVentasByID(this, Long.parseLong(String.valueOf(venta)));
+            final SincVentasByID sincVentasByID = new SincVentasByID(Long.parseLong(String.valueOf(venta)));
 
             sincVentasByID.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override
@@ -481,17 +453,17 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     //Actualiza las existencias del producto
     private void upadteExistencias() {
 
-        final VentasDao ventasDao = new VentasDao();
-        final VentasBean ventasBean = ventasDao.getVentaByInventario(venta);
+        final SellsDao sellsDao = new SellsDao();
+        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
 
         for (PartidasBean item : ventasBean.getListaPartidas()) {
 
-            final ProductoDao productoDao = new ProductoDao();
-            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductDao productDao = new ProductDao();
+            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
             if (productoBean != null) {
                 productoBean.setExistencia(productoBean.getExistencia() - item.getCantidad());
-                productoDao.save(productoBean);
+                productDao.save(productoBean);
             }
 
         }
@@ -500,26 +472,26 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
 
     private void addProductosInventori() {
 
-        final VentasDao ventasDao = new VentasDao();
-        final VentasBean ventasBean = ventasDao.getVentaByInventario(venta);
+        final SellsDao sellsDao = new SellsDao();
+        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
 
         //Contiene las partidas de la venta
         for (PartidasBean item : ventasBean.getListaPartidas()) {
 
             //Consultamos a la base de datos si existe el producto
-            final ProductoDao productoDao = new ProductoDao();
-            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductDao productDao = new ProductDao();
+            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
             //Si no existe en el inventario creamos el producto
             if (productoBean != null) {
 
                 //Si existe entonces creamos el inser en estado PE
-                InventarioDao inventarioDao = new InventarioDao();
-                InventarioBean inventarioBean = inventarioDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                StockDao stockDao = new StockDao();
+                InventarioBean inventarioBean = stockDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
                 if (inventarioBean == null) {
                     InventarioBean bean = new InventarioBean();
-                    InventarioDao dao = new InventarioDao();
+                    StockDao dao = new StockDao();
                     bean.setArticulo(productoBean);
                     bean.setCantidad(0);
                     bean.setEstado("PE");
@@ -530,30 +502,30 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
                     bean.setArticulo_clave(productoBean.getArticulo());
                     dao.insert(bean);
 
-                    final InventarioHistorialDao inventarioHistorialDao = new InventarioHistorialDao();
-                    final InventarioHistorialBean inventarioHistorialBean = inventarioHistorialDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                    final StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                     if (inventarioHistorialBean != null) {
                         inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        inventarioHistorialDao.save(inventarioHistorialBean);
+                        stockHistoryDao.save(inventarioHistorialBean);
                     } else {
                         final InventarioHistorialBean invBean = new InventarioHistorialBean();
-                        final InventarioHistorialDao invDao = new InventarioHistorialDao();
+                        final StockHistoryDao invDao = new StockHistoryDao();
                         invBean.setArticulo(productoBean);
                         invBean.setArticulo_clave(productoBean.getArticulo());
                         invBean.setCantidad(item.getCantidad());
                         invDao.insert(invBean);
                     }
                 } else {
-                    final InventarioHistorialDao inventarioHistorialDao = new InventarioHistorialDao();
-                    final InventarioHistorialBean inventarioHistorialBean = inventarioHistorialDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                    final StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                     if (inventarioHistorialBean != null) {
                         inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        inventarioHistorialDao.save(inventarioHistorialBean);
+                        stockHistoryDao.save(inventarioHistorialBean);
                     } else {
                         final InventarioHistorialBean invBean = new InventarioHistorialBean();
-                        final InventarioHistorialDao invDao = new InventarioHistorialDao();
+                        final StockHistoryDao invDao = new StockHistoryDao();
                         invBean.setArticulo(productoBean);
                         invBean.setArticulo_clave(productoBean.getArticulo());
                         invBean.setCantidad(item.getCantidad());

@@ -40,17 +40,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.models.Client;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
-import com.app.syspoint.utils.ValidaCampos;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,9 +57,6 @@ import java.util.Locale;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class RegistroClienteActivity extends AppCompatActivity {
 
@@ -110,7 +104,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     EditText et_registro_saldo_credito;
 
     private RelativeLayout rlprogress;
-    private List<ValidaCampos> listaCamposValidos;
+    private List<String> listaCamposValidos;
     private int mYear, mMonth, mDay;
     int no_cuenta = 0;
 
@@ -240,9 +234,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
                     }
                 } else {
 
-                    String campos = "";
-                    for (ValidaCampos elemento : listaCamposValidos) {
-                        campos += "" + elemento.getCampo() + "\n";
+                    StringBuilder campos = new StringBuilder();
+                    for (String validItem : listaCamposValidos) {
+                        campos.append(validItem).append("\n");
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
@@ -277,8 +271,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     private void loadConsecCuenta() {
 
-        final ClienteDao clienteDao = new ClienteDao();
-        no_cuenta = clienteDao.getUltimoConsec();
+        final ClientDao clientDao = new ClientDao();
+        no_cuenta = clientDao.getLastConsec();
         String consectivo = "";
         if (no_cuenta < 10) {
             consectivo = "000" + no_cuenta;
@@ -533,10 +527,10 @@ public class RegistroClienteActivity extends AppCompatActivity {
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();
-                return;
             }
         }
     }
@@ -740,41 +734,41 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         if (nombre.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("nombre"));
+            listaCamposValidos.add("nombre");
         }
 
         if (calle.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (colonia.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("colonia"));
+            listaCamposValidos.add("colonia");
         }
         if (ciudad.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
         if (cp.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("C.P"));
+            listaCamposValidos.add("C.P");
         }
 
         return valida;
@@ -784,8 +778,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         boolean valida = true;
 
-        ClienteDao dao = new ClienteDao();
-        ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_registro_cliente.getText().toString());
+        ClientDao dao = new ClientDao();
+        ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_registro_cliente.getText().toString());
 
         if (bean == null) {
             valida = false;
@@ -800,7 +794,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private void registraCliente() {
 
         final ClienteBean clienteBean = new ClienteBean();
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
         clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
         clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
@@ -887,7 +881,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
         clienteBean.setSaldo_credito(0.00);
         clienteBean.setDate_sync(Utils.fechaActual());
 
-        clienteDao.insert(clienteBean);
+        clientDao.insert(clienteBean);
 
         idCliente = String.valueOf(clienteBean.getId());
         if (!Utils.isNetworkAvailable(getApplication())) {
@@ -926,14 +920,14 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         progressshow();
 
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -970,9 +964,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()){
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             }else{
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -984,26 +978,18 @@ public class RegistroClienteActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                    progresshide();
-                    Toast.makeText(RegistroClienteActivity.this, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSaveClientSuccess() {
+                progresshide();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
                 progresshide();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

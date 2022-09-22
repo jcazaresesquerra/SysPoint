@@ -113,7 +113,7 @@
                 android:layout_marginStart="100dp"
                 android:layout_marginEnd="100dp"
                 android:layout_marginBottom="-250dp"
-                app:srcCompat="@drawable/logo" />
+                android:src="@drawable/logo" />
 
             <Button
                 android:id="@+id/btnSignIn"
@@ -130,6 +130,7 @@
 
 
             <TextView
+                android:id="@+id/app_version"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnSignIn"

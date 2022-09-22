@@ -30,13 +30,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.bluetooth.BluetoothActivity;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.db.bean.CobrosBean;
-import com.app.syspoint.db.bean.PrinterBean;
-import com.app.syspoint.db.dao.CobrosDao;
-import com.app.syspoint.db.dao.PrinterDao;
-import com.app.syspoint.domentos.TicketAbono;
+import com.app.syspoint.repository.database.bean.CobrosBean;
+import com.app.syspoint.repository.database.bean.PrinterBean;
+import com.app.syspoint.repository.database.dao.ChargesDao;
+import com.app.syspoint.repository.database.dao.PrinterDao;
+import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
 import com.app.syspoint.utils.Actividades;
 
@@ -141,7 +141,7 @@ public class CobranzaFragment extends Fragment {
     private void initRecyclerView(View v){
 
         partidas = new ArrayList<>();
-        partidas = (List<CobrosBean>)(List<?>) new CobrosDao().GetAllListaCobrosConfirmadas();
+        partidas = (List<CobrosBean>)(List<?>) new ChargesDao().GetAllListaCobrosConfirmadas();
 
         if (partidas.size() > 0){
             lyt_cobranza.setVisibility(View.GONE);
@@ -161,12 +161,12 @@ public class CobranzaFragment extends Fragment {
             @Override
             public void onItemClick(int position) {
                 CobrosBean cobrosBean = partidas.get(position);
-                TicketAbono ticketAbono = new TicketAbono(getActivity());
-                ticketAbono.setCobrosBean(cobrosBean);
-                ticketAbono.template();
+                DepositTicket depositTicket = new DepositTicket();
+                depositTicket.setBean(cobrosBean);
+                depositTicket.template();
                 Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
                 if(mConnectedThread != null) //First check to make sure thread created
-                   mConnectedThread.write(ticketAbono.getDocumento());
+                   mConnectedThread.write(depositTicket.getDocument());
 
             }
         });

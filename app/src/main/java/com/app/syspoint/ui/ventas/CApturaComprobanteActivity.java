@@ -17,12 +17,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
+import com.app.syspoint.interactor.file.FileInteractor;
+import com.app.syspoint.interactor.file.FileInteractorImp;
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.ResponseVenta;
+import com.app.syspoint.repository.request.http.ApiServices;
+import com.app.syspoint.repository.request.http.PointApi;
+import com.app.syspoint.models.ResponseVenta;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -91,36 +93,20 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File image = getPicture();
-                MultipartBody.Part imagen = null;
-                RequestBody cobranza = RequestBody.create(MultipartBody.FORM, ventaID);
-                if (image  != null){
-                    RequestBody imagenBody = RequestBody.create(MediaType.parse("image/jpg"), image);
-                    imagen = MultipartBody.Part.createFormData("imagen", image.getName(), imagenBody);
-                }
 
-                Call<ResponseVenta> sendFile = ApiServices.getClientRestrofit().create(PointApi.class).postFile(cobranza, imagen);
-                showProgressIndicator(true);
-                sendFile.enqueue(new Callback<ResponseVenta>() {
-
+                new FileInteractorImp().executePostFile(image, ventaID, new FileInteractor.OnPostFileListener() {
                     @Override
-                    public void onResponse(Call<ResponseVenta> call, Response<ResponseVenta> response) {
-
-                        if (response.isSuccessful()){
-                            hidenProgress();
-                            Toast.makeText(CApturaComprobanteActivity.this, "El comprobante se subio correctamente", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }else {
-                            hidenProgress();
-                            Toast.makeText(CApturaComprobanteActivity.this, "El comprobante se subio correctamente", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-
-
+                    public void onPostFileSuccess() {
+                        hidenProgress();
+                        Toast.makeText(CApturaComprobanteActivity.this, "El comprobante se subio correctamente", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseVenta> call, Throwable t) {
+                    public void onPostFileError() {
                         hidenProgress();
+                        Toast.makeText(CApturaComprobanteActivity.this, "El comprobante no se pudo subir correctamente", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 });
             }

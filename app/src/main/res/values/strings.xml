@@ -1,9 +1,8 @@
 <resources>
 
-        <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
         AIzaSyCfsjZFl9Pn19TTtb3uSfPlr-aQPqlThJU
     </string>
-    <string name="app_name">App Point</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -66,4 +65,6 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="snackbar_message_text">Presiona otra vez para SALIR de la aplicación</string>
 </resources>
