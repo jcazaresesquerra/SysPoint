@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.CobranzaModelDao;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.PaymentModelDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -90,7 +90,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
     private void initRecyclerViews(){
 
-        lista = (List<CobranzaBean>)(List<?>) new CobranzaDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
+        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
 
         if (lista.size() > 0){
             lyt_lista_documentos.setVisibility(View.GONE);
@@ -142,12 +142,12 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
             public boolean onItemLongClicked(int position) {
 
                  CobranzaBean cobranzaBean = lista.get(position);
-                 CobranzaDao  cobranzaDao = new CobranzaDao();
+                 PaymentDao paymentDao = new PaymentDao();
 
                  if (cobranzaBean.getIsCheck() == false){
                      countItems++;
                      cobranzaBean.setIsCheck(true);
-                     cobranzaDao.save(cobranzaBean);
+                     paymentDao.save(cobranzaBean);
                      if (countItems > 1 ){
                          img_add_documents.setVisibility(View.VISIBLE);
                      }else {
@@ -161,7 +161,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
                      }else {
                          img_add_documents.setVisibility(View.GONE);
                      }
-                     cobranzaDao.save(cobranzaBean);
+                     paymentDao.save(cobranzaBean);
                  }
                 setData();
                 return false;
@@ -172,7 +172,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
 
     private void setData(){
-        lista = (List<CobranzaBean>)(List<?>) new CobranzaDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
+        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
         mAdapter.setData(lista);
     }
     @Override
@@ -202,14 +202,14 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
         try{
 
-            final CobranzaModelDao dao = new CobranzaModelDao();
+            final PaymentModelDao dao = new PaymentModelDao();
             dao.clear();
 
-            List<CobranzaBean> listaDocumentosSeleccionados = new CobranzaDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
+            final PaymentDao paymentDao = new PaymentDao();
 
             for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
-                final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(cobranzaItems.getCobranza());
+                final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
                 int venta = cobranzaBean.getVenta();
                 String cobranza = cobranzaBean.getCobranza();
                 double importe = cobranzaBean.getImporte();
@@ -226,7 +226,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
     }
     private void AddItems(int venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
         final CobranzaModel item = new CobranzaModel();
-        final com.app.syspoint.db.dao.CobranzaModelDao dao = new CobranzaModelDao();
+        final PaymentModelDao dao = new PaymentModelDao();
         item.setVenta(venta);
         item.setCobranza(cobranza);
         item.setImporte(importe);

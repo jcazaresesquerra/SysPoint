@@ -42,7 +42,7 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.utils.Actividades;
-import com.app.syspoint.utils.MapDirectionAPI;
+import com.app.syspoint.utils.gmap.MapDirectionAPI;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -212,7 +212,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
 
     private void requestAddress(LatLng latlang, final TextView textView) {
         if (latlang != null) {
-            MapDirectionAPI.getAddress(latlang).enqueue(new okhttp3.Callback() {
+            MapDirectionAPI.Companion.getAddress(latlang).enqueue(new okhttp3.Callback() {
                 @Override
                 public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
 
@@ -383,9 +383,8 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
          latMarker= String.valueOf(latitudeMarker);
          lngMarker = String.valueOf(longitudMarket);
 
-        List<Address> list = null;
         try {
-            list = geocoder.getFromLocation(
+            List<Address> list = geocoder.getFromLocation(
                     marker.getPosition().latitude, marker.getPosition().longitude, 1);
 
                   String direccion = list.get(0).getAddressLine(0);

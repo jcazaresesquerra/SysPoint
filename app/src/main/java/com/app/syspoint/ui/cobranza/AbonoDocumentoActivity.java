@@ -12,8 +12,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.dao.CobranzaDao;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -69,8 +69,8 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
     private void initParametros() {
         try{
 
-            final CobranzaDao cobranzaDao= new CobranzaDao();
-            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(ListaDocumentosCobranzaActivity.documentoSeleccionado);
+            final PaymentDao paymentDao = new PaymentDao();
+            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(ListaDocumentosCobranzaActivity.documentoSeleccionado);
             textView_importe_cobranza_documento.setText(Utils.formatMoneyMX(cobranzaBean.getSaldo()));
             saldoDocumento = Double.parseDouble(textView_importe_cobranza_documento.getText().toString().replace("$","").replace(",","").trim());
         }catch (Exception e){

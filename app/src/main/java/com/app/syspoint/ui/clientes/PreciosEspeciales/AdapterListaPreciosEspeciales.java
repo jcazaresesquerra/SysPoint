@@ -15,9 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.PreciosEspecialesBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
@@ -117,8 +117,8 @@ public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterL
         private void bind(final PreciosEspecialesBean item, OnItemClickListener onItemClickListener){
 
 
-            final ProductoDao  productoDao = new ProductoDao();
-            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+            final ProductDao productDao = new ProductDao();
+            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
             if (productoBean != null){
                 if (productoBean.getPath_img() != null){

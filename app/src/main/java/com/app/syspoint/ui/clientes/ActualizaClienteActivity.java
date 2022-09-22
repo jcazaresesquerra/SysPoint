@@ -40,17 +40,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.models.Client;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
-import com.app.syspoint.utils.ValidaCampos;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -106,7 +103,7 @@ public class ActualizaClienteActivity extends AppCompatActivity {
     String rutaSeleccionadoDB;
     String periodoSeleccionadoDB;
 
-    private List<ValidaCampos> listaCamposValidos;
+    private List<String> listaCamposValidos;
     private int mYear, mMonth, mDay;
     int no_cuenta = 0;
     String clienteGlobal;
@@ -155,8 +152,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
         Intent intent = getIntent();
         clienteGlobal = intent.getStringExtra(Actividades.PARAM_1);
 
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(clienteGlobal);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(clienteGlobal);
 
         if (clienteBean != null) {
             editText_nombre_actualiza_cliente.setText(clienteBean.getNombre_comercial());
@@ -298,9 +295,9 @@ public class ActualizaClienteActivity extends AppCompatActivity {
                     }
                 } else {
 
-                    String campos = "";
-                    for (ValidaCampos elemento : listaCamposValidos) {
-                        campos += "" + elemento.getCampo() + "\n";
+                    StringBuilder campos = new StringBuilder();
+                    for (String validItem : listaCamposValidos) {
+                        campos.append(validItem).append("\n");
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
@@ -571,10 +568,10 @@ public class ActualizaClienteActivity extends AppCompatActivity {
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();
-                return;
             }
         }
     }
@@ -785,41 +782,41 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
         if (nombre.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("nombre"));
+            listaCamposValidos.add("nombre");
         }
 
         if (calle.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("numero"));
+            listaCamposValidos.add("numero");
         }
 
         if (colonia.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("colonia"));
+            listaCamposValidos.add("colonia");
         }
         if (ciudad.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("ciudad"));
+            listaCamposValidos.add("ciudad");
         }
         if (cp.isEmpty()) {
             valida = false;
-            listaCamposValidos.add(new ValidaCampos("C.P"));
+            listaCamposValidos.add("C.P");
         }
 
         return valida;
@@ -829,8 +826,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
         boolean valida = true;
 
-        ClienteDao dao = new ClienteDao();
-        ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+        ClientDao dao = new ClientDao();
+        ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_actualiza_cliente.getText().toString());
 
         valida = bean != null;
         return valida;
@@ -843,8 +840,8 @@ public class ActualizaClienteActivity extends AppCompatActivity {
         String sec = inp_secuencia_actualiza_cliente.getText().toString();
 
         if (cp != null && !cp.isEmpty() && sec != null && !sec.isEmpty() && periodo_seleccionado != null && !periodo_seleccionado.isEmpty()) {
-            ClienteDao dao = new ClienteDao();
-            ClienteBean bean = dao.getClienteByCuenta(editText_no_cuenta_actualiza_cliente.getText().toString());
+            ClientDao dao = new ClientDao();
+            ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_actualiza_cliente.getText().toString());
             bean.setNombre_comercial(editText_nombre_actualiza_cliente.getText().toString());
             bean.setCalle(editText_calle_actualiza_cliente.getText().toString());
             bean.setNumero(editText_numero_actualiza_cliente.getText().toString());
@@ -954,14 +951,14 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
     private void testLoadClientes(String idCliente){
         progressshow();
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB =  clienteDao.getByIDCliente(idCliente);
+        listaClientesDB =  clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB){
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -998,9 +995,9 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()){
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             }else{
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -1013,26 +1010,18 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("SinEmpleados", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if(response.isSuccessful()){
-                    progresshide();
-                    Toast.makeText(ActualizaClienteActivity.this, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-                    finish();
-                }
+            public void onSaveClientSuccess() {
+                progresshide();
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
                 progresshide();
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
                 finish();
             }
         });

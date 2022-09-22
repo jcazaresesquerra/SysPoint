@@ -13,7 +13,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,38 +44,34 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.syspoint.utils.cache.CacheInteractor;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.prices.PriceInteractor;
+import com.app.syspoint.interactor.prices.PriceInteractorImp;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.VentasModelBean;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PartidasBean;
-import com.app.syspoint.db.bean.PreciosEspecialesBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.VentasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.PreciosEspecialesDao;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.VentasDao;
-import com.app.syspoint.db.dao.VentasModelDao;
-import com.app.syspoint.domentos.TicketVenta;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Precio;
-import com.app.syspoint.json.PrecioEspecialJson;
-import com.app.syspoint.json.RequestClients;
-import com.app.syspoint.templates.ViewPDFActivity;
-import com.app.syspoint.ui.PreCapturaActivity;
-import com.app.syspoint.ui.productos.ListaProductosActivity;
+import com.app.syspoint.repository.database.bean.VentasModelBean;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PartidasBean;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.VentasBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.database.dao.SellsDao;
+import com.app.syspoint.repository.database.dao.SellsModelDao;
+import com.app.syspoint.documents.SellTicket;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.ui.templates.ViewPDFActivity;
+import com.app.syspoint.ui.precaptura.PrecaptureActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -87,13 +82,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class VentasActivity extends AppCompatActivity {
 
@@ -124,7 +117,9 @@ public class VentasActivity extends AppCompatActivity {
     private String sucursalMatriz = "";
     private TextView textView_credito_cliente_vents_view;
     RelativeLayout rlprogress_venta;
-    private boolean isConfirmSellClicked = false;
+
+    private boolean confirmPrecaptureClicked = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,98 +136,19 @@ public class VentasActivity extends AppCompatActivity {
 
     }
 
-
-
-
-    private class getPreciosEspeciales extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            ClienteDao clienteDao = new ClienteDao();
-            ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
-
-            RequestClients requestPrices = new RequestClients();
-            requestPrices.setCuenta(clienteBean.getCuenta());
-
-            Call<PrecioEspecialJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPreciosByClient(requestPrices);
-            preciosJson.enqueue(new Callback<PrecioEspecialJson>() {
-                @Override
-                public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
-                    if (response.isSuccessful()) {
-                        for (Precio item : response.body().getPrecios()) {
-
-                            //Para obtener los datos del cliente
-                            final ClienteDao clienteDao = new ClienteDao();
-                            final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
-                            if (clienteBean == null) {
-                                return;
-                            }
-
-                            //Para obtener los datos del producto
-                            final ProductoDao productoDao = new ProductoDao();
-                            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
-
-                            if (productoBean == null) {
-                                return;
-                            }
-
-                            final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                            final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
-
-                            //Si no hay precios especiales entonces crea un precio
-                            if (preciosEspecialesBean == null) {
-
-                                final PreciosEspecialesDao dao = new PreciosEspecialesDao();
-                                final PreciosEspecialesBean bean = new PreciosEspecialesBean();
-                                bean.setCliente(clienteBean.getCuenta());
-                                bean.setArticulo(productoBean.getArticulo());
-                                bean.setPrecio(item.getPrecio());
-                                if (item.getActive() ==1){
-                                    bean.setActive(true);
-                                }else {
-                                    bean.setActive(false);
-                                }
-                                dao.insert(bean);
-
-                            } else {
-                                preciosEspecialesBean.setCliente(clienteBean.getCuenta());
-                                preciosEspecialesBean.setArticulo(productoBean.getArticulo());
-                                preciosEspecialesBean.setPrecio(item.getPrecio());
-                                if (item.getActive() ==1){
-                                    preciosEspecialesBean.setActive(true);
-                                }else {
-                                    preciosEspecialesBean.setActive(false);
-                                }
-                                preciosEspecialesDao.save(preciosEspecialesBean);
-                            }
-                        }
-                    }
-                }
-
-
-                @Override
-                public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
-                }
-            });
-
-            return null;
-        }
-    }
-
     private void initControls() {
 
         Intent intent = getIntent();
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
 
-        ClienteDao clienteDao = new ClienteDao();
+        ClientDao clientDao = new ClientDao();
 
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
-        CobranzaDao cobranzaDao1 = new CobranzaDao();
-        double saldoCliente =  cobranzaDao1.getSaldoByCliente(clienteBean.getCuenta());
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+        PaymentDao paymentDao1 = new PaymentDao();
+        double saldoCliente =  paymentDao1.getSaldoByCliente(clienteBean.getCuenta());
         clienteBean.setSaldo_credito(saldoCliente);
         clienteBean.setDate_sync(Utils.fechaActual());
-        clienteDao.save(clienteBean);
+        clientDao.save(clienteBean);
 
 
         imageViewVentas = findViewById(R.id.img_btn_finish_sale);
@@ -295,14 +211,14 @@ public class VentasActivity extends AppCompatActivity {
 
                     double saldo_disponible = 0;
 
-                    ClienteDao clienteDao = new ClienteDao();
-                    ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                    ClientDao clientDao = new ClientDao();
+                    ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
                     if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
                         if (clienteBean != null) {
                             if (clienteBean.getIs_credito()) {
                                 if (clienteBean.getMatriz() != null && clienteBean.getMatriz().length() > 0) {
-                                    ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(clienteBean.getMatriz());
+                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                                     if (clienteMatriz != null) {
                                         isCreditMatriz = true;
                                         cuentaMatriz = clienteMatriz.getCuenta();
@@ -384,24 +300,24 @@ public class VentasActivity extends AppCompatActivity {
                             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
                                 @Override
                                 public void onClick() {
-                                    if (!isConfirmSellClicked) {
-                                        isConfirmSellClicked = true;
 
+                                    if (!confirmPrecaptureClicked) {
+                                        confirmPrecaptureClicked = true;
                                         Utils.addActivity2Stack(activity);
 
                                         final ArrayList<PartidasBean> lista = new ArrayList<>();
 
-                                        final VentasDao ventasDao = new VentasDao();
+                                        final SellsDao sellsDao = new SellsDao();
                                         final VentasBean ventasBean = new VentasBean();
 
 
-                                        int ultimoFolio = ventasDao.getUltimoFolio();
+                                        int ultimoFolio = sellsDao.getUltimoFolio();
 
-                                        final ProductoDao productoDao = new ProductoDao();
+                                        final ProductDao productDao = new ProductDao();
                                         //Recorremos las partidas
                                         for (int x = 0; x < mData.size(); x++) {
                                             //Validamos si el articulo existe en la base de datos
-                                            final ProductoBean productosBean = productoDao.getProductoByArticulo(mData.get(x).getArticulo());
+                                            final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
                                             final PartidasBean partida = new PartidasBean();
                                             partida.setArticulo(productosBean);
                                             partida.setCantidad(mData.get(x).getCantidad());
@@ -417,13 +333,13 @@ public class VentasActivity extends AppCompatActivity {
                                         }
 
                                         //Le indicamos al sistema que el cliente ya se ah visitado
-                                        final ClienteDao clienteDao = new ClienteDao();
-                                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                                        final ClientDao clientDao = new ClientDao();
+                                        final ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
                                         final String clienteID = String.valueOf(clienteBean.getId());
                                         clienteBean.setVisitado(1);
                                         clienteBean.setVisitasNoefectivas(0);
                                         clienteBean.setDate_sync(Utils.fechaActual());
-                                        clienteDao.save(clienteBean);
+                                        clientDao.save(clienteBean);
 
                                         ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
                                         progressDialog.setMessage("Espere un momento");
@@ -434,18 +350,18 @@ public class VentasActivity extends AppCompatActivity {
                                             if (connected)
                                                 testLoadClientes(String.valueOf(clienteBean.getId()));
 
-                                            final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                            final ClientesRutaBean clientesRutaBean = clientesRutaDao.getClienteByCuentaCliente(idCliente);
+                                            final RuteClientDao ruteClientDao = new RuteClientDao();
+                                            final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
                                             if (clientesRutaBean != null) {
                                                 clientesRutaBean.setVisitado(1);
-                                                clientesRutaDao.save(clientesRutaBean);
+                                                ruteClientDao.save(clientesRutaBean);
                                             }
 
                                             //Obtiene el nombre del vendedor
                                             EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
                                             if (vendedoresBean == null) {
-                                                vendedoresBean = new CacheInteractor(VentasActivity.this).getSeller();
+                                                vendedoresBean = new CacheInteractor().getSeller();
                                             }
 
                                             ventasBean.setTipo_doc("TIK");
@@ -479,7 +395,7 @@ public class VentasActivity extends AppCompatActivity {
                                                 //Si la cobranza es de matriz entonces creamos la cobranza a matriz
                                                 if (isCreditMatriz) {
                                                     CobranzaBean cobranzaBean = new CobranzaBean();
-                                                    CobranzaDao cobranzaDao = new CobranzaDao();
+                                                    PaymentDao paymentDao = new PaymentDao();
                                                     cobranzaBean.setCobranza(ticketRamdom);
                                                     cobranzaBean.setCliente(cuentaMatriz);
                                                     cobranzaBean.setImporte(totalVenta);
@@ -493,26 +409,26 @@ public class VentasActivity extends AppCompatActivity {
                                                         cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
                                                     }
                                                     cobranzaBean.setAbono(false);
-                                                    cobranzaDao.save(cobranzaBean);
+                                                    paymentDao.save(cobranzaBean);
 
                                                     //Actualizamos el documento de la venta con el de la cobranza
                                                     ventasBean.setCobranza(ticketRamdom);
                                                     //ventasDao.save(ventasBean);
 
                                                     //Actualizamos el saldo del cliente
-                                                    ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(cuentaMatriz);
+                                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(cuentaMatriz);
                                                     double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
                                                     clienteMatriz.setSaldo_credito(saldoNuevo);
                                                     clienteMatriz.setDate_sync(Utils.fechaActual());
 
-                                                    clienteDao.save(clienteMatriz);
+                                                    clientDao.save(clienteMatriz);
 
                                                     if (connected)
                                                         testLoadClientes(String.valueOf(clienteMatriz.getId()));
 
                                                 } else {
                                                     CobranzaBean cobranzaBean = new CobranzaBean();
-                                                    CobranzaDao cobranzaDao = new CobranzaDao();
+                                                    PaymentDao paymentDao = new PaymentDao();
                                                     cobranzaBean.setCobranza(ticketRamdom);
                                                     cobranzaBean.setCliente(clienteBean.getCuenta());
                                                     cobranzaBean.setImporte(totalVenta);
@@ -525,7 +441,7 @@ public class VentasActivity extends AppCompatActivity {
                                                     if (vendedoresBean != null) {
                                                         cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
                                                     }
-                                                    cobranzaDao.save(cobranzaBean);
+                                                    paymentDao.save(cobranzaBean);
 
                                                     //Actualizamos el documento de la venta con el de la cobranza
                                                     ventasBean.setCobranza(ticketRamdom);
@@ -537,26 +453,26 @@ public class VentasActivity extends AppCompatActivity {
                                                     clienteBean.setVisitasNoefectivas(0);
                                                     clienteBean.setDate_sync(Utils.fechaActual());
 
-                                                    clienteDao.save(clienteBean);
+                                                    clientDao.save(clienteBean);
 
                                                     if (connected) testLoadClientes(clienteID);
                                                 }
                                             }
 
-                                            ventasDao.save(ventasBean);
+                                            sellsDao.save(ventasBean);
 
 
                                             //Creamos la venta
-                                            ventasDao.creaVenta(ventasBean, lista);
+                                            sellsDao.creaVenta(ventasBean, lista);
 
                                             String ventaID = String.valueOf(ventasBean.getVenta());
 
                                             //Creamos el template del timbre
-                                            TicketVenta ticketVenta = new TicketVenta(VentasActivity.this);
-                                            ticketVenta.setVentasBean(ventasBean);
-                                            ticketVenta.template();
+                                            SellTicket sellTicket = new SellTicket();
+                                            sellTicket.setBean(ventasBean);
+                                            sellTicket.template();
 
-                                            String ticket = ticketVenta.getDocumento();
+                                            String ticket = sellTicket.getDocument();
 
                                             Intent intent = new Intent(VentasActivity.this, ViewPDFActivity.class);
                                             intent.putExtra("ticket", ticket);
@@ -567,8 +483,8 @@ public class VentasActivity extends AppCompatActivity {
 
                                             dialogo.dismiss();
                                             imageViewVentas.setEnabled(true);
-                                            isConfirmSellClicked = false;
-                                        }, VentasActivity.this).execute(), 100);
+                                            confirmPrecaptureClicked = false;
+                                        }).execute(), 100);
                                     }
                                 }
                             })
@@ -615,8 +531,8 @@ public class VentasActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewVisitas.setEnabled(false);
-                ClienteDao clienteDao = new ClienteDao();
-                ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+                ClientDao clientDao = new ClientDao();
+                ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
                 HashMap<String, String> parametros = new HashMap<>();
                 parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                 parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
@@ -626,7 +542,7 @@ public class VentasActivity extends AppCompatActivity {
                 parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
                 parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
                 Utils.addActivity2Stack(activity);
-                Actividades.getSingleton(VentasActivity.this, PreCapturaActivity.class).muestraActividad(parametros);
+                Actividades.getSingleton(VentasActivity.this, PrecaptureActivity.class).muestraActividad(parametros);
                 imageViewVisitas.setEnabled(true);
             }
         });
@@ -647,15 +563,32 @@ public class VentasActivity extends AppCompatActivity {
             credito = clienteBean.getLimite_credito();
             textViewNombre.setText(clienteBean.getNombre_comercial());
 
-            if (clienteBean.getMatriz().compareToIgnoreCase("null") == 0) {
+            new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
+                @Override
+                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                    ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+                    if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
+                        textViewCliente.setText(clienteBean.getCuenta());
+                        textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
+                    } else {
+                        ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                        textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
+                    }
+                }
+
+                @Override
+                public void onGetAllClientsError() {
+
+                }
+            });
+            if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
                 textViewCliente.setText(clienteBean.getCuenta());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
             } else {
-
-                ClienteBean clienteMatriz = clienteDao.getClienteByCuenta(clienteBean.getMatriz());
+                ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                 textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
             }
-            if (clienteBean.getRecordatorio() == null || clienteBean.getRecordatorio() == "null" || clienteBean.getRecordatorio().isEmpty()) {
+            if (clienteBean.getRecordatorio() == null || clienteBean.getRecordatorio().compareToIgnoreCase("null") == 0 || clienteBean.getRecordatorio().isEmpty()) {
                 testLoadClientes(String.valueOf(clienteBean.getId()));
             } else {
                 if (clienteBean.getRecordatorio().compareToIgnoreCase("null") == 0 || clienteBean.getRecordatorio() == null) {
@@ -694,9 +627,24 @@ public class VentasActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         progressDialog.show();
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-            progressDialog.dismiss();
-            if (connected) new getPreciosEspeciales().execute();
-        }, VentasActivity.this).execute(), 100);
+            if (connected) {
+                new PriceInteractorImp().executeGetPricesByClient(idCliente, new PriceInteractor.GetPricesByClientListener() {
+                    @Override
+                    public void onGetPricesByClientSuccess(@NonNull List<? extends PreciosEspecialesBean> pricesByClientList) {
+                        progressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onGGetPricesByClientError() {
+                        progressDialog.dismiss();
+                        //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_LONG).show();
+                    }
+                });
+            } else {
+                Toast.makeText(getApplicationContext(), "Ha ocurrido un error, no tiene Internet", Toast.LENGTH_LONG).show();
+                progressDialog.dismiss();
+            }
+        }).execute(), 100);
     }
 
     private boolean validaCredito() {
@@ -712,7 +660,7 @@ public class VentasActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_recordatorio);
         dialog.setCancelable(true);
 
-        ClienteDao clienteDao = new ClienteDao();
+        ClientDao clientDao = new ClientDao();
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
         lp.copyFrom(dialog.getWindow().getAttributes());
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -735,7 +683,7 @@ public class VentasActivity extends AppCompatActivity {
             public void onClick(View v) {
                 clienteBean.setRecordatorio("");
                 clienteBean.setIs_recordatorio(true);
-                clienteDao.save(clienteBean);
+                clientDao.save(clienteBean);
 
                 ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
                 progressDialog.setMessage("Espere un momento");
@@ -745,7 +693,7 @@ public class VentasActivity extends AppCompatActivity {
                     progressDialog.dismiss();
                     if (connected)
                         testLoadClientes(String.valueOf(clienteBean.getId()));
-                }, VentasActivity.this).execute(), 100);
+                }).execute(), 100);
 
                 dialog.dismiss();
             }
@@ -756,14 +704,14 @@ public class VentasActivity extends AppCompatActivity {
     }
 
     private void testLoadClientes(String idCliente) {
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -800,9 +748,9 @@ public class VentasActivity extends AppCompatActivity {
             cliente.setRecordatorio("" + item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()) {
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             } else {
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -814,22 +762,15 @@ public class VentasActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("ClientesVentas", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -852,7 +793,7 @@ public class VentasActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
 
-        mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
+        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_ventas);
         recyclerView.setHasFixedSize(true);
@@ -860,48 +801,45 @@ public class VentasActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterItemsVenta(mData, new AdapterItemsVenta.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
+        mAdapter = new AdapterItemsVenta(mData, position -> {
 
-                VentasModelBean item = mData.get(position);
+            VentasModelBean item = mData.get(position);
 
-                final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
-                dialog.setTitle("Eliminar")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                VentasModelBean item = mData.get(position);
-                                VentasModelDao dao = new VentasModelDao();
-                                dao.delete(item);
-                                mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
-                                mAdapter.setItems(mData);
-                                ocultaLinearLayouth();
-                                calculaImportes();
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
+            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
+            dialog.setTitle("Eliminar")
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            VentasModelBean item = mData.get(position);
+                            SellsModelDao dao = new SellsModelDao();
+                            dao.delete(item);
+                            mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
+                            mAdapter.setItems(mData);
+                            ocultaLinearLayouth();
+                            calculaImportes();
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
 
-                            }
-                        });
-                dialog.setCancelable(false);
-                dialog.show();
-                return false;
-            }
+                        }
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+            return false;
         }, new AdapterItemsVenta.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
@@ -921,7 +859,7 @@ public class VentasActivity extends AppCompatActivity {
 
                         String cantidad = editTextCantidad.getText().toString();
 
-                        if (cantidad == null) {
+                        if (cantidad == null || cantidad.isEmpty()) {
                             return;
                         }
 
@@ -951,11 +889,11 @@ public class VentasActivity extends AppCompatActivity {
                             return;
                         }
 
-                        final VentasModelDao dao = new VentasModelDao();
+                        final SellsModelDao dao = new SellsModelDao();
                         item.setCantidad(cantidadVenta);
                         dao.save(item);
 
-                        mData = (List<VentasModelBean>) (List<?>) new VentasModelDao().list();
+                        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
                         mAdapter.setItems(mData);
                         ocultaLinearLayouth();
                         calculaImportes();
@@ -1077,10 +1015,11 @@ public class VentasActivity extends AppCompatActivity {
         String cantidad = data.getStringExtra(Actividades.PARAM_1);
         String articulo = data.getStringExtra(Actividades.PARAM_2);
 
-        final ProductoDao productoDao = new ProductoDao();
-        final ProductoBean productoBean = productoDao.getProductoByArticulo(articulo);
+        final ProductDao productDao = new ProductDao();
+        final ProductoBean productoBean = productDao.getProductoByArticulo(articulo);
 
         if (productoBean == null) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1135,15 +1074,20 @@ public class VentasActivity extends AppCompatActivity {
         //     return;
         // }
 
+        if (cantidad == null || cantidad.isEmpty()) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         int cantidadVendida = Integer.parseInt(cantidad);
 
         //Validamos los datos del cliente
-        ClienteDao clienteDao = new ClienteDao();
-        ClienteBean clienteBean = clienteDao.getClienteByCuenta(idCliente);
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
 
         //Validamos si hay precio especial del cliente
-        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
         //Hay precio especial entonces aplica el precio especial
 
@@ -1159,7 +1103,7 @@ public class VentasActivity extends AppCompatActivity {
                          int impuesto, int cantidad) {
 
         final VentasModelBean item = new VentasModelBean();
-        final VentasModelDao dao = new VentasModelDao();
+        final SellsModelDao dao = new SellsModelDao();
 
         item.setArticulo(articulo);
         item.setDescripcion(descripcion);
@@ -1241,7 +1185,7 @@ public class VentasActivity extends AppCompatActivity {
     }
 
     private void deleteVentaTemp() {
-        VentasModelDao dao = new VentasModelDao();
+        SellsModelDao dao = new SellsModelDao();
         dao.clear();
     }
 
@@ -1323,21 +1267,29 @@ public class VentasActivity extends AppCompatActivity {
 
         @Override
         public void onLocationChanged(Location location) {
-            if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
-                try {
-                    /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                    List<Address> list = geocoder.getFromLocation(
-                            location.getLatitude(), location.getLongitude(), 1);
-                    if (!list.isEmpty()) {
-                        latidud = "" + list.get(0).getLatitude();
-                        longitud = "" + list.get(0).getLongitude();
-                    }
+            /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+            try {
+                new Thread(() -> {
+                    if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+                        try {
+                            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                            List<Address> list = geocoder.getFromLocation(
+                                    location.getLatitude(), location.getLongitude(), 1);
+                            if (!list.isEmpty()) {
+                                latidud = "" + list.get(0).getLatitude();
+                                longitud = "" + list.get(0).getLongitude();
+                            }
 
-                } catch (Exception e) {
-                    Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
-                    e.printStackTrace();
-                }
+                        } catch (Exception e) {
+                            runOnUiThread(()->{
+                                Toast.makeText(VentasActivity.this, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_LONG).show();
+                            });
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             this.registrarClientesController.setLocation(location);
         }
@@ -1373,25 +1325,33 @@ public class VentasActivity extends AppCompatActivity {
     /* obtener la direccion*/
     public void setLocation(Location loc) {
         //Obtener la direccion de la calle a partir de la latitud y la longitud
-        if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
-            try {
-                /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<Address> list = geocoder.getFromLocation(
-                        loc.getLatitude(), loc.getLongitude(), 1);
-                if (!list.isEmpty()) {
-                    Address DirCalle = list.get(0);
-                    // editTextDireccion.setText(DirCalle.getAddressLine(0));
-                }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            new Thread(() -> {
+                if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
+                    try {
+                        /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+                        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                        List<Address> list = geocoder.getFromLocation(
+                                loc.getLatitude(), loc.getLongitude(), 1);
+                        if (!list.isEmpty()) {
+                            Address DirCalle = list.get(0);
+                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationStart();

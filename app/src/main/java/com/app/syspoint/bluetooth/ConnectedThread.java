@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.PrinterCommands;
 
 import java.io.IOException;
@@ -16,52 +17,39 @@ import java.io.OutputStream;
 public class ConnectedThread extends Thread {
 
     private final BluetoothSocket mmSocket;
-    private final InputStream mminputStream;
-    private final OutputStream mmOutputStream;
+    private InputStream mInputStream = null;
     private final Handler mHandler;
     private static OutputStream outputStream;
-    byte FONT_TYPE;
 
     //Constructor
     public ConnectedThread (BluetoothSocket socket, Handler handler){
-
         mmSocket  = socket;
         mHandler = handler;
 
-        InputStream tmpIn = null;
-        OutputStream tmpOut = null;
-
         try{
-            tmpIn = socket.getInputStream();
-            tmpOut = socket.getOutputStream();
+            mInputStream = socket.getInputStream();
         }catch (IOException e){
+            e.printStackTrace();
         }
-
-        mminputStream =  tmpIn;
-        mmOutputStream =  tmpOut;
-
     }
 
     @Override
     public void run() {
 
-        byte[] buffer = new byte[1024];
+
         int bytes;
 
         while (true){
-
             try{
-
-                bytes = mminputStream.available();
+                bytes = mInputStream.available();
                 if (bytes != 0){
-                    buffer = new byte[1024];
+                    byte[] buffer = new byte[1024];
                     SystemClock.sleep(100);
-                    bytes = mminputStream.available();
-                    bytes = mminputStream.read(buffer, 0 , bytes);
+                    bytes = mInputStream.available();
+                    bytes = mInputStream.read(buffer, 0 , bytes);
                     mHandler.obtainMessage(2, bytes, -1, buffer)
                             .sendToTarget();
                 }
-
             }catch (IOException e){
                 e.printStackTrace();
                 break;
@@ -76,19 +64,16 @@ public class ConnectedThread extends Thread {
         Thread t = new Thread() {
             public void run() {
                 try {
-//
-                    OutputStream os = mmSocket
-                            .getOutputStream();
-//
+                    OutputStream os = mmSocket.getOutputStream();
                     os.write(input.getBytes());
-//
+
                     int gs = 29;
                     os.write(intToByteArray(gs));
                     int h = 104;
                     os.write(intToByteArray(h));
                     int n = 162;
                     os.write(intToByteArray(n));
-//
+
                     // Setting Width
                     int gs_width = 29;
                     os.write(intToByteArray(gs_width));
@@ -96,8 +81,7 @@ public class ConnectedThread extends Thread {
                     os.write(intToByteArray(w));
                     int n_width = 2;
                     os.write(intToByteArray(n_width));
-//
-//
+
                 } catch (Exception e) {
                     Log.e("MainActivity", "Exe ", e);
                 }
@@ -107,8 +91,7 @@ public class ConnectedThread extends Thread {
     }
 
 
-    public void printTicketVisita(String concepto, String tipo_inventario, String empleado, String fecha, String hora ){
-
+    public void printTicketVisit(String concepto, String tipo_inventario, String empleado, String fecha, String hora ){
 
        // mConnectedThread.printTicketVisita(concepto_visita_seleccioando, tipo_inventario_seleccionado, vendedoresBean.getNombre(), Utils.fechaActual(), Utils.getHoraActual());
 
@@ -119,29 +102,27 @@ public class ConnectedThread extends Thread {
                 e.printStackTrace();
             }
             outputStream = mmSocket.getOutputStream();
-            byte[] printformat = new byte[]{0x1B,0x21,0x03};
-            outputStream.write(printformat);
-
+            byte[] printFormat = new byte[]{0x1B,0x21,0x03};
+            outputStream.write(printFormat);
 
             String header = headerTicket();
-            String divider = dividerText();
             String body = bodyText();
 
             printCustom(header,1,1);
-            printCustom(divider, 4,0);
+            printCustom(Constants.divider, 4,0);
             printNewLine();
             printCustom("AVISO", 4,1);
             printCustom("DE VISITA", 4,1);
             printNewLine();
-            printCustom(divider, 4,0);
+            printCustom(Constants.divider, 4,0);
             printCustom(body, 1, 1);
-            printCustom(divider, 4,0);
+            printCustom(Constants.divider, 4,0);
             printNewLine();
             printCustom("Resultado de la Visita", 1,1);
             printCustom(concepto, 4,1);
             printCustom(bodyText2(empleado, fecha, hora),1, 1 );
             printNewLine();
-            printCustom(divider, 4,0);
+            printCustom(Constants.divider, 4,0);
             printNewLine();
             printCustom("Llamenos", 1, 1);
             printCustom("(667) 744-9350", 4, 1);
@@ -155,65 +136,39 @@ public class ConnectedThread extends Thread {
         }
     }
 
-
     private String headerTicket(){
-
-        String salto = "\n";
-
-        String header =
-                        "     AGUA POINT S.A. DE C.V.    " + salto +
-                        "     Calz. Aeropuerto 4912 A    " + salto +
-                        "      San Rafael C.P. 80150     " + salto +
-                        "        Culiacan, Sinaloa       " + salto +
-                        "           APO170818QR6         " + salto +
-                        "          (667) 774-9350        " + salto +
-                        "        info@aguapoint.com      " + salto +
-                        "         www.aguapoint.com      " + salto;
-        return header;
-    }
-
-    private String dividerText (){
-        String divider = "****************";
-        return divider;
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
+                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
+                "      San Rafael C.P. 80150     " + Constants.newLine +
+                "        Culiacan, Sinaloa       " + Constants.newLine +
+                "           APO170818QR6         " + Constants.newLine +
+                "          (667) 774-9350        " + Constants.newLine +
+                "        info@aguapoint.com      " + Constants.newLine +
+                "         www.aguapoint.com      " + Constants.newLine;
     }
 
     private String bodyText(){
-
-        String salto = "\n";
-        String body =   "Le informamos que estuvimos en" + salto +
-                        " su domicilio pero no pudimos  " + salto +
-                        "   atenderle. Estamos a sus      " + salto +
-                        " ordenes por favor cominiquese " + salto +
-                        "           con nosotros                  ";
-
-        return body;
+        return  "Le informamos que estuvimos en" + Constants.newLine +
+                " su domicilio pero no pudimos  " + Constants.newLine +
+                "   atenderle. Estamos a sus      " + Constants.newLine +
+                " ordenes por favor cominiquese " + Constants.newLine +
+                "           con nosotros                  ";
     }
     private String bodyText2(String empleado, String fecha, String hora){
-
-        String salto = "\n";
-        String body =   "" + fecha + " - " + hora + "" + salto +
-                        "Vendedor: " + empleado + salto;
-
-        return body;
+        return  "" + fecha + " - " + hora + "" + Constants.newLine +
+                "Vendedor: " + empleado + Constants.newLine;
     }
 
     private String footerText(){
-
-        String salto = "\n";
-
-        String footer =
-                "     AGUA POINT S.A. DE C.V.    " + salto +
-                        "     Calz. Aeropuerto 4912 A    " + salto +
-                        "      San Rafael C.P. 80150     " + salto +
-                        "        Culiacan, Sinaloa       " + salto +
-                        "           APO170818QR6         " + salto +
-                        "          (667) 774-9350        " + salto +
-                        "        info@aguapoint.com      " + salto +
-                        "         www.aguapoint.com      " + salto;
-        return footer;
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
+                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
+                "      San Rafael C.P. 80150     " + Constants.newLine +
+                "        Culiacan, Sinaloa       " + Constants.newLine +
+                "           APO170818QR6         " + Constants.newLine +
+                "          (667) 774-9350        " + Constants.newLine +
+                "        info@aguapoint.com      " + Constants.newLine +
+                "         www.aguapoint.com      " + Constants.newLine;
     }
-
-
 
     public void printText(byte[] msg) {
         try {
@@ -288,7 +243,8 @@ public class ConnectedThread extends Thread {
     public void cancel(){
         try {
             mmSocket.close();
-        }catch (IOException e){ }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
-
 }

@@ -5,7 +5,7 @@
     android:id="@+id/viewrootListaProductos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.productos.ListaProductosActivity">
+    tools:context=".ui.ventas.ListaProductosActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

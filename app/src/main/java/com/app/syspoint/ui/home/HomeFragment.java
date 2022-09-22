@@ -2,7 +2,6 @@ package com.app.syspoint.ui.home;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -25,48 +24,49 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.androidnetworking.error.ANError;
-import com.app.syspoint.utils.cache.CacheInteractor;
-import com.google.gson.Gson;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.data.GetAllDataInteractor;
+import com.app.syspoint.interactor.data.GetAllDataInteractorImp;
+import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
+import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
+import com.app.syspoint.interactor.prices.PriceInteractor;
+import com.app.syspoint.interactor.prices.PriceInteractorImp;
+import com.app.syspoint.interactor.product.GetProductInteractor;
+import com.app.syspoint.interactor.product.GetProductsInteractorImp;
+import com.app.syspoint.interactor.roles.RolInteractor;
+import com.app.syspoint.interactor.roles.RolInteractorImp;
+import com.app.syspoint.interactor.visit.VisitInteractor;
+import com.app.syspoint.interactor.visit.VisitInteractorImp;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.ClientesRutaBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.bean.PreciosEspecialesBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.bean.RolesBean;
-import com.app.syspoint.db.bean.RuteoBean;
-import com.app.syspoint.db.bean.VisitasBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.ClientesRutaDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.EmpleadoDao;
-import com.app.syspoint.db.dao.PreciosEspecialesDao;
-import com.app.syspoint.db.dao.ProductoDao;
-import com.app.syspoint.db.dao.RolesDao;
-import com.app.syspoint.db.dao.RuteoDao;
-import com.app.syspoint.db.dao.VisitasDao;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.Data;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.http.Servicio;
-import com.app.syspoint.http.SincVentas;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.Empleado;
-import com.app.syspoint.json.EmpleadoJson;
-import com.app.syspoint.json.Precio;
-import com.app.syspoint.json.PrecioEspecialJson;
-import com.app.syspoint.json.Producto;
-import com.app.syspoint.json.ProductoJson;
-import com.app.syspoint.json.Role;
-import com.app.syspoint.json.RolsJson;
-import com.app.syspoint.json.Visita;
-import com.app.syspoint.json.VisitaJson;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.bean.VisitasBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.VisitsDao;
+import com.app.syspoint.repository.request.http.Servicio;
+import com.app.syspoint.repository.request.http.SincVentas;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.Price;
+import com.app.syspoint.models.Visit;
 import com.app.syspoint.ui.customs.DialogoRuteo;
+import com.app.syspoint.ui.home.activities.MapsRuteoActivity;
+import com.app.syspoint.ui.home.adapter.AdapterRutaClientes;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
@@ -77,16 +77,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -102,7 +98,7 @@ public class HomeFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         setHasOptionsMenu(true);
 
-        if (Constants.solictaRuta) {
+        if (Constants.Companion.getSolictaRuta()) {
             creaRutaSeleccionada();
         }
 
@@ -116,14 +112,14 @@ public class HomeFragment extends Fragment {
 
     private void updateCreditos() {
 
-        final ClienteDao clienteDao = new ClienteDao();
-        final List<ClienteBean> listaClientesCredito = clienteDao.getClientsByDay(Utils.fechaActual());
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final ClientDao clientDao = new ClientDao();
+        final List<ClienteBean> listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual());
+        final PaymentDao paymentDao = new PaymentDao();
         for (ClienteBean item : listaClientesCredito) {
 
             try {
-                final ClienteDao dao = new ClienteDao();
-                item.setSaldo_credito(cobranzaDao.getTotalSaldoDocumentosCliente(item.getCuenta()));
+                final ClientDao dao = new ClientDao();
+                item.setSaldo_credito(paymentDao.getTotalSaldoDocumentosCliente(item.getCuenta()));
                 dao.save(item);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -137,453 +133,70 @@ public class HomeFragment extends Fragment {
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             progressDialog.dismiss();
             if (connected) {
-                Call<Data> getData = ApiServices.getClientRestrofit().create(PointApi.class).getAllDataByDate();
-                new donwloadGetDataAsync().execute(getData);
-                new SendVentas().execute();
-                new loadCobranza().execute();
-                new loadAbonos().execute();
-                new loadVisitas().execute();
-                new loadClientes().execute();
-                new loadPreciosEspeciales().execute();
+                progressDialog.setMessage("Obteniendo actualizaciones...");
+
+                progressDialog.show();
+                new GetAllDataInteractorImp().executeGetAllDataByDate(new GetAllDataInteractor.OnGetAllDataByDateListener() {
+                    @Override
+                    public void onGetAllDataByDateSuccess() {
+                        progressDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onGetAllDataByDateError() {
+                        progressDialog.dismiss();
+                        Toast.makeText(requireActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                sendVentas();
+                saveCobranza();
+                loadAbonos();
+                saveVisitas();
+                loadClientes();
+                savePreciosEspeciales();
             }
-        }, getActivity()).execute(), 100);
+        }).execute(), 100);
     }
 
-    private class donwloadGetDataAsync extends AsyncTask<Call, Void, String>{
-        Response<Data> response;
-        ProgressDialog progressDialog;
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressDialog = new ProgressDialog(getContext());
-            progressDialog.setMessage("Obteniendo actualizaciones...");
+    private void loadAbonos() {
 
-            progressDialog.show();
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
+        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
         }
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            progressDialog.dismiss();
-        }
-
-        @Override
-        protected String doInBackground(Call... calls) {
-
-            Call<Data> call = calls[0];
-            try {
-                response = call.execute();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (response.isSuccessful()){
-
-                if (response.code() == 200){
-
-                    //Contiene la lista de empledos
-                    for (Empleado item : response.body().getData().getEmpleados()) {
-
-                        //Instancia el DAO
-                        final EmpleadoDao dao = new EmpleadoDao();
-
-                        //Validamos si existe el empleado en la base de datos en base al identificador
-                        final EmpleadoBean empleadoBean = dao.getEmpleadoByIdentificador(item.getIdentificador());
-
-                        //NO existe entonces lo creamos
-                        if (empleadoBean == null) {
-                            EmpleadoBean empleado = new EmpleadoBean();
-                            EmpleadoDao empleadoDao = new EmpleadoDao();
-                            empleado.setNombre(item.getNombre());
-                            empleado.setDireccion(item.getDireccion());
-                            empleado.setEmail(item.getEmail());
-                            empleado.setTelefono(item.getTelefono());
-                            empleado.setFecha_nacimiento(item.getFechaNacimiento());
-                            empleado.setFecha_ingreso(item.getFechaIngreso());
-                            empleado.setFecha_egreso(item.getFechaEgreso());
-                            empleado.setContrasenia(item.getContrasenia());
-                            empleado.setIdentificador(item.getIdentificador());
-                            empleado.setNss(item.getNss());
-                            empleado.setRfc(item.getRfc());
-                            empleado.setCurp(item.getCurp());
-                            empleado.setPuesto(item.getPuesto());
-                            empleado.setArea_depto(item.getAreaDepto());
-                            empleado.setTipo_contrato(item.getTipoContrato());
-                            empleado.setRegion(item.getRegion());
-                            empleado.setHora_entrada(item.getHoraEntrada());
-                            empleado.setHora_salida(item.getHoraSalida());
-                            empleado.setSalida_comer(item.getSalidaComer());
-                            empleado.setEntrada_comer(item.getEntradaComer());
-                            empleado.setSueldo_diario(item.getSueldoDiario());
-                            empleado.setTurno(item.getTurno());
-                            empleado.setPath_image(item.getPathImage());
-                            empleadoDao.insert(empleado);
-                        }else {
-                            empleadoBean.setNombre(item.getNombre());
-                            empleadoBean.setDireccion(item.getDireccion());
-                            empleadoBean.setEmail(item.getEmail());
-                            empleadoBean.setTelefono(item.getTelefono());
-                            empleadoBean.setFecha_nacimiento(item.getFechaNacimiento());
-                            empleadoBean.setFecha_ingreso(item.getFechaIngreso());
-                            empleadoBean.setFecha_egreso(item.getFechaEgreso());
-                            empleadoBean.setContrasenia(item.getContrasenia());
-                            empleadoBean.setIdentificador(item.getIdentificador());
-                            empleadoBean.setNss(item.getNss());
-                            empleadoBean.setRfc(item.getRfc());
-                            empleadoBean.setCurp(item.getCurp());
-                            empleadoBean.setPuesto(item.getPuesto());
-                            empleadoBean.setArea_depto(item.getAreaDepto());
-                            empleadoBean.setTipo_contrato(item.getTipoContrato());
-                            empleadoBean.setRegion(item.getRegion());
-                            empleadoBean.setHora_entrada(item.getHoraEntrada());
-                            empleadoBean.setHora_salida(item.getHoraSalida());
-                            empleadoBean.setSalida_comer(item.getSalidaComer());
-                            empleadoBean.setEntrada_comer(item.getEntradaComer());
-                            empleadoBean.setSueldo_diario(item.getSueldoDiario());
-                            empleadoBean.setTurno(item.getTurno());
-                            empleadoBean.setPath_image(item.getPathImage());
-                            dao.save(empleadoBean);
-                        }
-                    }
-                    //Contiene la lista de permidos
-                    for (Role rol : response.body().getData().getRoles()){
-
-                        final RolesDao rolesDao = new RolesDao();
-                        final RolesBean rolesBean = rolesDao.getRolByModule(rol.getEmpleado(), rol.getModulo());
-
-                        if (rolesBean == null){
-
-                            final RolesBean bean = new RolesBean();
-                            final RolesDao dao = new RolesDao();
-
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
-
-                            bean.setEmpleado(empleadoBean);
-                            bean.setModulo(rol.getModulo());
-
-                            if (rol.getActivo() == 1){
-                                bean.setActive(true);
-                            }else {
-                                bean.setActive(false);
-                            }
-                            bean.setIdentificador(rol.getEmpleado());
-                            dao.insert(bean);
-                        }else {
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
-
-                            rolesBean.setEmpleado(empleadoBean);
-                            rolesBean.setModulo(rol.getModulo());
-
-                            if (rol.getActivo() == 1){
-                                rolesBean.setActive(true);
-                            }else {
-                                rolesBean.setActive(false);
-                            }
-                            rolesBean.setIdentificador(rol.getEmpleado());
-                            rolesDao.save(rolesBean);
-                        }
-                    }
-                    //Contiene la lista de productos
-                    for (Producto items : response.body().getData().getProductos()) {
-
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
-
-                        if (productoBean == null) {
-                            //Creamos el producto
-                            ProductoBean producto = new ProductoBean();
-                            ProductoDao dao = new ProductoDao();
-                            producto.setArticulo(items.getArticulo());
-                            producto.setDescripcion(items.getDescripcion());
-                            producto.setStatus(items.getStatus());
-                            producto.setUnidad_medida(items.getUnidadMedida());
-                            producto.setClave_sat(items.getClaveSat());
-                            producto.setUnidad_sat(items.getUnidadSat());
-                            producto.setPrecio(items.getPrecio());
-                            producto.setCosto(items.getCosto());
-                            producto.setIva(items.getIva());
-                            producto.setIeps(items.getIeps());
-                            producto.setPrioridad(items.getPrioridad());
-                            producto.setRegion(items.getRegion());
-                            producto.setCodigo_alfa(items.getCodigoAlfa());
-                            producto.setCodigo_barras(items.getCodigoBarras());
-                            producto.setPath_img(items.getPathImage());
-                            dao.insert(producto);
-                        }else {
-                            productoBean.setArticulo(items.getArticulo());
-                            productoBean.setDescripcion(items.getDescripcion());
-                            productoBean.setStatus(items.getStatus());
-                            productoBean.setUnidad_medida(items.getUnidadMedida());
-                            productoBean.setClave_sat(items.getClaveSat());
-                            productoBean.setUnidad_sat(items.getUnidadSat());
-                            productoBean.setPrecio(items.getPrecio());
-                            productoBean.setCosto(items.getCosto());
-                            productoBean.setIva(items.getIva());
-                            productoBean.setIeps(items.getIeps());
-                            productoBean.setPrioridad(items.getPrioridad());
-                            productoBean.setRegion(items.getRegion());
-                            productoBean.setCodigo_alfa(items.getCodigoAlfa());
-                            productoBean.setCodigo_barras(items.getCodigoBarras());
-                            productoBean.setPath_img(items.getPathImage());
-                            productoDao.save(productoBean);
-                        }
-                    }
-
-                    for (Cliente item : response.body().getData().getClientes()) {
-
-                        //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
-
-                        if (bean == null) {
-
-                            final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
-                            clienteBean.setNombre_comercial(item.getNombreComercial());
-                            clienteBean.setCalle(item.getCalle());
-                            clienteBean.setNumero(item.getNumero());
-                            clienteBean.setColonia(item.getColonia());
-                            clienteBean.setCiudad(item.getCiudad());
-                            clienteBean.setCodigo_postal(item.getCodigoPostal());
-                            clienteBean.setFecha_registro(item.getFechaRegistro());
-                            clienteBean.setFecha_baja(item.getFechaBaja());
-                            clienteBean.setCuenta(item.getCuenta());
-                            clienteBean.setGrupo(item.getGrupo());
-                            clienteBean.setCategoria(item.getCategoria());
-                            if (item.getStatus() == 1) {
-                                clienteBean.setStatus(true);
-                            } else {
-                                clienteBean.setStatus(false);
-                            }
-                            clienteBean.setConsec(item.getConsec());
-                            clienteBean.setVisitado(0);
-                            clienteBean.setRegion(item.getRegion());
-                            clienteBean.setSector(item.getSector());
-                            clienteBean.setRango(item.getRango());
-                            clienteBean.setSecuencia(item.getSecuencia());
-                            clienteBean.setPeriodo(item.getPeriodo());
-                            clienteBean.setRuta(item.getRuta());
-                            clienteBean.setLun(item.getLun());
-                            clienteBean.setMar(item.getMar());
-                            clienteBean.setMie(item.getMie());
-                            clienteBean.setJue(item.getJue());
-                            clienteBean.setVie(item.getVie());
-                            clienteBean.setSab(item.getSab());
-                            clienteBean.setDom(item.getDom());
-                            clienteBean.setLatitud(item.getLatitud());
-                            clienteBean.setLongitud(item.getLongitud());
-                            clienteBean.setContacto_phone(item.getPhone_contacto());
-                            clienteBean.setRecordatorio(item.getRecordatorio());
-                            clienteBean.setVisitasNoefectivas(item.getVisitas());
-
-                            if (item.getIsCredito() == 1) {
-                                clienteBean.setIs_credito(true);
-                            } else {
-                                clienteBean.setIs_credito(false);
-                            }
-
-                            clienteBean.setLimite_credito(item.getLimite_credito());
-                            clienteBean.setSaldo_credito(item.getSaldo_credito());
-                            clienteBean.setMatriz(item.getMatriz());
-                            clienteDao.insert(clienteBean);
-                        } else {
-                            bean.setNombre_comercial(item.getNombreComercial());
-                            bean.setCalle(item.getCalle());
-                            bean.setNumero(item.getNumero());
-                            bean.setColonia(item.getColonia());
-                            bean.setCiudad(item.getCiudad());
-                            bean.setCodigo_postal(item.getCodigoPostal());
-                            bean.setFecha_registro(item.getFechaRegistro());
-                            bean.setFecha_baja(item.getFechaBaja());
-                            bean.setCuenta(item.getCuenta());
-                            bean.setGrupo(item.getGrupo());
-                            bean.setCategoria(item.getCategoria());
-                            if (item.getStatus() == 1) {
-                                bean.setStatus(true);
-                            } else {
-                                bean.setStatus(false);
-                            }
-                            bean.setConsec(item.getConsec());
-                            if (bean.getVisitado() == 0) {
-                                bean.setVisitado(0);
-                            } else if (bean.getVisitado() == 1) {
-                                bean.setVisitado(1);
-                            }
-                            bean.setRegion(item.getRegion());
-                            bean.setSector(item.getSector());
-                            bean.setRango(item.getRango());
-                            bean.setSecuencia(item.getSecuencia());
-                            bean.setPeriodo(item.getPeriodo());
-                            bean.setRuta(item.getRuta());
-                            bean.setLun(item.getLun());
-                            bean.setMar(item.getMar());
-                            bean.setMie(item.getMie());
-                            bean.setJue(item.getJue());
-                            bean.setVie(item.getVie());
-                            bean.setSab(item.getSab());
-                            bean.setDom(item.getDom());
-                            bean.setLatitud(item.getLatitud());
-                            bean.setLongitud(item.getLongitud());
-                            bean.setContacto_phone(item.getPhone_contacto());
-                            bean.setRecordatorio(item.getRecordatorio());
-                            bean.setVisitasNoefectivas(item.getVisitas());
-                            if (item.getIsCredito() == 1) {
-                                bean.setIs_credito(true);
-                            } else {
-                                bean.setIs_credito(false);
-                            }
-                            bean.setLimite_credito(item.getLimite_credito());
-                            bean.setSaldo_credito(item.getSaldo_credito());
-                            bean.setMatriz(item.getMatriz());
-                            dao.save(bean);
-                        }
-                    }
-
-
-                    for (Cobranza item : response.body().getData().getCobranzas()) {
-                        CobranzaDao cobranzaDao = new CobranzaDao();
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
-                        if (cobranzaBean == null) {
-                            final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
-                            cobranzaBean1.setCobranza(item.getCobranza());
-                            cobranzaBean1.setCliente(item.getCuenta());
-                            cobranzaBean1.setImporte(item.getImporte());
-                            cobranzaBean1.setSaldo(item.getSaldo());
-                            cobranzaBean1.setVenta(item.getVenta());
-                            cobranzaBean1.setEstado(item.getEstado());
-                            cobranzaBean1.setObservaciones(item.getObservaciones());
-                            cobranzaBean1.setFecha(item.getFecha());
-                            cobranzaBean1.setHora(item.getHora());
-                            cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
-                        } else {
-                            cobranzaBean.setCobranza(item.getCobranza());
-                            cobranzaBean.setCliente(item.getCuenta());
-                            cobranzaBean.setImporte(item.getImporte());
-                            cobranzaBean.setSaldo(item.getSaldo());
-                            cobranzaBean.setVenta(item.getVenta());
-                            cobranzaBean.setEstado(item.getEstado());
-                            cobranzaBean.setObservaciones(item.getObservaciones());
-                            cobranzaBean.setFecha(item.getFecha());
-                            cobranzaBean.setHora(item.getHora());
-                            cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
-                        }
-                    }
-
-                    for (Precio item : response.body().getData().getPrecios()) {
-
-                        //Para obtener los datos del cliente
-                        final ClienteDao clienteDao = new ClienteDao();
-                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
-                        if (clienteBean == null) {
-                            return null;
-                        }
-
-                        //Para obtener los datos del producto
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
-
-                        if (productoBean == null) {
-                            return null;
-                        }
-
-                        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
-
-                        //Si no hay precios especiales entonces crea un precio
-                        if (preciosEspecialesBean == null) {
-
-                            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
-                            final PreciosEspecialesBean bean = new PreciosEspecialesBean();
-                            bean.setCliente(clienteBean.getCuenta());
-                            bean.setArticulo(productoBean.getArticulo());
-                            bean.setPrecio(item.getPrecio());
-                            if (item.getActive() == 1){
-                                bean.setActive(true);
-                            }else {
-                                bean.setActive(false);
-                            }
-
-                            dao.insert(bean);
-
-                        } else {
-                            preciosEspecialesBean.setCliente(clienteBean.getCuenta());
-                            preciosEspecialesBean.setArticulo(productoBean.getArticulo());
-                            preciosEspecialesBean.setPrecio(item.getPrecio());
-                            if (item.getActive() == 1){
-                                preciosEspecialesBean.setActive(true);
-                            }else {
-                                preciosEspecialesBean.setActive(false);
-                            }
-                            preciosEspecialesDao.save(preciosEspecialesBean);
-                        }
-                    }
-                }
-
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
             }
 
-            return response.body().toString();
-        }
-    }
-
-
-    private class loadAbonos extends AsyncTask<String, Void, String>{
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
-
-            List<Cobranza> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+            @Override
+            public void onUpdateChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
             }
-
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
-                @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                    if (response.isSuccessful()) {
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
-
-                }
-            });
-            return null;
-        }
+        });
     }
 
 
     private void creaRutaSeleccionada() {
-        RuteoDao dao = new RuteoDao();
+        RoutingDao dao = new RoutingDao();
         RuteoBean bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
 
         if (bean != null) {
@@ -645,14 +258,14 @@ public class HomeFragment extends Fragment {
                             public void onClick() {
 
                                 //Clientes normales
-                                ClienteDao clienteDao = new ClienteDao();
-                                clienteDao.updateVisitado();
+                                ClientDao clientDao = new ClientDao();
+                                clientDao.updateVisited();
 
-                                ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                                clientesRutaDao.clear();
+                                RuteClientDao ruteClientDao = new RuteClientDao();
+                                ruteClientDao.clear();
 
-                                RuteoDao ruteoDao = new RuteoDao();
-                                ruteoDao.clear();
+                                RoutingDao routingDao = new RoutingDao();
+                                routingDao.clear();
 
                                 RuteoBean ruteoBean = new RuteoBean();
 
@@ -675,7 +288,7 @@ public class HomeFragment extends Fragment {
                                 ruteoBean.setFecha(Utils.fechaActual());
                                 ruteoBean.setRuta(ruta);
 
-                                ruteoDao.insert(ruteoBean);
+                                routingDao.insert(ruteoBean);
                                 Toast.makeText(getActivity(), "La ruta se cargo con exito!", Toast.LENGTH_LONG).show();
                                 estableceRuta();
                                 dialog.dismiss();
@@ -738,12 +351,12 @@ public class HomeFragment extends Fragment {
             for (ClienteBean item : listaClientes) {
 
                 count += 1;
-                final ClientesRutaDao clientesRutaDao = new ClientesRutaDao();
-                final ClientesRutaBean clientesRutaBean = clientesRutaDao.getClienteByCuentaCliente(item.getCuenta());
+                final RuteClientDao ruteClientDao = new RuteClientDao();
+                final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(item.getCuenta());
                 //Guardamos al clientes en la ruta actual
                 if (clientesRutaBean == null) {
                     ClientesRutaBean bean = new ClientesRutaBean();
-                    ClientesRutaDao dao = new ClientesRutaDao();
+                    RuteClientDao dao = new RuteClientDao();
                     bean.setId(Long.valueOf(count));
                     bean.setNombre_comercial(item.getNombre_comercial());
                     bean.setCalle(item.getCalle());
@@ -771,11 +384,11 @@ public class HomeFragment extends Fragment {
 
     private void loadRuta() {
         mData = new ArrayList<>();
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
         }
         setDataList(mData);
     }
@@ -783,33 +396,33 @@ public class HomeFragment extends Fragment {
     private void estableceRuta() {
 
         mData = new ArrayList<>();
-        RuteoDao ruteoDao = new RuteoDao();
-        RuteoBean ruteoBean = ruteoDao.getRutaEstablecida();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
 
             if (ruteoBean.getDia() == 1) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaLunes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1));
             } else if (ruteoBean.getDia() == 2) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 3) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 4) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 5) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 6) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
             }
             if (ruteoBean.getDia() == 7) {
-                saveData((List<ClienteBean>) (List<?>) new ClienteDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
             }
 
-            mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getAllRutaClientes();
+            mData = new RuteClientDao().getAllRutaClientes();
         }
 
         loadRuta();
@@ -819,7 +432,7 @@ public class HomeFragment extends Fragment {
 
         mData = new ArrayList<>();
 
-        if (mData.size() > 0) {
+        if (!mData.isEmpty()) {
             lyt_clientes.setVisibility(View.GONE);
         } else {
             lyt_clientes.setVisibility(View.VISIBLE);
@@ -831,30 +444,24 @@ public class HomeFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterRutaClientes(mData, new AdapterRutaClientes.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                ClientesRutaBean clienteBean = mData.get(position);
-                HashMap<String, String> parametros = new HashMap<>();
-                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
-            }
-        }, new AdapterRutaClientes.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
-                // ClientesRutaBean clienteBean = mData.get(position);
-                // HashMap<String, String> parametros = new HashMap<>();
-                // parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                // parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
-                // parametros.put(Actividades.PARAM_3, clienteBean.getNumero());
-                // parametros.put(Actividades.PARAM_4, clienteBean.getColonia());
-                // parametros.put(Actividades.PARAM_5, clienteBean.getNombre_comercial());
-                // parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
-                // parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
-                // Actividades.getSingleton(getActivity(), PreCapturaActivity.class).muestraActividad(parametros);
+        mAdapter = new AdapterRutaClientes(mData, position -> {
+            ClientesRutaBean clienteBean = mData.get(position);
+            HashMap<String, String> parametros = new HashMap<>();
+            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+            Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+        }, position -> {
+            // ClientesRutaBean clienteBean = mData.get(position);
+            // HashMap<String, String> parametros = new HashMap<>();
+            // parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+            // parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
+            // parametros.put(Actividades.PARAM_3, clienteBean.getNumero());
+            // parametros.put(Actividades.PARAM_4, clienteBean.getColonia());
+            // parametros.put(Actividades.PARAM_5, clienteBean.getNombre_comercial());
+            // parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
+            // parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
+            // Actividades.getSingleton(getActivity(), PreCapturaActivity.class).muestraActividad(parametros);
 
-                return false;
-            }
+            return false;
         });
 
         recyclerView.setAdapter(mAdapter);
@@ -886,7 +493,7 @@ public class HomeFragment extends Fragment {
                     } else {
                         getData();
                     }
-                }, getActivity()).execute(), 100);
+                }).execute(), 100);
 
                 return true;
 
@@ -905,32 +512,15 @@ public class HomeFragment extends Fragment {
 
 
     private void closeBox() {
-        final PrettyDialog dialog = new PrettyDialog(getContext());
+        final PrettyDialog dialog = new PrettyDialog(requireActivity());
         dialog.setTitle("Corte del día")
                 .setTitleColor(R.color.purple_500)
                 .setMessage("Desea realizar el corte del día")
                 .setMessageColor(R.color.purple_700)
                 .setAnimationEnabled(false)
-                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-                    }
-                })
-                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-
-                        dialog.dismiss();
-                    }
-                })
-                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-
-                    }
-                });
+                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, dialog::dismiss)
+                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
         dialog.setCancelable(false);
         dialog.show();
 
@@ -948,12 +538,9 @@ public class HomeFragment extends Fragment {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getData();
-                dialog.dismiss();
-            }
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
+            getData();
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -963,449 +550,91 @@ public class HomeFragment extends Fragment {
     private void getData() {
 
         progressshow();
-
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranza();
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
+        new ChargeInteractorImp().executeGetCharge(new ChargeInteractor.OnGetChargeListener() {
             @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                if (response.isSuccessful()) {
-                    progresshide();
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
-
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
-                        if (cobranzaBean == null) {
-
-                            final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
-                            cobranzaBean1.setCobranza(item.getCobranza());
-                            cobranzaBean1.setCliente(item.getCuenta());
-                            cobranzaBean1.setImporte(item.getImporte());
-                            cobranzaBean1.setSaldo(item.getSaldo());
-                            cobranzaBean1.setVenta(item.getVenta());
-                            cobranzaBean1.setEstado(item.getEstado());
-                            cobranzaBean1.setObservaciones(item.getObservaciones());
-                            cobranzaBean1.setFecha(item.getFecha());
-                            cobranzaBean1.setHora(item.getHora());
-                            cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaDao1.insert(cobranzaBean1);
-                        } else {
-                            cobranzaBean.setCobranza(item.getCobranza());
-                            cobranzaBean.setCliente(item.getCuenta());
-                            cobranzaBean.setImporte(item.getImporte());
-                            cobranzaBean.setSaldo(item.getSaldo());
-                            cobranzaBean.setVenta(item.getVenta());
-                            cobranzaBean.setEstado(item.getEstado());
-                            cobranzaBean.setObservaciones(item.getObservaciones());
-                            cobranzaBean.setFecha(item.getFecha());
-                            cobranzaBean.setHora(item.getHora());
-                            cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaDao.save(cobranzaBean);
-                        }
-                    }
-                }
+            public void onGetChargeSuccess(@NonNull List<? extends CobranzaBean> chargeList) {
+                progresshide();
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
+            public void onGetChargeError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener cobranzas", Toast.LENGTH_SHORT).show();
             }
         });
 
-        Call<EmpleadoJson> getEmpleado = ApiServices.getClientRestrofit().create(PointApi.class).getAllEmpleados();
-
-        getEmpleado.enqueue(new Callback<EmpleadoJson>() {
+        progressshow();
+        new GetEmployeesInteractorImp().executeGetEmployees(new GetEmployeeInteractor.GetEmployeesListener() {
             @Override
-            public void onResponse(Call<EmpleadoJson> call, Response<EmpleadoJson> response) {
-                if (response.isSuccessful()) {
-
-                    progresshide();
-
-                    for (Empleado item : response.body().getEmpleados()) {
-
-                        //Instancia el DAO
-                        final EmpleadoDao dao = new EmpleadoDao();
-
-                        //Validamos si existe el empleado en la base de datos en base al identificador
-                        final EmpleadoBean empleadoBean = dao.getEmpleadoByIdentificador(item.getIdentificador());
-
-                        //NO existe entonces lo creamos
-                        if (empleadoBean == null) {
-                            EmpleadoBean empleado = new EmpleadoBean();
-                            EmpleadoDao empleadoDao = new EmpleadoDao();
-                            empleado.setNombre(item.getNombre());
-                            empleado.setDireccion(item.getDireccion());
-                            empleado.setEmail(item.getEmail());
-                            empleado.setTelefono(item.getTelefono());
-                            empleado.setFecha_nacimiento(item.getFechaNacimiento());
-                            empleado.setFecha_ingreso(item.getFechaIngreso());
-                            empleado.setFecha_egreso(item.getFechaEgreso());
-                            empleado.setContrasenia(item.getContrasenia());
-                            empleado.setIdentificador(item.getIdentificador());
-                            empleado.setNss(item.getNss());
-                            empleado.setRfc(item.getRfc());
-                            empleado.setCurp(item.getCurp());
-                            empleado.setPuesto(item.getPuesto());
-                            empleado.setArea_depto(item.getAreaDepto());
-                            empleado.setTipo_contrato(item.getTipoContrato());
-                            empleado.setRegion(item.getRegion());
-                            empleado.setHora_entrada(item.getHoraEntrada());
-                            empleado.setHora_salida(item.getHoraSalida());
-                            empleado.setSalida_comer(item.getSalidaComer());
-                            empleado.setEntrada_comer(item.getEntradaComer());
-                            empleado.setSueldo_diario(item.getSueldoDiario());
-                            empleado.setTurno(item.getTurno());
-                            empleado.setPath_image(item.getPathImage());
-                            empleadoDao.insert(empleado);
-                        } else {
-                            empleadoBean.setNombre(item.getNombre());
-                            empleadoBean.setDireccion(item.getDireccion());
-                            empleadoBean.setEmail(item.getEmail());
-                            empleadoBean.setTelefono(item.getTelefono());
-                            empleadoBean.setFecha_nacimiento(item.getFechaNacimiento());
-                            empleadoBean.setFecha_ingreso(item.getFechaIngreso());
-                            empleadoBean.setFecha_egreso(item.getFechaEgreso());
-                            empleadoBean.setContrasenia(item.getContrasenia());
-                            empleadoBean.setIdentificador(item.getIdentificador());
-                            empleadoBean.setNss(item.getNss());
-                            empleadoBean.setRfc(item.getRfc());
-                            empleadoBean.setCurp(item.getCurp());
-                            empleadoBean.setPuesto(item.getPuesto());
-                            empleadoBean.setArea_depto(item.getAreaDepto());
-                            empleadoBean.setTipo_contrato(item.getTipoContrato());
-                            empleadoBean.setRegion(item.getRegion());
-                            empleadoBean.setHora_entrada(item.getHoraEntrada());
-                            empleadoBean.setHora_salida(item.getHoraSalida());
-                            empleadoBean.setSalida_comer(item.getSalidaComer());
-                            empleadoBean.setEntrada_comer(item.getEntradaComer());
-                            empleadoBean.setSueldo_diario(item.getSueldoDiario());
-                            empleadoBean.setTurno(item.getTurno());
-                            empleadoBean.setPath_image(item.getPathImage());
-                            dao.save(empleadoBean);
-                        }
-                    }
-                }
+            public void onGetEmployeesSuccess(@NonNull List<? extends EmpleadoBean> employees) {
+                progresshide();
             }
 
             @Override
-            public void onFailure(Call<EmpleadoJson> call, Throwable t) {
+            public void onGetEmployeesError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener empleados", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        progressshow();
+        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
+            @Override
+            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                progresshide();
+            }
+
+            @Override
+            public void onGetAllClientsError() {
+                progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
             }
         });
 
 
         progressshow();
-        Call<ClienteJson> getClientes = ApiServices.getClientRestrofit().create(PointApi.class).getAllClientes();
-        getClientes.enqueue(new Callback<ClienteJson>() {
+        new GetProductsInteractorImp().executeGetProducts(new GetProductInteractor.OnGetProductsListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-
-                if (response.isSuccessful()) {
-                    progresshide();
-
-                    for (Cliente item : response.body().getClientes()) {
-
-                        //Validamos si existe el cliente
-                        final ClienteDao dao = new ClienteDao();
-                        final ClienteBean bean = dao.getClienteByCuenta(item.getCuenta());
-
-                        if (bean == null) {
-
-                            final ClienteBean clienteBean = new ClienteBean();
-                            final ClienteDao clienteDao = new ClienteDao();
-                            clienteBean.setNombre_comercial(item.getNombreComercial());
-                            clienteBean.setCalle(item.getCalle());
-                            clienteBean.setNumero(item.getNumero());
-                            clienteBean.setColonia(item.getColonia());
-                            clienteBean.setCiudad(item.getCiudad());
-                            clienteBean.setCodigo_postal(item.getCodigoPostal());
-                            clienteBean.setFecha_registro(item.getFechaRegistro());
-                            clienteBean.setFecha_baja(item.getFechaBaja());
-                            clienteBean.setCuenta(item.getCuenta());
-                            clienteBean.setGrupo(item.getGrupo());
-                            clienteBean.setCategoria(item.getCategoria());
-                            if (item.getStatus() == 1) {
-                                clienteBean.setStatus(true);
-                            } else {
-                                clienteBean.setStatus(false);
-                            }
-                            clienteBean.setIs_recordatorio(false);
-                            clienteBean.setConsec(item.getConsec());
-                            clienteBean.setVisitado(0);
-                            clienteBean.setRegion(item.getRegion());
-                            clienteBean.setSector(item.getSector());
-                            clienteBean.setRango(item.getRango());
-                            clienteBean.setSecuencia(item.getSecuencia());
-                            clienteBean.setPeriodo(item.getPeriodo());
-                            clienteBean.setRuta(item.getRuta());
-                            clienteBean.setLun(item.getLun());
-                            clienteBean.setMar(item.getMar());
-                            clienteBean.setMie(item.getMie());
-                            clienteBean.setJue(item.getJue());
-                            clienteBean.setVie(item.getVie());
-                            clienteBean.setSab(item.getSab());
-                            clienteBean.setDom(item.getDom());
-                            clienteBean.setLatitud(item.getLatitud());
-                            clienteBean.setLongitud(item.getLongitud());
-                            clienteBean.setContacto_phone(item.getPhone_contacto());
-                            clienteBean.setRecordatorio(item.getRecordatorio());
-                            clienteBean.setVisitasNoefectivas(0);
-                            if (item.getIsCredito() == 1) {
-                                clienteBean.setIs_credito(true);
-                            } else {
-                                clienteBean.setIs_credito(false);
-                            }
-                            clienteBean.setLimite_credito(item.getLimite_credito());
-                            clienteBean.setSaldo_credito(item.getSaldo_credito());
-                            clienteBean.setMatriz(item.getMatriz());
-                            clienteDao.insert(clienteBean);
-                        } else {
-                            bean.setNombre_comercial(item.getNombreComercial());
-                            bean.setCalle(item.getCalle());
-                            bean.setNumero(item.getNumero());
-                            bean.setColonia(item.getColonia());
-                            bean.setCiudad(item.getCiudad());
-                            bean.setCodigo_postal(item.getCodigoPostal());
-                            bean.setFecha_registro(item.getFechaRegistro());
-                            bean.setFecha_baja(item.getFechaBaja());
-                            bean.setCuenta(item.getCuenta());
-                            bean.setGrupo(item.getGrupo());
-                            bean.setCategoria(item.getCategoria());
-                            if (item.getStatus() == 1) {
-                                bean.setStatus(true);
-                            } else {
-                                bean.setStatus(false);
-                            }
-                            bean.setConsec(item.getConsec());
-                            if (bean.getVisitado() == 0) {
-                                bean.setVisitado(0);
-                            } else if (bean.getVisitado() == 1) {
-                                bean.setVisitado(1);
-                            }
-                            bean.setRegion(item.getRegion());
-                            bean.setSector(item.getSector());
-                            bean.setRango(item.getRango());
-                            bean.setSecuencia(item.getSecuencia());
-                            bean.setPeriodo(item.getPeriodo());
-                            bean.setRuta(item.getRuta());
-                            bean.setLun(item.getLun());
-                            bean.setMar(item.getMar());
-                            bean.setMie(item.getMie());
-                            bean.setJue(item.getJue());
-                            bean.setVie(item.getVie());
-                            bean.setSab(item.getSab());
-                            bean.setDom(item.getDom());
-                            bean.setLatitud(item.getLatitud());
-                            bean.setLongitud(item.getLongitud());
-                            bean.setContacto_phone(item.getPhone_contacto());
-                            bean.setRecordatorio(item.getRecordatorio());
-                            bean.setVisitasNoefectivas(item.getVisitas());
-                            if (item.getIsCredito() == 1) {
-                                bean.setIs_credito(true);
-                            } else {
-                                bean.setIs_credito(false);
-                            }
-                            bean.setLimite_credito(item.getLimite_credito());
-                            bean.setSaldo_credito(item.getSaldo_credito());
-                            bean.setMatriz(item.getMatriz());
-                            dao.save(bean);
-                        }
-                    }
-                }
+            public void onGetProductsSuccess(@NonNull List<? extends ProductoBean> products) {
+                progresshide();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onGetProductsError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener productos", Toast.LENGTH_SHORT).show();
+
             }
         });
 
 
         progressshow();
-        Call<ProductoJson> getProducto = ApiServices.getClientRestrofit().create(PointApi.class).getAllProductos();
-        getProducto.enqueue(new Callback<ProductoJson>() {
+        new RolInteractorImp().executeGetAllRoles(new RolInteractor.OnGetAllRolesListener() {
             @Override
-            public void onResponse(Call<ProductoJson> call, Response<ProductoJson> response) {
-
-                if (response.isSuccessful()) {
-                    progresshide();
-
-                    for (Producto items : response.body().getProductos()) {
-
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(items.getArticulo());
-
-                        if (productoBean == null) {
-                            //Creamos el producto
-                            ProductoBean producto = new ProductoBean();
-                            ProductoDao dao = new ProductoDao();
-                            producto.setArticulo(items.getArticulo());
-                            producto.setDescripcion(items.getDescripcion());
-                            producto.setStatus(items.getStatus());
-                            producto.setUnidad_medida(items.getUnidadMedida());
-                            producto.setClave_sat(items.getClaveSat());
-                            producto.setUnidad_sat(items.getUnidadSat());
-                            producto.setPrecio(items.getPrecio());
-                            producto.setCosto(items.getCosto());
-                            producto.setIva(items.getIva());
-                            producto.setIeps(items.getIeps());
-                            producto.setPrioridad(items.getPrioridad());
-                            producto.setRegion(items.getRegion());
-                            producto.setCodigo_alfa(items.getCodigoAlfa());
-                            producto.setCodigo_barras(items.getCodigoBarras());
-                            producto.setPath_img(items.getPathImage());
-                            dao.insert(producto);
-                        } else {
-                            productoBean.setArticulo(items.getArticulo());
-                            productoBean.setDescripcion(items.getDescripcion());
-                            productoBean.setStatus(items.getStatus());
-                            productoBean.setUnidad_medida(items.getUnidadMedida());
-                            productoBean.setClave_sat(items.getClaveSat());
-                            productoBean.setUnidad_sat(items.getUnidadSat());
-                            productoBean.setPrecio(items.getPrecio());
-                            productoBean.setCosto(items.getCosto());
-                            productoBean.setIva(items.getIva());
-                            productoBean.setIeps(items.getIeps());
-                            productoBean.setPrioridad(items.getPrioridad());
-                            productoBean.setRegion(items.getRegion());
-                            productoBean.setCodigo_alfa(items.getCodigoAlfa());
-                            productoBean.setCodigo_barras(items.getCodigoBarras());
-                            productoBean.setPath_img(items.getPathImage());
-                            productoDao.save(productoBean);
-                        }
-                    }
-                }
+            public void onGetAllRolesSuccess(@NonNull List<? extends RolesBean> roles) {
+                progresshide();
             }
 
             @Override
-            public void onFailure(Call<ProductoJson> call, Throwable t) {
+            public void onGetAllRolesError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
             }
         });
 
         progressshow();
-        Call<RolsJson> getRols = ApiServices.getClientRestrofit().create(PointApi.class).getAllRols();
-        getRols.enqueue(new Callback<RolsJson>() {
+        new PriceInteractorImp().executeGetSpecialPrices(new PriceInteractor.GetSpecialPricesListener() {
             @Override
-            public void onResponse(Call<RolsJson> call, Response<RolsJson> response) {
+            public void onGetSpecialPricesSuccess(@NonNull List<? extends PreciosEspecialesBean> priceList) {
                 progresshide();
-                if (response.isSuccessful()) {
-
-                    for (Role rol : response.body().getRoles()) {
-
-                        final RolesDao rolesDao = new RolesDao();
-                        final RolesBean rolesBean = rolesDao.getRolByModule(rol.getEmpleado(), rol.getModulo());
-
-                        if (rolesBean == null) {
-
-                            final RolesBean bean = new RolesBean();
-                            final RolesDao dao = new RolesDao();
-
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
-
-                            bean.setEmpleado(empleadoBean);
-                            bean.setModulo(rol.getModulo());
-
-                            if (rol.getActivo() == 1) {
-                                bean.setActive(true);
-                            } else {
-                                bean.setActive(false);
-                            }
-                            bean.setIdentificador(rol.getEmpleado());
-                            dao.insert(bean);
-                        } else {
-                            final EmpleadoDao empleadoDao = new EmpleadoDao();
-                            final EmpleadoBean empleadoBean = empleadoDao.getEmpleadoByIdentificador(rol.getEmpleado());
-
-                            rolesBean.setEmpleado(empleadoBean);
-                            rolesBean.setModulo(rol.getModulo());
-
-                            if (rol.getActivo() == 1) {
-                                rolesBean.setActive(true);
-                            } else {
-                                rolesBean.setActive(false);
-                            }
-                            rolesBean.setIdentificador(rol.getEmpleado());
-                            rolesDao.save(rolesBean);
-                        }
-                    }
-                }
             }
 
             @Override
-            public void onFailure(Call<RolsJson> call, Throwable t) {
+            public void onGetSpecialPricesError() {
                 progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener precios", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-        progressshow();
-        Call<PrecioEspecialJson> preciosJson = ApiServices.getClientRestrofit().create(PointApi.class).getPricesEspecial();
-        preciosJson.enqueue(new Callback<PrecioEspecialJson>() {
-            @Override
-            public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
-                progresshide();
-                if (response.isSuccessful()) {
-
-                    for (Precio item : response.body().getPrecios()) {
-
-                        //Para obtener los datos del cliente
-                        final ClienteDao clienteDao = new ClienteDao();
-                        final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente());
-                        if (clienteBean == null) {
-                            return;
-                        }
-
-                        //Para obtener los datos del producto
-                        final ProductoDao productoDao = new ProductoDao();
-                        final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
-
-                        if (productoBean == null) {
-                            return;
-                        }
-
-                        final PreciosEspecialesDao preciosEspecialesDao = new PreciosEspecialesDao();
-                        final PreciosEspecialesBean preciosEspecialesBean = preciosEspecialesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
-
-                        //Si no hay precios especiales entonces crea un precio
-                        if (preciosEspecialesBean == null) {
-
-                            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
-                            final PreciosEspecialesBean bean = new PreciosEspecialesBean();
-                            bean.setCliente(clienteBean.getCuenta());
-                            bean.setArticulo(productoBean.getArticulo());
-                            bean.setPrecio(item.getPrecio());
-                            if (item.getActive() == 1){
-                                bean.setActive(true);
-                            }else {
-                                bean.setActive(false);
-                            }
-                            dao.insert(bean);
-
-                        } else {
-                            preciosEspecialesBean.setCliente(clienteBean.getCuenta());
-                            preciosEspecialesBean.setArticulo(productoBean.getArticulo());
-                            preciosEspecialesBean.setPrecio(item.getPrecio());
-                            if (item.getActive() == 1){
-                                preciosEspecialesBean.setActive(true);
-                            }else {
-                                preciosEspecialesBean.setActive(false);
-                            }
-                            preciosEspecialesDao.save(preciosEspecialesBean);
-                        }
-                    }
-                }
-            }
-
-
-            @Override
-            public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
-                progresshide();
-            }
-        });
-
-
     }
 
     public void progressshow() {
@@ -1416,298 +645,236 @@ public class HomeFragment extends Fragment {
         rlprogress.setVisibility(View.GONE);
     }
 
-    public class SendVentas extends AsyncTask<String, Void, String> {
+    private void sendVentas() {
+        try {
+            final SincVentas sincVentas = new SincVentas();
 
-        @Override
-        protected String doInBackground(String... strings) {
-
-
-            try {
-                final SincVentas sincVentas = new SincVentas(getActivity());
-
-                sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
-                    @Override
-                    public void onSuccess(JSONArray response) throws JSONException {
-                    }
-
-                    @Override
-                    public void onSuccessObject(JSONObject response) throws Exception {
-
-                    }
-                });
-
-                sincVentas.setOnError(new Servicio.ResponseOnError() {
-                    @Override
-                    public void onError(ANError error) {
-
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                    }
-                });
-
-                sincVentas.postObject();
-
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-    }
-
-    public class loadVisitas extends AsyncTask<String, Void, String> {
-
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            final VisitasDao visitasDao = new VisitasDao();
-            List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-            visitasBeanListBean = visitasDao.getAllVisitasFechaActual(Utils.fechaActual());
-            final ClienteDao clienteDao = new ClienteDao();
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-
-            if (vendedoresBean == null && getContext() != null) {
-                vendedoresBean = new CacheInteractor(getContext()).getSeller();
-            }
-
-            List<Visita> listaVisitas = new ArrayList<>();
-            for (VisitasBean item : visitasBeanListBean) {
-                Visita visita = new Visita();
-                visita.setFecha(item.getFecha());
-                visita.setHora(item.getHora());
-                final ClienteBean clienteBean = clienteDao.getClienteByCuenta(item.getCliente().getCuenta());
-                visita.setCuenta(clienteBean.getCuenta());
-                visita.setLatidud(item.getLatidud());
-                visita.setLongitud(item.getLongitud());
-                visita.setMotivo_visita(item.getMotivo_visita());
-                if (vendedoresBean != null) {
-                    visita.setIdentificador(vendedoresBean.getIdentificador());
-                } else {
-                    Log.e(TAG, "vendedoresBean is null");
-                }
-
-                listaVisitas.add(visita);
-            }
-
-            VisitaJson visitaJsonRF = new VisitaJson();
-            visitaJsonRF.setVisitas(listaVisitas);
-            String json = new Gson().toJson(visitaJsonRF);
-            Log.d("SinEmpleados", json);
-
-            Call<VisitaJson> loadVisitas = ApiServices.getClientRestrofit().create(PointApi.class).sendVisita(visitaJsonRF);
-
-            loadVisitas.enqueue(new Callback<VisitaJson>() {
+            sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
                 @Override
-                public void onResponse(Call<VisitaJson> call, Response<VisitaJson> response) {
-                    if (response.isSuccessful()) {
-
-                    }
+                public void onSuccess(JSONArray response) throws JSONException {
                 }
 
                 @Override
-                public void onFailure(Call<VisitaJson> call, Throwable t) {
+                public void onSuccessObject(JSONObject response) throws Exception {
 
                 }
             });
-            return null;
-        }
-    }
 
-    public class loadCobranza extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getCobranzaFechaActual(Utils.fechaActual());
-
-            List<Cobranza> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
-            }
-
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).sendCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
+            sincVentas.setOnError(new Servicio.ResponseOnError() {
                 @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                    if (response.isSuccessful()) {
-                    }
+                public void onError(ANError error) {
+
                 }
 
                 @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
+                public void onError(String error) {
 
                 }
             });
-            return null;
+
+            sincVentas.postObject();
+
+        } catch (Exception e) {
+
         }
     }
 
+    private void saveVisitas() {
 
-    public class loadPreciosEspeciales extends AsyncTask<String, Void, String> {
+        final VisitsDao visitsDao = new VisitsDao();
+        List<VisitasBean> visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        final ClientDao clientDao = new ClientDao();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
-        @Override
-        protected String doInBackground(String... strings) {
+        if (vendedoresBean == null && getContext() != null) {
+            vendedoresBean = new CacheInteractor().getSeller();
+        }
 
-            //Instancia la base de datos
-            final PreciosEspecialesDao dao = new PreciosEspecialesDao();
-
-            //Contiene la lista de precios de la db local
-            List<PreciosEspecialesBean> listaDB = new ArrayList<>();
-
-            //Obtenemos la lista por id cliente
-            listaDB = dao.getPreciosBydate(Utils.fechaActual());
-
-
-            //Contiene la lista de lo que se envia al servidor
-            final List<Precio> listaPreciosServidor = new ArrayList<>();
-
-            //Contien la lista de precios especiales locales
-            for (PreciosEspecialesBean items : listaDB) {
-
-                final Precio precio = new Precio();
-                if (items.getActive() == true) {
-                    precio.setActive(1);
-                } else {
-                    precio.setActive(0);
-                }
-
-                precio.setArticulo(items.getArticulo());
-                precio.setCliente(items.getCliente());
-                precio.setPrecio(items.getPrecio());
-                listaPreciosServidor.add(precio);
-
+        List<Visit> visitList = new ArrayList<>();
+        for (VisitasBean item : visitasBeanListBean) {
+            Visit visita = new Visit();
+            visita.setFecha(item.getFecha());
+            visita.setHora(item.getHora());
+            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
+            visita.setCuenta(clienteBean.getCuenta());
+            visita.setLatidud(item.getLatidud());
+            visita.setLongitud(item.getLongitud());
+            visita.setMotivo_visita(item.getMotivo_visita());
+            if (vendedoresBean != null) {
+                visita.setIdentificador(vendedoresBean.getIdentificador());
+            } else {
+                Log.e(TAG, "vendedoresBean is null");
             }
 
-            final PrecioEspecialJson precioEspecialJson = new PrecioEspecialJson();
-            precioEspecialJson.setPrecios(listaPreciosServidor);
-
-            String json = new Gson().toJson(precioEspecialJson);
-            Log.d("Sinc especiales", json);
-
-            Call<PrecioEspecialJson> sendPreciosServer = ApiServices.getClientRestrofit().create(PointApi.class).sendPrecios(precioEspecialJson);
-            sendPreciosServer.enqueue(new Callback<PrecioEspecialJson>() {
-                @Override
-                public void onResponse(Call<PrecioEspecialJson> call, Response<PrecioEspecialJson> response) {
-
-                    if (response.isSuccessful()) {
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<PrecioEspecialJson> call, Throwable t) {
-                }
-            });
-
-            return null;
+            visitList.add(visita);
         }
+
+        new VisitInteractorImp().executeSaveVisit(visitList, new VisitInteractor.OnSaveVisitListener() {
+            @Override
+            public void onSaveVisitSuccess() {
+                //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveVisitError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    public class loadClientes extends AsyncTask<String, Void, String> {
+    public void saveCobranza() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
 
-            final ClienteDao clienteDao = new ClienteDao();
-            List<ClienteBean> listaClientesDB = new ArrayList<>();
-            listaClientesDB = clienteDao.getClientsByDay(Utils.fechaActual());
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
 
-            List<Cliente> listaClientes = new ArrayList<>();
-
-            for (ClienteBean item : listaClientesDB) {
-                Cliente cliente = new Cliente();
-                cliente.setNombreComercial(item.getNombre_comercial());
-                cliente.setCalle(item.getCalle());
-                cliente.setNumero(item.getNumero());
-                cliente.setColonia(item.getColonia());
-                cliente.setCiudad(item.getCiudad());
-                cliente.setCodigoPostal(item.getCodigo_postal());
-                cliente.setFechaRegistro(item.getFecha_registro());
-                cliente.setFechaBaja(item.getFecha_baja());
-                cliente.setCuenta(item.getCuenta());
-                cliente.setGrupo(item.getGrupo());
-                cliente.setCategoria(item.getCategoria());
-                if (item.getStatus() == false) {
-                    cliente.setStatus(0);
-                } else {
-                    cliente.setStatus(1);
-                }
-                cliente.setConsec(item.getConsec());
-                cliente.setRegion(item.getRegion());
-                cliente.setSector(item.getSector());
-                cliente.setRango(item.getRango());
-                cliente.setSecuencia(item.getSecuencia());
-                cliente.setPeriodo(item.getPeriodo());
-                cliente.setRuta(item.getRuta());
-                cliente.setLun(item.getLun());
-                cliente.setMar(item.getMar());
-                cliente.setMie(item.getMie());
-                cliente.setJue(item.getJue());
-                cliente.setVie(item.getVie());
-                cliente.setSab(item.getSab());
-                cliente.setDom(item.getDom());
-                cliente.setLatitud(item.getLatitud());
-                cliente.setLongitud(item.getLongitud());
-                cliente.setPhone_contacto("" + item.getContacto_phone());
-                cliente.setRecordatorio("" + item.getRecordatorio());
-                cliente.setVisitas(item.getVisitasNoefectivas());
-                if (item.getIs_credito()) {
-                    cliente.setIsCredito(1);
-                } else {
-                    cliente.setIsCredito(0);
-                }
-                cliente.setSaldo_credito(item.getSaldo_credito());
-                cliente.setLimite_credito(item.getLimite_credito());
-                if (item.getMatriz() == "null" && item.getMatriz() == null) {
-                    cliente.setMatriz("null");
-                } else {
-                    cliente.setMatriz(item.getMatriz());
-                }
-
-                listaClientes.add(cliente);
+        new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
+            @Override
+            public void onSaveChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
             }
 
-            ClienteJson clienteRF = new ClienteJson();
-            clienteRF.setClientes(listaClientes);
-            String json = new Gson().toJson(clienteRF);
-            Log.d("Sinc Cientes", json);
+            @Override
+            public void onSaveChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 
-            Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
 
-            loadClientes.enqueue(new Callback<ClienteJson>() {
-                @Override
-                public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                    if (response.isSuccessful()) {
-                    }
-                }
+    private void savePreciosEspeciales() {
 
-                @Override
-                public void onFailure(Call<ClienteJson> call, Throwable t) {
-                }
-            });
-            return null;
+        //Instancia la base de datos
+        final SpecialPricesDao dao = new SpecialPricesDao();
+
+        //Contiene la lista de precios de la db local
+        List<PreciosEspecialesBean> listaDB = new ArrayList<>();
+
+        //Obtenemos la lista por id cliente
+        listaDB = dao.getPreciosBydate(Utils.fechaActual());
+
+
+        //Contiene la lista de lo que se envia al servidor
+        final List<Price> listaPreciosServidor = new ArrayList<>();
+
+        //Contien la lista de precios especiales locales
+        for (PreciosEspecialesBean items : listaDB) {
+
+            final Price precio = new Price();
+            if (items.getActive()) {
+                precio.setActive(1);
+            } else {
+                precio.setActive(0);
+            }
+
+            precio.setArticulo(items.getArticulo());
+            precio.setCliente(items.getCliente());
+            precio.setPrecio(items.getPrecio());
+            listaPreciosServidor.add(precio);
+
         }
+
+        new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
+            @Override
+            public void onSendPricesSuccess() {
+                progresshide();
+                //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSendPricesError() {
+                progresshide();
+                //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void loadClientes() {
+
+        final ClientDao clientDao = new ClientDao();
+        List<ClienteBean> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
+
+        List<Client> clientList = new ArrayList<>();
+
+        for (ClienteBean item : clientListDB) {
+            Client client = new Client();
+            client.setNombreComercial(item.getNombre_comercial());
+            client.setCalle(item.getCalle());
+            client.setNumero(item.getNumero());
+            client.setColonia(item.getColonia());
+            client.setCiudad(item.getCiudad());
+            client.setCodigoPostal(item.getCodigo_postal());
+            client.setFechaRegistro(item.getFecha_registro());
+            client.setFechaBaja(item.getFecha_baja());
+            client.setCuenta(item.getCuenta());
+            client.setGrupo(item.getGrupo());
+            client.setCategoria(item.getCategoria());
+            if (item.getStatus()) {
+                client.setStatus(1);
+            } else {
+                client.setStatus(0);
+            }
+            client.setConsec(item.getConsec());
+            client.setRegion(item.getRegion());
+            client.setSector(item.getSector());
+            client.setRango(item.getRango());
+            client.setSecuencia(item.getSecuencia());
+            client.setPeriodo(item.getPeriodo());
+            client.setRuta(item.getRuta());
+            client.setLun(item.getLun());
+            client.setMar(item.getMar());
+            client.setMie(item.getMie());
+            client.setJue(item.getJue());
+            client.setVie(item.getVie());
+            client.setSab(item.getSab());
+            client.setDom(item.getDom());
+            client.setLatitud(item.getLatitud());
+            client.setLongitud(item.getLongitud());
+            client.setPhone_contacto("" + item.getContacto_phone());
+            client.setRecordatorio("" + item.getRecordatorio());
+            client.setVisitas(item.getVisitasNoefectivas());
+            if (item.getIs_credito()) {
+                client.setCredito(1);
+            } else {
+                client.setCredito(0);
+            }
+            client.setSaldo_credito(item.getSaldo_credito());
+            client.setLimite_credito(item.getLimite_credito());
+            if (item.getMatriz() == null || (item.getMatriz() != null && item.getMatriz().equals("null"))) {
+                client.setMatriz("null");
+            } else {
+                client.setMatriz(item.getMatriz());
+            }
+
+            clientList.add(client);
+        }
+
+        new ClientInteractorImp().executeSaveClient(clientList, new ClientInteractor.SaveClientListener() {
+            @Override
+            public void onSaveClientSuccess() {
+                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveClientError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 }

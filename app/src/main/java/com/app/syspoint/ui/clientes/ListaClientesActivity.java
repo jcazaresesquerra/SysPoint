@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.dao.ClienteDao;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -109,13 +109,16 @@ public class ListaClientesActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
 
-        mData = (List<ClienteBean>) (List<?>) new ClienteDao().list();
+        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_lista_clientes);
         recyclerView.setHasFixedSize(true);
 
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
+
+        // remove inactive users
+        mData.removeIf(item -> !item.getStatus());
 
         mAdapter = new AdapterListaClientes(
                 mData,

@@ -1,52 +1,50 @@
 package com.app.syspoint.ui.cobranza;
 
-import static com.app.syspoint.utils.Utils.addActivity2Stack;
-
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.app.syspoint.utils.cache.CacheInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.db.bean.AppBundle;
-import com.app.syspoint.db.bean.ClienteBean;
-import com.app.syspoint.db.bean.CobdetBean;
-import com.app.syspoint.db.bean.CobranzaBean;
-import com.app.syspoint.db.bean.CobrosBean;
-import com.app.syspoint.db.bean.EmpleadoBean;
-import com.app.syspoint.db.dao.ClienteDao;
-import com.app.syspoint.db.dao.CobranzaDao;
-import com.app.syspoint.db.dao.CobranzaModelDao;
-import com.app.syspoint.db.dao.CobrosDao;
-import com.app.syspoint.domentos.TicketAbono;
-import com.app.syspoint.http.ApiServices;
-import com.app.syspoint.http.PointApi;
-import com.app.syspoint.json.Cliente;
-import com.app.syspoint.json.ClienteJson;
-import com.app.syspoint.json.Cobranza;
-import com.app.syspoint.json.CobranzaJson;
-import com.app.syspoint.json.RequestCobranza;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.CobdetBean;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.CobrosBean;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.PaymentModelDao;
+import com.app.syspoint.repository.database.dao.ChargesDao;
+import com.app.syspoint.documents.DepositTicket;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Payment;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -56,9 +54,6 @@ import java.util.List;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class CobranzaActivity extends AppCompatActivity {
 
@@ -79,27 +74,27 @@ public class CobranzaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cobranza);
 
-        donwloadCobranza();
         initToolbar();
         initControls();
         initRecyclerViews();
         initParametros();
         eliminaPartidas();
+        downloadCharge();
 
     }
 
     private void eliminaPartidas() {
 
-        List<CobranzaBean> listaDocumentosSeleccionados = new CobranzaDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
+        List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
 
-        final CobranzaDao cobranzaDao = new CobranzaDao();
+        final PaymentDao paymentDao = new PaymentDao();
         for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
-            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(cobranzaItems.getCobranza());
+            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
             cobranzaBean.setIsCheck(false);
-            cobranzaDao.save(cobranzaBean);
+            paymentDao.save(cobranzaBean);
         }
 
-        CobranzaModelDao dao = new CobranzaModelDao();
+        PaymentModelDao dao = new PaymentModelDao();
         dao.clear();
     }
 
@@ -116,58 +111,19 @@ public class CobranzaActivity extends AppCompatActivity {
         }
     }
 
-    private void donwloadCobranza() {
-        RequestCobranza requestCobranza = new RequestCobranza();
-        requestCobranza.setCuenta(clienteGlobal);
-        Call<CobranzaJson> getCobranza = ApiServices.getClientRestrofit().create(PointApi.class).getCobranzaByCliente(requestCobranza);
-        getCobranza.enqueue(new Callback<CobranzaJson>() {
-            @Override
-            public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                if (response.isSuccessful()) {
-                    CobranzaDao cobranzaDao = new CobranzaDao();
-                    for (Cobranza item : response.body().getCobranzas()) {
+    private void downloadCharge() {
 
-                        CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(item.getCobranza());
-                        if (cobranzaBean == null) {
-                            final CobranzaBean cobranzaBean1 = new CobranzaBean();
-                            final CobranzaDao cobranzaDao1 = new CobranzaDao();
-                            cobranzaBean1.setCobranza(item.getCobranza());
-                            cobranzaBean1.setCliente(item.getCuenta());
-                            cobranzaBean1.setImporte(item.getImporte());
-                            cobranzaBean1.setSaldo(item.getSaldo());
-                            cobranzaBean1.setVenta(item.getVenta());
-                            cobranzaBean1.setEstado(item.getEstado());
-                            cobranzaBean1.setObservaciones(item.getObservaciones());
-                            cobranzaBean1.setFecha(item.getFecha());
-                            cobranzaBean1.setHora(item.getHora());
-                            cobranzaBean1.setEmpleado(item.getIdentificador());
-                            cobranzaBean1.setIsCheck(false);
-                            cobranzaDao1.insert(cobranzaBean1);
-                        } else {
-                            cobranzaBean.setCobranza(item.getCobranza());
-                            cobranzaBean.setCliente(item.getCuenta());
-                            cobranzaBean.setImporte(item.getImporte());
-                            cobranzaBean.setSaldo(item.getSaldo());
-                            cobranzaBean.setVenta(item.getVenta());
-                            cobranzaBean.setEstado(item.getEstado());
-                            cobranzaBean.setObservaciones(item.getObservaciones());
-                            cobranzaBean.setFecha(item.getFecha());
-                            cobranzaBean.setHora(item.getHora());
-                            cobranzaBean.setEmpleado(item.getIdentificador());
-                            cobranzaBean.setIsCheck(false);
-                            cobranzaDao.save(cobranzaBean);
-                        }
-                    }
-                    //Toast.makeText(Ma, "Cobranza sincronizada", Toast.LENGTH_LONG).show();
-                }
+        new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
+            @Override
+            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                //Toast.makeText(getApplicationContext(), "Cobranza sincronizada", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<CobranzaJson> call, Throwable t) {
-
+            public void onGetChargeByClientError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar las cobranzas", Toast.LENGTH_LONG).show();
             }
         });
-
     }
 
     private void initControls() {
@@ -212,7 +168,7 @@ public class CobranzaActivity extends AppCompatActivity {
 
                 try {
                     //Eliminamos el cobro temporal para que no se guarde en memoria
-                    final CobranzaModelDao dao = new CobranzaModelDao();
+                    final PaymentModelDao dao = new PaymentModelDao();
                     dao.clear();
                 } catch (Exception e) {
                     //Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
@@ -261,177 +217,141 @@ public class CobranzaActivity extends AppCompatActivity {
                 .setMessage("¿Desea terminal la cobranza?")
                 .setMessageColor(R.color.purple_700)
                 .setAnimationEnabled(false)
-                .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialogo.dismiss();
-                    }
-                }).addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-            @Override
-            public void onClick() {
+                .setIcon(R.drawable.ic_save_white, R.color.purple_500, dialogo::dismiss)
+                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
 
-                dialogo.dismiss();
-                Utils.addActivity2Stack(CobranzaActivity.this);
+                    dialogo.dismiss();
+                    Utils.addActivity2Stack(CobranzaActivity.this);
 
+                        final ChargesDao chargesDao = new ChargesDao();
 
-                    final CobrosDao cobrosDao = new CobrosDao();
+                        final ClientDao clientesDao = new ClientDao();
+                        final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
 
-
-                    final ClienteDao clientesDao = new ClienteDao();
-                    final ClienteBean clienteBean = clientesDao.getClienteByCuenta(clienteGlobal);
-
-                    if (clienteBean == null) {
-                        final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);
-                        dialogo.setTitle("Cliente")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Cliente no encontrado")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        return;
-                    }
-
-
-                    //Obtiene el nombre del vendedor
-                    EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-
-                    if (vendedoresBean == null) {
-                        vendedoresBean = new CacheInteractor(CobranzaActivity.this).getSeller();
-                    }
-
-                    if (vendedoresBean == null) {
-                        final PrettyDialog dialogo = new PrettyDialog(CobranzaActivity.this);
-                        dialogo.setTitle("Vendedor")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Vendedor no encontrado")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        return;
-                    }
-
-                    final ArrayList<CobdetBean> lista = new ArrayList<>();
-                    for (int x = 0; x < partidas.size(); x++) {
-
-                        //Actualiza la cobranza
-                        final CobranzaDao cobranzaDao = new CobranzaDao();
-                        final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(partidas.get(x).getCobranza());
-
-                        if (cobranzaBean != null) {
-                            if (cobranzaBean.getSaldo() == partidas.get(x).getAcuenta()) {
-                                cobranzaBean.setEstado("CO");
-                                cobranzaBean.setSaldo(0);
-                                cobranzaBean.setAbono(true);
-                            } else {
-                                cobranzaBean.setSaldo(cobranzaBean.getSaldo() - partidas.get(x).getAcuenta());
-                                cobranzaBean.setAbono(true);
-                            }
-                            cobranzaBean.setFecha(Utils.fechaActual());
-                            cobranzaDao.save(cobranzaBean);
+                        if (clienteBean == null) {
+                            final PrettyDialog dialogo1 = new PrettyDialog(CobranzaActivity.this);
+                            dialogo1.setTitle("Cliente")
+                                    .setTitleColor(R.color.purple_500)
+                                    .setMessage("Cliente no encontrado")
+                                    .setMessageColor(R.color.purple_700)
+                                    .setAnimationEnabled(false)
+                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    })
+                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    });
+                            dialogo1.setCancelable(false);
+                            dialogo1.show();
+                            return;
                         }
 
-                        final CobdetBean cobdetBean = new CobdetBean();
-                        cobdetBean.setCobranza(partidas.get(x).getCobranza());
-                        cobdetBean.setCliente(clienteBean);
-                        cobdetBean.setFecha(Utils.fechaActual());
-                        cobdetBean.setImporte(partidas.get(x).getAcuenta());
-                        cobdetBean.setVenta(partidas.get(x).getVenta());
-                        cobdetBean.setEmpleado(vendedoresBean);
-                        cobdetBean.setAbono(0);
-                        cobdetBean.setHora(Utils.getHoraActual());
-                        cobdetBean.setSaldo(partidas.get(x).getSaldo());
-                        lista.add(cobdetBean);
-                    }
 
-                    CobrosBean cobrosBean = new CobrosBean();
-                    int folioCobranza = cobrosDao.getUltimoFolio();
-                    cobrosBean.setCobro(folioCobranza);
+                        //Obtiene el nombre del vendedor
+                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
-                    //Creamos el encabezado de la venta
-                    cobrosBean.setFecha(Utils.fechaActual());
-                    cobrosBean.setHora(Utils.getHoraActual());
-                    cobrosBean.setCliente(clienteBean);
-                    cobrosBean.setEmpleado(vendedoresBean);
-                    cobrosBean.setImporte(Double.parseDouble(textView_impuesto_cobranza_view.getText().toString().replace("$", "").replace(",", "").trim()));
-                    cobrosBean.setEstado("CO");
-                    cobrosBean.setTemporal(0);
-                    cobrosBean.setSinc(0);
+                        if (vendedoresBean == null) {
+                            vendedoresBean = new CacheInteractor().getSeller();
+                        }
 
-                    //Creamos el documento con la relacion de sus documentos
-                    cobrosDao.CreaCobro(cobrosBean, lista);
+                        if (vendedoresBean == null) {
+                            final PrettyDialog dialogo1 = new PrettyDialog(CobranzaActivity.this);
+                            dialogo1.setTitle("Vendedor")
+                                    .setTitleColor(R.color.purple_500)
+                                    .setMessage("Vendedor no encontrado")
+                                    .setMessageColor(R.color.purple_700)
+                                    .setAnimationEnabled(false)
+                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    })
+                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialogo1.dismiss();
+                                        }
+                                    });
+                            dialogo1.setCancelable(false);
+                            dialogo1.show();
+                            return;
+                        }
 
-                    ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
-                    progressDialog.setMessage("Espere un momento");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
-                    new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                        progressDialog.dismiss();
-                        if (connected) {
+                        final ArrayList<CobdetBean> lista = new ArrayList<>();
+                        for (int x = 0; x < partidas.size(); x++) {
+
+                            //Actualiza la cobranza
+                            final PaymentDao paymentDao = new PaymentDao();
+                            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(partidas.get(x).getCobranza());
+
+                            if (cobranzaBean != null) {
+                                if (cobranzaBean.getSaldo() == partidas.get(x).getAcuenta()) {
+                                    cobranzaBean.setEstado("CO");
+                                    cobranzaBean.setSaldo(0);
+                                    cobranzaBean.setAbono(true);
+                                } else {
+                                    cobranzaBean.setSaldo(cobranzaBean.getSaldo() - partidas.get(x).getAcuenta());
+                                    cobranzaBean.setAbono(true);
+                                }
+                                cobranzaBean.setFecha(Utils.fechaActual());
+                                paymentDao.save(cobranzaBean);
+                            }
+
+                            final CobdetBean cobdetBean = new CobdetBean();
+                            cobdetBean.setCobranza(partidas.get(x).getCobranza());
+                            cobdetBean.setCliente(clienteBean);
+                            cobdetBean.setFecha(Utils.fechaActual());
+                            cobdetBean.setImporte(partidas.get(x).getAcuenta());
+                            cobdetBean.setVenta(partidas.get(x).getVenta());
+                            cobdetBean.setEmpleado(vendedoresBean);
+                            cobdetBean.setAbono(0);
+                            cobdetBean.setHora(Utils.getHoraActual());
+                            cobdetBean.setSaldo(partidas.get(x).getSaldo());
+                            lista.add(cobdetBean);
+                        }
+
+                        CobrosBean cobrosBean = new CobrosBean();
+                        int folioCobranza = chargesDao.getUltimoFolio();
+                        cobrosBean.setCobro(folioCobranza);
+
+                        //Creamos el encabezado de la venta
+                        cobrosBean.setFecha(Utils.fechaActual());
+                        cobrosBean.setHora(Utils.getHoraActual());
+                        cobrosBean.setCliente(clienteBean);
+                        cobrosBean.setEmpleado(vendedoresBean);
+                        cobrosBean.setImporte(Double.parseDouble(textView_impuesto_cobranza_view.getText().toString().replace("$", "").replace(",", "").trim()));
+                        cobrosBean.setEstado("CO");
+                        cobrosBean.setTemporal(0);
+                        cobrosBean.setSinc(0);
+
+                        //Creamos el documento con la relacion de sus documentos
+                        chargesDao.createCharge(cobrosBean, lista);
+
+                        ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
+                        progressDialog.setMessage("Espere un momento");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+                        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                            progressDialog.dismiss();
                             try {
-                                new loadAbonos().execute();
-
-                                String ventaID = String.valueOf(cobrosBean.getId());
-
-                                final CobranzaDao cobranzaDao = new CobranzaDao();
-                                double nuevoSaldo = cobranzaDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
-
-                                //Actualizamos el saldo del cliente
-                                clienteBean.setSaldo_credito(nuevoSaldo);
-                                clienteBean.setDate_sync(Utils.fechaActual());
-                                clientesDao.save(clienteBean);
-
-                                //Creamos el template del timbre
-                                TicketAbono ticketAbono = new TicketAbono(CobranzaActivity.this);
-                                ticketAbono.setCobrosBean(cobrosBean);
-                                ticketAbono.template();
-
-                                String ticket = ticketAbono.getDocumento();
-
-                                testLoadClientes(String.valueOf(clienteBean.getId()));
-
-                                //Elimina las partidas
-                                final CobranzaModelDao dao = new CobranzaModelDao();
-                                dao.clear();
-                                Intent intent = new Intent(CobranzaActivity.this, ImprimeAbonoActivity.class);
-                                intent.putExtra("ticket", ticket);
-                                intent.putExtra("cobranza", ventaID);
-                                intent.putExtra("clienteID", String.valueOf(clienteBean.getId()));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
+                                if (connected) {
+                                    saveClientAbono(cobrosBean);
+                                } else  {
+                                    showDialogNotConnectionInternet();
+                                }
                             } catch (Exception e) {
-                                    e.printStackTrace();
+                                e.printStackTrace();
                             }
-                        }
-                        }, CobranzaActivity.this).execute(), 100);
+                            }).execute(), 100);
 
-            }
-        }).addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                }).addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
             @Override
             public void onClick() {
                 dialogo.dismiss();
@@ -444,64 +364,50 @@ public class CobranzaActivity extends AppCompatActivity {
 
 
 
-    private class loadAbonos extends AsyncTask<String, Void, String>{
+    private void saveAbono() {
 
-        @Override
-        protected String doInBackground(String... strings) {
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
+        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = cobranzaDao.getAbonosFechaActual(Utils.fechaActual());
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
 
-            List<Cobranza> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Cobranza cobranza = new Cobranza();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                //Toast.makeText(getApplicationContext(), "Cobranza sincroniza", Toast.LENGTH_LONG).show();
             }
 
-            CobranzaJson cobranzaJson = new CobranzaJson();
-            cobranzaJson.setCobranzas(listaCobranza);
-            String json = new Gson().toJson(cobranzaJson);
-            Log.d("Sin Cobranza", json);
-
-            Call<CobranzaJson> loadCobranza = ApiServices.getClientRestrofit().create(PointApi.class).updateCobranza(cobranzaJson);
-
-            loadCobranza.enqueue(new Callback<CobranzaJson>() {
-                @Override
-                public void onResponse(Call<CobranzaJson> call, Response<CobranzaJson> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CobranzaActivity.this, "Cobranza sincroniza", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<CobranzaJson> call, Throwable t) {
-
-                }
-            });
-            return null;
-        }
+            @Override
+            public void onUpdateChargeError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void testLoadClientes(String idCliente) {
-        final ClienteDao clienteDao = new ClienteDao();
+        final ClientDao clientDao = new ClientDao();
         List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clienteDao.getByIDCliente(idCliente);
+        listaClientesDB = clientDao.getByIDClient(idCliente);
 
-        List<Cliente> listaClientes = new ArrayList<>();
+        List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
-            Cliente cliente = new Cliente();
+            Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
             cliente.setNumero(item.getNumero());
@@ -513,10 +419,10 @@ public class CobranzaActivity extends AppCompatActivity {
             cliente.setCuenta(item.getCuenta());
             cliente.setGrupo(item.getGrupo());
             cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
+            if (item.getStatus()) {
                 cliente.setStatus(1);
+            } else {
+                cliente.setStatus(0);
             }
             cliente.setConsec(item.getConsec());
             cliente.setRegion(item.getRegion());
@@ -538,9 +444,9 @@ public class CobranzaActivity extends AppCompatActivity {
             cliente.setRecordatorio("" + item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.getIs_credito()) {
-                cliente.setIsCredito(1);
+                cliente.setCredito(1);
             } else {
-                cliente.setIsCredito(0);
+                cliente.setCredito(0);
             }
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
@@ -552,22 +458,26 @@ public class CobranzaActivity extends AppCompatActivity {
             listaClientes.add(cliente);
         }
 
-        ClienteJson clienteRF = new ClienteJson();
-        clienteRF.setClientes(listaClientes);
-        String json = new Gson().toJson(clienteRF);
-        Log.d("ClientesCobranza", json);
-
-        Call<ClienteJson> loadClientes = ApiServices.getClientRestrofit().create(PointApi.class).sendCliente(clienteRF);
-
-        loadClientes.enqueue(new Callback<ClienteJson>() {
+        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
             @Override
-            public void onResponse(Call<ClienteJson> call, Response<ClienteJson> response) {
-                if (response.isSuccessful()) {
-                }
+            public void onSaveClientSuccess() {
+                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
             }
 
             @Override
-            public void onFailure(Call<ClienteJson> call, Throwable t) {
+            public void onSaveClientError() {
+                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
+        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
+            @Override
+            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+
+            }
+
+            @Override
+            public void onGetAllClientsError() {
+
             }
         });
     }
@@ -621,8 +531,8 @@ public class CobranzaActivity extends AppCompatActivity {
 
         try {
 
-            final CobranzaDao cobranzaDao = new CobranzaDao();
-            final CobranzaBean cobranzaBean = cobranzaDao.getByCobranza(cobranzaSeleccionada);
+            final PaymentDao paymentDao = new PaymentDao();
+            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaSeleccionada);
 
             int venta = cobranzaBean.getVenta();
             String cobranza = cobranzaBean.getCobranza();
@@ -643,7 +553,7 @@ public class CobranzaActivity extends AppCompatActivity {
 
 
         final CobranzaModel item = new CobranzaModel();
-        final CobranzaModelDao dao = new CobranzaModelDao();
+        final PaymentModelDao dao = new PaymentModelDao();
         item.setVenta(venta);
         item.setCobranza(cobranza);
         item.setImporte(importe);
@@ -700,12 +610,12 @@ public class CobranzaActivity extends AppCompatActivity {
 
         try {
 
-            final ClienteDao clientesDao = new ClienteDao();
-            final ClienteBean clientesBean = clientesDao.getClienteByCuenta(clienteGlobal);
-            final CobranzaDao cobranzaDao = new CobranzaDao();
+            final ClientDao clientesDao = new ClientDao();
+            final ClienteBean clientesBean = clientesDao.getClientByAccount(clienteGlobal);
+            final PaymentDao paymentDao = new PaymentDao();
 
             if (clientesBean != null) {
-                double saldoDocumentos = cobranzaDao.getTotalSaldoDocumentosCliente(clientesBean.getCuenta());
+                double saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.getCuenta());
                 clientesBean.setSaldo_credito(saldoDocumentos);
                 clientesDao.save(clientesBean);
                 testLoadClientes(String.valueOf(clientesBean.getId()));
@@ -734,7 +644,7 @@ public class CobranzaActivity extends AppCompatActivity {
     private void initRecyclerViews() {
 
         partidas = new ArrayList<>();
-        partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+        partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
 
         /*** ----- Obtiene el recyclador ------ ****/
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_cobranza);
@@ -765,9 +675,9 @@ public class CobranzaActivity extends AppCompatActivity {
                         .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
                             @Override
                             public void onClick() {
-                                CobranzaModelDao dao = new CobranzaModelDao();
+                                PaymentModelDao dao = new PaymentModelDao();
                                 dao.delete(item);
-                                partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+                                partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
                                 mAdapter.setItems(partidas);
                                 CalcularImportes();
                                 dialog.dismiss();
@@ -790,8 +700,69 @@ public class CobranzaActivity extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
     }
 
+    private void showDialogNotConnectionInternet() {
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
+        dialog.setContentView(R.layout.dialog_warning);
+        dialog.setCancelable(true);
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TerminarCobranza();
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setAttributes(lp);
+    }
+
+
+    private void saveClientAbono(CobrosBean cobrosBean) throws Exception {
+        final ClientDao clientesDao = new ClientDao();
+        final ClienteBean clienteBean = clientesDao.getClientByAccount(clienteGlobal);
+
+        saveAbono();
+
+        String ventaID = String.valueOf(cobrosBean.getId());
+
+        final PaymentDao paymentDao = new PaymentDao();
+        double nuevoSaldo = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+
+        //Actualizamos el saldo del cliente
+        clienteBean.setSaldo_credito(nuevoSaldo);
+        clienteBean.setDate_sync(Utils.fechaActual());
+        clientesDao.save(clienteBean);
+
+        //Creamos el template del timbre
+        DepositTicket depositTicket = new DepositTicket();
+        depositTicket.setBean(cobrosBean);
+        depositTicket.template();
+
+        String ticket = depositTicket.getDocument();
+
+        testLoadClientes(String.valueOf(clienteBean.getId()));
+
+        //Elimina las partidas
+        final PaymentModelDao dao = new PaymentModelDao();
+        dao.clear();
+        Intent intent = new Intent(CobranzaActivity.this, ImprimeAbonoActivity.class);
+        intent.putExtra("ticket", ticket);
+        intent.putExtra("cobranza", ventaID);
+        intent.putExtra("clienteID", String.valueOf(clienteBean.getId()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
     private void setData() {
-        partidas = (List<CobranzaModel>) (List<?>) new CobranzaModelDao().list();
+        partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
         mAdapter.setItems(partidas);
         CalcularImportes();
     }

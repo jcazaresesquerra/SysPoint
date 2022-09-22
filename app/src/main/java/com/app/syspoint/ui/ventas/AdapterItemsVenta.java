@@ -12,9 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.db.VentasModelBean;
-import com.app.syspoint.db.bean.ProductoBean;
-import com.app.syspoint.db.dao.ProductoDao;
+import com.app.syspoint.repository.database.bean.VentasModelBean;
+import com.app.syspoint.repository.database.bean.ProductoBean;
+import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.utils.Utils;
 
 import java.util.List;
@@ -82,8 +82,8 @@ public class AdapterItemsVenta extends RecyclerView.Adapter<AdapterItemsVenta.Ho
             double total = (item.getPrecio() * item.getCantidad());
             this.textViewTotal.setText("" + Utils.FDinero(total));
 
-            final ProductoDao productoDao = new ProductoDao();
-            final ProductoBean productoBean = productoDao.getProductoByArticulo(item.getArticulo());
+            final ProductDao productDao = new ProductDao();
+            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
             //Si el producto es != null entonces muestra la imagen
             if (productoBean != null) {
