@@ -3,6 +3,7 @@ package com.app.syspoint.viewmodel.login
 import android.content.Context
 import android.os.Handler
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.interactor.data.GetAllDataInteractor
@@ -12,6 +13,7 @@ import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
+import kotlinx.coroutines.launch
 
 class LoginViewModel: BaseViewModel() {
 
@@ -48,7 +50,7 @@ class LoginViewModel: BaseViewModel() {
         )
     }
 
-    fun isUserAdmin(context: Context): Boolean {
+    fun isUserAdmin(): Boolean {
         // get seller
         val sellerBean = AppBundle.getUserBean()
 
@@ -153,64 +155,76 @@ class LoginViewModel: BaseViewModel() {
     }
 
     private fun sync() {
-        //cleanTask()
-        Handler().postDelayed({
-            NetworkStateTask { connected ->
-                if (connected) {
-                    loginViewState.value = LoginViewState.LoadingDataStart
-                    GetAllDataInteractorImp().executeGetAllData(object :
-                        GetAllDataInteractor.OnGetAllDataListener {
-                        override fun onGetAllDataSuccess() {
-                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                        }
+        if (!cleanTask()) {
+            Handler().postDelayed({
+                NetworkStateTask { connected ->
+                    if (connected) {
+                        loginViewState.value = LoginViewState.LoadingDataStart
+                        GetAllDataInteractorImp().executeGetAllData(object :
+                            GetAllDataInteractor.OnGetAllDataListener {
+                            override fun onGetAllDataSuccess() {
+                                loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                            }
 
-                        override fun onGetAllDataError() {
-                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                        }
-                    })
-                }
-            }.execute() }, 100)
+                            override fun onGetAllDataError() {
+                                loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                            }
+                        })
+
+                    }
+                }.execute()
+            }, 100)
+        }
     }
 
-    private fun cleanTask() {
+    private fun cleanTask(): Boolean {
         val taskDao = TaskDao()
         val taskBean = taskDao.getTask(Utils.fechaActual())
-        val stockDao = StockDao()
-        stockDao.clear()
-        val historialDao =
-            StockHistoryDao()
-        historialDao.clear()
-        val ventasDao = SellsDao()
-        ventasDao.clear()
-        val itemDao = ItemDao()
-        itemDao.clear()
-        val visitasDao = VisitsDao()
-        visitasDao.clear()
-        val cobranzaDao =
-            PaymentDao()
-        cobranzaDao.clear()
-        val chargesDao =
-            ChargesDao()
-        chargesDao.clear()
-        val routingDao =
-            RoutingDao()
-        routingDao.clear()
-        val employeeDao =
-            EmployeeDao()
-        employeeDao.clear()
-        val rolesDao = RolesDao()
-        rolesDao.clear()
-        val clientesRutaDao =
-            RuteClientDao()
-        clientesRutaDao.clear()
-        val specialPricesDao =
-            SpecialPricesDao()
-        specialPricesDao.clear()
-        val dao = TaskDao()
-        dao.clear()
-        val bean = TaskBean()
-        bean.date = Utils.fechaActual()
-        bean.task = "Sincronización"
-        dao.insert(bean)
+        val exist: Boolean
+
+        if (taskBean == null) {
+            val stockDao = StockDao()
+            stockDao.clear()
+            val historialDao =
+                StockHistoryDao()
+            historialDao.clear()
+            val ventasDao = SellsDao()
+            ventasDao.clear()
+            val itemDao = ItemDao()
+            itemDao.clear()
+            val visitasDao = VisitsDao()
+            visitasDao.clear()
+            val cobranzaDao =
+                PaymentDao()
+            cobranzaDao.clear()
+            val chargesDao =
+                ChargesDao()
+            chargesDao.clear()
+            val routingDao =
+                RoutingDao()
+            routingDao.clear()
+            val employeeDao =
+                EmployeeDao()
+            employeeDao.clear()
+            val rolesDao = RolesDao()
+            rolesDao.clear()
+            val clientesRutaDao =
+                RuteClientDao()
+            clientesRutaDao.clear()
+            val specialPricesDao =
+                SpecialPricesDao()
+            specialPricesDao.clear()
+            val dao = TaskDao()
+            dao.clear()
+            val bean = TaskBean()
+            bean.date = Utils.fechaActual()
+            bean.task = "Sincronización"
+            dao.insert(bean)
+            exist = false
+        } else {
+            exist = true
+        }
+
+        return exist
     }
 }

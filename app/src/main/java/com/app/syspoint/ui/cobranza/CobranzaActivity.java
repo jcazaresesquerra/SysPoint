@@ -112,15 +112,20 @@ public class CobranzaActivity extends AppCompatActivity {
     }
 
     private void downloadCharge() {
-
+        ProgressDialog progressDialog = new ProgressDialog(CobranzaActivity.this);
+        progressDialog.setMessage("Espere un momento");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
         new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
             @Override
             public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                progressDialog.dismiss();
                 //Toast.makeText(getApplicationContext(), "Cobranza sincronizada", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onGetChargeByClientError() {
+                progressDialog.dismiss();
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar las cobranzas", Toast.LENGTH_LONG).show();
             }
         });
@@ -627,6 +632,7 @@ public class CobranzaActivity extends AppCompatActivity {
                 this.textView_cliente_saldo_cobranza_view.setText(Utils.FDinero(clientesBean.getSaldo_credito()));
                 this.saldoCliente = clientesBean.getSaldo_credito();
             } else {
+
                 //dialogo = new Dialogo(activityGlobal);
                 //dialogo.setAceptar(true);
                 //dialogo.setOnAceptarDissmis(true);
@@ -636,7 +642,7 @@ public class CobranzaActivity extends AppCompatActivity {
             }
 
         } catch (Exception e) {
-            //Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
+            e.printStackTrace();
         }
     }
 

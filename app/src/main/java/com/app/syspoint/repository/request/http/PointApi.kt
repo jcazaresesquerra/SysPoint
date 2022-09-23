@@ -42,7 +42,7 @@ interface PointApi {
     fun getAllClientes(): Call<ClientJson>
 
     @POST("getClienteByID")
-    fun getClienteByID(@Query("cuenta") cuenta: String?): Call<EmployeeJson>
+    fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
 
     @POST("saveCliente")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
