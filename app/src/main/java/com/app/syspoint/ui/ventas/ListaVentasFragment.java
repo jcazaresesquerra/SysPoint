@@ -62,6 +62,7 @@ import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
+import com.app.syspoint.ui.ventas.adapter.AdapterListaVentas;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
@@ -307,7 +308,7 @@ public class ListaVentasFragment extends Fragment {
                                     sellsDao.save(venta);
 
                                     mData = (List<VentasBean>) (List<?>) new SellsDao().getListVentasByDate(Utils.fechaActual());
-                                    mAdapter.setVentas(mData);
+                                    mAdapter.setData(mData);
 
                                     ProgressDialog progressDialog = new ProgressDialog(getActivity());
                                     progressDialog.setMessage("Espere un momento");

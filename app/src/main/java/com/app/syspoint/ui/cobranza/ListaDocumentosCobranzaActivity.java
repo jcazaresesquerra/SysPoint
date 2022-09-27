@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -18,9 +19,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.repository.database.bean.CobranzaBean;
 import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.PaymentModelDao;
+import com.app.syspoint.ui.cobranza.adapter.AdapterListaDocumentosCobranza;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -37,10 +41,14 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
     private SwipeRefreshLayout refreshLayout;
     private ImageView img_add_documents;
 
+    private String clienteGlobal;
+
     private int countItems;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent = this.getIntent();
+        this.clienteGlobal = intent.getStringExtra(Actividades.PARAM_1);
         init();
     }
 
@@ -48,12 +56,9 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
         this.setContentView(R.layout.activity_lista_documentos_cobranza);
         lyt_lista_documentos = findViewById(R.id.lyt_lista_documentos);
         img_add_documents = findViewById(R.id.img_add_documents);
-        img_add_documents.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (countItems > 1) {
-                    addItemsCobranza();
-                }
+        img_add_documents.setOnClickListener(v -> {
+            if (countItems > 1) {
+                addItemsCobranza();
             }
         });
         countItems = 0;
@@ -89,8 +94,25 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
     }
 
     private void initRecyclerViews(){
+        new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
+            @Override
+            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                runOnUiThread(() -> {
+                    lista = (List<CobranzaBean>) chargeByClientList;
+                    if (mAdapter != null) {
+                        mAdapter.setData(lista);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
 
-        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
+            @Override
+            public void onGetChargeByClientError() {
+
+            }
+        });
+
+        lista = new PaymentDao().getByCobranzaByCliente(clienteGlobal);
 
         if (lista.size() > 0){
             lyt_lista_documentos.setVisibility(View.GONE);
@@ -106,73 +128,68 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterListaDocumentosCobranza(lista, new AdapterListaDocumentosCobranza.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                if (countItems == 0) {
-                    CobranzaBean cobranzaBean = lista.get(position);
-                    ListaDocumentosCobranzaActivity.documentoSeleccionado = cobranzaBean.getCobranza();
-                    Actividades.getSingleton(ListaDocumentosCobranzaActivity.this, AbonoDocumentoActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-                }else {
-                    final PrettyDialog dialogo = new PrettyDialog(ListaDocumentosCobranzaActivity.this);
-                    dialogo.setTitle("Opción multiple")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Ha seleccionado la opción de pago multiple, no puede abonor a un documento")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
-                    dialogo.setCancelable(false);
-                    dialogo.show();
-                    return;
-                }
+        mAdapter = new AdapterListaDocumentosCobranza(lista,
+                position -> {
+            if (countItems == 0) {
+                CobranzaBean cobranzaBean = lista.get(position);
+                ListaDocumentosCobranzaActivity.documentoSeleccionado = cobranzaBean.getCobranza();
+                Actividades.getSingleton(ListaDocumentosCobranzaActivity.this, AbonoDocumentoActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
+            }else {
+                final PrettyDialog dialogo = new PrettyDialog(ListaDocumentosCobranzaActivity.this);
+                dialogo.setTitle("Opción multiple")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Ha seleccionado la opción de pago multiple, no puede abonor a un documento")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
+                return;
             }
-        }, new AdapterListaDocumentosCobranza.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
+        }, position -> {
 
-                 CobranzaBean cobranzaBean = lista.get(position);
-                 PaymentDao paymentDao = new PaymentDao();
+             CobranzaBean cobranzaBean = lista.get(position);
+             PaymentDao paymentDao = new PaymentDao();
 
-                 if (cobranzaBean.getIsCheck() == false){
-                     countItems++;
-                     cobranzaBean.setIsCheck(true);
-                     paymentDao.save(cobranzaBean);
-                     if (countItems > 1 ){
-                         img_add_documents.setVisibility(View.VISIBLE);
-                     }else {
-                         img_add_documents.setVisibility(View.GONE);
-                     }
+             if (cobranzaBean.getIsCheck() == false){
+                 countItems++;
+                 cobranzaBean.setIsCheck(true);
+                 paymentDao.save(cobranzaBean);
+                 if (countItems > 1 ){
+                     img_add_documents.setVisibility(View.VISIBLE);
                  }else {
-                     cobranzaBean.setIsCheck(false);
-                     countItems--;
-                     if (countItems > 1 ){
-                         img_add_documents.setVisibility(View.VISIBLE);
-                     }else {
-                         img_add_documents.setVisibility(View.GONE);
-                     }
-                     paymentDao.save(cobranzaBean);
+                     img_add_documents.setVisibility(View.GONE);
                  }
-                setData();
-                return false;
-            }
+             }else {
+                 cobranzaBean.setIsCheck(false);
+                 countItems--;
+                 if (countItems > 1 ){
+                     img_add_documents.setVisibility(View.VISIBLE);
+                 }else {
+                     img_add_documents.setVisibility(View.GONE);
+                 }
+                 paymentDao.save(cobranzaBean);
+             }
+            setData();
+            return false;
         });
         recyclerView.setAdapter(mAdapter);
     }
 
 
     private void setData(){
-        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(CobranzaActivity.id_cliente_seleccionado);
+        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(clienteGlobal);
         mAdapter.setData(lista);
     }
     @Override
@@ -205,7 +222,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
             final PaymentModelDao dao = new PaymentModelDao();
             dao.clear();
 
-            List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(CobranzaActivity.id_cliente_seleccionado);
+            List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(clienteGlobal);
             final PaymentDao paymentDao = new PaymentDao();
 
             for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {

@@ -38,6 +38,7 @@ import com.app.syspoint.repository.database.dao.ChargesDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
+import com.app.syspoint.ui.cobranza.adapter.AdapterListaCobranzas;
 import com.app.syspoint.utils.Actividades;
 
 import java.io.IOException;
@@ -157,18 +158,15 @@ public class CobranzaFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new AdapterListaCobranzas(partidas, new AdapterListaCobranzas.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                CobrosBean cobrosBean = partidas.get(position);
-                DepositTicket depositTicket = new DepositTicket();
-                depositTicket.setBean(cobrosBean);
-                depositTicket.template();
-                Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
-                if(mConnectedThread != null) //First check to make sure thread created
-                   mConnectedThread.write(depositTicket.getDocument());
+        mAdapter = new AdapterListaCobranzas(partidas, position -> {
+            CobrosBean cobrosBean = partidas.get(position);
+            DepositTicket depositTicket = new DepositTicket();
+            depositTicket.setBean(cobrosBean);
+            depositTicket.template();
+            Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
+            if(mConnectedThread != null) //First check to make sure thread created
+               mConnectedThread.write(depositTicket.getDocument());
 
-            }
         });
         recyclerView.setAdapter(mAdapter);
 

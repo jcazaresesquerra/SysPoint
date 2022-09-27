@@ -149,7 +149,7 @@ class EmployeeFragment: Fragment() {
 
     private fun refreshRecyclerView(employees: List<EmpleadoBean?>) {
         if (::adapter.isInitialized) {
-            adapter.setEmpleados(employees)
+            adapter.setData(employees)
             if (employees.isNotEmpty()) {
                 lyt_empleados.setInvisible()
             } else {
@@ -170,13 +170,15 @@ class EmployeeFragment: Fragment() {
         val manager = LinearLayoutManager(activity)
         binding.rvListaEmpleados.layoutManager = manager
 
-        adapter = EmployeeListAdapter(employees) { employeeBean ->
-            showSelectionFunction(employeeBean)
-        }
+        adapter = EmployeeListAdapter(employees, object : EmployeeListAdapter.OnItemClickListener {
+            override fun onItemClick(employeeBean: EmpleadoBean?) {
+                showSelectionFunction(employeeBean)
+            }
+        })
         binding.rvListaEmpleados.adapter = adapter
     }
 
-    private fun showSelectionFunction(employeeBean: EmpleadoBean) {
+    private fun showSelectionFunction(employeeBean: EmpleadoBean?) {
         val builderSingle = AlertDialog.Builder(requireContext())
         builderSingle.setIcon(R.drawable.logo)
         builderSingle.setTitle("Seleccionar opción")
@@ -190,10 +192,11 @@ class EmployeeFragment: Fragment() {
             dialog.dismiss()
         }
 
-
         builderSingle.setAdapter(arrayAdapter) { dialog, which ->
             val name = arrayAdapter.getItem(which)
-            viewModel.handleSelection(name, employeeBean)
+            employeeBean?.let {
+                viewModel.handleSelection(name, employeeBean)
+            }
             dialog.dismiss()
         }
         builderSingle.show()

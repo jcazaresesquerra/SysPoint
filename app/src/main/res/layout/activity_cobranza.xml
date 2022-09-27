@@ -29,6 +29,7 @@ tools:context=".ui.cobranza.CobranzaActivity">
     tools:ignore="MissingConstraints">
 
     <include
+        android:id="@+id/cobranza_header"
         layout="@layout/encabezado_cobranza"
         android:visibility="visible" />
 </RelativeLayout>

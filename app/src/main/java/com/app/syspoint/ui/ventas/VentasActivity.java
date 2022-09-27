@@ -51,6 +51,7 @@ import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.VentasModelBean;
@@ -84,7 +85,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Random;
 
 import libs.mjn.prettydialog.PrettyDialog;
@@ -137,10 +137,15 @@ public class VentasActivity extends AppCompatActivity {
         this.initControls();
         this.initRecyclerView();
         locationStart();
-
     }
 
     private void initControls() {
+
+        textViewCliente = findViewById(R.id.textView_cliente_venta_view);
+        textViewNombre = findViewById(R.id.textView_cliente_nombre_venta_view);
+        textViewSubtotal = findViewById(R.id.textView_subtotal_venta_view);
+        textViewImpuesto = findViewById(R.id.textView_impuesto_venta_view);
+        textViewTotal = findViewById(R.id.textView_total_venta_view);
 
         Intent intent = getIntent();
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
@@ -157,6 +162,14 @@ public class VentasActivity extends AppCompatActivity {
                 clienteBean.setSaldo_credito(saldoCliente);
                 clienteBean.setDate_sync(Utils.fechaActual());
                 clientDao.save(clienteBean);
+
+                if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
+                    textViewCliente.setText(clienteBean.getCuenta());
+                    textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
+                } else {
+                    ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                    textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
+                }
             }
 
             @Override
@@ -561,16 +574,6 @@ public class VentasActivity extends AppCompatActivity {
             imageViewVisitas.setEnabled(true);
         });
 
-        textViewCliente = findViewById(R.id.textView_cliente_venta_view);
-        textViewNombre = findViewById(R.id.textView_cliente_nombre_venta_view);
-
-        textViewSubtotal = findViewById(R.id.textView_subtotal_venta_view);
-
-        textViewImpuesto = findViewById(R.id.textView_impuesto_venta_view);
-
-        textViewTotal = findViewById(R.id.textView_total_venta_view);
-
-
         if (clienteBean != null) {
             is_credito = clienteBean.getIs_credito();
             saldo_credito = clienteBean.getSaldo_credito();
@@ -838,7 +841,7 @@ public class VentasActivity extends AppCompatActivity {
                             SellsModelDao dao = new SellsModelDao();
                             dao.delete(item);
                             mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                            mAdapter.setItems(mData);
+                            mAdapter.setData(mData);
                             ocultaLinearLayouth();
                             calculaImportes();
                             dialog.dismiss();
@@ -908,7 +911,7 @@ public class VentasActivity extends AppCompatActivity {
                         dao.save(item);
 
                         mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                        mAdapter.setItems(mData);
+                        mAdapter.setData(mData);
                         ocultaLinearLayouth();
                         calculaImportes();
                         dialogo.dismiss();
@@ -1133,7 +1136,7 @@ public class VentasActivity extends AppCompatActivity {
         dao.insert(item);
 
         mData.add(item);
-        mAdapter.setItems(mData);
+        mAdapter.setData(mData);
 
         ocultaLinearLayouth();
         calculaImportes();
@@ -1367,8 +1370,7 @@ public class VentasActivity extends AppCompatActivity {
         }
     }
 
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {

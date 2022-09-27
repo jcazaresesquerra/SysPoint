@@ -338,7 +338,7 @@ public class HomeFragment extends Fragment {
 
     private void setDataList(List<ClientesRutaBean> list) {
         mData = list;
-        mAdapter.setListaRuta(mData);
+        mAdapter.setData(mData);
         showHideImage();
     }
 

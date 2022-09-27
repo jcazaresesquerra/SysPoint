@@ -103,6 +103,23 @@ public class Actividades {
     }
 
     //Muestra la actividad
+    final public void muestraActividadForResultAndParams(final int code, final HashMap<String, String> listaStrings)
+    {
+        Intent intent = new Intent(Actividades.contexto, Actividades.actividad);
+
+        //Recorre todos los parámetros que tiene que pasar
+        Iterator iterator = listaStrings.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry pair = (Map.Entry)iterator.next();
+            String key = (String)pair.getKey();
+            String value = (String) pair.getValue();
+            intent.putExtra(key, value);
+        }
+
+        Actividades.contexto.startActivityForResult(intent, code);
+    }
+
+    //Muestra la actividad
     final public void muestraActividad(final HashMap<String, String> listaStrings)
     {
         //Crea el intent

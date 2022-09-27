@@ -15,7 +15,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +29,7 @@ import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.ui.cobranza.adapter.AdapterCobranza;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.AppBundle;
@@ -55,7 +55,7 @@ import java.util.List;
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
 
-public class CobranzaActivity extends AppCompatActivity {
+/*public class CobranzaActivity extends AppCompatActivity {
 
     private TextView textViewClienteVenta;
     private TextView textViewNombreCliente;
@@ -528,9 +528,7 @@ public class CobranzaActivity extends AppCompatActivity {
         }
 
 
-        /**
-         *  Obtiene los parámetros de las otras vistas
-         */
+
         String cobranzaSeleccionada = data.getStringExtra(Actividades.PARAM_1);
         String importeAcuenta = data.getStringExtra(Actividades.PARAM_2);
 
@@ -620,6 +618,24 @@ public class CobranzaActivity extends AppCompatActivity {
             final PaymentDao paymentDao = new PaymentDao();
 
             if (clientesBean != null) {
+                new ChargeInteractorImp().executeGetChargeByClient(clientesBean.getCuenta(), new ChargeInteractor.OnGetChargeByClientListener() {
+                    @Override
+                    public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                        runOnUiThread(() -> {
+                            PaymentDao paymentDao1 = new PaymentDao();
+                            double saldoCliente =  paymentDao1.getSaldoByCliente(clientesBean.getCuenta());
+                            textView_subtotal_cobranza_view.setText(Utils.FDinero(saldoCliente));
+                            //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
+                            textView_cliente_saldo_cobranza_view.setText(Utils.FDinero(saldoCliente));
+                        });
+                    }
+
+                    @Override
+                    public void onGetChargeByClientError() {
+
+                    }
+                });
+
                 double saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.getCuenta());
                 clientesBean.setSaldo_credito(saldoDocumentos);
                 clientesDao.save(clientesBean);
@@ -652,11 +668,9 @@ public class CobranzaActivity extends AppCompatActivity {
         partidas = new ArrayList<>();
         partidas = (List<CobranzaModel>) (List<?>) new PaymentModelDao().list();
 
-        /*** ----- Obtiene el recyclador ------ ****/
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_cobranza);
         recyclerView.setHasFixedSize(true);
 
-        /*** ----- Manejador ------ ****/
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -702,7 +716,6 @@ public class CobranzaActivity extends AppCompatActivity {
                 return true;
             }
         });
-        /*** ----- Dale memoria al adaptador ------ ****/
         recyclerView.setAdapter(mAdapter);
     }
 
@@ -778,4 +791,4 @@ public class CobranzaActivity extends AppCompatActivity {
         super.onResume();
         setData();
     }
-}
+}*/
