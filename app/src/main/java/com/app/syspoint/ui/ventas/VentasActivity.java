@@ -44,11 +44,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.VentasModelBean;
@@ -82,12 +85,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Random;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
 
+/*TODO refactor this class*/
 public class VentasActivity extends AppCompatActivity {
 
     private AdapterItemsVenta mAdapter;
@@ -119,6 +122,7 @@ public class VentasActivity extends AppCompatActivity {
     RelativeLayout rlprogress_venta;
 
     private boolean confirmPrecaptureClicked = false;
+    private boolean isBackPressed = false;
 
 
     @Override
@@ -133,10 +137,15 @@ public class VentasActivity extends AppCompatActivity {
         this.initControls();
         this.initRecyclerView();
         locationStart();
-
     }
 
     private void initControls() {
+
+        textViewCliente = findViewById(R.id.textView_cliente_venta_view);
+        textViewNombre = findViewById(R.id.textView_cliente_nombre_venta_view);
+        textViewSubtotal = findViewById(R.id.textView_subtotal_venta_view);
+        textViewImpuesto = findViewById(R.id.textView_impuesto_venta_view);
+        textViewTotal = findViewById(R.id.textView_total_venta_view);
 
         Intent intent = getIntent();
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
@@ -144,91 +153,140 @@ public class VentasActivity extends AppCompatActivity {
         ClientDao clientDao = new ClientDao();
 
         ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+
+        new ChargeInteractorImp().executeGetChargeByClient(clienteBean.getCuenta(), new ChargeInteractor.OnGetChargeByClientListener() {
+            @Override
+            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                PaymentDao paymentDao1 = new PaymentDao();
+                double saldoCliente =  paymentDao1.getSaldoByCliente(clienteBean.getCuenta());
+                clienteBean.setSaldo_credito(saldoCliente);
+                clienteBean.setDate_sync(Utils.fechaActual());
+                clientDao.save(clienteBean);
+
+                if (clienteBean.getMatriz() == null || (clienteBean.getMatriz() != null && clienteBean.getMatriz().compareToIgnoreCase("null") == 0)) {
+                    textViewCliente.setText(clienteBean.getCuenta());
+                    textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteBean.getSaldo_credito()) + ")");
+                } else {
+                    ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                    textViewCliente.setText(clienteBean.getCuenta() + "(" + Utils.FDinero(clienteMatriz.getSaldo_credito()) + ")");
+                }
+            }
+
+            @Override
+            public void onGetChargeByClientError() {
+
+            }
+        });
+
         PaymentDao paymentDao1 = new PaymentDao();
         double saldoCliente =  paymentDao1.getSaldoByCliente(clienteBean.getCuenta());
         clienteBean.setSaldo_credito(saldoCliente);
         clienteBean.setDate_sync(Utils.fechaActual());
         clientDao.save(clienteBean);
 
-
         imageViewVentas = findViewById(R.id.img_btn_finish_sale);
-        imageViewVentas.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                imageViewVentas.setEnabled(false);
-                if (existenPartidas()) {
+        imageViewVentas.setOnClickListener(v -> {
+            imageViewVentas.setEnabled(false);
+            if (existenPartidas()) {
 
 
-                    if (radio_contado != null && radio_contado.isChecked() == false && radio_credito.isChecked() == false){
-                        final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
-                        dialogo.setTitle("Tipo de venta")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Debe de seleccionar el tipo de venta")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
+                if (radio_contado != null && radio_contado.isChecked() == false && radio_credito.isChecked() == false){
+                    final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
+                    dialogo.setTitle("Tipo de venta")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("Debe de seleccionar el tipo de venta")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                }
+                            })
+                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                }
+                            });
+                    dialogo.setCancelable(false);
+                    dialogo.show();
+                    imageViewVentas.setEnabled(true);
+                    return;
+                }
+
+                if (tipoVenta.compareToIgnoreCase("SIN DEFINIR") == 0) {
+                    final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
+                    dialogo.setTitle("Tipo de venta")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("Debe de seleccionar el tipo de venta")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                }
+                            })
+                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                }
+                            });
+                    dialogo.setCancelable(false);
+                    dialogo.show();
+                    imageViewVentas.setEnabled(true);
+                    return;
+                }
+
+                double saldo_disponible = 0;
+
+                ClientDao clientDao1 = new ClientDao();
+                ClienteBean clienteBean1 = clientDao1.getClientByAccount(idCliente);
+
+                if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
+                    if (clienteBean1 != null) {
+                        if (clienteBean1.getIs_credito()) {
+                            if (clienteBean1.getMatriz() != null && clienteBean1.getMatriz().length() > 0) {
+                                ClienteBean clienteMatriz = clientDao1.getClientByAccount(clienteBean1.getMatriz());
+                                if (clienteMatriz != null) {
+                                    isCreditMatriz = true;
+                                    cuentaMatriz = clienteMatriz.getCuenta();
+                                    sucursalMatriz = clienteMatriz.getNombre_comercial();
+                                    saldo_disponible = clienteMatriz.getLimite_credito() - clienteMatriz.getSaldo_credito();
+                                    if (saldo_disponible < importe_venta) {
+                                        final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
+                                        dialogo.setTitle("Crédito insuficiente")
+                                                .setTitleColor(R.color.purple_500)
+                                                .setMessage("La matriz solo cuenta con un saldo " + Utils.FDinero(saldo_disponible) + "  para terminar la venta a crédito  ")
+                                                .setMessageColor(R.color.purple_700)
+                                                .setAnimationEnabled(false)
+                                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                                    @Override
+                                                    public void onClick() {
+                                                        dialogo.dismiss();
+                                                    }
+                                                })
+                                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                                    @Override
+                                                    public void onClick() {
+                                                        dialogo.dismiss();
+                                                    }
+                                                });
+                                        dialogo.setCancelable(false);
+                                        dialogo.show();
+                                        imageViewVentas.setEnabled(true);
+                                        return;
                                     }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        imageViewVentas.setEnabled(true);
-                        return;
-                    }
-
-                    if (tipoVenta.compareToIgnoreCase("SIN DEFINIR") == 0) {
-                        final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
-                        dialogo.setTitle("Tipo de venta")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("Debe de seleccionar el tipo de venta")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        imageViewVentas.setEnabled(true);
-                        return;
-                    }
-
-                    double saldo_disponible = 0;
-
-                    ClientDao clientDao = new ClientDao();
-                    ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
-
-                    if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
-                        if (clienteBean != null) {
-                            if (clienteBean.getIs_credito()) {
-                                if (clienteBean.getMatriz() != null && clienteBean.getMatriz().length() > 0) {
-                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
-                                    if (clienteMatriz != null) {
-                                        isCreditMatriz = true;
-                                        cuentaMatriz = clienteMatriz.getCuenta();
-                                        sucursalMatriz = clienteMatriz.getNombre_comercial();
-                                        saldo_disponible = clienteMatriz.getLimite_credito() - clienteMatriz.getSaldo_credito();
+                                } else {
+                                    if (validaCredito()) {
+                                        saldo_disponible = credito - saldo_credito;
                                         if (saldo_disponible < importe_venta) {
                                             final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
                                             dialogo.setTitle("Crédito insuficiente")
                                                     .setTitleColor(R.color.purple_500)
-                                                    .setMessage("La matriz solo cuenta con un saldo " + Utils.FDinero(saldo_disponible) + "  para terminar la venta a crédito  ")
+                                                    .setMessage("Este cliente solo cuenta con " + Utils.FDinero(saldo_disponible) + "  de credito disponible para ventas a credito")
                                                     .setMessageColor(R.color.purple_700)
                                                     .setAnimationEnabled(false)
                                                     .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
@@ -248,314 +306,273 @@ public class VentasActivity extends AppCompatActivity {
                                             imageViewVentas.setEnabled(true);
                                             return;
                                         }
-                                    } else {
-                                        if (validaCredito()) {
-                                            saldo_disponible = credito - saldo_credito;
-                                            if (saldo_disponible < importe_venta) {
-                                                final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
-                                                dialogo.setTitle("Crédito insuficiente")
-                                                        .setTitleColor(R.color.purple_500)
-                                                        .setMessage("Este cliente solo cuenta con " + Utils.FDinero(saldo_disponible) + "  de credito disponible para ventas a credito")
-                                                        .setMessageColor(R.color.purple_700)
-                                                        .setAnimationEnabled(false)
-                                                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                                            @Override
-                                                            public void onClick() {
-                                                                dialogo.dismiss();
-                                                            }
-                                                        })
-                                                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                                            @Override
-                                                            public void onClick() {
-                                                                dialogo.dismiss();
-                                                            }
-                                                        });
-                                                dialogo.setCancelable(false);
-                                                dialogo.show();
-                                                imageViewVentas.setEnabled(true);
-                                                return;
-                                            }
-                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }
 
 
 
 
-                    final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
-                    dialogo.setTitle("Terminar")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("¿Desea terminal la venta?")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
+                final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
+                dialogo.setTitle("Terminar")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("¿Desea terminal la venta?")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
 
-                                    if (!confirmPrecaptureClicked) {
-                                        confirmPrecaptureClicked = true;
-                                        Utils.addActivity2Stack(activity);
+                                if (!confirmPrecaptureClicked) {
+                                    confirmPrecaptureClicked = true;
+                                    Utils.addActivity2Stack(activity);
 
-                                        final ArrayList<PartidasBean> lista = new ArrayList<>();
+                                    final ArrayList<PartidasBean> lista = new ArrayList<>();
 
-                                        final SellsDao sellsDao = new SellsDao();
-                                        final VentasBean ventasBean = new VentasBean();
+                                    final SellsDao sellsDao = new SellsDao();
+                                    final VentasBean ventasBean = new VentasBean();
 
 
-                                        int ultimoFolio = sellsDao.getUltimoFolio();
+                                    int ultimoFolio = sellsDao.getUltimoFolio();
 
-                                        final ProductDao productDao = new ProductDao();
-                                        //Recorremos las partidas
-                                        for (int x = 0; x < mData.size(); x++) {
-                                            //Validamos si el articulo existe en la base de datos
-                                            final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
-                                            final PartidasBean partida = new PartidasBean();
-                                            partida.setArticulo(productosBean);
-                                            partida.setCantidad(mData.get(x).getCantidad());
-                                            partida.setPrecio(mData.get(x).getPrecio());
-                                            partida.setCosto(mData.get(x).getCosto());
-                                            partida.setImpuesto(mData.get(x).getImpuesto());
-                                            partida.setObserv(productosBean.getDescripcion());
-                                            partida.setFecha(new Date());
-                                            partida.setHora(Utils.getHoraActual());
-                                            partida.setVenta(Long.valueOf(ultimoFolio));
-                                            partida.setDescripcion(productosBean.getDescripcion());
-                                            lista.add(partida);
+                                    final ProductDao productDao = new ProductDao();
+                                    //Recorremos las partidas
+                                    for (int x = 0; x < mData.size(); x++) {
+                                        //Validamos si el articulo existe en la base de datos
+                                        final ProductoBean productosBean = productDao.getProductoByArticulo(mData.get(x).getArticulo());
+                                        final PartidasBean partida = new PartidasBean();
+                                        partida.setArticulo(productosBean);
+                                        partida.setCantidad(mData.get(x).getCantidad());
+                                        partida.setPrecio(mData.get(x).getPrecio());
+                                        partida.setCosto(mData.get(x).getCosto());
+                                        partida.setImpuesto(mData.get(x).getImpuesto());
+                                        partida.setObserv(productosBean.getDescripcion());
+                                        partida.setFecha(new Date());
+                                        partida.setHora(Utils.getHoraActual());
+                                        partida.setVenta(Long.valueOf(ultimoFolio));
+                                        partida.setDescripcion(productosBean.getDescripcion());
+                                        lista.add(partida);
+                                    }
+
+                                    //Le indicamos al sistema que el cliente ya se ah visitado
+                                    final ClientDao clientDao1 = new ClientDao();
+                                    final ClienteBean clienteBean1 = clientDao1.getClientByAccount(idCliente);
+                                    final String clienteID = String.valueOf(clienteBean1.getId());
+                                    clienteBean1.setVisitado(1);
+                                    clienteBean1.setVisitasNoefectivas(0);
+                                    clienteBean1.setDate_sync(Utils.fechaActual());
+                                    clientDao1.save(clienteBean1);
+
+                                    ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
+                                    progressDialog.setMessage("Espere un momento");
+                                    progressDialog.setCancelable(false);
+                                    progressDialog.show();
+                                    new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                                        progressDialog.dismiss();
+                                        if (connected)
+                                            testLoadClientes(String.valueOf(clienteBean1.getId()));
+
+                                        final RuteClientDao ruteClientDao = new RuteClientDao();
+                                        final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
+                                        if (clientesRutaBean != null) {
+                                            clientesRutaBean.setVisitado(1);
+                                            ruteClientDao.save(clientesRutaBean);
                                         }
 
-                                        //Le indicamos al sistema que el cliente ya se ah visitado
-                                        final ClientDao clientDao = new ClientDao();
-                                        final ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
-                                        final String clienteID = String.valueOf(clienteBean.getId());
-                                        clienteBean.setVisitado(1);
-                                        clienteBean.setVisitasNoefectivas(0);
-                                        clienteBean.setDate_sync(Utils.fechaActual());
-                                        clientDao.save(clienteBean);
+                                        //Obtiene el nombre del vendedor
+                                        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
 
-                                        ProgressDialog progressDialog = new ProgressDialog(VentasActivity.this);
-                                        progressDialog.setMessage("Espere un momento");
-                                        progressDialog.setCancelable(false);
-                                        progressDialog.show();
-                                        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                                            progressDialog.dismiss();
-                                            if (connected)
-                                                testLoadClientes(String.valueOf(clienteBean.getId()));
+                                        if (vendedoresBean == null) {
+                                            vendedoresBean = new CacheInteractor().getSeller();
+                                        }
 
-                                            final RuteClientDao ruteClientDao = new RuteClientDao();
-                                            final ClientesRutaBean clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(idCliente);
-                                            if (clientesRutaBean != null) {
-                                                clientesRutaBean.setVisitado(1);
-                                                ruteClientDao.save(clientesRutaBean);
-                                            }
-
-                                            //Obtiene el nombre del vendedor
-                                            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-
-                                            if (vendedoresBean == null) {
-                                                vendedoresBean = new CacheInteractor().getSeller();
-                                            }
-
-                                            ventasBean.setTipo_doc("TIK");
-                                            ventasBean.setFecha(Utils.fechaActual());
-                                            ventasBean.setHora(Utils.getHoraActual());
-                                            ventasBean.setCliente(clienteBean);
-                                            ventasBean.setEmpleado(vendedoresBean);
-                                            ventasBean.setImporte(Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")));
-                                            ventasBean.setImpuesto(Double.parseDouble(textViewImpuesto.getText().toString().replace(",", "")));
-                                            ventasBean.setDatos(clienteBean.getNombre_comercial());
-                                            ventasBean.setEstado("CO");
-                                            ventasBean.setCorte("N");
-                                            ventasBean.setTemporal(1);
-                                            ventasBean.setVenta(ultimoFolio);
-                                            ventasBean.setLatidud(latidud);
-                                            ventasBean.setLatidud(latidud);
-                                            ventasBean.setSync(0);
-                                            ventasBean.setTipo_venta(tipoVenta);
-                                            ventasBean.setUsuario_cancelo("");
-                                            if (cuentaMatriz.length() == 0) {
-                                                ventasBean.setFactudado("");
-                                            } else {
-                                                ventasBean.setFactudado(cuentaMatriz);
-                                            }
-                                            ventasBean.setTicket(Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", ""));
+                                        ventasBean.setTipo_doc("TIK");
+                                        ventasBean.setFecha(Utils.fechaActual());
+                                        ventasBean.setHora(Utils.getHoraActual());
+                                        ventasBean.setCliente(clienteBean1);
+                                        ventasBean.setEmpleado(vendedoresBean);
+                                        ventasBean.setImporte(Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")));
+                                        ventasBean.setImpuesto(Double.parseDouble(textViewImpuesto.getText().toString().replace(",", "")));
+                                        ventasBean.setDatos(clienteBean1.getNombre_comercial());
+                                        ventasBean.setEstado("CO");
+                                        ventasBean.setCorte("N");
+                                        ventasBean.setTemporal(1);
+                                        ventasBean.setVenta(ultimoFolio);
+                                        ventasBean.setLatidud(latidud);
+                                        ventasBean.setLatidud(latidud);
+                                        ventasBean.setSync(0);
+                                        ventasBean.setTipo_venta(tipoVenta);
+                                        ventasBean.setUsuario_cancelo("");
+                                        if (cuentaMatriz.length() == 0) {
+                                            ventasBean.setFactudado("");
+                                        } else {
+                                            ventasBean.setFactudado(cuentaMatriz);
+                                        }
+                                        ventasBean.setTicket(Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", ""));
 
 
-                                            double totalVenta = Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")) + Double.parseDouble(textViewImpuesto.getText().toString().replace(",", ""));
-                                            String ticketRamdom = ticketRamdom() + ventasBean.getFecha().replace("-", "") + "" + ventasBean.getHora().replace(":", "");
-                                            if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
-                                                //Si la cobranza es de matriz entonces creamos la cobranza a matriz
-                                                if (isCreditMatriz) {
-                                                    CobranzaBean cobranzaBean = new CobranzaBean();
-                                                    PaymentDao paymentDao = new PaymentDao();
-                                                    cobranzaBean.setCobranza(ticketRamdom);
-                                                    cobranzaBean.setCliente(cuentaMatriz);
-                                                    cobranzaBean.setImporte(totalVenta);
-                                                    cobranzaBean.setSaldo(totalVenta);
-                                                    cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
-                                                    cobranzaBean.setEstado("PE");
-                                                    cobranzaBean.setObservaciones("Se realiza la venta a crédito para sucursal \n " + clienteBean.getCuenta() + " " + clienteBean.getNombre_comercial() + " \n con cargo a Matriz " + cuentaMatriz + " " + sucursalMatriz + "\n" + ventasBean.getFecha() + " hora " + ventasBean.getHora());
-                                                    cobranzaBean.setFecha(ventasBean.getFecha());
-                                                    cobranzaBean.setHora(ventasBean.getHora());
-                                                    if (vendedoresBean != null) {
-                                                        cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
-                                                    }
-                                                    cobranzaBean.setAbono(false);
-                                                    paymentDao.save(cobranzaBean);
-
-                                                    //Actualizamos el documento de la venta con el de la cobranza
-                                                    ventasBean.setCobranza(ticketRamdom);
-                                                    //ventasDao.save(ventasBean);
-
-                                                    //Actualizamos el saldo del cliente
-                                                    ClienteBean clienteMatriz = clientDao.getClientByAccount(cuentaMatriz);
-                                                    double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
-                                                    clienteMatriz.setSaldo_credito(saldoNuevo);
-                                                    clienteMatriz.setDate_sync(Utils.fechaActual());
-
-                                                    clientDao.save(clienteMatriz);
-
-                                                    if (connected)
-                                                        testLoadClientes(String.valueOf(clienteMatriz.getId()));
-
-                                                } else {
-                                                    CobranzaBean cobranzaBean = new CobranzaBean();
-                                                    PaymentDao paymentDao = new PaymentDao();
-                                                    cobranzaBean.setCobranza(ticketRamdom);
-                                                    cobranzaBean.setCliente(clienteBean.getCuenta());
-                                                    cobranzaBean.setImporte(totalVenta);
-                                                    cobranzaBean.setSaldo(totalVenta);
-                                                    cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
-                                                    cobranzaBean.setEstado("PE");
-                                                    cobranzaBean.setObservaciones("Venta a crédito " + ventasBean.getFecha() + " hora " + ventasBean.getHora());
-                                                    cobranzaBean.setFecha(ventasBean.getFecha());
-                                                    cobranzaBean.setHora(ventasBean.getHora());
-                                                    if (vendedoresBean != null) {
-                                                        cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
-                                                    }
-                                                    paymentDao.save(cobranzaBean);
-
-                                                    //Actualizamos el documento de la venta con el de la cobranza
-                                                    ventasBean.setCobranza(ticketRamdom);
-                                                    //ventasDao.save(ventasBean);
-
-                                                    //Actualizamos el saldo del cliente
-                                                    double saldoNuevo = clienteBean.getSaldo_credito() + totalVenta;
-                                                    clienteBean.setSaldo_credito(saldoNuevo);
-                                                    clienteBean.setVisitasNoefectivas(0);
-                                                    clienteBean.setDate_sync(Utils.fechaActual());
-
-                                                    clientDao.save(clienteBean);
-
-                                                    if (connected) testLoadClientes(clienteID);
+                                        double totalVenta = Double.parseDouble(textViewSubtotal.getText().toString().replace(",", "")) + Double.parseDouble(textViewImpuesto.getText().toString().replace(",", ""));
+                                        String ticketRamdom = ticketRamdom() + ventasBean.getFecha().replace("-", "") + "" + ventasBean.getHora().replace(":", "");
+                                        if (tipoVenta.compareToIgnoreCase("CREDITO") == 0) {
+                                            //Si la cobranza es de matriz entonces creamos la cobranza a matriz
+                                            if (isCreditMatriz) {
+                                                CobranzaBean cobranzaBean = new CobranzaBean();
+                                                PaymentDao paymentDao = new PaymentDao();
+                                                cobranzaBean.setCobranza(ticketRamdom);
+                                                cobranzaBean.setCliente(cuentaMatriz);
+                                                cobranzaBean.setImporte(totalVenta);
+                                                cobranzaBean.setSaldo(totalVenta);
+                                                cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
+                                                cobranzaBean.setEstado("PE");
+                                                cobranzaBean.setObservaciones("Se realiza la venta a crédito para sucursal \n " + clienteBean1.getCuenta() + " " + clienteBean1.getNombre_comercial() + " \n con cargo a Matriz " + cuentaMatriz + " " + sucursalMatriz + "\n" + ventasBean.getFecha() + " hora " + ventasBean.getHora());
+                                                cobranzaBean.setFecha(ventasBean.getFecha());
+                                                cobranzaBean.setHora(ventasBean.getHora());
+                                                if (vendedoresBean != null) {
+                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
                                                 }
+                                                cobranzaBean.setAbono(false);
+                                                paymentDao.save(cobranzaBean);
+
+                                                //Actualizamos el documento de la venta con el de la cobranza
+                                                ventasBean.setCobranza(ticketRamdom);
+                                                //ventasDao.save(ventasBean);
+
+                                                //Actualizamos el saldo del cliente
+                                                ClienteBean clienteMatriz = clientDao1.getClientByAccount(cuentaMatriz);
+                                                double saldoNuevo = clienteMatriz.getSaldo_credito() + totalVenta;
+                                                clienteMatriz.setSaldo_credito(saldoNuevo);
+                                                clienteMatriz.setDate_sync(Utils.fechaActual());
+
+                                                clientDao1.save(clienteMatriz);
+
+                                                if (connected)
+                                                    testLoadClientes(String.valueOf(clienteMatriz.getId()));
+
+                                            } else {
+                                                CobranzaBean cobranzaBean = new CobranzaBean();
+                                                PaymentDao paymentDao = new PaymentDao();
+                                                cobranzaBean.setCobranza(ticketRamdom);
+                                                cobranzaBean.setCliente(clienteBean1.getCuenta());
+                                                cobranzaBean.setImporte(totalVenta);
+                                                cobranzaBean.setSaldo(totalVenta);
+                                                cobranzaBean.setVenta(Integer.valueOf(ventasBean.getTicket()));
+                                                cobranzaBean.setEstado("PE");
+                                                cobranzaBean.setObservaciones("Venta a crédito " + ventasBean.getFecha() + " hora " + ventasBean.getHora());
+                                                cobranzaBean.setFecha(ventasBean.getFecha());
+                                                cobranzaBean.setHora(ventasBean.getHora());
+                                                if (vendedoresBean != null) {
+                                                    cobranzaBean.setEmpleado(vendedoresBean.getIdentificador());
+                                                }
+                                                paymentDao.save(cobranzaBean);
+
+                                                //Actualizamos el documento de la venta con el de la cobranza
+                                                ventasBean.setCobranza(ticketRamdom);
+                                                //ventasDao.save(ventasBean);
+
+                                                //Actualizamos el saldo del cliente
+                                                double saldoNuevo = clienteBean1.getSaldo_credito() + totalVenta;
+                                                clienteBean1.setSaldo_credito(saldoNuevo);
+                                                clienteBean1.setVisitasNoefectivas(0);
+                                                clienteBean1.setDate_sync(Utils.fechaActual());
+
+                                                clientDao1.save(clienteBean1);
+
+                                                if (connected) testLoadClientes(clienteID);
                                             }
+                                        }
 
-                                            sellsDao.save(ventasBean);
+                                        sellsDao.save(ventasBean);
 
 
-                                            //Creamos la venta
-                                            sellsDao.creaVenta(ventasBean, lista);
+                                        //Creamos la venta
+                                        sellsDao.creaVenta(ventasBean, lista);
 
-                                            String ventaID = String.valueOf(ventasBean.getVenta());
+                                        String ventaID = String.valueOf(ventasBean.getVenta());
 
-                                            //Creamos el template del timbre
-                                            SellTicket sellTicket = new SellTicket();
-                                            sellTicket.setBean(ventasBean);
-                                            sellTicket.template();
+                                        //Creamos el template del timbre
+                                        SellTicket sellTicket = new SellTicket();
+                                        sellTicket.setBean(ventasBean);
+                                        sellTicket.template();
 
-                                            String ticket = sellTicket.getDocument();
+                                        String ticket = sellTicket.getDocument();
 
-                                            Intent intent = new Intent(VentasActivity.this, ViewPDFActivity.class);
-                                            intent.putExtra("ticket", ticket);
-                                            intent.putExtra("venta", ventaID);
-                                            intent.putExtra("clienteID", clienteID);
-                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            startActivity(intent);
+                                        Intent intent1 = new Intent(VentasActivity.this, ViewPDFActivity.class);
+                                        intent1.putExtra("ticket", ticket);
+                                        intent1.putExtra("venta", ventaID);
+                                        intent1.putExtra("clienteID", clienteID);
+                                        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent1);
 
-                                            dialogo.dismiss();
-                                            imageViewVentas.setEnabled(true);
-                                            confirmPrecaptureClicked = false;
-                                        }).execute(), 100);
-                                    }
+                                        dialogo.dismiss();
+                                        imageViewVentas.setEnabled(true);
+                                        confirmPrecaptureClicked = false;
+                                    }).execute(), 100);
                                 }
-                            })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
 
-                                }
-                            });
-                    dialogo.setCancelable(false);
-                    dialogo.show();
-                    imageViewVentas.setEnabled(true);
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
+                imageViewVentas.setEnabled(true);
 
-                } else {
-                    final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
-                    dialogo.setTitle("Finalizar")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe de agregar un producto para finalizar la venta")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
-                    dialogo.setCancelable(false);
-                    dialogo.show();
-                    imageViewVentas.setEnabled(true);
-                }
+            } else {
+                final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
+                dialogo.setTitle("Finalizar")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe de agregar un producto para finalizar la venta")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
                 imageViewVentas.setEnabled(true);
             }
+            imageViewVentas.setEnabled(true);
         });
 
         imageViewVisitas = findViewById(R.id.img_btn_finish_visita);
-        imageViewVisitas.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                imageViewVisitas.setEnabled(false);
-                ClientDao clientDao = new ClientDao();
-                ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
-                HashMap<String, String> parametros = new HashMap<>();
-                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                parametros.put(Actividades.PARAM_2, clienteBean.getCalle());
-                parametros.put(Actividades.PARAM_3, clienteBean.getNumero());
-                parametros.put(Actividades.PARAM_4, clienteBean.getColonia());
-                parametros.put(Actividades.PARAM_5, clienteBean.getNombre_comercial());
-                parametros.put(Actividades.PARAM_6, clienteBean.getLatitud());
-                parametros.put(Actividades.PARAM_7, clienteBean.getLongitud());
-                Utils.addActivity2Stack(activity);
-                Actividades.getSingleton(VentasActivity.this, PrecaptureActivity.class).muestraActividad(parametros);
-                imageViewVisitas.setEnabled(true);
-            }
+        imageViewVisitas.setOnClickListener(v -> {
+            imageViewVisitas.setEnabled(false);
+            ClientDao clientDao12 = new ClientDao();
+            ClienteBean clienteBean12 = clientDao12.getClientByAccount(idCliente);
+            HashMap<String, String> parametros = new HashMap<>();
+            parametros.put(Actividades.PARAM_1, clienteBean12.getCuenta());
+            parametros.put(Actividades.PARAM_2, clienteBean12.getCalle());
+            parametros.put(Actividades.PARAM_3, clienteBean12.getNumero());
+            parametros.put(Actividades.PARAM_4, clienteBean12.getColonia());
+            parametros.put(Actividades.PARAM_5, clienteBean12.getNombre_comercial());
+            parametros.put(Actividades.PARAM_6, clienteBean12.getLatitud());
+            parametros.put(Actividades.PARAM_7, clienteBean12.getLongitud());
+            Utils.addActivity2Stack(activity);
+            Actividades.getSingleton(VentasActivity.this, PrecaptureActivity.class).muestraActividad(parametros);
+            imageViewVisitas.setEnabled(true);
         });
-
-        textViewCliente = findViewById(R.id.textView_cliente_venta_view);
-        textViewNombre = findViewById(R.id.textView_cliente_nombre_venta_view);
-
-        textViewSubtotal = findViewById(R.id.textView_subtotal_venta_view);
-
-        textViewImpuesto = findViewById(R.id.textView_impuesto_venta_view);
-
-        textViewTotal = findViewById(R.id.textView_total_venta_view);
-
 
         if (clienteBean != null) {
             is_credito = clienteBean.getIs_credito();
@@ -824,7 +841,7 @@ public class VentasActivity extends AppCompatActivity {
                             SellsModelDao dao = new SellsModelDao();
                             dao.delete(item);
                             mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                            mAdapter.setItems(mData);
+                            mAdapter.setData(mData);
                             ocultaLinearLayouth();
                             calculaImportes();
                             dialog.dismiss();
@@ -894,7 +911,7 @@ public class VentasActivity extends AppCompatActivity {
                         dao.save(item);
 
                         mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                        mAdapter.setItems(mData);
+                        mAdapter.setData(mData);
                         ocultaLinearLayouth();
                         calculaImportes();
                         dialogo.dismiss();
@@ -948,37 +965,41 @@ public class VentasActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case android.R.id.home:
+                if (!isBackPressed) {
+                    isBackPressed = true;
+                    final PrettyDialog dialog = new PrettyDialog(this);
+                    dialog.setTitle("Salir")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("Desea salir de la venta")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            })
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
 
-                final PrettyDialog dialog = new PrettyDialog(this);
-                dialog.setTitle("Salir")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("Desea salir de la venta")
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-
-                                deleteVentaTemp();
-                                finish();
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-
-                            }
-                        });
-                dialog.setCancelable(false);
-                dialog.show();
+                                    deleteVentaTemp();
+                                    finish();
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            })
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            });
+                    dialog.setCancelable(false);
+                    dialog.show();
+                }
                 return true;
 
             default:
@@ -1115,7 +1136,7 @@ public class VentasActivity extends AppCompatActivity {
         dao.insert(item);
 
         mData.add(item);
-        mAdapter.setItems(mData);
+        mAdapter.setData(mData);
 
         ocultaLinearLayouth();
         calculaImportes();
@@ -1349,8 +1370,7 @@ public class VentasActivity extends AppCompatActivity {
         }
     }
 
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1000) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {

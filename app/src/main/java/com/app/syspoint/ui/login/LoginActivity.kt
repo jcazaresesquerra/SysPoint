@@ -91,7 +91,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showMainActivity() {
-        val isAdmin = viewModel.isUserAdmin(applicationContext)
+        val isAdmin = viewModel.isUserAdmin()
 
         val intent = Intent(applicationContext, MainActivity::class.java)
         intent.putExtra(MainActivity.IS_ADMIN,isAdmin)

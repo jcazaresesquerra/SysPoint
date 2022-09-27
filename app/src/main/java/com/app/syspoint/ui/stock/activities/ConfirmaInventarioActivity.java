@@ -73,7 +73,7 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterInventario(mData);
+        mAdapter = new AdapterInventario(mData, position -> false);
         recyclerView.setAdapter(mAdapter);
         calcular();
     }

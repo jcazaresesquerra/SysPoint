@@ -392,7 +392,7 @@ public class StockFragment extends Fragment {
         historialDao.clear();
 
         mData = (List<InventarioBean>) (List<?>) new StockDao().list();
-        mAdapter.setInventario(mData);
+        mAdapter.setData(mData);
 
         ocultaLinearLayouth();
 
@@ -410,42 +410,39 @@ public class StockFragment extends Fragment {
         final LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterInventario(mData, new AdapterInventario.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClicked(int position) {
-                InventarioBean inventarioBean = mData.get(position);
+        mAdapter = new AdapterInventario(mData, position -> {
+            InventarioBean inventarioBean = mData.get(position);
 
-                if (inventarioBean.getEstado().compareToIgnoreCase("CO") == 0){
+            if (inventarioBean.getEstado().compareToIgnoreCase("CO") == 0){
 
-                    final PrettyDialog dialog = new PrettyDialog(getContext());
-                    dialog.setTitle("Eliminar")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("No es posible eliminar el inventario ya fue confirmado")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
-                    dialog.setCancelable(false);
-                    dialog.show();
-                    return false;
-                }else {
-                    StockDao stockDao = new StockDao();
-                    stockDao.delete(inventarioBean);
-                    refreshList();
-                }
-
+                final PrettyDialog dialog = new PrettyDialog(getContext());
+                dialog.setTitle("Eliminar")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("No es posible eliminar el inventario ya fue confirmado")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialog.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialog.dismiss();
+                            }
+                        });
+                dialog.setCancelable(false);
+                dialog.show();
                 return false;
+            }else {
+                StockDao stockDao = new StockDao();
+                stockDao.delete(inventarioBean);
+                refreshList();
             }
+
+            return false;
         });
         recyclerView.setAdapter(mAdapter);
     }
@@ -461,7 +458,7 @@ public class StockFragment extends Fragment {
     }
     private void setDataInventory(){
         mData = (List<InventarioBean>) (List<?>) new StockDao().list();
-        mAdapter.setInventario(mData);
+        mAdapter.setData(mData);
         ocultaLinearLayouth();
     }
 

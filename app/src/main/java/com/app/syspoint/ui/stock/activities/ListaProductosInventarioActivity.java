@@ -144,13 +144,12 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
 
 
-        mAdapter = new AdapterListaProductosInv(mData, new AdapterListaProductos.OnItemClickListener() {
+        mAdapter = new AdapterListaProductosInv(mData, new AdapterListaProductosInv.OnItemClickListener() {
             @Override
-            public void onItemClick(ProductoBean productoBean) {
+            public void onItemClick(@Nullable ProductoBean productoBean) {
                 articuloSeleccionado = productoBean.getArticulo();
                 //Muestra el dialogo para seleccion de cantidades
                 Actividades.getSingleton(ListaProductosInventarioActivity.this, CantidadInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-
             }
         });
         recyclerView.setAdapter(mAdapter);

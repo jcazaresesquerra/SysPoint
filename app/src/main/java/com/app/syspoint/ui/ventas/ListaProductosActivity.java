@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.ui.products.activities.ScannerActivity;
+import com.app.syspoint.ui.ventas.adapter.AdapterListaProductosVentas;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.PersistenciaPrecioBean;

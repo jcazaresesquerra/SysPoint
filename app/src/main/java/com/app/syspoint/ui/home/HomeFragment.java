@@ -204,7 +204,7 @@ public class HomeFragment extends Fragment {
             final PrettyDialog dialog = new PrettyDialog(getContext());
             dialog.setTitle("Establecer")
                     .setTitleColor(R.color.red_500)
-                    .setMessage("¡Ya existe una configuración inicial!" + "" + "\n ¿Desea actualizar la ruta?")
+                    .setMessage("¡Ya existe una configuración inicial!" + "\n ¿Desea actualizar la ruta?")
                     .setMessageColor(R.color.red_500)
                     .setAnimationEnabled(false)
                     .setIcon(R.drawable.pdlg_icon_info, R.color.red_500, new PrettyDialogCallback() {
@@ -338,7 +338,7 @@ public class HomeFragment extends Fragment {
 
     private void setDataList(List<ClientesRutaBean> list) {
         mData = list;
-        mAdapter.setListaRuta(mData);
+        mAdapter.setData(mData);
         showHideImage();
     }
 
@@ -675,7 +675,7 @@ public class HomeFragment extends Fragment {
             sincVentas.postObject();
 
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 

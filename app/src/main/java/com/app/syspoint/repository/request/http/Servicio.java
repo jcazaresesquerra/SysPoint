@@ -48,7 +48,7 @@ public class Servicio {
                                         final String error = response.getString("error");
                                         onError.onError(error);
                                     } catch (JSONException e) {
-                                        //Excepcion.getSingleton(e).procesaExcepcion(activity);
+                                        e.printStackTrace();
                                     }
                                 }
                             }
@@ -57,13 +57,13 @@ public class Servicio {
                                     try {
                                         onSuccess.onSuccessObject(response);
                                     } catch (JSONException e) {
-                                        //Excepcion.getSingleton(e).procesaExcepcion(activity);
+                                        e.printStackTrace();
                                     }
                                 }
                             }
 
                         }catch (Exception e){
-                            //Excepcion.getSingleton(e).procesaExcepcion(activity);
+                            e.printStackTrace();
                         }
                     }
 

@@ -153,7 +153,7 @@ class ProductFragment: Fragment() {
 
     private fun refreshRecyclerView(data: List<ProductoBean?>) {
         if (::adapter.isInitialized) {
-            adapter.setProducts(data)
+            adapter.setData(data)
             if (data.isNotEmpty()) {
                 binding.lytProductos.setInvisible()
             } else {
@@ -174,13 +174,15 @@ class ProductFragment: Fragment() {
         val manager = LinearLayoutManager(activity)
         binding.rvListaProductos.layoutManager = manager
 
-        adapter = AdapterListaProductos(data) { position ->
-            showSelectionFunction(position)
-        }
+        adapter = AdapterListaProductos(data, object : AdapterListaProductos.OnItemClickListener {
+            override fun onItemClick(productoBean: ProductoBean?) {
+                showSelectionFunction(productoBean)
+            }
+        })
         binding.rvListaProductos.adapter = adapter
     }
 
-    private fun showSelectionFunction(productBean: ProductoBean) {
+    private fun showSelectionFunction(productBean: ProductoBean?) {
 
         val builderSingle = AlertDialog.Builder(requireContext())
         builderSingle.setIcon(R.drawable.logo)
@@ -195,7 +197,9 @@ class ProductFragment: Fragment() {
 
         builderSingle.setAdapter(arrayAdapter) { dialog, which ->
             val name = arrayAdapter.getItem(which)
-            viewModel.handleSelection(name, productBean)
+            productBean?.let {
+                viewModel.handleSelection(name, productBean)
+            }
             dialog.dismiss()
         }
 

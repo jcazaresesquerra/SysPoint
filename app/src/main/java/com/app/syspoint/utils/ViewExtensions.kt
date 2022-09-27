@@ -7,6 +7,10 @@ infix fun View.click(click: () -> Unit) {
     setOnClickListener { click() }
 }
 
+infix fun View.longClick(click: () -> Boolean) {
+    setOnLongClickListener { click() }
+}
+
 infix fun SearchView.onFocusChange(onFocusChange: (view: View, hasFocus: Boolean) -> Unit) {
     setOnQueryTextFocusChangeListener { view, hasFocus -> run { onFocusChange(view, hasFocus) } }
 }
