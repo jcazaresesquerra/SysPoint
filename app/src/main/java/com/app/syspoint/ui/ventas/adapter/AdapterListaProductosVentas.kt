@@ -97,7 +97,7 @@ class AdapterListaProductosVentas(
                 itemView click  { onItemClickListener.onItemClick(adapterPosition) }
 
                 binding.textViewProductoDisponibleListaVentaListaView.apply {
-                    setText(producto.existencia)
+                    text = producto.existencia.toString()
                     if (producto.existencia > 0) {
                         setTextColor(Color.GREEN)
                     } else {

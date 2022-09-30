@@ -13,6 +13,13 @@ class ClientDao: Dao("ClienteBean") {
         return if (clientBeans.isNotEmpty()) clientBeans[0] as ClienteBean else null
     }
 
+    fun getClientById(id: String?): ClienteBean? {
+        val clientBeans = dao.queryBuilder()
+            .where(ClienteBeanDao.Properties.Id.eq(id))
+            .list()
+        return if (clientBeans.isNotEmpty()) clientBeans[0] as ClienteBean else null
+    }
+
     fun getClient(account: String?): ClienteBean? {
         val clientBeans = dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Id.eq(account))

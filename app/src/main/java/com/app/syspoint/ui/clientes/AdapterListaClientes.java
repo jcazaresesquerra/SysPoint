@@ -127,12 +127,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             itemView.setOnClickListener(v -> {
                 if (mOnItemClickListener != null) {
                     itemView.setEnabled(false);
-                    onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition(), new OnDialogShownListener() {
-                        @Override
-                        public void onDialogShown() {
-                            itemView.setEnabled(true);
-                        }
-                    });
+                    onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition(), () -> itemView.setEnabled(true));
                     itemView.setEnabled(true);
                 }
             });

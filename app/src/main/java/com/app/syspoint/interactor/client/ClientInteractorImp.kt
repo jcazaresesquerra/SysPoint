@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 
 class ClientInteractorImp: ClientInteractor() {
 
+    @Synchronized
     override fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {
         super.executeGetAllClients(onGetAllClientsListener)
         GlobalScope.launch {
@@ -14,6 +15,7 @@ class ClientInteractorImp: ClientInteractor() {
         }
     }
 
+    @Synchronized
     override fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {
         super.executeGetClientById(clientId, onGetClientByIdListener)
         GlobalScope.launch {
@@ -21,6 +23,7 @@ class ClientInteractorImp: ClientInteractor() {
         }
     }
 
+    @Synchronized
     override fun executeSaveClient(clientList: List<Client>, onSaveClientListener: SaveClientListener) {
         super.executeSaveClient(clientList, onSaveClientListener)
         GlobalScope.launch {

@@ -35,7 +35,7 @@ class ChargeViewModel: ViewModel() {
 
     fun downloadCharge(clientId: String) {
         if (clientId.isNotEmpty()) {
-            chargeViewState.value = ChargeViewState.LoadingStart
+            //chargeViewState.value = ChargeViewState.LoadingStart
             ChargeInteractorImp().executeGetChargeByClient(clientId,
                 object : OnGetChargeByClientListener {
                     override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
@@ -46,6 +46,50 @@ class ChargeViewModel: ViewModel() {
                         chargeViewState.value = ChargeViewState.LoadingFinish
                     }
                 })
+        } else {
+            chargeViewState.value = ChargeViewState.LoadingFinish
+        }
+    }
+
+    fun loadClientData(clientId: String) {
+        try {
+            val clientesDao = ClientDao()
+            val clientesBean = clientesDao.getClientByAccount(clientId)
+            val paymentDao = PaymentDao()
+            if (clientesBean != null) {
+                chargeViewState.postValue(ChargeViewState.LoadingStart)
+                ChargeInteractorImp().executeGetChargeByClient(clientesBean.cuenta, object : OnGetChargeByClientListener {
+                    override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
+                        val paymentDao1 = PaymentDao()
+                        val saldoCliente = paymentDao1.getSaldoByCliente(clientesBean.cuenta)
+                        //chargeViewState.postValue(ChargeViewState.LoadingFinish)
+                        chargeViewState.postValue(ChargeViewState.ChargeLoaded(clientId, saldoCliente))
+
+                        downloadCharge(clientId)
+                    }
+
+                    override fun onGetChargeByClientError() {
+                        downloadCharge(clientId)
+                        //chargeViewState.postValue(ChargeViewState.LoadingFinish)
+                    }
+                })
+
+                val saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.cuenta)
+                clientesBean.saldo_credito = saldoDocumentos
+                clientesDao.save(clientesBean)
+                testLoadClientes(clientesBean.id.toString())
+                chargeViewState.value = ChargeViewState.ClientLoaded(clientesBean)
+            } else {
+                downloadCharge(clientId)
+                //dialogo = new Dialogo(activityGlobal);
+                //dialogo.setAceptar(true);
+                //dialogo.setOnAceptarDissmis(true);
+                //dialogo.setMensaje("Cliente no encontrado");
+                //dialogo.show();
+                //return ;
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -178,43 +222,6 @@ class ChargeViewModel: ViewModel() {
         dao.clear()
 
         chargeViewState.value = ChargeViewState.ClientSaved(ticket, ventaID, clienteBean.id.toString())
-    }
-
-    fun loadClientData(clientId: String) {
-        try {
-            val clientesDao = ClientDao()
-            val clientesBean = clientesDao.getClientByAccount(clientId)
-            val paymentDao = PaymentDao()
-            if (clientesBean != null) {
-                ChargeInteractorImp().executeGetChargeByClient(clientesBean.cuenta, object : OnGetChargeByClientListener {
-                    override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
-                        val paymentDao1 = PaymentDao()
-                        val saldoCliente = paymentDao1.getSaldoByCliente(clientesBean.cuenta)
-                        chargeViewState.postValue(ChargeViewState.ChargeLoaded(clientId, saldoCliente))
-                    }
-
-                    override fun onGetChargeByClientError() {
-
-                    }
-                })
-
-                val saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.cuenta)
-                clientesBean.saldo_credito = saldoDocumentos
-                clientesDao.save(clientesBean)
-                testLoadClientes(clientesBean.id.toString())
-                chargeViewState.value = ChargeViewState.ClientLoaded(clientesBean)
-            } else {
-
-                //dialogo = new Dialogo(activityGlobal);
-                //dialogo.setAceptar(true);
-                //dialogo.setOnAceptarDissmis(true);
-                //dialogo.setMensaje("Cliente no encontrado");
-                //dialogo.show();
-                //return ;
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     fun getTaxes(clientId: String) {

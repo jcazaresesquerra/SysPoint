@@ -91,7 +91,7 @@ import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
 
 /*TODO refactor this class*/
-public class VentasActivity extends AppCompatActivity {
+/*public class VentasActivity extends AppCompatActivity {
 
     private AdapterItemsVenta mAdapter;
     private List<VentasModelBean> mData;
@@ -118,7 +118,6 @@ public class VentasActivity extends AppCompatActivity {
     private ImageView imageViewVentas, imageViewVisitas;
     private String cuentaMatriz = "";
     private String sucursalMatriz = "";
-    private TextView textView_credito_cliente_vents_view;
     RelativeLayout rlprogress_venta;
 
     private boolean confirmPrecaptureClicked = false;
@@ -132,11 +131,349 @@ public class VentasActivity extends AppCompatActivity {
         rlprogress_venta = findViewById(R.id.rlprogress_venta);
         //donwloadCobranza();
         activity = this;
-        this.initToolBar();
         this.deleteVentaTemp();
+
+        this.initToolBar();
         this.initControls();
         this.initRecyclerView();
         locationStart();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_CANCELED)
+            return;
+
+        String cantidad = data.getStringExtra(Actividades.PARAM_1);
+        String articulo = data.getStringExtra(Actividades.PARAM_2);
+
+        final ProductDao productDao = new ProductDao();
+        final ProductoBean productoBean = productDao.getProductoByArticulo(articulo);
+
+        if (productoBean == null) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        //Validamos si existe el producto
+        if (validaProducto(productoBean.getArticulo())) {
+            final PrettyDialog dialogo = new PrettyDialog(this);
+            dialogo.setTitle("Existe")
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("El producto ingresado ya existe en la venta")
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialogo.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialogo.dismiss();
+                        }
+                    });
+            dialogo.setCancelable(false);
+            dialogo.show();
+            return;
+        }
+
+        //TODO PERMITIMOS QUE EL USUARIO VENTA A PRECIO 0
+        // if (productoBean.getPrecio() == 0) {
+        //     final PrettyDialog dialogo = new PrettyDialog(this);
+        //     dialogo.setTitle("Precio")
+        //             .setTitleColor(R.color.purple_500)
+        //             .setMessage("El precio debe de ser mayor a 0")
+        //             .setMessageColor(R.color.purple_700)
+        //             .setAnimationEnabled(false)
+        //             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+        //                 @Override
+        //                 public void onClick() {
+        //                     dialogo.dismiss();
+        //                 }
+        //             })
+        //             .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+        //                 @Override
+        //                 public void onClick() {
+        //                     dialogo.dismiss();
+        //                 }
+        //             });
+        //     dialogo.setCancelable(false);
+        //     dialogo.show();
+        //     return;
+        // }
+
+        if (cantidad == null || cantidad.isEmpty()) {
+            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int cantidadVendida = Integer.parseInt(cantidad);
+
+        //Validamos los datos del cliente
+        ClientDao clientDao = new ClientDao();
+        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+
+        //Validamos si hay precio especial del cliente
+        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
+        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+
+        //Hay precio especial entonces aplica el precio especial
+
+        if (preciosEspecialesBean != null) {
+            addItem(productoBean.getArticulo(), productoBean.getDescripcion(), preciosEspecialesBean.getPrecio(), productoBean.getCosto(), productoBean.getIva(), cantidadVendida);
+
+        } else {//No apliques precio especial
+            addItem(productoBean.getArticulo(), productoBean.getDescripcion(), productoBean.getPrecio(), productoBean.getCosto(), productoBean.getIva(), cantidadVendida);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_ventas, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+
+        switch (item.getItemId()) {
+
+            case android.R.id.home:
+                if (!isBackPressed) {
+                    isBackPressed = true;
+                    final PrettyDialog dialog = new PrettyDialog(this);
+                    dialog.setTitle("Salir")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("Desea salir de la venta")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            })
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+
+                                    deleteVentaTemp();
+                                    finish();
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            })
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialog.dismiss();
+                                    isBackPressed = false;
+                                }
+                            });
+                    dialog.setCancelable(false);
+                    dialog.show();
+                }
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            final PrettyDialog dialog = new PrettyDialog(this);
+            dialog.setTitle("Salir")
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Desea salir de la venta")
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            deleteVentaTemp();
+                            finish();
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+
+                        }
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1000) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationStart();
+                return;
+            }
+        }
+    }
+
+    private void initToolBar() {
+
+        Toolbar toolbar = findViewById(R.id.toolbar_ventas);
+        toolbar.setTitle("Venta");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
+        }
+    }
+
+    private void initRecyclerView() {
+
+        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
+
+        final RecyclerView recyclerView = findViewById(R.id.recyclerView_ventas);
+        recyclerView.setHasFixedSize(true);
+
+        final LinearLayoutManager manager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(manager);
+
+        mAdapter = new AdapterItemsVenta(mData, position -> {
+
+            VentasModelBean item = mData.get(position);
+
+            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
+            dialog.setTitle("Eliminar")
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            VentasModelBean item = mData.get(position);
+                            SellsModelDao dao = new SellsModelDao();
+                            dao.delete(item);
+                            mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
+                            mAdapter.setData(mData);
+                            ocultaLinearLayouth();
+                            calculaImportes();
+                            dialog.dismiss();
+                        }
+                    })
+                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+
+                        }
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+            return false;
+        }, new AdapterItemsVenta.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                VentasModelBean item = mData.get(position);
+
+                final Dialog dialogo = new Dialog(VentasActivity.this);
+                dialogo.requestWindowFeature(Window.FEATURE_NO_TITLE); //before
+                dialogo.setContentView(R.layout.dialog_cantidad_venta);
+
+                final EditText editTextCantidad = dialogo.findViewById(R.id.edittext_cantidad_venta_seleccionada_dialog);
+
+                //Cuando el usuario da click en el boton aceptar
+                final Button buttonAceptar = dialogo.findViewById(R.id.button_seleccionar_cantidad_venta_dialog);
+                buttonAceptar.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        String cantidad = editTextCantidad.getText().toString();
+
+                        if (cantidad == null || cantidad.isEmpty()) {
+                            return;
+                        }
+
+                        int cantidadVenta = Integer.parseInt(cantidad);
+
+                        if (cantidadVenta == 0) {
+                            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
+                            dialog.setTitle("Precio")
+                                    .setTitleColor(R.color.purple_500)
+                                    .setMessage("El precio debe de ser mayor a cero")
+                                    .setMessageColor(R.color.purple_700)
+                                    .setAnimationEnabled(false)
+                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialog.dismiss();
+                                        }
+                                    })
+                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                        @Override
+                                        public void onClick() {
+                                            dialog.dismiss();
+                                        }
+                                    });
+                            dialog.setCancelable(false);
+                            dialog.show();
+                            return;
+                        }
+
+                        final SellsModelDao dao = new SellsModelDao();
+                        item.setCantidad(cantidadVenta);
+                        dao.save(item);
+
+                        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
+                        mAdapter.setData(mData);
+                        ocultaLinearLayouth();
+                        calculaImportes();
+                        dialogo.dismiss();
+                    }
+                });
+
+                dialogo.show();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(editTextCantidad.getWindowToken(), 0);
+                editTextCantidad.requestFocus();
+                showKeyboards(VentasActivity.this);
+            }
+        });
+        recyclerView.setAdapter(mAdapter);
+        ocultaLinearLayouth();
+        calculaImportes();
     }
 
     private void initControls() {
@@ -190,7 +527,7 @@ public class VentasActivity extends AppCompatActivity {
             if (existenPartidas()) {
 
 
-                if (radio_contado != null && radio_contado.isChecked() == false && radio_credito.isChecked() == false){
+                if (radio_contado != null && !radio_contado.isChecked() && !radio_credito.isChecked()){
                     final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
                     dialogo.setTitle("Tipo de venta")
                             .setTitleColor(R.color.purple_500)
@@ -280,7 +617,7 @@ public class VentasActivity extends AppCompatActivity {
                                         return;
                                     }
                                 } else {
-                                    if (validaCredito()) {
+                                    if (is_credito) {
                                         saldo_disponible = credito - saldo_credito;
                                         if (saldo_disponible < importe_venta) {
                                             final PrettyDialog dialogo = new PrettyDialog(VentasActivity.this);
@@ -408,7 +745,7 @@ public class VentasActivity extends AppCompatActivity {
                                         ventasBean.setTemporal(1);
                                         ventasBean.setVenta(ultimoFolio);
                                         ventasBean.setLatidud(latidud);
-                                        ventasBean.setLatidud(latidud);
+                                        ventasBean.setLongitud(longitud);
                                         ventasBean.setSync(0);
                                         ventasBean.setTipo_venta(tipoVenta);
                                         ventasBean.setUsuario_cancelo("");
@@ -664,13 +1001,6 @@ public class VentasActivity extends AppCompatActivity {
         }).execute(), 100);
     }
 
-    private boolean validaCredito() {
-        if (is_credito) {
-            return true;
-        }
-        return false;
-    }
-
     private void showCustomDialog(ClienteBean clienteBean) {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
@@ -808,202 +1138,10 @@ public class VentasActivity extends AppCompatActivity {
         }
     }
 
-    private void initRecyclerView() {
-
-        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-
-        final RecyclerView recyclerView = findViewById(R.id.recyclerView_ventas);
-        recyclerView.setHasFixedSize(true);
-
-        final LinearLayoutManager manager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(manager);
-
-        mAdapter = new AdapterItemsVenta(mData, position -> {
-
-            VentasModelBean item = mData.get(position);
-
-            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
-            dialog.setTitle("Eliminar")
-                    .setTitleColor(R.color.purple_500)
-                    .setMessage("Desea eliminar el articulo " + "\n" + item.getDescripcion())
-                    .setMessageColor(R.color.purple_700)
-                    .setAnimationEnabled(false)
-                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialog.dismiss();
-                        }
-                    })
-                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            VentasModelBean item = mData.get(position);
-                            SellsModelDao dao = new SellsModelDao();
-                            dao.delete(item);
-                            mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                            mAdapter.setData(mData);
-                            ocultaLinearLayouth();
-                            calculaImportes();
-                            dialog.dismiss();
-                        }
-                    })
-                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialog.dismiss();
-
-                        }
-                    });
-            dialog.setCancelable(false);
-            dialog.show();
-            return false;
-        }, new AdapterItemsVenta.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                VentasModelBean item = mData.get(position);
-
-                final Dialog dialogo = new Dialog(VentasActivity.this);
-                dialogo.requestWindowFeature(Window.FEATURE_NO_TITLE); //before
-                dialogo.setContentView(R.layout.dialog_cantidad_venta);
-
-                final EditText editTextCantidad = dialogo.findViewById(R.id.edittext_cantidad_venta_seleccionada_dialog);
-
-                //Cuando el usuario da click en el boton aceptar
-                final Button buttonAceptar = dialogo.findViewById(R.id.button_seleccionar_cantidad_venta_dialog);
-                buttonAceptar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        String cantidad = editTextCantidad.getText().toString();
-
-                        if (cantidad == null || cantidad.isEmpty()) {
-                            return;
-                        }
-
-                        int cantidadVenta = Integer.parseInt(cantidad);
-
-                        if (cantidadVenta == 0) {
-                            final PrettyDialog dialog = new PrettyDialog(VentasActivity.this);
-                            dialog.setTitle("Precio")
-                                    .setTitleColor(R.color.purple_500)
-                                    .setMessage("El precio debe de ser mayor a cero")
-                                    .setMessageColor(R.color.purple_700)
-                                    .setAnimationEnabled(false)
-                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                        @Override
-                                        public void onClick() {
-                                            dialogo.dismiss();
-                                        }
-                                    })
-                                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                        @Override
-                                        public void onClick() {
-                                            dialogo.dismiss();
-                                        }
-                                    });
-                            dialog.setCancelable(false);
-                            dialog.show();
-                            return;
-                        }
-
-                        final SellsModelDao dao = new SellsModelDao();
-                        item.setCantidad(cantidadVenta);
-                        dao.save(item);
-
-                        mData = (List<VentasModelBean>) (List<?>) new SellsModelDao().list();
-                        mAdapter.setData(mData);
-                        ocultaLinearLayouth();
-                        calculaImportes();
-                        dialogo.dismiss();
-                    }
-                });
-
-                dialogo.show();
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(editTextCantidad.getWindowToken(), 0);
-                editTextCantidad.requestFocus();
-                showKeyboards(VentasActivity.this);
-            }
-        });
-        recyclerView.setAdapter(mAdapter);
-        ocultaLinearLayouth();
-        calculaImportes();
-    }
-
     public static void showKeyboards(Activity activity) {
         if (activity != null) {
             activity.getWindow()
                     .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        }
-    }
-
-    private void initToolBar() {
-
-        Toolbar toolbar = findViewById(R.id.toolbar_ventas);
-        toolbar.setTitle("Venta");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_ventas, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-
-        switch (item.getItemId()) {
-
-            case android.R.id.home:
-                if (!isBackPressed) {
-                    isBackPressed = true;
-                    final PrettyDialog dialog = new PrettyDialog(this);
-                    dialog.setTitle("Salir")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Desea salir de la venta")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                    isBackPressed = false;
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-
-                                    deleteVentaTemp();
-                                    finish();
-                                    dialog.dismiss();
-                                    isBackPressed = false;
-                                }
-                            })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                    isBackPressed = false;
-                                }
-                            });
-                    dialog.setCancelable(false);
-                    dialog.show();
-                }
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -1024,100 +1162,6 @@ public class VentasActivity extends AppCompatActivity {
             sb.append(chars[rnd.nextInt(chars.length)]);
 
         return sb.toString();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_CANCELED)
-            return;
-
-        String cantidad = data.getStringExtra(Actividades.PARAM_1);
-        String articulo = data.getStringExtra(Actividades.PARAM_2);
-
-        final ProductDao productDao = new ProductDao();
-        final ProductoBean productoBean = productDao.getProductoByArticulo(articulo);
-
-        if (productoBean == null) {
-            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        //Validamos si existe el producto
-        if (validaProducto(productoBean.getArticulo())) {
-            final PrettyDialog dialogo = new PrettyDialog(this);
-            dialogo.setTitle("Existe")
-                    .setTitleColor(R.color.purple_500)
-                    .setMessage("El producto ingresado ya existe en la venta")
-                    .setMessageColor(R.color.purple_700)
-                    .setAnimationEnabled(false)
-                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialogo.dismiss();
-                        }
-                    })
-                    .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialogo.dismiss();
-                        }
-                    });
-            dialogo.setCancelable(false);
-            dialogo.show();
-            return;
-        }
-
-        //TODO PERMITIMOS QUE EL USUARIO VENTA A PRECIO 0
-        // if (productoBean.getPrecio() == 0) {
-        //     final PrettyDialog dialogo = new PrettyDialog(this);
-        //     dialogo.setTitle("Precio")
-        //             .setTitleColor(R.color.purple_500)
-        //             .setMessage("El precio debe de ser mayor a 0")
-        //             .setMessageColor(R.color.purple_700)
-        //             .setAnimationEnabled(false)
-        //             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-        //                 @Override
-        //                 public void onClick() {
-        //                     dialogo.dismiss();
-        //                 }
-        //             })
-        //             .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-        //                 @Override
-        //                 public void onClick() {
-        //                     dialogo.dismiss();
-        //                 }
-        //             });
-        //     dialogo.setCancelable(false);
-        //     dialogo.show();
-        //     return;
-        // }
-
-        if (cantidad == null || cantidad.isEmpty()) {
-            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        int cantidadVendida = Integer.parseInt(cantidad);
-
-        //Validamos los datos del cliente
-        ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
-
-        //Validamos si hay precio especial del cliente
-        final SpecialPricesDao specialPricesDao = new SpecialPricesDao();
-        final PreciosEspecialesBean preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
-
-        //Hay precio especial entonces aplica el precio especial
-
-        if (preciosEspecialesBean != null) {
-            addItem(productoBean.getArticulo(), productoBean.getDescripcion(), preciosEspecialesBean.getPrecio(), productoBean.getCosto(), productoBean.getIva(), cantidadVendida);
-
-        } else {//No apliques precio especial
-            addItem(productoBean.getArticulo(), productoBean.getDescripcion(), productoBean.getPrecio(), productoBean.getCosto(), productoBean.getIva(), cantidadVendida);
-        }
     }
 
     private void addItem(String articulo, String descripcion, double precio, double costo,
@@ -1164,47 +1208,6 @@ public class VentasActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // TODO Auto-generated method stub
-
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            final PrettyDialog dialog = new PrettyDialog(this);
-            dialog.setTitle("Salir")
-                    .setTitleColor(R.color.purple_500)
-                    .setMessage("Desea salir de la venta")
-                    .setMessageColor(R.color.purple_700)
-                    .setAnimationEnabled(false)
-                    .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialog.dismiss();
-                        }
-                    })
-                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            deleteVentaTemp();
-                            finish();
-                            dialog.dismiss();
-                        }
-                    })
-                    .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialog.dismiss();
-
-                        }
-                    });
-            dialog.setCancelable(false);
-            dialog.show();
-            return true;
-        }
-
-        return super.onKeyDown(keyCode, event);
-
-    }
-
     private void deleteVentaTemp() {
         SellsModelDao dao = new SellsModelDao();
         dao.clear();
@@ -1215,9 +1218,7 @@ public class VentasActivity extends AppCompatActivity {
         double subTotal = 0;
         double totalImpuesto = 0;
 
-        /**
-         * Obtenemos los totales
-         **/
+
         for (int i = 0; i < mData.size(); i++) {
             subTotal += (mData.get(i).getPrecio() * mData.get(i).getCantidad());
             totalImpuesto += (mData.get(i).getPrecio() * mData.get(i).getCantidad()) * (mData.get(i).getImpuesto() / 100);
@@ -1262,7 +1263,6 @@ public class VentasActivity extends AppCompatActivity {
         Local.setMainActivity(this);
         final boolean gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (!gpsEnabled) {
-            /* permite realizar algunas configuraciones del movil para el permiso */
             Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(settingsIntent);
         }
@@ -1274,7 +1274,6 @@ public class VentasActivity extends AppCompatActivity {
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, Local);
     }
 
-    //* Aqui empieza la Clase Localizacion / se obtienen las coordenadas */
     public class Localizacion implements LocationListener {
         VentasActivity registrarClientesController;
 
@@ -1288,7 +1287,6 @@ public class VentasActivity extends AppCompatActivity {
 
         @Override
         public void onLocationChanged(Location location) {
-            /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
             try {
                 new Thread(() -> {
                     if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
@@ -1312,7 +1310,25 @@ public class VentasActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            this.registrarClientesController.setLocation(location);
+
+            try {
+                if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+                    try {
+                        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                        List<Address> list = geocoder.getFromLocation(
+                                location.getLatitude(), location.getLongitude(), 1);
+                        if (!list.isEmpty()) {
+                            Address DirCalle = list.get(0);
+                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -1342,43 +1358,4 @@ public class VentasActivity extends AppCompatActivity {
             }
         }
     }
-
-    /* obtener la direccion*/
-    public void setLocation(Location loc) {
-        //Obtener la direccion de la calle a partir de la latitud y la longitud
-
-        try {
-            new Thread(() -> {
-                if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
-                    try {
-                        /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                        List<Address> list = geocoder.getFromLocation(
-                                loc.getLatitude(), loc.getLongitude(), 1);
-                        if (!list.isEmpty()) {
-                            Address DirCalle = list.get(0);
-                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1000) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                locationStart();
-                return;
-            }
-        }
-    }
-
-
-}
+}*/

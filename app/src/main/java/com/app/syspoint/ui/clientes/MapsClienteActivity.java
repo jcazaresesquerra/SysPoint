@@ -377,32 +377,43 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMarkerDragEnd(Marker marker) {
 
-         latitudeMarker = marker.getPosition().latitude;
-         longitudMarket = marker.getPosition().longitude;
-
-         latMarker= String.valueOf(latitudeMarker);
-         lngMarker = String.valueOf(longitudMarket);
-
         try {
-            List<Address> list = geocoder.getFromLocation(
-                    marker.getPosition().latitude, marker.getPosition().longitude, 1);
+            new Thread(() -> {
+               try {
+                   latitudeMarker = marker.getPosition().latitude;
+                   longitudMarket = marker.getPosition().longitude;
 
-                  String direccion = list.get(0).getAddressLine(0);
-                  String cityName = list.get(0).getCountryName();
-                  String stateName = list.get(0).getAdminArea();
-                  String codigo = list.get(0).getPostalCode();
-                 numero = list.get(0).getFeatureName();
-                 calle = list.get(0).getThoroughfare();
-                 localidad = list.get(0).getLocality();
-                 colonia = list.get(0).getLocality();
-                 estado = stateName;
-                 pais = cityName;
-                 cp = codigo;
-                 address = direccion;
+                   latMarker= String.valueOf(latitudeMarker);
+                   lngMarker = String.valueOf(longitudMarket);
 
-        } catch (IOException e) {
+                   try {
+                       List<Address> list = geocoder.getFromLocation(
+                               marker.getPosition().latitude, marker.getPosition().longitude, 1);
+
+                       String direccion = list.get(0).getAddressLine(0);
+                       String cityName = list.get(0).getCountryName();
+                       String stateName = list.get(0).getAdminArea();
+                       String codigo = list.get(0).getPostalCode();
+                       numero = list.get(0).getFeatureName();
+                       calle = list.get(0).getThoroughfare();
+                       localidad = list.get(0).getLocality();
+                       colonia = list.get(0).getLocality();
+                       estado = stateName;
+                       pais = cityName;
+                       cp = codigo;
+                       address = direccion;
+
+                   } catch (IOException e) {
+                       e.printStackTrace();
+                   }
+                   runOnUiThread(() -> pickUpText.setText(address));
+
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+            }).start();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        pickUpText.setText(address);
     }
 }

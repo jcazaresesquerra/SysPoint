@@ -38,3 +38,8 @@ fun View.setInvisible(): View {
     this.visibility = View.INVISIBLE
     return this
 }
+
+fun View.setGone(): View {
+    this.visibility = View.GONE
+    return this
+}

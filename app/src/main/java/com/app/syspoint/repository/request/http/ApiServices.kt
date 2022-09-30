@@ -5,6 +5,7 @@ import com.app.syspoint.utils.Constants
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import tech.thdev.network.flowcalladapterfactory.FlowCallAdapterFactory
 import java.util.concurrent.TimeUnit
 
 class ApiServices {
@@ -23,6 +24,7 @@ class ApiServices {
                     .baseUrl(getBaseURL())
                     .client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(FlowCallAdapterFactory())
                     .build()
             }
             return retrofit!!

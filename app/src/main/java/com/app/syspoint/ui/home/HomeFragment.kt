@@ -1,12 +1,12 @@
 package com.app.syspoint.ui.home
 
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.os.Handler
+import android.view.*
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +16,7 @@ import com.app.syspoint.models.sealed.HomeViewState
 import com.app.syspoint.repository.database.bean.ClientesRutaBean
 import com.app.syspoint.ui.customs.DialogoRuteo
 import com.app.syspoint.ui.customs.DialogoRuteo.DialogListener
+import com.app.syspoint.ui.home.activities.MapsRuteoActivity
 import com.app.syspoint.ui.home.adapter.AdapterRutaClientes
 import com.app.syspoint.ui.ventas.VentasActivity
 import com.app.syspoint.utils.*
@@ -55,6 +56,42 @@ import libs.mjn.prettydialog.PrettyDialog
         return binding.root
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_home_fragment, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.sinronizaAll -> {
+                val progressDialog = ProgressDialog(activity)
+                progressDialog.setMessage("Espere un momento")
+                progressDialog.setCancelable(false)
+                progressDialog.show()
+                Handler().postDelayed({
+                    NetworkStateTask { connected: Boolean ->
+                        progressDialog.dismiss()
+                        if (!connected) {
+                            showDialogNotConnectionInternet()
+                        } else {
+                            viewModel.getData()
+                        }
+                    }.execute()
+                }, 100)
+                true
+            }
+            R.id.close_caja -> {
+                closeBox()
+                true
+            }
+            R.id.viewMap -> {
+                Actividades.getSingleton(activity, MapsRuteoActivity::class.java).muestraActividad()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun renderViewState(homeViewState: HomeViewState) {
         when(homeViewState) {
             is HomeViewState.ClientRuteDefined -> {
@@ -85,6 +122,18 @@ import libs.mjn.prettydialog.PrettyDialog
             is HomeViewState.UpdateRute -> {
                 updateRuteDialog()
             }
+            is HomeViewState.RuteLoaded -> {
+                refreshRecyclerView(homeViewState.data)
+            }
+        }
+    }
+
+    private fun refreshRecyclerView(clientRute: List<ClientesRutaBean?>) {
+        adapter.setData(clientRute)
+        if (clientRute.isNotEmpty()) {
+            binding.lytClientes.setInvisible()
+        } else {
+            binding.lytClientes.setVisible()
         }
     }
 
@@ -101,10 +150,16 @@ import libs.mjn.prettydialog.PrettyDialog
         val manager = LinearLayoutManager(context)
         binding.rvListaClientes.layoutManager = manager
 
-        adapter = AdapterRutaClientes(clientRute, { position: Int ->
-            val clientBean: ClientesRutaBean = clientRute[position]
-            goSellActivity(clientBean.cuenta)
-        }) { position: Int -> false }
+        adapter = AdapterRutaClientes(clientRute, object: AdapterRutaClientes.OnItemClickListener {
+            override fun onItemClick(position: Int) {
+                val clientBean: ClientesRutaBean = clientRute[position]
+                goSellActivity(clientBean.cuenta)
+            }
+        }, object: AdapterRutaClientes.OnItemLongClickListener {
+            override fun onItemLongClicked(position: Int): Boolean {
+                return false
+            }
+        })
 
         binding.rvListaClientes.adapter = adapter
     }
@@ -165,6 +220,40 @@ import libs.mjn.prettydialog.PrettyDialog
             }
         dialog.setCancelable(false)
         dialog.show()
+    }
+
+    private fun closeBox() {
+        val dialog = PrettyDialog(requireActivity())
+        dialog.setTitle("Corte del día")
+            .setTitleColor(R.color.purple_500)
+            .setMessage("Desea realizar el corte del día")
+            .setMessageColor(R.color.purple_700)
+            .setAnimationEnabled(false)
+            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500) { dialog.dismiss() }
+            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
+                dialog.dismiss()
+            }.addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) {
+                dialog.dismiss()
+            }
+        dialog.setCancelable(false)
+        dialog.show()
+    }
+
+    private fun showDialogNotConnectionInternet() {
+        val dialog = Dialog(requireActivity())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE) // before
+        dialog.setContentView(R.layout.dialog_warning)
+        dialog.setCancelable(true)
+        val lp = WindowManager.LayoutParams()
+        lp.copyFrom(dialog.window!!.attributes)
+        lp.width = WindowManager.LayoutParams.WRAP_CONTENT
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT
+        (dialog.findViewById<View>(R.id.bt_close) as AppCompatButton) click {
+            viewModel.getData()
+            dialog.dismiss()
+        }
+        dialog.show()
+        dialog.window!!.attributes = lp
     }
 
     private fun goSellActivity(account: String) {

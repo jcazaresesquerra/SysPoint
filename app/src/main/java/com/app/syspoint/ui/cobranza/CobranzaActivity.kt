@@ -48,7 +48,7 @@ class CobranzaActivity: AppCompatActivity() {
         viewModel.deletePartidas(clientId)
         viewModel.setUpCharge()
         viewModel.loadClientData(clientId)
-        viewModel.downloadCharge(clientId)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -157,7 +157,7 @@ class CobranzaActivity: AppCompatActivity() {
                 headerBinding.textViewClienteCobranzaView.text = chargeViewState.clientBean.cuenta
                 headerBinding.textViewClienteNombreCobranzaView.text = chargeViewState.clientBean.nombre_comercial
                 //this.id_cliente_seleccionado = chargeViewState.clienteBean.cuenta
-                headerBinding.textViewSubtotalCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
+                headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.clientBean.saldo_credito)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
                 headerBinding.textViewClienteCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
                 //this.saldoCliente = chargeViewState.clienteBean.saldo_credito

@@ -57,7 +57,6 @@ class LoginActivity: AppCompatActivity() {
             val email: String = binding.etLoginEmail.text.toString()
             val password: String = binding.etLoginPassword.text.toString()
             viewModel.login(email, password)
-            binding.btnSignIn.isEnabled = true
         }
     }
 
@@ -91,6 +90,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showMainActivity() {
+        binding.btnSignIn.isEnabled = true
         val isAdmin = viewModel.isUserAdmin()
 
         val intent = Intent(applicationContext, MainActivity::class.java)
@@ -100,6 +100,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showErrorDialog() {
+        binding.btnSignIn.isEnabled = true
         val dialog = PrettyDialog(this)
         dialog.setTitle("No encontrado")
             .setTitleColor(R.color.purple_500)
