@@ -1,6 +1,7 @@
 package com.app.syspoint.viewmodel.sell
 
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,6 +25,10 @@ import com.app.syspoint.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -33,6 +38,7 @@ class SellViewModel: ViewModel() {
 
     val sellViewState = MutableLiveData<SellViewState>()
     private val partidas = MutableLiveData<List<VentasModelBean?>>()
+    val partidasEspeciales = MutableLiveData<List<PreciosEspecialesBean?>>()
     private val sellImport = MutableLiveData<Double>()
     private val latitude = MutableLiveData<Double>()
     private val longitude = MutableLiveData<Double>()
@@ -126,6 +132,7 @@ class SellViewModel: ViewModel() {
     fun setUpPricesByClient(clientId: String) {
         PriceInteractorImp().executeGetPricesByClient(clientId, object : GetPricesByClientListener {
             override fun onGetPricesByClientSuccess(pricesByClientList: List<PreciosEspecialesBean>) {
+                partidasEspeciales.value = pricesByClientList
                 //sellViewState.postValue(SellViewState.LoadingFinish)
                 loadClients(clientId)
             }
@@ -225,7 +232,10 @@ class SellViewModel: ViewModel() {
     @Synchronized
     fun computeImports() {
         viewModelScope.launch(Dispatchers.Default) {
-            val sells = SellsModelDao().list() as List<VentasModelBean?>
+            val sells: List<VentasModelBean?> =
+                if (partidas.value.isNullOrEmpty())
+                    SellsModelDao().list() as List<VentasModelBean?>
+                else partidas.value!!
 
             var subTotal = 0.0
             var totalImpuesto = 0.0

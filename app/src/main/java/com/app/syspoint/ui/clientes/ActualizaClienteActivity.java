@@ -486,37 +486,50 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
         @Override
         public void onLocationChanged(Location location) {
-            if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
-                try {
-                    /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                    Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                    List<Address> list = geocoder.getFromLocation(
-                            location.getLatitude(), location.getLongitude(), 1);
-                    if (!list.isEmpty()) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+                        try {
+                            /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+                            Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                            List<Address> list = geocoder.getFromLocation(
+                                    location.getLatitude(), location.getLongitude(), 1);
+                            if (!list.isEmpty()) {
 
-                        String address = list.get(0).getAddressLine(0);
-                        String cityName = list.get(0).getLocality();
-                        String stateName = list.get(0).getAdminArea();
-                        String codigo = list.get(0).getPostalCode();
+                                String address = list.get(0).getAddressLine(0);
+                                String cityName = list.get(0).getLocality();
+                                String stateName = list.get(0).getAdminArea();
+                                String codigo = list.get(0).getPostalCode();
 
 
-                        if (!isLocation) {
-                            editText_calle_actualiza_cliente.setText(address);
-                            editText_cp_actualiza_cliente.setText(codigo);
-                            editText_colonia_actualiza_cliente.setText(cityName);
-                            editText_ciudad_actualiza_cliente.setText(stateName);
-                            editTextLatitud.setText("" +list.get(0).getLatitude());
-                            editTextLongitud.setText(""+ list.get(0).getLongitude());
-                        }else {
-                            editTextLatitud.setText("" +list.get(0).getLatitude());
-                            editTextLongitud.setText(""+ list.get(0).getLongitude());
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!isLocation) {
+                                            editText_calle_actualiza_cliente.setText(address);
+                                            editText_cp_actualiza_cliente.setText(codigo);
+                                            editText_colonia_actualiza_cliente.setText(cityName);
+                                            editText_ciudad_actualiza_cliente.setText(stateName);
+                                            editTextLatitud.setText("" +list.get(0).getLatitude());
+                                            editTextLongitud.setText(""+ list.get(0).getLongitude());
+                                        }else {
+                                            editTextLatitud.setText("" +list.get(0).getLatitude());
+                                            editTextLongitud.setText(""+ list.get(0).getLongitude());
+                                        }
+                                    }
+                                });
+
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-            this.registrarClientesController.setLocation(location);
+            }).start();
+
+            registrarClientesController.setLocation(location);
+
         }
 
         @Override
@@ -549,22 +562,27 @@ public class ActualizaClienteActivity extends AppCompatActivity {
 
     /* obtener la direccion*/
     public void setLocation(Location loc) {
-        //Obtener la direccion de la calle a partir de la latitud y la longitud
-        if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
-            try {
-                /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<Address> list = geocoder.getFromLocation(
-                        loc.getLatitude(), loc.getLongitude(), 1);
-                if (!list.isEmpty()) {
-                    Address DirCalle = list.get(0);
-                    // editTextDireccion.setText(DirCalle.getAddressLine(0));
-                }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Obtener la direccion de la calle a partir de la latitud y la longitud
+                if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0) {
+                    try {
+                        /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
+                        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+                        List<Address> list = geocoder.getFromLocation(
+                                loc.getLatitude(), loc.getLongitude(), 1);
+                        if (!list.isEmpty()) {
+                            Address DirCalle = list.get(0);
+                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
+                        }
 
-            } catch (IOException e) {
-                e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-        }
+        }).start();
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

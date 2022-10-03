@@ -82,6 +82,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     clienteBean.recordatorio
                 )
             }
+            val saldoCLient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
+                Utils.FDinero(clienteBean.saldo_credito)
+            } else {
+                val clientMatriz = clientDao.getClientByAccount(clienteBean.matriz)
+                Utils.FDinero(clientMatriz?.saldo_credito ?: 0.0)
+            }
+            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoCLient)
         }
         //viewModel.loadClients(clientId)
 
@@ -126,13 +133,16 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         //Validamos si hay precio especial del cliente
         val specialPricesDao = SpecialPricesDao()
-        val preciosEspecialesBean =
-            specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)
+        /*val preciosEspecialesBean =
+            specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)*/
+
+        val preciosEspeciales = viewModel.partidasEspeciales.value?.filter { precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo}
+        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) null else preciosEspeciales[0]
 
         val data = viewModel.addItem(
             productoBean.articulo,
             productoBean.descripcion,
-            preciosEspecialesBean?.precio ?: productoBean.precio,
+            precioEspacial?.precio ?: productoBean.precio,
             productoBean.costo,
             productoBean.iva,
             cantidadVendida
@@ -298,6 +308,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private fun refreshRecyclerView(data: List<VentasModelBean?>) {
         adapter.setData(data)
+
         binding.recyclerViewVentas.adapter = adapter
 
         if (data.isEmpty()) {

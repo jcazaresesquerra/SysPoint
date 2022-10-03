@@ -1,9 +1,11 @@
 package com.app.syspoint.ui.cobranza;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -34,6 +36,7 @@ import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
+    private static final String TAG = "ChargeViewModel";
     private AdapterListaDocumentosCobranza mAdapter;
     private List<CobranzaBean> lista;
     private LinearLayout lyt_lista_documentos;
@@ -94,25 +97,9 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
     }
 
     private void initRecyclerViews(){
-        new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
-            @Override
-            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
-                runOnUiThread(() -> {
-                    lista = (List<CobranzaBean>) chargeByClientList;
-                    if (mAdapter != null) {
-                        mAdapter.setData(lista);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-
-            @Override
-            public void onGetChargeByClientError() {
-
-            }
-        });
-
+        Log.d(TAG, "getByCobranzaByCliente start");
         lista = new PaymentDao().getByCobranzaByCliente(clienteGlobal);
+        Log.d(TAG, "getByCobranzaByCliente finish");
 
         if (lista.size() > 0){
             lyt_lista_documentos.setVisibility(View.GONE);

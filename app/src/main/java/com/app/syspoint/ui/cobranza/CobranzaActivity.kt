@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -25,6 +26,7 @@ import libs.mjn.prettydialog.PrettyDialog
 class CobranzaActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityCobranzaBinding
+    private lateinit var headerBinding: EncabezadoCobranzaBinding
     private lateinit var viewModel: ChargeViewModel
     private lateinit var adapter: AdapterCobranza
 
@@ -32,10 +34,13 @@ class CobranzaActivity: AppCompatActivity() {
 
     private lateinit var clientId: String
 
+    private val TAG = "ChargeViewModel"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityCobranzaBinding.inflate(layoutInflater)
+        headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
         viewModel = ViewModelProvider(this)[ChargeViewModel::class.java]
         viewModel.chargeViewState.observe(this, ::renderChargeViewState)
 
@@ -90,6 +95,7 @@ class CobranzaActivity: AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "onResume")
         viewModel.setUpCharge()
         viewModel.getTaxes(clientId)
     }
@@ -145,7 +151,6 @@ class CobranzaActivity: AppCompatActivity() {
                 }
             }
             is ChargeViewState.ChargeLoaded -> {
-                val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
                 headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.saldoCiente)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
                 headerBinding.textViewClienteSaldoCobranzaView.text = Utils.FDinero(chargeViewState.saldoCiente)
@@ -159,7 +164,7 @@ class CobranzaActivity: AppCompatActivity() {
                 //this.id_cliente_seleccionado = chargeViewState.clienteBean.cuenta
                 headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.clientBean.saldo_credito)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
-                headerBinding.textViewClienteCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
+                headerBinding.textViewClienteSaldoCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
                 //this.saldoCliente = chargeViewState.clienteBean.saldo_credito
             }
             is ChargeViewState.EndChargeWithDocument -> {
@@ -240,12 +245,13 @@ class CobranzaActivity: AppCompatActivity() {
     }
 
     private fun setUpListeners() {
-        val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
         headerBinding.fbAddDocumentos click {
+            Log.d(TAG, "fbAddDocumentos clicked")
             val parametros = HashMap<String, String>()
             parametros[Actividades.PARAM_1] = clientId
             Actividades.getSingleton(this@CobranzaActivity, ListaDocumentosCobranzaActivity::class.java)
                 .muestraActividadForResultAndParams(Actividades.PARAM_INT_1, parametros)
+            Log.d(TAG, "fbAddDocumentos finish")
         }
     }
 

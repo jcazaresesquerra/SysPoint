@@ -93,7 +93,6 @@ class RequestCharge {
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
                                 val cobranzaBean1 = CobranzaBean()
-                                val paymentDao1 = PaymentDao()
                                 cobranzaBean1.cobranza = item.cobranza
                                 cobranzaBean1.cliente = item.cuenta
                                 cobranzaBean1.importe = item.importe
@@ -105,7 +104,7 @@ class RequestCharge {
                                 cobranzaBean1.hora = item.hora
                                 cobranzaBean1.empleado = item.identificador
                                 cobranzaBean1.isCheck = false
-                                paymentDao1.insert(cobranzaBean1)
+                                paymentDao.insert(cobranzaBean1)
                                 chargeByClientList.add(cobranzaBean1)
                             } else {
                                 cobranzaBean.cobranza = item.cobranza
