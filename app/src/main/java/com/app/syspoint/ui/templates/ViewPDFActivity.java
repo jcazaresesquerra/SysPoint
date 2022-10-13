@@ -510,7 +510,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
 
         if (ventasBean == null) {
-            Toast.makeText(this, "Ha ocurrido un error", Toast.LENGTH_SHORT).show();
+            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente addProductosInventori");
             return;
         }
 

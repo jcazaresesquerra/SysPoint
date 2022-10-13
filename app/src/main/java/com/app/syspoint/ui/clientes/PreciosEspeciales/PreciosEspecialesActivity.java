@@ -195,7 +195,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
         if (mData == null) {
             mData = new ArrayList<>();
-            mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
+            mData = new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
         }
 
         if (mData.size() > 0) {
@@ -242,10 +242,10 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                                 } else {
                                     enviaPrecioServidor();
                                 }
-                                mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+                                mData = new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+                                mData.removeIf(item -> !item.getActive());
                                 mAdapter.setPrecios(mData);
                                 dialog.dismiss();
-
                             }
                         })
                         .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_700, new PrettyDialogCallback() {
@@ -267,7 +267,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+        mData = new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+        mData.removeIf(item -> !item.getActive());
         mAdapter.setPrecios(mData);
         goneBackground();
     }

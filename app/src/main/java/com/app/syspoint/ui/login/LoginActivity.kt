@@ -1,10 +1,15 @@
 package com.app.syspoint.ui.login
 
 import android.Manifest.permission
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
@@ -15,6 +20,7 @@ import com.app.syspoint.databinding.ActivityLoginBinding
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
 import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
 import com.app.syspoint.utils.setInvisible
 import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.login.LoginViewModel
@@ -24,6 +30,11 @@ class LoginActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: LoginViewModel
+
+    // receiver
+    private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
+
+    private var isConnected = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +49,7 @@ class LoginActivity: AppCompatActivity() {
         setUpLogo()
         setUpListeners()
         checkPermissions()
+        registerNetworkBroadcastForNougat()
 
         viewModel.loginViewState.observe(this, ::loginViewState)
     }
@@ -47,7 +59,15 @@ class LoginActivity: AppCompatActivity() {
             LoggedIn -> showMainActivity()
             LoginError -> showErrorDialog()
             LoadingDataStart -> binding.rlprogressLogin.setVisible()
-            LoadingDataFinish -> binding.rlprogressLogin.setInvisible()
+            LoadingDataFinish -> {
+                binding.rlprogressLogin.setInvisible()
+                if (isConnected) {
+                    hideNotInternetConnectionError()
+                } else {
+                    showNotInternetConnectionError()
+                }
+            }
+            NotInternetConnection -> showNotInternetConnectionError()
         }
     }
 
@@ -68,21 +88,24 @@ class LoginActivity: AppCompatActivity() {
             && checkSelfPermission(permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-            && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             return true
         }
         if (!(shouldShowRequestPermissionRationale(permission.CAMERA)
             || shouldShowRequestPermissionRationale(permission.WRITE_EXTERNAL_STORAGE)
             || shouldShowRequestPermissionRationale(permission.BLUETOOTH)
             || shouldShowRequestPermissionRationale(permission.READ_EXTERNAL_STORAGE)
-            || shouldShowRequestPermissionRationale(permission.CALL_PHONE))) {
+            || shouldShowRequestPermissionRationale(permission.CALL_PHONE)
+            || shouldShowRequestPermissionRationale(permission.ACCESS_FINE_LOCATION))) {
             requestPermissions(
                 arrayOf(
                     permission.CAMERA,
                     permission.WRITE_EXTERNAL_STORAGE,
                     permission.READ_EXTERNAL_STORAGE,
                     permission.BLUETOOTH,
-                    permission.CALL_PHONE
+                    permission.CALL_PHONE,
+                    permission.ACCESS_FINE_LOCATION
                 ), 100
             )
         }
@@ -125,6 +148,90 @@ class LoginActivity: AppCompatActivity() {
             }
             else -> {
                 binding.imageView.setImageResource(R.drawable.logo)
+            }
+        }
+    }
+
+    private fun showNotInternetConnectionError() {
+        showError("No hay regitros en la base de datos, verifique su conexion a internet y vuelva a intentar.")
+        binding.etLoginEmail.isEnabled = false
+        binding.etLoginPassword.isEnabled = false
+        binding.btnSignIn.isEnabled = false
+        binding.errorLogin.setVisible()
+        //binding.etLoginEmail.inputType = InputType.TYPE_NULL
+        //binding.etLoginPassword.inputType = InputType.TYPE_NULL
+    }
+
+    private fun hideNotInternetConnectionError() {
+        showError("Conectado")
+        binding.etLoginEmail.isEnabled = true
+        binding.etLoginPassword.isEnabled = true
+        binding.btnSignIn.isEnabled = true
+        //binding.etLoginEmail.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        //binding.etLoginPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        binding.errorLogin.setGone()
+    }
+
+    private fun showError(error: String) {
+        binding.errorLogin.text = error
+    }
+
+    private fun registerNetworkBroadcastForNougat() {
+        mNetworkChangeReceiver = NetworkChangeReceiver(object : ConnectionNetworkListener {
+            override fun onConnected() {
+                isConnected = true
+                hideNotInternetConnectionError()
+                viewModel.sync()
+            }
+            override fun onDisconnected() {
+                isConnected = false
+            }
+        })
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            registerReceiver(
+                mNetworkChangeReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            registerReceiver(
+                mNetworkChangeReceiver,
+                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+            )
+        }
+    }
+
+    /**
+     * Connection Listener
+     */
+    interface ConnectionNetworkListener {
+        fun onConnected()
+        fun onDisconnected()
+    }
+
+    /**
+     * Connection BroadcastReceiver
+     */
+    class NetworkChangeReceiver(): BroadcastReceiver() {
+        private lateinit var mConnectionNetworkListener: ConnectionNetworkListener
+
+        constructor(connectionNetworkListener: ConnectionNetworkListener): this() {
+            mConnectionNetworkListener = connectionNetworkListener
+        }
+
+        override fun onReceive(context: Context?, p1: Intent?) {
+            try {
+                val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val netInfo = cm.activeNetworkInfo
+                val isConnected = netInfo != null && netInfo.isConnected
+                if (isConnected) {
+                    mConnectionNetworkListener.onConnected()
+                } else {
+                    mConnectionNetworkListener.onDisconnected()
+                }
+            } catch (e: NullPointerException) {
+                e.printStackTrace()
+
             }
         }
     }

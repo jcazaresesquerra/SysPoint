@@ -1,6 +1,5 @@
 package com.app.syspoint.viewmodel.login
 
-import android.content.Context
 import android.os.Handler
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -13,6 +12,7 @@ import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoginViewModel: BaseViewModel() {
@@ -154,12 +154,13 @@ class LoginViewModel: BaseViewModel() {
         }
     }
 
-    private fun sync() {
-        if (!cleanTask()) {
+    fun sync() {
+
+        if (!isSync()) {
+            loginViewState.value = LoginViewState.LoadingDataStart
             Handler().postDelayed({
                 NetworkStateTask { connected ->
                     if (connected) {
-                        loginViewState.value = LoginViewState.LoadingDataStart
                         GetAllDataInteractorImp().executeGetAllData(object :
                             GetAllDataInteractor.OnGetAllDataListener {
                             override fun onGetAllDataSuccess() {
@@ -171,18 +172,26 @@ class LoginViewModel: BaseViewModel() {
                             }
                         })
 
+                    } else {
+                        viewModelScope.launch {
+                            removeLocalSync()
+                            delay(300)
+                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                            delay(300)
+                            loginViewState.postValue(LoginViewState.NotInternetConnection)
+                        }
                     }
                 }.execute()
             }, 100)
         }
     }
 
-    private fun cleanTask(): Boolean {
+    fun isSync(): Boolean {
         val taskDao = TaskDao()
         val taskBean = taskDao.getTask(Utils.fechaActual())
         val exist: Boolean
 
-        if (taskBean == null) {
+        if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual())) {
             val stockDao = StockDao()
             stockDao.clear()
             val historialDao =
@@ -226,5 +235,10 @@ class LoginViewModel: BaseViewModel() {
         }
 
         return exist
+    }
+
+    fun removeLocalSync() {
+        val dao = TaskDao()
+        dao.clear()
     }
 }

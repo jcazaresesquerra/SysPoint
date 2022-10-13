@@ -1,12 +1,14 @@
 package com.app.syspoint.ui.home.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +58,10 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     private LocationManager locationManager;
     private MarkerOptions markerOptions;
     private DialogOptionsClients dialogOptionsClients;
+
+    private boolean markerClick = false;
+    private LatLng lastKnownPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,8 +199,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         for (ClientesRutaBean item : mData) {
-            if (item.getLatitud() != null && item.getLongitud() != null ) {
-               LatLng clients = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
+            if (item.getLatitud() != null && item.getLongitud() != null) {
+                LatLng clients = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
                 markerOptions = new MarkerOptions();
                 markerOptions.position(clients);
@@ -207,8 +213,37 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                         .target(clients)
                         .zoom(15)
                         .build();
+
                 gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
             }
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("SysPoint", "Location, permission denied");
+            return;
+        }
+
+        if (lastKnownPosition != null) {
+            double userLat = lastKnownPosition.latitude;
+            double userLong = lastKnownPosition.longitude;
+
+
+            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            String locationProvider = LocationManager.NETWORK_PROVIDER;
+
+            android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+            if (lastKnownLocation != null) {
+                userLat = lastKnownLocation.getLatitude();
+                userLong = lastKnownLocation.getLongitude();
+            }
+
+            LatLng currentPosition = new LatLng(userLat, userLong);
+            CameraPosition camera = new CameraPosition.Builder()
+                    .target(currentPosition)
+                    .zoom(15)
+                    .build();
+
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
         }
     }
 
@@ -277,61 +312,67 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClientByAccount( marker.getSnippet());
+        if (!markerClick) {
+            markerClick = true;
 
+            ClientDao clientDao = new ClientDao();
+            ClienteBean clienteBean = clientDao.getClientByAccount(marker.getSnippet());
 
-        final PrettyDialog dialog = new PrettyDialog(this);
-        dialog.setTitle("" + clienteBean.getNombre_comercial())
-                .setTitleColor(R.color.purple_500)
-                .setMessage("Adeudo: $"+clienteBean.getSaldo_credito()+"0")
-                .setMessageColor(R.color.purple_700)
-                .setAnimationEnabled(false)
-                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-                    }
-                })
-                .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, marker.getSnippet());
-                        Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
-                        dialog.dismiss();
-                    }
-                })
-
-
-                .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
+            final PrettyDialog dialog = new PrettyDialog(this);
+            dialog.setTitle("" + clienteBean.getNombre_comercial())
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Adeudo: $" + clienteBean.getSaldo_credito() + "0")
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                            markerClick = false;
+                        }
+                    })
+                    .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            HashMap<String, String> parametros = new HashMap<>();
+                            parametros.put(Actividades.PARAM_1, marker.getSnippet());
+                            Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
+                            dialog.dismiss();
+                            markerClick = false;
+                            lastKnownPosition = marker.getPosition();
+                        }
+                    })
+                    .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
                             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
                             startActivity(intent);
-                    }
+                            markerClick = false;
+                            lastKnownPosition = marker.getPosition();
+                        }
 
 
-
-                })
-                 .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        Intent intent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
-                        startActivity(intent);
-                        dialog.dismiss();
-                    }
-                })
-        .addButton("Cancelar", R.color.white, R.color.red_900, new PrettyDialogCallback() {
-            @Override
-            public void onClick() {
-                dialog.dismiss();
-            }
-        })
-        ;
-        dialog.setCancelable(false);
-        dialog.show();
+                    })
+                    .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            Intent intent = new Intent(Intent.ACTION_VIEW,
+                                    Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
+                            startActivity(intent);
+                            dialog.dismiss();
+                            markerClick = false;
+                        }
+                    })
+                    .addButton("Cancelar", R.color.white, R.color.red_900, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                            markerClick = false;
+                        }
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+        }
         return false;
     }
 }

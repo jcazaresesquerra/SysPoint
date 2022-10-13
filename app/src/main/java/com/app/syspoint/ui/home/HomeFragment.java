@@ -145,7 +145,7 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onGetAllDataByDateError() {
                         progressDialog.dismiss();
-                        Toast.makeText(requireActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(requireActivity(), "Ha ocurrido un error", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -388,7 +388,7 @@ public class HomeFragment extends Fragment {
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
+            mData = new RuteClientDao().getAllRutaClientes();
         }
         setDataList(mData);
     }

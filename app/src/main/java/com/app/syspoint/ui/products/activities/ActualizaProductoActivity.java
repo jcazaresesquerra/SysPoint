@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -402,7 +403,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
                 testLoadProductos(idProducto);
             }
         } else {
-            Toast.makeText(this, "Ha ocurrido un error, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente saveProducto");
         }
     }
 

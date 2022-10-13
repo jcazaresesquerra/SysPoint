@@ -70,7 +70,7 @@ class MainActivity: BaseActivity() {
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
-            val progressDialog = ProgressDialog(this@MainActivity)
+            /*val progressDialog = ProgressDialog(this@MainActivity)
             progressDialog.setMessage("Espere un momento")
             progressDialog.setCancelable(false)
             progressDialog.show()
@@ -79,7 +79,7 @@ class MainActivity: BaseActivity() {
                     progressDialog.dismiss()
                     if (!connected) showDialogNotInternet()
                 }.execute()
-            }, 100)
+            }, 100)*/
             if (destination.id == R.id.nav_ruta) {
                 Constants.solictaRuta = true
             }

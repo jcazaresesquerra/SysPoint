@@ -21,8 +21,11 @@ import com.app.syspoint.R
 import com.app.syspoint.databinding.*
 import com.app.syspoint.models.enum.SellType
 import com.app.syspoint.models.sealed.SellViewState
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.database.bean.VentasModelBean
+import com.app.syspoint.repository.database.dao.ClientDao
+import com.app.syspoint.repository.database.dao.ProductDao
+import com.app.syspoint.repository.database.dao.SellsModelDao
+import com.app.syspoint.repository.database.dao.SpecialPricesDao
 import com.app.syspoint.ui.precaptura.PrecaptureActivity
 import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
@@ -108,8 +111,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         val productoBean = productDao.getProductoByArticulo(articulo)
 
         if (productoBean == null) {
-            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT)
-                .show()
+            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
@@ -120,7 +122,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
 
         if (cantidad.isNullOrEmpty()) {
-            Toast.makeText(this, "Ha ocurrido un problema, vuelve a intentarlo", Toast.LENGTH_SHORT).show()
+            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
@@ -130,14 +132,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         val clientDao = ClientDao()
         val clienteBean = clientDao.getClientByAccount(clientId)
 
-
         //Validamos si hay precio especial del cliente
         val specialPricesDao = SpecialPricesDao()
-        /*val preciosEspecialesBean =
-            specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)*/
+        val preciosEspecialesBean =
+            specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)
 
         val preciosEspeciales = viewModel.partidasEspeciales.value?.filter { precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo}
-        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) null else preciosEspeciales[0]
+        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBean else preciosEspeciales[0]
 
         val data = viewModel.addItem(
             productoBean.articulo,
@@ -400,9 +401,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             startActivity(settingsIntent)
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
+            Log.d("SysPoint", "Error, Location permissions not granted, Ventas")
             return
         }
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
@@ -425,7 +428,10 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         }
                     } catch (e: Exception) {
                         runOnUiThread {
-                            Toast.makeText(applicationContext, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_SHORT).show()
+                            Log.d(
+                                "SysPoint",
+                                "Ha ocurrido un error, intente nuevamente onLocationChanged"
+                            )
                         }
                         e.printStackTrace()
                     }
@@ -477,7 +483,10 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         }
                     } catch (e: IOException) {
                         runOnUiThread {
-                            Toast.makeText(applicationContext, "Ha ocurrido un error, vuelva a intentar", Toast.LENGTH_SHORT).show()
+                            Log.d(
+                                "SysPoint",
+                                "Ha ocurrido un error, intente nuevamente saveProducto " + e.stackTraceToString()
+                            )
                         }
                         e.printStackTrace()
                     }
