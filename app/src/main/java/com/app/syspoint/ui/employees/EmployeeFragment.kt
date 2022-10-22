@@ -102,7 +102,7 @@ class EmployeeFragment: Fragment() {
                     progressDialog.dismiss()
             }
             is EmployeeViewState.NetworkDisconnectedState -> {
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is EmployeeViewState.SetUpEmployeesState -> {
                 initRecyclerView(employeeViewState.data)

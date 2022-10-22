@@ -233,7 +233,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
 
                         if (!Utils.isNetworkAvailable(getApplication())) {
-                            showDialogNotConnectionInternet();
+                            //showDialogNotConnectionInternet();
                         } else {
                             enviaPrecioServidor();
                         }
@@ -261,7 +261,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
                                         dao.save(bean);
 
                                         if (!Utils.isNetworkAvailable(getApplication())) {
-                                            showDialogNotConnectionInternet();
+                                            //showDialogNotConnectionInternet();
                                         } else {
                                             enviaPrecioServidor();
                                         }

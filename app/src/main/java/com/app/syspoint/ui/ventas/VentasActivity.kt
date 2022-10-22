@@ -201,7 +201,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             }
             is SellViewState.NotInternetConnection -> {
                 hideLoading()
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is SellViewState.SellsLoaded -> {
                 initRecyclerView(sellViewState.data)

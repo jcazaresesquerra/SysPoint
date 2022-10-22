@@ -934,7 +934,7 @@ public class ActualizaClienteActivity extends AppCompatActivity {
             idCliente = String.valueOf(bean.getId());
 
             if (!Utils.isNetworkAvailable(getApplication())) {
-                showDialogNotConnectionInternet();
+                //showDialogNotConnectionInternet();
             } else {
                 testLoadClientes(idCliente);
             }

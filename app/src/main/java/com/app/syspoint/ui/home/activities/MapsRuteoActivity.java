@@ -198,53 +198,75 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
         }
 
+        LatLng position = null;
         for (ClientesRutaBean item : mData) {
             if (item.getLatitud() != null && item.getLongitud() != null) {
-                LatLng clients = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
+                position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
                 markerOptions = new MarkerOptions();
-                markerOptions.position(clients);
+                markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
                 markerOptions.snippet(item.getCuenta());
                 markerOptions.draggable(true);
                 gMap.addMarker(markerOptions);
-
-                CameraPosition camera  = new CameraPosition.Builder()
-                        .target(clients)
-                        .zoom(15)
-                        .build();
-
-                gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
             }
         }
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        gMap.setOnMarkerClickListener(this);
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
+            return;
+        }
+
+        locationManager = (LocationManager) getApplication().getSystemService(LOCATION_SERVICE);
+        gMap.setMyLocationEnabled(true);
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 15000, 10, new android.location.LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(location.getLatitude(), location.getLongitude()), 15f)
+                );
+            }
+        });
+        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d("SysPoint", "Location, permission denied");
             return;
         }
 
-        if (lastKnownPosition != null) {
-            double userLat = lastKnownPosition.latitude;
-            double userLong = lastKnownPosition.longitude;
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
+        android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
 
-
-            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            String locationProvider = LocationManager.NETWORK_PROVIDER;
-
-            android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-            if (lastKnownLocation != null) {
-                userLat = lastKnownLocation.getLatitude();
-                userLong = lastKnownLocation.getLongitude();
-            }
-
-            LatLng currentPosition = new LatLng(userLat, userLong);
+        if (lastKnownLocation != null) {
+            double userLat = lastKnownLocation.getLatitude();
+            double userLong = lastKnownLocation.getLongitude();
+            position = new LatLng(userLat, userLong);
             CameraPosition camera = new CameraPosition.Builder()
-                    .target(currentPosition)
+                    .target(position)
                     .zoom(15)
                     .build();
-
             gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
-        }
+        } else if (lastKnownPosition != null) {
+            double userLat = lastKnownPosition.latitude;
+            double userLong = lastKnownPosition.longitude;
+            position = new LatLng(userLat, userLong);
+            CameraPosition camera = new CameraPosition.Builder()
+                    .target(position)
+                    .zoom(15)
+                    .build();
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        } else if (position != null) {
+            CameraPosition camera  = new CameraPosition.Builder()
+                    .target(position)
+                    .zoom(15)
+                    .build();
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        } else {
+            onMapReady(gMap);
+        }*/
     }
 
     void getDataRuteo(){

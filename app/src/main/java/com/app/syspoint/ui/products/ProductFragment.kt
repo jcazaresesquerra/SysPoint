@@ -111,7 +111,7 @@ class ProductFragment: Fragment() {
             }
             is ProductViewState.NetworkDisconnectedState -> {
                 syncProductsClicked = false
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is ProductViewState.EditProductState -> {
                 editProduct(productViewState.item)

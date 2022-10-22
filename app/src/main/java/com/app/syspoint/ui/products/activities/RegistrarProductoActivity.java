@@ -430,7 +430,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
         idProducto = String.valueOf(producto.getId());
 
         if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         }else {
             testLoadProductos(idProducto);
         }

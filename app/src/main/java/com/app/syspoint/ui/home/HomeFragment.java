@@ -489,7 +489,7 @@ public class HomeFragment extends Fragment {
                 new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
                     progressDialog.dismiss();
                     if (!connected) {
-                        showDialogNotConnectionInternet();
+                        //showDialogNotConnectionInternet();
                     } else {
                         getData();
                     }

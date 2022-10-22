@@ -854,7 +854,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         idEmpleado = String.valueOf(bean.getId());
 
         if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
             enviaRolsServidor(bean.identificador);

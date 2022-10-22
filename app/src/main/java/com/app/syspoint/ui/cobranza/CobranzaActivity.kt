@@ -180,7 +180,7 @@ class CobranzaActivity: AppCompatActivity() {
                 sellerNotFoundDialog()
             }
             is ChargeViewState.NotInternetConnection -> {
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is ChargeViewState.ComputedTaxes -> {
                 setTaxes(chargeViewState.totalAmount, chargeViewState.restAmount, chargeViewState.show)

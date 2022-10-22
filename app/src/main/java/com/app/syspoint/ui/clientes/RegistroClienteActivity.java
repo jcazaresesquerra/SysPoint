@@ -885,7 +885,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         idCliente = String.valueOf(clienteBean.getId());
         if (!Utils.isNetworkAvailable(getApplication())) {
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         } else {
             testLoadClientes(idCliente);
         }

@@ -782,7 +782,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         idEmpleado = String.valueOf(empleado.getId());
 
         if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
             enviaRolsServidor(empleado.identificador);
