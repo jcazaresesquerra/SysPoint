@@ -40,6 +40,13 @@ public class ClienteBean extends Bean {
     private int vie;
     private int sab;
     private int dom;
+    private int lunOrder;
+    private int marOrder;
+    private int mieOrder;
+    private int jueOrder;
+    private int vieOrder;
+    private int sabOrder;
+    private int domOrder;
     private int visitado;
     private String latitud;
     private String longitud;
@@ -54,17 +61,15 @@ public class ClienteBean extends Bean {
     private String matriz;
     private String date_sync;
 
-@Generated(hash = 85095958)
-public ClienteBean(Long id, String nombre_comercial, String calle,
-        String numero, String colonia, String ciudad, int codigo_postal,
-        String fecha_registro, String fecha_baja, String cuenta, String grupo,
-        String categoria, boolean status, int consec, String region,
-        String sector, String rango, String ruta, int secuencia, int periodo,
-        int lun, int mar, int mie, int jue, int vie, int sab, int dom,
-        int visitado, String latitud, String longitud, String contacto_phone,
-        String recordatorio, boolean is_recordatorio, int visitasNoefectivas,
-        boolean is_credito, double limite_credito, double saldo_credito,
-        String matriz, String date_sync) {
+@Generated(hash = 1760396240)
+public ClienteBean(Long id, String nombre_comercial, String calle, String numero, String colonia,
+        String ciudad, int codigo_postal, String fecha_registro, String fecha_baja, String cuenta,
+        String grupo, String categoria, boolean status, int consec, String region, String sector,
+        String rango, String ruta, int secuencia, int periodo, int lun, int mar, int mie, int jue, int vie,
+        int sab, int dom, int lunOrder, int marOrder, int mieOrder, int jueOrder, int vieOrder, int sabOrder,
+        int domOrder, int visitado, String latitud, String longitud, String contacto_phone,
+        String recordatorio, boolean is_recordatorio, int visitasNoefectivas, boolean is_credito,
+        double limite_credito, double saldo_credito, String matriz, String date_sync) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -92,6 +97,13 @@ public ClienteBean(Long id, String nombre_comercial, String calle,
     this.vie = vie;
     this.sab = sab;
     this.dom = dom;
+    this.lunOrder = lunOrder;
+    this.marOrder = marOrder;
+    this.mieOrder = mieOrder;
+    this.jueOrder = jueOrder;
+    this.vieOrder = vieOrder;
+    this.sabOrder = sabOrder;
+    this.domOrder = domOrder;
     this.visitado = visitado;
     this.latitud = latitud;
     this.longitud = longitud;
@@ -270,6 +282,48 @@ public int getDom() {
 public void setDom(int dom) {
     this.dom = dom;
 }
+    public int getLunOrder() {
+        return this.lunOrder;
+    }
+    public void setLunOrder(int lunOrder) {
+        this.lunOrder = lunOrder;
+    }
+    public int getMarOrder() {
+        return this.marOrder;
+    }
+    public void setMarOrder(int marOrder) {
+        this.marOrder = marOrder;
+    }
+    public int getMieOrder() {
+        return this.mieOrder;
+    }
+    public void setMieOrder(int mieOrder) {
+        this.mieOrder = mieOrder;
+    }
+    public int getJueOrder() {
+        return this.jueOrder;
+    }
+    public void setJueOrder(int jueOrder) {
+        this.jueOrder = jueOrder;
+    }
+    public int getVieOrder() {
+        return this.vieOrder;
+    }
+    public void setVieOrder(int vieOrder) {
+        this.vieOrder = vieOrder;
+    }
+    public int getSabOrder() {
+        return this.sabOrder;
+    }
+    public void setSabOrder(int sabOrder) {
+        this.sabOrder = sabOrder;
+    }
+    public int getDomOrder() {
+        return this.domOrder;
+    }
+    public void setDomOrder(int domOrder) {
+        this.domOrder = domOrder;
+    }
 public int getVisitado() {
     return this.visitado;
 }

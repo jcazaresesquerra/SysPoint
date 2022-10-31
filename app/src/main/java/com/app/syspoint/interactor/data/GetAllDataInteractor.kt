@@ -11,6 +11,6 @@ abstract class GetAllDataInteractor {
         fun onGetAllDataByDateError()
     }
 
-    open fun executeGetAllData(onGetAllDataListener: OnGetAllDataListener) {}
+    open suspend fun executeGetAllData(onGetAllDataListener: OnGetAllDataListener) {}
     open fun executeGetAllDataByDate(onGetAllDataByDateListener: OnGetAllDataByDateListener) {}
 }

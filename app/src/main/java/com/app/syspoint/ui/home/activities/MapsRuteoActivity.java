@@ -4,11 +4,23 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -199,6 +212,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         LatLng position = null;
+        int i = 1;
         for (ClientesRutaBean item : mData) {
             if (item.getLatitud() != null && item.getLongitud() != null) {
                 position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
@@ -206,9 +220,13 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 markerOptions = new MarkerOptions();
                 markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
+                Bitmap bitmap = getBitmapMarker(i);
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
+
                 markerOptions.snippet(item.getCuenta());
                 markerOptions.draggable(true);
                 gMap.addMarker(markerOptions);
+                i++;
             }
         }
 
@@ -396,5 +414,20 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             dialog.show();
         }
         return false;
+    }
+
+    private Bitmap getBitmapMarker(int order) {
+        RelativeLayout tv = (RelativeLayout) this.getLayoutInflater().inflate(R.layout.maps_marker, null, false);
+        tv.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        tv.layout(0, 0, tv.getMeasuredWidth(), tv.getMeasuredHeight());
+
+        TextView text = tv.findViewById(R.id.marker_number);
+        text.setText(String.valueOf(order));
+
+        tv.setDrawingCacheEnabled(true);
+        tv.buildDrawingCache();
+        Bitmap bm = tv.getDrawingCache();
+        return bm;
     }
 }

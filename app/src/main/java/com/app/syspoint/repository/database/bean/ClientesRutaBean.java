@@ -26,15 +26,16 @@ public class ClientesRutaBean extends Bean {
     private int vie;
     private int sab;
     private int dom;
+    private int order;
     private int visitado;
     private String latitud;
     private String longitud;
     private String phone_contact;
-@Generated(hash = 777198376)
-public ClientesRutaBean(Long id, String nombre_comercial, String calle,
-        String numero, String colonia, String cuenta, String rango, int lun,
-        int mar, int mie, int jue, int vie, int sab, int dom, int visitado,
-        String latitud, String longitud, String phone_contact) {
+@Generated(hash = 986050862)
+public ClientesRutaBean(Long id, String nombre_comercial, String calle, String numero,
+        String colonia, String cuenta, String rango, int lun, int mar, int mie, int jue, int vie,
+        int sab, int dom, int order, int visitado, String latitud, String longitud,
+        String phone_contact) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -49,6 +50,7 @@ public ClientesRutaBean(Long id, String nombre_comercial, String calle,
     this.vie = vie;
     this.sab = sab;
     this.dom = dom;
+    this.order = order;
     this.visitado = visitado;
     this.latitud = latitud;
     this.longitud = longitud;
@@ -141,6 +143,14 @@ public int getDom() {
 public void setDom(int dom) {
     this.dom = dom;
 }
+
+    public int getOrder() {
+        return this.order;
+    }
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
 public int getVisitado() {
     return this.visitado;
 }

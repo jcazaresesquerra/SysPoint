@@ -37,7 +37,7 @@ class AdapterRutaClientes(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(mData[position], onItemClickListener, onItemLongClickListener)
+        holder.bind(mData[position], position + 1, onItemClickListener, onItemLongClickListener)
     }
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
@@ -49,9 +49,9 @@ class AdapterRutaClientes(
 
     class Holder(val binding: ItemListaClientesRutaBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clienteBean: ClientesRutaBean?, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
+        fun bind(clienteBean: ClientesRutaBean?, position: Int, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
             clienteBean?.let { clienteBean ->
-                binding.textViewNombreClienteRuta.text = clienteBean.nombre_comercial
+                binding.textViewNombreClienteRuta.text = position.toString() + " - " + clienteBean.nombre_comercial
                 binding.textViewDireccionClienteRuta.text = clienteBean.calle + " " + clienteBean.numero
                 binding.textViewColoniaClienteRuta.text = "Col. " + clienteBean.colonia
 

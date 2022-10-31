@@ -6,4 +6,5 @@ sealed class LoginViewState {
     object LoadingDataStart: LoginViewState()
     object LoadingDataFinish: LoginViewState()
     object NotInternetConnection: LoginViewState()
+    object ConnectedToInternet: LoginViewState()
 }

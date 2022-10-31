@@ -60,6 +60,13 @@ class RequestClient {
                                 clienteBean.vie = item.vie
                                 clienteBean.sab = item.sab
                                 clienteBean.dom = item.dom
+                                clienteBean.lunOrder = item.lunOrder
+                                clienteBean.marOrder = item.marOrder
+                                clienteBean.mieOrder = item.mieOrder
+                                clienteBean.jueOrder = item.jueOrder
+                                clienteBean.vieOrder = item.vieOrder
+                                clienteBean.sabOrder = item.sabOrder
+                                clienteBean.domOrder = item.domOrder
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
@@ -97,6 +104,13 @@ class RequestClient {
                                 bean.vie = item.vie
                                 bean.sab = item.sab
                                 bean.dom = item.dom
+                                bean.lunOrder = item.lunOrder
+                                bean.marOrder = item.marOrder
+                                bean.mieOrder = item.mieOrder
+                                bean.jueOrder = item.jueOrder
+                                bean.vieOrder = item.vieOrder
+                                bean.sabOrder = item.sabOrder
+                                bean.domOrder = item.domOrder
                                 bean.latitud = item.latitud
                                 bean.longitud = item.longitud
                                 bean.contacto_phone = item.phone_contacto

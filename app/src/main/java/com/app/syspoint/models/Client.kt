@@ -155,5 +155,33 @@ data class Client (
 
     @SerializedName("matriz")
     @Expose
-    var matriz: String? = null
+    var matriz: String? = null,
+
+    @SerializedName("lunOrden")
+    @Expose
+    var lunOrder: Int = 0,
+
+    @SerializedName("marOrden")
+    @Expose
+    var marOrder: Int = 0,
+
+    @SerializedName("mieOrden")
+    @Expose
+    var mieOrder: Int = 0,
+
+    @SerializedName("jueOrden")
+    @Expose
+    var jueOrder: Int = 0,
+
+    @SerializedName("vieOrden")
+    @Expose
+    var vieOrder: Int = 0,
+
+    @SerializedName("sabOrden")
+    @Expose
+    var sabOrder: Int = 0,
+
+    @SerializedName("domOrden")
+    @Expose
+    var domOrder: Int = 0,
 ): Serializable

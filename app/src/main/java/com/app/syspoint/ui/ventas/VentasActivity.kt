@@ -47,6 +47,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private var confirmPrecaptureClicked = false
     private lateinit var clientId: String
     private var sellType: SellType = SellType.SIN_DEFINIR
+    private lateinit var geocoder: Geocoder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +56,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         headerBinding = EncabezadoVentasBinding.bind(binding.ventasHeader.root)
         viewModel = ViewModelProvider(this)[SellViewModel::class.java]
         viewModel.sellViewState.observe(this, ::renderViewState)
-
+        geocoder = Geocoder(this, Locale.getDefault())
         setContentView(binding.root)
         initToolBar()
         locationStart()
@@ -415,12 +416,10 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     override fun onLocationChanged(location: Location) {
         /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-        try {
+        /*try {
             Thread {
                 if (location.latitude != 0.0 && location.longitude != 0.0) {
                     try {
-                        val geocoder =
-                            Geocoder(applicationContext, Locale.getDefault())
                         val list = geocoder.getFromLocation(
                                 location.latitude, location.longitude, 1)
                         if (list!!.isNotEmpty()) {
@@ -437,11 +436,9 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     }
                 }
             }.start()
-
-            setLocation(location)
         } catch (e: Exception) {
             e.printStackTrace()
-        }
+        }*/
     }
 
     override fun onProviderDisabled(provider: String) {
@@ -462,38 +459,6 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 "debug",
                 "LocationProvider.TEMPORARILY_UNAVAILABLE"
             )
-        }
-    }
-
-    /* obtener la direccion*/
-    fun setLocation(loc: Location) {
-        //Obtener la direccion de la calle a partir de la latitud y la longitud
-        try {
-            Thread {
-                if (loc.latitude != 0.0 && loc.longitude != 0.0) {
-                    try {
-                        /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
-                        val geocoder = Geocoder(this, Locale.getDefault())
-                        val list = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
-                        if (list!!.isNotEmpty()) {
-                            viewModel.setLocation(list[0].latitude, list[0].longitude)
-
-                            val DirCalle = list[0]
-                            // editTextDireccion.setText(DirCalle.getAddressLine(0));
-                        }
-                    } catch (e: IOException) {
-                        runOnUiThread {
-                            Log.d(
-                                "SysPoint",
-                                "Ha ocurrido un error, intente nuevamente saveProducto " + e.stackTraceToString()
-                            )
-                        }
-                        e.printStackTrace()
-                    }
-                }
-            }.start()
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
         }
     }
 

@@ -44,7 +44,7 @@ public class Utils {
 
     public static String getHoraActual(){
         final Calendar calendarFechaFin = Calendar.getInstance();
-        final SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss");
+        final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         final String hora = format.format(calendarFechaFin.getTime());
         return  hora;
     }

@@ -3,6 +3,7 @@ package com.app.syspoint.viewmodel.login
 import android.os.Handler
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.app.syspoint.App
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.interactor.data.GetAllDataInteractor
@@ -10,6 +11,7 @@ import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
 import kotlinx.coroutines.delay
@@ -161,17 +163,23 @@ class LoginViewModel: BaseViewModel() {
             Handler().postDelayed({
                 NetworkStateTask { connected ->
                     if (connected) {
-                        GetAllDataInteractorImp().executeGetAllData(object :
-                            GetAllDataInteractor.OnGetAllDataListener {
-                            override fun onGetAllDataSuccess() {
-                                loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                            }
+                        viewModelScope.launch {
+                            loginViewState.postValue(LoginViewState.ConnectedToInternet)
+                            GetAllDataInteractorImp().executeGetAllData(object :
+                                GetAllDataInteractor.OnGetAllDataListener {
+                                override fun onGetAllDataSuccess() {
+                                    //updateSession(true)
+                                    loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                                }
 
-                            override fun onGetAllDataError() {
-                                loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                            }
-                        })
-
+                                override fun onGetAllDataError() {
+                                    //updateSession(false)
+                                    loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                                    removeLocalSync()
+                                    loginViewState.postValue(LoginViewState.NotInternetConnection)
+                                }
+                            })
+                        }
                     } else {
                         viewModelScope.launch {
                             removeLocalSync()
@@ -190,6 +198,7 @@ class LoginViewModel: BaseViewModel() {
         val taskDao = TaskDao()
         val taskBean = taskDao.getTask(Utils.fechaActual())
         val exist: Boolean
+        //val isUpdated = isSessionUpdated()
 
         if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual())) {
             val stockDao = StockDao()
@@ -230,6 +239,7 @@ class LoginViewModel: BaseViewModel() {
             bean.task = "Sincronización"
             dao.insert(bean)
             exist = false
+            //updateSession(false)
         } else {
             exist = true
         }
@@ -240,5 +250,18 @@ class LoginViewModel: BaseViewModel() {
     fun removeLocalSync() {
         val dao = TaskDao()
         dao.clear()
+    }
+
+    private fun updateSession(updated: Boolean) {
+        App.INSTANCE?.baseContext?.let {
+            SharedPreferencesManager(it).storeLocalSession(true)
+        }
+    }
+
+    private fun isSessionUpdated(): Boolean {
+        App.INSTANCE?.baseContext?.let {
+            return SharedPreferencesManager(it).isSessionUpdated()
+        }
+        return false
     }
 }

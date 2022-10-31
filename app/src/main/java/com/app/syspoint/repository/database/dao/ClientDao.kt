@@ -51,8 +51,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Lun.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.LunOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.LunOrder)
             .list() as List<ClienteBean>
     }
 
@@ -60,8 +62,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Mar.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.MarOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.MarOrder)
             .list() as List<ClienteBean>
     }
 
@@ -69,8 +73,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Mie.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.MieOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.MieOrder)
             .list() as List<ClienteBean>
     }
 
@@ -78,8 +84,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Jue.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.JueOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.JueOrder)
             .list() as List<ClienteBean>
     }
 
@@ -87,8 +95,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Vie.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.VieOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.VieOrder)
             .list() as List<ClienteBean>
     }
 
@@ -96,8 +106,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Sab.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.SabOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.SabOrder)
             .list() as List<ClienteBean>
     }
 
@@ -105,8 +117,10 @@ class ClientDao: Dao("ClienteBean") {
         return dao.queryBuilder()
             .where(ClienteBeanDao.Properties.Rango.eq(ruta))
             .where(ClienteBeanDao.Properties.Dom.eq(dia))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .where(ClienteBeanDao.Properties.DomOrder.gt(0))
             .where(ClienteBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClienteBeanDao.Properties.Id)
+            .orderAsc(ClienteBeanDao.Properties.DomOrder)
             .list() as List<ClienteBean>
     }
 

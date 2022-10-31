@@ -35,6 +35,8 @@ import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.AppBundle;
@@ -305,7 +307,6 @@ public class ClienteFragment extends Fragment {
 
                             final RuteClientDao dao = new RuteClientDao();
                             final ClientesRutaBean beanCliente = dao.getClienteFirts();
-
                             long id = dao.getUltimoConsec();
 
                             if (beanCliente != null){
@@ -326,6 +327,7 @@ public class ClienteFragment extends Fragment {
                                 clientesRutaBean.setVie(beanCliente.getVie());
                                 clientesRutaBean.setSab(beanCliente.getSab());
                                 clientesRutaBean.setDom(beanCliente.getDom());
+                                clientesRutaBean.setOrder(beanCliente.getOrder());
                                 clientesRutaBean.setVisitado(0);
                                 clientesRutaBean.setLatitud(clienteBean.getLatitud());
                                 clientesRutaBean.setLongitud(clienteBean.getLongitud());

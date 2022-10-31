@@ -35,9 +35,11 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
                     return urlc.getResponseCode() == 200;
                 } catch (Exception e) {
                     Log.e("TAG", "Error checking internet connection", e);
+                    return false;
                 }
             } else {
                 Log.d("TAG", "No network available!");
+                return false;
             }
         }
         return false;

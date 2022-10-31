@@ -19,12 +19,10 @@ import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
-import com.app.syspoint.utils.click
-import com.app.syspoint.utils.setGone
-import com.app.syspoint.utils.setInvisible
-import com.app.syspoint.utils.setVisible
+import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
 import libs.mjn.prettydialog.PrettyDialog
+import java.lang.Exception
 
 class LoginActivity: AppCompatActivity() {
 
@@ -67,7 +65,15 @@ class LoginActivity: AppCompatActivity() {
                     showNotInternetConnectionError()
                 }
             }
-            NotInternetConnection -> showNotInternetConnectionError()
+            ConnectedToInternet -> {
+                isConnected = true
+                hideNotInternetConnectionError()
+            }
+            NotInternetConnection -> {
+                isConnected = false
+                binding.rlprogressLogin.setInvisible()
+                showNotInternetConnectionError()
+            }
         }
     }
 
@@ -187,18 +193,10 @@ class LoginActivity: AppCompatActivity() {
                 isConnected = false
             }
         })
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            registerReceiver(
-                mNetworkChangeReceiver,
-                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-            )
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            registerReceiver(
-                mNetworkChangeReceiver,
-                IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-            )
-        }
+        registerReceiver(
+            mNetworkChangeReceiver,
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
     }
 
     /**
@@ -229,9 +227,9 @@ class LoginActivity: AppCompatActivity() {
                 } else {
                     mConnectionNetworkListener.onDisconnected()
                 }
-            } catch (e: NullPointerException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-
+                mConnectionNetworkListener.onDisconnected()
             }
         }
     }

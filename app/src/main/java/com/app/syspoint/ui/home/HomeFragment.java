@@ -78,6 +78,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -342,8 +344,7 @@ public class HomeFragment extends Fragment {
         showHideImage();
     }
 
-    private void saveData(List<ClienteBean> listaClientes) {
-
+    private void saveData(List<ClienteBean> listaClientes, int day) {
 
         if (mData.isEmpty()) {
 
@@ -371,6 +372,20 @@ public class HomeFragment extends Fragment {
                     bean.setVie(item.getVie());
                     bean.setSab(item.getSab());
                     bean.setDom(item.getDom());
+                    if (day == 1)
+                        bean.setOrder(item.getLunOrder());
+                    else if (day == 2)
+                        bean.setOrder(item.getMarOrder());
+                    else if (day == 3)
+                        bean.setOrder(item.getMieOrder());
+                    else if (day == 4)
+                        bean.setOrder(item.getJueOrder());
+                    else if (day == 5)
+                        bean.setOrder(item.getVieOrder());
+                    else if (day == 6)
+                        bean.setOrder(item.getSabOrder());
+                    else if (day == 7)
+                        bean.setOrder(item.getDomOrder());
                     bean.setVisitado(0);
                     bean.setLatitud(item.getLatitud());
                     bean.setLongitud(item.getLongitud());
@@ -402,24 +417,24 @@ public class HomeFragment extends Fragment {
         if (ruteoBean != null) {
 
             if (ruteoBean.getDia() == 1) {
-                saveData(new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getClientsByMondayRute(ruteoBean.getRuta(), 1), 1);
             } else if (ruteoBean.getDia() == 2) {
-                saveData(new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMartes(ruteoBean.getRuta(), 1), 2);
             }
             if (ruteoBean.getDia() == 3) {
-                saveData(new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaMiercoles(ruteoBean.getRuta(), 1), 3);
             }
             if (ruteoBean.getDia() == 4) {
-                saveData(new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaJueves(ruteoBean.getRuta(), 1), 4);
             }
             if (ruteoBean.getDia() == 5) {
-                saveData(new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaViernes(ruteoBean.getRuta(), 1), 5);
             }
             if (ruteoBean.getDia() == 6) {
-                saveData(new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaSabado(ruteoBean.getRuta(), 1), 6);
             }
             if (ruteoBean.getDia() == 7) {
-                saveData(new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1));
+                saveData(new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1), 7);
             }
 
             mData = new RuteClientDao().getAllRutaClientes();

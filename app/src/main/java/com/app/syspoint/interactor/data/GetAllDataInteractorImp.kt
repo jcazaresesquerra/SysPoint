@@ -1,13 +1,15 @@
 package com.app.syspoint.interactor.data
 
 import com.app.syspoint.repository.request.RequestData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class GetAllDataInteractorImp: GetAllDataInteractor() {
 
-    override fun executeGetAllData(onGetAllDataListener: OnGetAllDataListener) {
-        GlobalScope.launch {
+    override suspend fun executeGetAllData(onGetAllDataListener: OnGetAllDataListener) {
+        withContext(Dispatchers.IO) {
             RequestData.requestAllData(onGetAllDataListener)
         }
     }
