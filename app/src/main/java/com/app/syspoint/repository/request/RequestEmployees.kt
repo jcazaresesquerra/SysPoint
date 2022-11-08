@@ -59,6 +59,9 @@ class RequestEmployees {
                                 employee.setSueldo_diario(item.sueldoDiario.toDouble())
                                 employee.setTurno(item.turno)
                                 employee.setPath_image(item.pathImage)
+                                employee.setEdit_ruta(item.editRuta?:0)
+                                employee.setRute(item.rute)
+                                employee.setDay(item.day?:0)
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
@@ -85,6 +88,9 @@ class RequestEmployees {
                                 employeeBean.setSueldo_diario(item.sueldoDiario.toDouble())
                                 employeeBean.setTurno(item.turno)
                                 employeeBean.setPath_image(item.pathImage)
+                                employeeBean.setEdit_ruta(item.editRuta?:0)
+                                employeeBean.setRute(item.rute)
+                                employeeBean.setDay(item.day?:0)
                                 dao.save(employeeBean)
                                 employees.add(employeeBean)
                             }

@@ -44,10 +44,13 @@ import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
@@ -97,7 +100,12 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_actualiza_empleado_entrada_comida;
     private EditText ip_actualiza_empleado_turno;
     private Spinner spinner_actualiza_empleado_status;
+    private Spinner rute_employee_spinner;
+    private Spinner day_employee_spinner;
     private String status_seleccionado;
+
+    private String ruta_seleccionado;
+    private String dia_seleccionado;
 
     private ImageButton imageButtonFechaIngreso;
     private ImageButton imageButtonFechaEgreso;
@@ -117,6 +125,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private SwitchCompat checkbor_empleados_actualiza_empleado;
     private SwitchCompat checkbor_inventario_actualiza_empleado;
     private SwitchCompat checkbor_cobranza_actualiza_empleado;
+    private SwitchCompat checkbor_edit_rute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +138,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         loadSpinnerRegion();
         loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRuteAndDay();
     }
 
     private void getData(){
@@ -163,14 +173,33 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 ip_actualiza_empleado_entrada_comida.setText(empleadoBean.entrada_comer);
                 ip_actualiza_empleado_sueldo.setText(String.valueOf(empleadoBean.getSueldo_diario()));
                 ip_actualiza_empleado_turno.setText(empleadoBean.getTurno());
-
                 tipo_contrato_seleccionado = empleadoBean.getTipo_contrato();
+
                 if (empleadoBean.getStatus()) {
                     status_seleccionado = "InActivo";
                 } else {
                     status_seleccionado = "Activo";
                 }
 
+                // set rute and day
+                ruta_seleccionado = empleadoBean.getRute();
+                if (empleadoBean.getDay() == 1) {
+                    dia_seleccionado = "Lunes";
+                } else if (empleadoBean.getDay() == 2) {
+                    dia_seleccionado = "Martes";
+                } else if (empleadoBean.getDay() == 3) {
+                    dia_seleccionado = "Miercoles";
+                } else if (empleadoBean.getDay() == 4) {
+                    dia_seleccionado = "Jueves";
+                } else if (empleadoBean.getDay() == 5) {
+                    dia_seleccionado = "Viernes";
+                } else if (empleadoBean.getDay() == 6) {
+                    dia_seleccionado = "Sabado";
+                } else if (empleadoBean.getDay() == 7) {
+                    dia_seleccionado = "Domingo";
+                } else {
+                    dia_seleccionado = "Lunes";
+                }
 
                 final RolesDao rolesDao = new RolesDao();
                 final List<RolesBean> listRoles = rolesDao.getListaRolesByEmpleado(empleadoBean.getIdentificador());
@@ -197,6 +226,8 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                         checkbor_cobranza_actualiza_empleado.setChecked(item.getActive());
                     }
                 }
+
+                checkbor_edit_rute.setChecked(empleadoBean.edit_ruta == 1);
 
                 region_seleccionada = empleadoBean.getRegion();
 
@@ -268,6 +299,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         checkbor_empleados_actualiza_empleado = findViewById(R.id.checkbor_empleados_actualiza_empleado);
         checkbor_inventario_actualiza_empleado = findViewById(R.id.checkbor_inventarios_actualiza_empleado);
         checkbor_cobranza_actualiza_empleado = findViewById(R.id.checkbor_cobranza_actualiza_empleado);
+        checkbor_edit_rute = findViewById(R.id.checkbor_edit_rute);
     }
 
     private void loadSpinnerRegion() {
@@ -348,6 +380,61 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void loadSpinnerRuteAndDay() {
+        //Obtiene el array de las unidades de medida
+
+        final RuteClientDao dao = new RuteClientDao();
+
+        //Obtiene la lista de Strings
+        List<String> arrayListRute = dao.getAllRutes();
+
+        if (ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        //Obtiene el array de las unidades de medida
+        String[] arrayDay = getArrayString(R.array.edit_day);
+
+        //Obtiene la lista de Strings
+        List<String> arrayListDay = Utils.convertArrayStringListString(arrayDay);
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterDay = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListDay);
+        day_employee_spinner = findViewById(R.id.day_employee_spinner);
+        day_employee_spinner.setAdapter(adapterDay);
+        day_employee_spinner.setSelection(arrayListDay.indexOf(dia_seleccionado));
+        day_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                dia_seleccionado = day_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
 
@@ -717,6 +804,31 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         } else {
             bean.setStatus(false);
         }
+
+        if (checkbor_edit_rute.isChecked()){
+            bean.setEdit_ruta(1);
+        } else {
+            bean.setEdit_ruta(0);
+        }
+
+        bean.setRute(ruta_seleccionado);
+
+        if (dia_seleccionado.compareToIgnoreCase("Lunes") == 0) {
+            bean.setDay(1);
+        } else if (dia_seleccionado.compareToIgnoreCase("Martes") == 0) {
+            bean.setDay(2);
+        } else if (dia_seleccionado.compareToIgnoreCase("Miercoles") == 0) {
+            bean.setDay(3);
+        } else if (dia_seleccionado.compareToIgnoreCase("Jueves") == 0) {
+            bean.setDay(4);
+        } else if (dia_seleccionado.compareToIgnoreCase("Viernes") == 0) {
+            bean.setDay(5);
+        } else if (dia_seleccionado.compareToIgnoreCase("Sabado") == 0) {
+            bean.setDay(6);
+        } else if (dia_seleccionado.compareToIgnoreCase("Domingo") == 0) {
+            bean.setDay(7);
+        }
+
         if (decoded != null) {
             bean.setPath_image(getStringImage(decoded));
         }
@@ -1037,6 +1149,24 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 empleado.setTurno("--");
             }else{
                 empleado.setTurno(item.getEntrada_comer());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            if (item.day > 0 && item.day <=7) {
+                empleado.setDay(item.getDay());
+            } else {
+                empleado.setDay(0);
+            }
+
+            if (item.getEdit_ruta() == 1){
+                empleado.setEditRuta(1);
+            }else{
+                empleado.setEditRuta(0);
             }
 
             listEmpleados.add(empleado);

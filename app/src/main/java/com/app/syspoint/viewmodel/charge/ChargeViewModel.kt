@@ -17,10 +17,7 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Payment
 import com.app.syspoint.models.sealed.ChargeViewState
 import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.ChargesDao
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.PaymentDao
-import com.app.syspoint.repository.database.dao.PaymentModelDao
+import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.ui.cobranza.CobranzaModel
 import com.app.syspoint.ui.cobranza.ListaDocumentosCobranzaActivity
 import com.app.syspoint.utils.NetworkStateTask
@@ -364,10 +361,16 @@ class ChargeViewModel: ViewModel() {
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         })
-        ClientInteractorImp().executeGetAllClients(object : GetAllClientsListener {
-            override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {}
-            override fun onGetAllClientsError() {}
-        })
+
+        val routingDao = RoutingDao()
+        val ruteoBean = routingDao.getRutaEstablecida()
+
+        if (ruteoBean != null) {
+            ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.ruta, object : GetAllClientsListener {
+                override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {}
+                override fun onGetAllClientsError() {}
+            })
+        }
     }
 
     private fun saveAbono() {
@@ -405,7 +408,7 @@ class ChargeViewModel: ViewModel() {
             val paymentDao = PaymentDao();
             val cobranzaBean = paymentDao.getByCobranza(cobranzaSeleccionada);
 
-            val venta = cobranzaBean?.venta ?: 0
+            val venta = cobranzaBean?.venta ?: 0L
             val cobranza = cobranzaBean?.cobranza ?: ""
             val importe = cobranzaBean?.importe ?: 0.0
             val saldo = cobranzaBean?.saldo ?: 0.0

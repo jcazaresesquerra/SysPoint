@@ -42,6 +42,7 @@ import com.app.syspoint.interactor.visit.VisitInteractor;
 import com.app.syspoint.interactor.visit.VisitInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
+import com.app.syspoint.models.Employee;
 import com.app.syspoint.repository.database.bean.AppBundle;
 import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.bean.ClientesRutaBean;
@@ -53,6 +54,7 @@ import com.app.syspoint.repository.database.bean.RolesBean;
 import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.bean.VisitasBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.SpecialPricesDao;
@@ -78,8 +80,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -151,17 +151,20 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-                sendVentas();
+                getClientsByRute();
+                getCobranzasByRute();
+
+                saveVentas();
                 saveCobranza();
-                loadAbonos();
+                saveAbonos();
                 saveVisitas();
-                loadClientes();
+                saveClientes();
                 savePreciosEspeciales();
             }
         }).execute(), 100);
     }
 
-    private void loadAbonos() {
+    private void saveAbonos() {
 
         final PaymentDao paymentDao = new PaymentDao();
         List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
@@ -238,7 +241,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void showDialog() {
-        DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), new DialogoRuteo.DialogListener() {
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        boolean editRuta = vendedoresBean.getEdit_ruta() == 1;
+
+        DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), editRuta, new DialogoRuteo.DialogListener() {
             @Override
             public void ready(String dia, String ruta) {
 
@@ -290,9 +296,23 @@ public class HomeFragment extends Fragment {
                                 ruteoBean.setFecha(Utils.fechaActual());
                                 ruteoBean.setRuta(ruta);
 
-                                routingDao.insert(ruteoBean);
-                                Toast.makeText(getActivity(), "La ruta se cargo con exito!", Toast.LENGTH_LONG).show();
+                                try {
+                                    routingDao.insert(ruteoBean);
+                                } catch (Exception e) {
+                                    routingDao.save(ruteoBean);
+                                }
+
                                 estableceRuta();
+
+                                vendedoresBean.setDay(ruteoBean.getDia());
+                                vendedoresBean.setRute(ruta);
+
+                                new EmployeeDao().save(vendedoresBean);
+                                String idEmpleado = String.valueOf(vendedoresBean.getId());
+                                testLoadEmpleado(idEmpleado);
+
+                                Toast.makeText(getActivity(), "La ruta se cargo con exito!", Toast.LENGTH_LONG).show();
+
                                 dialog.dismiss();
                             }
                         })
@@ -402,9 +422,10 @@ public class HomeFragment extends Fragment {
         RoutingDao routingDao = new RoutingDao();
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
-        if (ruteoBean != null) {
-            mData = new RuteClientDao().getAllRutaClientes();
+        if (ruteoBean != null && ruteoBean.getDia() > 0 && ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty()) {
+            mData = new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
+
         setDataList(mData);
     }
 
@@ -437,7 +458,7 @@ public class HomeFragment extends Fragment {
                 saveData(new ClientDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1), 7);
             }
 
-            mData = new RuteClientDao().getAllRutaClientes();
+            mData = new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
         loadRuta();
@@ -592,19 +613,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        progressshow();
-        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
-            @Override
-            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
-                progresshide();
-            }
-
-            @Override
-            public void onGetAllClientsError() {
-                progresshide();
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
-            }
-        });
+       getClientsByRute();
 
 
         progressshow();
@@ -660,7 +669,48 @@ public class HomeFragment extends Fragment {
         rlprogress.setVisibility(View.GONE);
     }
 
-    private void sendVentas() {
+    private void getClientsByRute() {
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+
+        if (ruteoBean != null) {
+            progressshow();
+            new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), new ClientInteractor.GetAllClientsListener() {
+                @Override
+                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                    loadRuta();
+                    progresshide();
+                }
+
+                @Override
+                public void onGetAllClientsError() {
+                    loadRuta();
+                    progresshide();
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void getCobranzasByRute() {
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean != null) {
+            progressshow();
+            new ChargeInteractorImp().executeGetChargeByEmployee(vendedoresBean.identificador, new ChargeInteractor.OnGetChargeByEmployeeListener() {
+                @Override
+                public void onGetChargeByEmployeeSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                    progresshide();
+                }
+                @Override
+                public void onGetChargeByEmployeeError() {
+
+                }
+            });
+        }
+    }
+
+    private void saveVentas() {
         try {
             final SincVentas sincVentas = new SincVentas();
 
@@ -819,7 +869,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    public void loadClientes() {
+    public void saveClientes() {
 
         final ClientDao clientDao = new ClientDao();
         List<ClienteBean> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
@@ -888,6 +938,162 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSaveClientError() {
                 //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void testLoadEmpleado(String id){
+
+        progressshow();
+        final EmployeeDao employeeDao = new EmployeeDao();
+        List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
+        listaEmpleadosDB =  employeeDao.getEmployeeById(id);
+
+        List<Employee> listEmpleados = new ArrayList<>();
+        for (EmpleadoBean item : listaEmpleadosDB){
+            Employee empleado = new Employee();
+            empleado.setNombre(item.getNombre());
+            if (item.getDireccion().isEmpty()){
+                empleado.setDireccion("-");
+            }else{
+                empleado.setDireccion(item.getDireccion());
+            }
+            empleado.setEmail(item.getEmail());
+            if (item.getTelefono().isEmpty()){
+                empleado.setTelefono("-");
+            }else{
+                empleado.setTelefono(item.getTelefono());
+            }
+
+            if (item.getFecha_nacimiento().isEmpty()){
+                empleado.setFechaNacimiento("-");
+            }else{
+                empleado.setFechaNacimiento(item.getFecha_nacimiento());
+            }
+
+            if (item.getFecha_ingreso().isEmpty()){
+                empleado.setFechaIngreso("-");
+            }else{
+                empleado.setFechaIngreso(item.getFecha_ingreso());
+            }
+
+            if (item.getFecha_egreso().isEmpty()){
+                empleado.setFechaEgreso("-");
+            }else{
+                empleado.setFechaEgreso(item.getFecha_egreso());
+            }
+
+            empleado.setContrasenia(item.getContrasenia());
+            empleado.setIdentificador(item.getIdentificador());
+            if (item.getNss().isEmpty()){
+                empleado.setNss("-");
+            }else{
+                empleado.setNss(item.getNss());
+            }
+
+            if (item.getRfc().isEmpty()){
+                empleado.setRfc("-");
+            }else{
+                empleado.setRfc(item.getRfc());
+            }
+
+            if (item.getCurp().isEmpty()){
+                empleado.setCurp("-");
+            }else{
+                empleado.setCurp(item.getCurp());
+            }
+
+            if (item.getPuesto().isEmpty()){
+                empleado.setPuesto("-");
+            }else{
+                empleado.setPuesto(item.getPuesto());
+            }
+
+            if (item.getArea_depto().isEmpty()){
+                empleado.setAreaDepto("--");
+            }else{
+                empleado.setAreaDepto(item.getArea_depto());
+            }
+
+            empleado.setTipoContrato(item.getTipo_contrato());
+            empleado.setRegion(item.getRegion());
+
+            if (item.getHora_entrada().isEmpty()){
+                empleado.setHoraEntrada("");
+            }else{
+                empleado.setHoraEntrada(item.getHora_entrada());
+            }
+
+            if (item.getHora_salida().isEmpty()){
+                empleado.setHoraSalida("");
+            }else{
+                empleado.setHoraSalida(item.getHora_salida());
+            }
+
+            if (item.getSalida_comer().isEmpty()){
+                empleado.setSalidaComer("");
+            }else{
+                empleado.setSalidaComer(item.getSalida_comer());
+            }
+
+            if (item.getEntrada_comer().isEmpty()){
+                empleado.setEntradaComer("");
+            }else{
+                empleado.setEntradaComer(item.getEntrada_comer());
+            }
+
+            empleado.setSueldoDiario(0);
+            if (item.getStatus() == false){
+                empleado.setStatus(0);
+            }else {
+                empleado.setStatus(1);
+            }
+
+            if (item.getPath_image() == null || item.getPath_image().isEmpty()){
+                empleado.setPathImage("");
+            }else {
+                empleado.setPathImage(item.getPath_image());
+            }
+
+            if (item.getTurno().isEmpty()){
+                empleado.setTurno("--");
+            }else{
+                empleado.setTurno(item.getEntrada_comer());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            if (item.day > 0 && item.day <=7) {
+                empleado.setDay(item.getDay());
+            } else {
+                empleado.setDay(0);
+            }
+
+            if (item.getEdit_ruta() == 1){
+                empleado.setEditRuta(1);
+            }else{
+                empleado.setEditRuta(0);
+            }
+
+            listEmpleados.add(empleado);
+        }
+
+        new GetEmployeesInteractorImp().executeSaveEmployees(listEmpleados, new GetEmployeeInteractor.SaveEmployeeListener() {
+            @Override
+            public void onSaveEmployeeSuccess() {
+                progresshide();
+                //Toast.makeText(ActualizarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void onSaveEmployeeError() {
+                progresshide();
+                //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
             }
         });
     }

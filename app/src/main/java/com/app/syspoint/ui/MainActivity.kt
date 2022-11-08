@@ -1,15 +1,9 @@
 package com.app.syspoint.ui
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.os.Bundle
-import android.os.Handler
-import android.view.Menu
-import android.view.View
-import android.view.Window
-import android.view.WindowManager
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
+import android.view.*
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.navigation.Navigation
 import androidx.navigation.ui.AppBarConfiguration
@@ -18,9 +12,9 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
 import com.app.syspoint.databinding.NavHeaderMainBinding
+import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.database.bean.AppBundle
 import com.app.syspoint.utils.Constants
-import com.app.syspoint.utils.NetworkStateTask
-import com.google.android.material.snackbar.Snackbar
 
 class MainActivity: BaseActivity() {
 
@@ -44,27 +38,8 @@ class MainActivity: BaseActivity() {
         val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
 
         mAppBarConfiguration =
-            if (isAdmin) {
-                AppBarConfiguration.Builder(
-                    R.id.nav_home,
-                    R.id.nav_ruta,
-                    R.id.nav_empleado,
-                    R.id.nav_producto,
-                    R.id.nav_cliente,
-                    R.id.nav_historial,
-                    R.id.nav_inventario,
-                    R.id.nav_cobranza
-                )
-            } else {
-                AppBarConfiguration.Builder(
-                    R.id.nav_home,
-                    R.id.nav_ruta,
-                    R.id.nav_empleado,
-                    R.id.nav_producto,
-                    R.id.nav_cliente,
-                    R.id.nav_historial
-                )
-            }.setDrawerLayout(binding.drawerLayout)
+            AppBarConfiguration.Builder(buildSetMenu(isAdmin))
+           .setDrawerLayout(binding.drawerLayout)
                 .build()
 
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
@@ -142,5 +117,29 @@ class MainActivity: BaseActivity() {
                 navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo) }
             }
         }
+    }
+
+    private fun buildSetMenu(isAdmin: Boolean): Set<Int> {
+        return if (isAdmin)
+            mutableSetOf(
+                R.id.nav_home,
+                R.id.nav_ruta,
+                R.id.nav_empleado,
+                R.id.nav_producto,
+                R.id.nav_cliente,
+                R.id.nav_historial,
+                R.id.nav_inventario,
+                R.id.nav_cobranza
+            )
+         else
+            mutableSetOf(
+                R.id.nav_home,
+                R.id.nav_ruta,
+                R.id.nav_empleado,
+                R.id.nav_producto,
+                R.id.nav_cliente,
+                R.id.nav_historial
+            )
+
     }
 }

@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.app.syspoint.R;
+import com.app.syspoint.repository.database.bean.AppBundle;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
@@ -33,7 +35,10 @@ public class RutaFragment extends Fragment {
     }
 
     private void showDialog() {
-        DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), new DialogoRuteo.DialogListener() {
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        boolean editRuta = vendedoresBean.getEdit_ruta() == 1;
+
+        DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), editRuta, new DialogoRuteo.DialogListener() {
             @Override
             public void ready(String dia, String ruta) {
 

@@ -20,7 +20,7 @@ public class CobdetBean extends Bean{
     private String fecha;
     private String hora;
     private double importe;
-    private Integer venta;
+    private Long venta;
     private Long empleadoId;
     @ToOne(joinProperty = "empleadoId")
     private EmpleadoBean empleado;
@@ -32,10 +32,10 @@ public class CobdetBean extends Bean{
     /** Used for active entity operations. */
     @Generated(hash = 87045701)
     private transient CobdetBeanDao myDao;
-    @Generated(hash = 186254058)
-    public CobdetBean(Long id, Long cobro, String cobranza, Long clienteId,
-            String fecha, String hora, double importe, Integer venta,
-            Long empleadoId, Integer abono, double saldo) {
+    @Generated(hash = 1713213665)
+    public CobdetBean(Long id, Long cobro, String cobranza, Long clienteId, String fecha,
+            String hora, double importe, Long venta, Long empleadoId, Integer abono,
+            double saldo) {
         this.id = id;
         this.cobro = cobro;
         this.cobranza = cobranza;
@@ -93,10 +93,10 @@ public class CobdetBean extends Bean{
     public void setImporte(double importe) {
         this.importe = importe;
     }
-    public Integer getVenta() {
+    public Long getVenta() {
         return this.venta;
     }
-    public void setVenta(Integer venta) {
+    public void setVenta(Long venta) {
         this.venta = venta;
     }
     public Long getEmpleadoId() {

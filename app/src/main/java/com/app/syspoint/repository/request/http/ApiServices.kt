@@ -12,6 +12,23 @@ class ApiServices {
     companion object {
         private var retrofit: Retrofit? = null
 
+        fun getClientRetrofitPython(): Retrofit {
+
+            val okHttpClient = OkHttpClient.Builder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .build()
+
+            retrofit = Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL_PYTHON)
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(FlowCallAdapterFactory())
+                .build()
+
+            return retrofit!!
+        }
         fun getClientRetrofit(): Retrofit {
             val okHttpClient = OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)

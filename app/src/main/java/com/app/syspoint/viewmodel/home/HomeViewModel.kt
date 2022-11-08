@@ -50,7 +50,7 @@ class HomeViewModel: ViewModel() {
 
         var clientRute = listOf<ClientesRutaBean>()
         if (ruteoBean != null) {
-            clientRute = RuteClientDao().getAllRutaClientes()
+            //clientRute = RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia())
         }
 
         homeViewState.postValue(HomeViewState.ClientRuteDefined(clientRute))
@@ -225,7 +225,7 @@ class HomeViewModel: ViewModel() {
             }
         })
         homeViewState.value = HomeViewState.LoadingStart
-        ClientInteractorImp().executeGetAllClients(object : GetAllClientsListener {
+ /*       ClientInteractorImp().executeGetAllClients(object : GetAllClientsListener {
             override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
                 homeViewState.value = HomeViewState.LoadingFinish
             }
@@ -234,7 +234,7 @@ class HomeViewModel: ViewModel() {
                 homeViewState.value = HomeViewState.LoadingFinish
                 //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener clientes", Toast.LENGTH_SHORT).show();
             }
-        })
+        })*/
         homeViewState.value = HomeViewState.LoadingStart
         GetProductsInteractorImp().executeGetProducts(object : OnGetProductsListener {
             override fun onGetProductsSuccess(products: List<ProductoBean?>) {
@@ -365,7 +365,7 @@ class HomeViewModel: ViewModel() {
         val ruteoBean = routingDao.getRutaEstablecida()
 
         if (ruteoBean != null) {
-            mData = RuteClientDao().getAllRutaClientes()
+            //mData = RuteClientDao().getAllRutaClientes(ruteoBean.ruta, ruteoBean.dia)
         }
         homeViewState.value = HomeViewState.RuteLoaded(mData)
     }

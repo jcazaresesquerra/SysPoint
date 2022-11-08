@@ -214,7 +214,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
             for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
                 final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
-                int venta = cobranzaBean.getVenta();
+                long venta = cobranzaBean.getVenta();
                 String cobranza = cobranzaBean.getCobranza();
                 double importe = cobranzaBean.getImporte();
                 double saldo = cobranzaBean.getSaldo();
@@ -228,7 +228,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
             // Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
         }
     }
-    private void AddItems(int venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
+    private void AddItems(long venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
         final CobranzaModel item = new CobranzaModel();
         final PaymentModelDao dao = new PaymentModelDao();
         item.setVenta(venta);

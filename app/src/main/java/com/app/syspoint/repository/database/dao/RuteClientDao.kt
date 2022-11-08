@@ -5,11 +5,45 @@ import com.app.syspoint.repository.database.bean.ClientesRutaBean
 import com.app.syspoint.repository.database.bean.ClientesRutaBeanDao
 
 class RuteClientDao: Dao("ClientesRutaBean") {
-    fun getAllRutaClientes(): List<ClientesRutaBean> {
+
+    fun getAllRutes(): List<String> {
+        val cursor = dao.database.rawQuery(
+            "SELECT DISTINCT rango FROM `clientes` ORDER BY rango;",
+            null
+        )
+        val array = arrayListOf<String>()
+        while (cursor.moveToNext()) {
+            array.add(cursor.getString(0))
+        }
+        return array
+    }
+
+    fun getClientsByRute(rute: String): List<ClientesRutaBean> {
         return dao.queryBuilder()
-            .where(ClientesRutaBeanDao.Properties.Visitado.eq(0))
-            .orderAsc(ClientesRutaBeanDao.Properties.Id)
+            .where(ClienteBeanDao.Properties.Rango.eq(rute))
+            .where(ClienteBeanDao.Properties.Status.eq(1))
+            .orderAsc(ClienteBeanDao.Properties.Id)
             .list() as List<ClientesRutaBean>
+    }
+
+    fun getAllRutaClientes(rute: String, day: Int): List<ClientesRutaBean>? {
+        val clients = dao.queryBuilder()
+            .where(ClientesRutaBeanDao.Properties.Visitado.eq(0))
+            .where(ClientesRutaBeanDao.Properties.Rango.eq(rute))
+            .where(
+                when(day) {
+                    1 -> ClientesRutaBeanDao.Properties.Lun.eq(1)
+                    2 -> ClientesRutaBeanDao.Properties.Mar.eq(1)
+                    3 -> ClientesRutaBeanDao.Properties.Mie.eq(1)
+                    4 -> ClientesRutaBeanDao.Properties.Jue.eq(1)
+                    5 -> ClientesRutaBeanDao.Properties.Vie.eq(1)
+                    6 -> ClientesRutaBeanDao.Properties.Sab.eq(1)
+                    else -> ClientesRutaBeanDao.Properties.Dom.eq(1)
+                }
+            )
+            .orderAsc(ClientesRutaBeanDao.Properties.Id)
+            .list()
+        return clients.ifEmpty { null } as List<ClientesRutaBean>
     }
 
     fun getListaClientesRutaLunes(ruta: String?, dia: Int): List<ClientesRutaBean> {

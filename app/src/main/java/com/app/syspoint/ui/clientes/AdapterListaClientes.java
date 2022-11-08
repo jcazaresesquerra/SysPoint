@@ -14,18 +14,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClientes.Holder> implements Filterable {
 
-    private List<ClienteBean>mData;
-    private List<ClienteBean>mDataFiltrable;
+    private List<ClientesRutaBean>mData;
+    private List<ClientesRutaBean>mDataFiltrable;
     private OnItemClickListener mOnItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
     private Context context;
-    public AdapterListaClientes(List<ClienteBean> mData, OnItemClickListener mOnItemClickListener, OnItemLongClickListener onItemLongClickListener ) {
+    public AdapterListaClientes(List<ClientesRutaBean> mData, OnItemClickListener mOnItemClickListener, OnItemLongClickListener onItemLongClickListener ) {
         this.mData = mData;
         this.mDataFiltrable = mData;
         this.mOnItemClickListener = mOnItemClickListener;
@@ -61,9 +62,9 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
                 }else {
 
                     //TODO filtro productos
-                    List<ClienteBean> filtroEmpleados = new ArrayList<>();
+                    List<ClientesRutaBean> filtroEmpleados = new ArrayList<>();
 
-                    for (ClienteBean row : mData){
+                    for (ClientesRutaBean row : mData){
                         if (row.getNombre_comercial().toLowerCase().contains(filtro) || row.getCalle().toLowerCase().contains(filtro) ){
                             filtroEmpleados.add(row);
                         }
@@ -78,18 +79,18 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                mDataFiltrable = (ArrayList<ClienteBean>) results.values;
+                mDataFiltrable = (ArrayList<ClientesRutaBean>) results.values;
                 notifyDataSetChanged();
             }
         };
     }
 
-    public void setClients(List<ClienteBean> data) {
+    public void setClients(List<ClientesRutaBean> data) {
         this.mDataFiltrable  = data;
         notifyDataSetChanged();
     }
 
-    public void setListaRuta(List<ClienteBean> mData) {
+    public void setListaRuta(List<ClientesRutaBean> mData) {
         this.mDataFiltrable = mData;
         this.notifyDataSetChanged();
     }
@@ -111,7 +112,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             //this.imageView = itemView.findViewById(R.id.img_more);
         }
 
-        private void bind(ClienteBean cliente, final OnItemClickListener onItemClickListener, final OnItemLongClickListener onItemLongClickListener){
+        private void bind(ClientesRutaBean cliente, final OnItemClickListener onItemClickListener, final OnItemLongClickListener onItemLongClickListener){
 
             textViewNombre.setText(""+ cliente.getNombre_comercial());
             textViewCuenta.setText("" + cliente.getCuenta());
@@ -144,7 +145,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
     }
 
     public interface OnItemClickListener {
-        void onItemClick(View view, ClienteBean obj, int position, OnDialogShownListener onDialogShownListener);
+        void onItemClick(View view, ClientesRutaBean obj, int position, OnDialogShownListener onDialogShownListener);
     }
 
     public interface OnDialogShownListener {

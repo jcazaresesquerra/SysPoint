@@ -272,7 +272,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private void loadConsecCuenta() {
 
         final ClientDao clientDao = new ClientDao();
-        no_cuenta = clientDao.getLastConsec();
+        no_cuenta = clientDao.getLastConsec() + 1;
         String consectivo = "";
         if (no_cuenta < 10) {
             consectivo = "000" + no_cuenta;
@@ -284,7 +284,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
             consectivo = "" + consectivo;
         }
 
-        editText_no_cuenta_registro_cliente.setText("" + consectivo);
+        editText_no_cuenta_registro_cliente.setText(consectivo);
     }
 
     private void initControls() {

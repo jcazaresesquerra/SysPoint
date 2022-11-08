@@ -11,14 +11,14 @@ import org.greenrobot.greendao.annotation.Id;
 public class CobranzaModel extends Bean {
     @Id(autoincrement = true)
     private Long id;
-    private int venta;
+    private Long venta;
     private String cobranza;
     private double importe;
     private double saldo;
     private double acuenta;
     private String no_referen;
-    @Generated(hash = 111939273)
-    public CobranzaModel(Long id, int venta, String cobranza, double importe,
+    @Generated(hash = 1926984708)
+    public CobranzaModel(Long id, Long venta, String cobranza, double importe,
             double saldo, double acuenta, String no_referen) {
         this.id = id;
         this.venta = venta;
@@ -31,10 +31,10 @@ public class CobranzaModel extends Bean {
     @Generated(hash = 1159363648)
     public CobranzaModel() {
     }
-    public int getVenta() {
+    public Long getVenta() {
         return this.venta;
     }
-    public void setVenta(int venta) {
+    public void setVenta(Long venta) {
         this.venta = venta;
     }
     public String getCobranza() {

@@ -206,7 +206,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             //if (ruteoBean.getDia() == 7) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
             //}
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
 
 
         }
@@ -314,7 +314,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
            //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
            //}
 
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
     }

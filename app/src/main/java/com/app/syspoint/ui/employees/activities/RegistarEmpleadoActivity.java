@@ -44,10 +44,13 @@ import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
 
@@ -87,6 +90,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_registro_empleado_puesto;
     private EditText ip_registro_empleado_departamento;
     private Spinner spinner_tipo_contrato_registro_empleado;
+    private Spinner rute_employee_spinner;
+    private Spinner day_employee_spinner;
+    private String ruta_seleccionado;
+    private String dia_seleccionado;
     private String tipo_contrato_seleccionado;
     private String region_seleccionada;
     private EditText ip_registro_empleado_sueldo;
@@ -115,6 +122,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private SwitchCompat checkbor_empleados_registro_empleado;
     private SwitchCompat checkbor_inventarios_registro_empleado;
     private SwitchCompat checkbor_cobranza_registro_empleado;
+    private SwitchCompat checkbor_edit_rute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,15 +197,70 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
         checkbor_inventarios_registro_empleado = findViewById(R.id.checkbor_inventario_registro_empleado);
         checkbor_cobranza_registro_empleado = findViewById(R.id.checkbor_cobranza_registro_empleado);
+        checkbor_edit_rute = findViewById(R.id.checkbor_edit_rute);
 
         loadSpinnerRegion();
         loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRuteAndDay();
     }
 
+    private void loadSpinnerRuteAndDay() {
+        //Obtiene el array de las unidades de medida
+
+        final RuteClientDao dao = new RuteClientDao();
+
+        //Obtiene la lista de Strings
+        List<String> arrayListRute = dao.getAllRutes();
+
+        if (ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        //Obtiene el array de las unidades de medida
+        String[] arrayDay = getArrayString(R.array.edit_day);
+
+        //Obtiene la lista de Strings
+        List<String> arrayListDay = Utils.convertArrayStringListString(arrayDay);
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterDay = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListDay);
+        day_employee_spinner = findViewById(R.id.day_employee_spinner);
+        day_employee_spinner.setAdapter(adapterDay);
+        day_employee_spinner.setSelection(arrayListDay.indexOf(dia_seleccionado));
+        day_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                dia_seleccionado = day_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
 
     private void loadSpinnerRegion() {
-
         //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.region);
 
@@ -664,6 +727,32 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             empleado.setPath_image(getStringImage(decoded));
         }
 
+        if (checkbor_edit_rute.isChecked()){
+            empleado.setEdit_ruta(1);
+        } else {
+            empleado.setEdit_ruta(0);
+        }
+
+        empleado.setRute(ruta_seleccionado);
+
+        if (dia_seleccionado.compareToIgnoreCase("Lunes") == 0) {
+            empleado.setDay(1);
+        } else if (dia_seleccionado.compareToIgnoreCase("Martes") == 0) {
+            empleado.setDay(2);
+        } else if (dia_seleccionado.compareToIgnoreCase("Miercoles") == 0) {
+            empleado.setDay(3);
+        } else if (dia_seleccionado.compareToIgnoreCase("Jueves") == 0) {
+            empleado.setDay(4);
+        } else if (dia_seleccionado.compareToIgnoreCase("Viernes") == 0) {
+            empleado.setDay(5);
+        } else if (dia_seleccionado.compareToIgnoreCase("Sabado") == 0) {
+            empleado.setDay(6);
+        } else if (dia_seleccionado.compareToIgnoreCase("Domingo") == 0) {
+            empleado.setDay(7);
+        } else {
+            empleado.setDay(0);
+        }
+
         employeeDao.insert(empleado);
 
         //Insera el registro de los modulos
@@ -964,6 +1053,24 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setTurno("--");
             }else{
                 empleado.setTurno(item.getEntrada_comer());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            if (item.day > 0 && item.day <=7) {
+                empleado.setDay(item.getDay());
+            } else {
+                empleado.setDay(0);
+            }
+
+            if (item.getEdit_ruta() == 1){
+                empleado.setEditRuta(1);
+            }else{
+                empleado.setEditRuta(0);
             }
 
             listEmpleados.add(empleado);

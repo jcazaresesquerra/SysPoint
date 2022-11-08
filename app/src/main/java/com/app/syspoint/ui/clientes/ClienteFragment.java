@@ -64,7 +64,7 @@ import java.util.List;
 public class ClienteFragment extends Fragment {
 
     AdapterListaClientes mAdapter;
-    List<ClienteBean> mData;
+    List<ClientesRutaBean> mData;
     private RelativeLayout rlprogress;
     private LinearLayout lyt_clientes;
 
@@ -179,8 +179,15 @@ public class ClienteFragment extends Fragment {
     }
 
     private void initRecyclerView(View root) {
+        mData = new ArrayList<>();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
-        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        if (ruteoBean != null) {
+            mData = (List<ClientesRutaBean>) new RuteClientDao().getClientsByRute(ruteoBean.getRuta());
+        } else {
+            //mData = (List<ClientesRutaBean>) new RuteClientDao().list();
+        }
 
         if (mData.size() > 0) {
             lyt_clientes.setVisibility(View.GONE);
@@ -209,9 +216,9 @@ public class ClienteFragment extends Fragment {
 
     }
 
-    private void showDialogList(ClienteBean cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
+    private void showDialogList(ClientesRutaBean cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
 
-        final ClienteBean clienteBean = cliente;
+        final ClientesRutaBean clienteBean = cliente;
 
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
         builderSingle.setIcon(R.drawable.logo);
@@ -399,7 +406,7 @@ public class ClienteFragment extends Fragment {
         });
     }
 
-    private void showCustomDialog(ClienteBean clienteBean) {
+    private void showCustomDialog(ClientesRutaBean clienteBean) {
         final Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
         dialog.setContentView(R.layout.dialog_recordatorio);
@@ -531,32 +538,36 @@ public class ClienteFragment extends Fragment {
 
     private void getData() {
 
-        progressshow();
-        new ClientInteractorImp().executeGetAllClients(new ClientInteractor.GetAllClientsListener() {
-            @Override
-            public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
-                mData = new ArrayList<>();
-                mData.addAll(clientList);
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
-                // remove inactive users
-                mData.removeIf(item -> !item.getStatus());
+        if (ruteoBean != null) {
+            progressshow();
+            new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), new ClientInteractor.GetAllClientsListener() {
+                @Override
+                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                    mData = new RuteClientDao().getClientsByRute(ruteoBean.getRuta());
 
-                mAdapter.setClients((List<ClienteBean>) clientList);
+                    // remove inactive users
+                    mData.removeIf(item -> !item.getStatus());
 
-                if (mData.size() > 0) {
-                    lyt_clientes.setVisibility(View.GONE);
-                } else {
-                    lyt_clientes.setVisibility(View.VISIBLE);
+                    mAdapter.setClients(mData);
+
+                    if (mData.size() > 0) {
+                        lyt_clientes.setVisibility(View.GONE);
+                    } else {
+                        lyt_clientes.setVisibility(View.VISIBLE);
+                    }
+                    progresshide();
                 }
-                progresshide();
-            }
 
-            @Override
-            public void onGetAllClientsError() {
-                progresshide();
-                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al obtener clientes", Toast.LENGTH_LONG).show();
-            }
-        });
+                @Override
+                public void onGetAllClientsError() {
+                    progresshide();
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un problema al obtener clientes", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     public void progressshow() {
@@ -570,7 +581,14 @@ public class ClienteFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+
+        if (ruteoBean != null) {
+            mData = (List<ClientesRutaBean>) new RuteClientDao().getClientsByRute(ruteoBean.getRuta());
+        } else {
+            //mData = (List<ClientesRutaBean>) new RuteClientDao().list();
+        }
         // remove inactive users
         mData.removeIf(item -> !item.getStatus());
         mAdapter.setClients(mData);

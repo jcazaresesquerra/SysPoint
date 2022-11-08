@@ -1,6 +1,8 @@
 package com.app.syspoint.repository.request.http
 
 import com.app.syspoint.models.Data
+import com.app.syspoint.models.RequestChargeByRute
+import com.app.syspoint.models.RequestClientsByRute
 import com.app.syspoint.models.ResponseVenta
 import com.app.syspoint.models.json.*
 import okhttp3.MultipartBody
@@ -13,6 +15,9 @@ interface PointApi {
     // GET AL DATA RESONSE
     @GET("getAllData")
     fun getAllData(): Call<Data>
+
+    @GET("getAllDataV2")
+    fun getAllDataV2(): Call<Data>
 
     @GET("getAllDataByDate")
     fun getAllDataByDate(): Call<Data>
@@ -40,6 +45,10 @@ interface PointApi {
     // CLIENTES
     @GET("getAllClientes")
     fun getAllClientes(): Call<ClientJson>
+
+    // CLIENTES
+    @POST("getAllClientesByRute")
+    fun getAllClientesByRute(@Body clientsByRute: RequestClientsByRute?): Call<ClientJson>
 
     @POST("getClienteByID")
     fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
@@ -80,6 +89,9 @@ interface PointApi {
 
     @GET("getAllCobranza")
     fun getCobranza(): Call<PaymentJson>
+
+    @POST("getAllCobranzaByEmployee")
+    fun getAllCobranzaByEmployee(@Body chargeByRute: RequestChargeByRute?): Call<PaymentJson>
 
     @POST("getAllByCliente")
     fun getCobranzaByCliente(@Body paramt: RequestCobranza?): Call<PaymentJson>
