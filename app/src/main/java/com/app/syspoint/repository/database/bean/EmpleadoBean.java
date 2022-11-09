@@ -36,16 +36,17 @@ public class EmpleadoBean extends Bean{
     public double sueldo_diario;
     public String turno;
     public String path_image;
+    public int day;
+    public String rute;
 
-@Generated(hash = 1023374649)
+@Generated(hash = 364443486)
 public EmpleadoBean(Long id, String nombre, String direccion, String email,
         String telefono, String fecha_nacimiento, String fecha_ingreso,
-        String fecha_egreso, String contrasenia, String identificador,
-        boolean status, String nss, String rfc, String curp, String puesto,
-        String area_depto, String tipo_contrato, String region,
-        String hora_entrada, String hora_salida, String salida_comer,
-        String entrada_comer, double sueldo_diario, String turno,
-        String path_image) {
+        String fecha_egreso, String contrasenia, String identificador, boolean status,
+        String nss, String rfc, String curp, String puesto, String area_depto,
+        String tipo_contrato, String region, String hora_entrada, String hora_salida,
+        String salida_comer, String entrada_comer, double sueldo_diario, String turno,
+        String path_image, int day, String rute) {
     this.id = id;
     this.nombre = nombre;
     this.direccion = direccion;
@@ -71,6 +72,8 @@ public EmpleadoBean(Long id, String nombre, String direccion, String email,
     this.sueldo_diario = sueldo_diario;
     this.turno = turno;
     this.path_image = path_image;
+    this.day = day;
+    this.rute = rute;
 }
 @Generated(hash = 1983182120)
 public EmpleadoBean() {
@@ -226,4 +229,19 @@ public void setPath_image(String path_image) {
     this.path_image = path_image;
 }
 
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public String getRute() {
+        return rute;
+    }
+
+    public void setRute(String rute) {
+        this.rute = rute;
+    }
 }

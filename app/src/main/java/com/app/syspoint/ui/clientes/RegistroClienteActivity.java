@@ -275,16 +275,20 @@ public class RegistroClienteActivity extends AppCompatActivity {
         no_cuenta = clientDao.getLastConsec();
         String consectivo = "";
         if (no_cuenta < 10) {
-            consectivo = "000" + no_cuenta;
+            consectivo = "00000" + no_cuenta;
         } else if (no_cuenta >= 10 && no_cuenta <= 99) {
-            consectivo = "00" + no_cuenta;
+            consectivo = "0000" + no_cuenta;
         } else if (no_cuenta >= 100 && no_cuenta <= 999) {
+            consectivo = "000" + no_cuenta;
+        } else if (no_cuenta >= 1000 && no_cuenta <= 9999) {
+            consectivo = "00" + no_cuenta;
+        } else if (no_cuenta >= 10000 && no_cuenta <= 99999) {
             consectivo = "0" + no_cuenta;
         } else {
-            consectivo = "" + consectivo;
+            consectivo = "" + no_cuenta;
         }
 
-        editText_no_cuenta_registro_cliente.setText("" + consectivo);
+        editText_no_cuenta_registro_cliente.setText(consectivo);
     }
 
     private void initControls() {

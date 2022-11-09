@@ -4,15 +4,15 @@ import android.os.Handler
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.app.syspoint.App
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.models.sealed.LoginViewState
-import com.app.syspoint.utils.Utils
-import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.cache.SharedPreferencesManager
+import com.app.syspoint.repository.database.bean.*
+import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.utils.NetworkStateTask
+import com.app.syspoint.utils.Utils
 import com.app.syspoint.viewmodel.BaseViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ class LoginViewModel: BaseViewModel() {
     val loginViewState = MutableLiveData<LoginViewState>()
 
     init {
-        createUser()
+        //createUser()
         validatePersistence()
         sync()
     }
@@ -35,21 +35,142 @@ class LoginViewModel: BaseViewModel() {
         sessionDao.clear()
 
         val userSession = UserSession(email, password, false)
+        val lastUserSession = CacheInteractor().getSeller()
 
         if (employeeBean != null) {
+
+
+            if (lastUserSession != null && !lastUserSession.email.isNullOrEmpty() && lastUserSession.email != userSession.usuario) {
+                loginViewState.postValue(LoginViewState.LoginError("Solo se permite una cuenta de usuario por dia en este dispositivo"))
+                return
+                /*val clientesRutaDao = RuteClientDao()
+                clientesRutaDao.clear()
+                val clientDao = ClientDao()
+                clientDao.clear()
+                val routingDao = RoutingDao()
+                val ruteoBean = routingDao.getRutaEstablecida()
+                routingDao.clear()
+                if (ruteoBean != null) {
+                    employeeBean.setRute(employeeBean.getRute())
+                    employeeDao.save(employeeBean)
+                }*/
+            }
+
             val sessionBean = SesionBean()
             sessionBean.empleado = employeeBean
             sessionBean.empleadoId = employeeBean.id
             sessionBean.remember = false
             sessionDao.saveSession(sessionBean)
-
             AppBundle.setUserSession(userSession)
         }
 
         loginViewState.postValue(
             if (employeeBean != null) LoginViewState.LoggedIn
-            else LoginViewState.LoginError
+            else LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
         )
+    }
+
+    private fun setRuteByEmployeeIfExists(employeeBean: EmpleadoBean) {
+        val routingDao = RoutingDao()
+        val ruteoBean = routingDao.getRutaEstablecida()
+
+        if (ruteoBean != null) {
+            ruteoBean.id = 1L
+            ruteoBean.fecha = Utils.fechaActual()
+            if (employeeBean.getDay() > 0 && !employeeBean.getRute().isNullOrEmpty()) {
+                ruteoBean.dia = employeeBean.getDay()
+                ruteoBean.ruta = employeeBean.getRute()
+            } else {
+                ruteoBean.dia = 0
+                ruteoBean.ruta = ""
+            }
+            routingDao.save(ruteoBean)
+            getClientsByRute(ruteoBean)
+        } else {
+            val ruteo = RuteoBean()
+            ruteo.id = 1L
+            ruteo.fecha = Utils.fechaActual()
+
+            if (employeeBean.getDay() > 0 && !employeeBean.getRute().isNullOrEmpty()) {
+                ruteo.dia = employeeBean.getDay()
+                ruteo.ruta = employeeBean.getRute()
+            } else {
+                ruteo.dia = 0
+                ruteo.ruta = ""
+            }
+            routingDao.insert(ruteo)
+
+            getClientsByRute(ruteo)
+        }
+    }
+
+    private fun getClientsByRute(ruteoBean: RuteoBean) {
+        if (ruteoBean.dia == 1) {
+            saveData(ClientDao().getClientsByMondayRute(ruteoBean.ruta, 1), 1)
+        } else if (ruteoBean.dia == 2) {
+            saveData(ClientDao().getListaClientesRutaMartes(ruteoBean.ruta, 1), 2)
+        }
+        if (ruteoBean.dia == 3) {
+            saveData(ClientDao().getListaClientesRutaMiercoles(ruteoBean.ruta, 1), 3)
+        }
+        if (ruteoBean.dia == 4) {
+            saveData(ClientDao().getListaClientesRutaJueves(ruteoBean.ruta, 1), 4)
+        }
+        if (ruteoBean.dia == 5) {
+            saveData(ClientDao().getListaClientesRutaViernes(ruteoBean.ruta, 1), 5)
+        }
+        if (ruteoBean.dia == 6) {
+            saveData(ClientDao().getListaClientesRutaSabado(ruteoBean.ruta, 1), 6)
+        }
+        if (ruteoBean.dia == 7) {
+            saveData(ClientDao().getListaClientesRutaDomingo(ruteoBean.ruta, 1), 7)
+        }
+    }
+
+    private fun saveData(listaClientes: List<ClienteBean>, day: Int) {
+        var count = 0
+        for (item in listaClientes) {
+            count += 1
+            val ruteClientDao = RuteClientDao()
+            val clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(item.cuenta)
+            //Guardamos al clientes en la ruta actual
+            if (clientesRutaBean == null) {
+                val bean = ClientesRutaBean()
+                val dao = RuteClientDao()
+                bean.id = java.lang.Long.valueOf(count.toLong())
+                bean.nombre_comercial = item.nombre_comercial
+                bean.calle = item.calle
+                bean.numero = item.numero
+                bean.colonia = item.colonia
+                bean.cuenta = item.cuenta
+                bean.rango = item.rango
+                bean.lun = item.lun
+                bean.mar = item.mar
+                bean.mie = item.mie
+                bean.jue = item.jue
+                bean.vie = item.vie
+                bean.sab = item.sab
+                bean.dom = item.dom
+                when (day) {
+                    1 -> bean.order = item.lunOrder
+                    2 -> bean.order = item.marOrder
+                    3 -> bean.order = item.mieOrder
+                    4 -> bean.order = item.jueOrder
+                    5 -> bean.order = item.vieOrder
+                    6 -> bean.order = item.sabOrder
+                    7 -> bean.order = item.domOrder
+                }
+                bean.visitado = 0
+                bean.latitud = item.latitud
+                bean.longitud = item.longitud
+                bean.phone_contact = item.contacto_phone
+                try {
+                    dao.insert(bean)
+                } catch (e: Exception) {
+                    dao.save(bean)
+                }
+            }
+        }
     }
 
     fun isUserAdmin(): Boolean {
@@ -98,6 +219,7 @@ class LoginViewModel: BaseViewModel() {
             employee.setEntrada_comer("13:30")
             employee.setSueldo_diario(0.0)
             employee.setTurno("")
+            //employee.setEdit_ruta(false)
             dao.insert(employee)
             val rolCliente = RolesBean()
             val rolClienteDao =
@@ -203,8 +325,7 @@ class LoginViewModel: BaseViewModel() {
         if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual())) {
             val stockDao = StockDao()
             stockDao.clear()
-            val historialDao =
-                StockHistoryDao()
+            val historialDao = StockHistoryDao()
             historialDao.clear()
             val ventasDao = SellsDao()
             ventasDao.clear()
@@ -212,29 +333,26 @@ class LoginViewModel: BaseViewModel() {
             itemDao.clear()
             val visitasDao = VisitsDao()
             visitasDao.clear()
-            val cobranzaDao =
-                PaymentDao()
+            val cobranzaDao = PaymentDao()
             cobranzaDao.clear()
-            val chargesDao =
-                ChargesDao()
+            val chargesDao = ChargesDao()
             chargesDao.clear()
-            val routingDao =
-                RoutingDao()
+            val routingDao = RoutingDao()
             routingDao.clear()
-            val employeeDao =
-                EmployeeDao()
+            val employeeDao = EmployeeDao()
             employeeDao.clear()
             val rolesDao = RolesDao()
             rolesDao.clear()
-            val clientesRutaDao =
-                RuteClientDao()
+            val clientesRutaDao = RuteClientDao()
             clientesRutaDao.clear()
-            val specialPricesDao =
-                SpecialPricesDao()
+            val clientDao = ClientDao()
+            clientDao.clear()
+            val specialPricesDao = SpecialPricesDao()
             specialPricesDao.clear()
             val dao = TaskDao()
             dao.clear()
             val bean = TaskBean()
+            CacheInteractor().removeSellerFromCache()
             bean.date = Utils.fechaActual()
             bean.task = "Sincronización"
             dao.insert(bean)

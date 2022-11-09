@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 
 import java.util.ArrayList;
 import java.util.List;

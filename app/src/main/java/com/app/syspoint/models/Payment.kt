@@ -23,7 +23,7 @@ data class Payment(
     
     @SerializedName("venta")
     @Expose
-    var venta: Int? = null,
+    var venta: Long? = null,
     
     @SerializedName("estado")
     @Expose

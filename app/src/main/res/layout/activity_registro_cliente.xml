@@ -46,7 +46,7 @@
                         android:id="@+id/inp_nombre_registro_cliente"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Nmbre comercial *"
+                        android:hint="Nombre comercial *"
                         android:inputType="text"
                         android:maxLines="1">
 
@@ -285,6 +285,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:layout_weight="1"
+
                     android:hint="No Cuenta">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -292,8 +293,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="number"
-                        android:maxLength="4"
-                        android:maxLines="1">
+                        android:maxLength="6"
+                        android:maxLines="1"
+                        android:clickable="false"
+                        android:cursorVisible="false"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false">
 
                     </com.google.android.material.textfield.TextInputEditText>
 

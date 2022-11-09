@@ -18,7 +18,7 @@ public class CobranzaBean extends Bean {
     private String cliente;
     private double importe;
     private double saldo;
-    private Integer venta;
+    private Long venta;
     private String estado;
     private String observaciones;
     private String fecha;
@@ -26,9 +26,9 @@ public class CobranzaBean extends Bean {
     private String empleado;
     private boolean isCheck;
     private boolean abono;
-@Generated(hash = 1858693514)
+@Generated(hash = 2034958666)
 public CobranzaBean(Long id, String cobranza, String cliente, double importe,
-        double saldo, Integer venta, String estado, String observaciones,
+        double saldo, Long venta, String estado, String observaciones,
         String fecha, String hora, String empleado, boolean isCheck,
         boolean abono) {
     this.id = id;
@@ -78,10 +78,10 @@ public double getSaldo() {
 public void setSaldo(double saldo) {
     this.saldo = saldo;
 }
-public Integer getVenta() {
+public Long getVenta() {
     return this.venta;
 }
-public void setVenta(Integer venta) {
+public void setVenta(Long venta) {
     this.venta = venta;
 }
 public String getEstado() {

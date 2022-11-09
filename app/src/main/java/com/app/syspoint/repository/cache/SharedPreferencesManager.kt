@@ -35,9 +35,15 @@ class SharedPreferencesManager(context: Context) {
         return prefs.getBoolean(DATA_STATUS, false)
     }
 
-    fun storeJsonSeller(json : String) {
+    fun storeJsonSeller(json : String?) {
         val editor = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
         editor.putString(JSON_SELLERS, json)
+        editor.apply()
+    }
+
+    fun removeSellerFromCache() {
+        val editor = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.remove(JSON_SELLERS)
         editor.apply()
     }
 

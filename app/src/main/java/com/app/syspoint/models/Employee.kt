@@ -110,5 +110,13 @@ data class Employee (
     
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: String? = null
+    var updatedAt: String? = null,
+
+    @SerializedName("rute")
+    @Expose
+    var rute: String? = null,
+
+    @SerializedName("day")
+    @Expose
+    var day: Int? = null
 ): Serializable

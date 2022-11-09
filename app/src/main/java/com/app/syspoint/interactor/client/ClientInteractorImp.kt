@@ -7,11 +7,20 @@ import kotlinx.coroutines.launch
 
 class ClientInteractorImp: ClientInteractor() {
 
+
     @Synchronized
     override fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {
         super.executeGetAllClients(onGetAllClientsListener)
         GlobalScope.launch {
             RequestClient.requestAllClients(onGetAllClientsListener)
+        }
+    }
+
+    @Synchronized
+    override fun executeGetAllClientsByDate(ruteByEmployee: String, onGetAllClientsListener: GetAllClientsListener) {
+        super.executeGetAllClientsByDate(ruteByEmployee, onGetAllClientsListener)
+        GlobalScope.launch {
+            RequestClient.requestGetAllClientsByDate(ruteByEmployee, onGetAllClientsListener)
         }
     }
 
