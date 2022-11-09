@@ -28,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,6 +47,7 @@ import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
 
@@ -87,6 +87,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_registro_empleado_puesto;
     private EditText ip_registro_empleado_departamento;
     private Spinner spinner_tipo_contrato_registro_empleado;
+    private Spinner rute_employee_spinner;
+    private Spinner day_employee_spinner;
+    private String ruta_seleccionado;
+    private String dia_seleccionado;
     private String tipo_contrato_seleccionado;
     private String region_seleccionada;
     private EditText ip_registro_empleado_sueldo;
@@ -109,12 +113,13 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private RelativeLayout rlprogress;
 
 
-    private SwitchCompat checkbor_clientes_registro_empleado;
-    private SwitchCompat checkbor_productos_registro_empleado;
-    private SwitchCompat checkbor_ventas_registro_empleado;
-    private SwitchCompat checkbor_empleados_registro_empleado;
-    private SwitchCompat checkbor_inventarios_registro_empleado;
-    private SwitchCompat checkbor_cobranza_registro_empleado;
+    private SwitchCompat checkbox_clientes_registro_empleado;
+    private SwitchCompat checkbox_productos_registro_empleado;
+    private SwitchCompat checkbox_ventas_registro_empleado;
+    private SwitchCompat checkbox_empleados_registro_empleado;
+    private SwitchCompat checkbox_inventarios_registro_empleado;
+    private SwitchCompat checkbox_cobranza_registro_empleado;
+    private SwitchCompat checkbox_edit_rute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,40 +129,23 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         this.initToolBar();
         this.initControls();
 
-
         //Establece la fecha actual en los controles
         ip_registro_empleado_fecha_ingreso.setText(Utils.fechaActualPicker());
         ip_registro_empleado_fecha_egreso.setText(Utils.fechaActualPicker());
         ip_registro_empleado_fechaNacimiento.setText(Utils.fechaActualPicker());
-
     }
 
     private void initControls() {
 
         circleImageView = findViewById(R.id.perfil_img);
         imageButtonFechaIngreso = findViewById(R.id.img_button_fecha_ingreso);
-        imageButtonFechaIngreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateIngreso();
-            }
-        });
+        imageButtonFechaIngreso.setOnClickListener(v -> dateIngreso());
 
         imageButtonFechaEgreso = findViewById(R.id.img_button_fecha_egreso);
-        imageButtonFechaEgreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateEgreso();
-            }
-        });
+        imageButtonFechaEgreso.setOnClickListener(v -> dateEgreso());
 
         imageButtonFechaNacimiento = findViewById(R.id.img_button_fecha_nacimiento);
-        imageButtonFechaNacimiento.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateFechaNacimiento();
-            }
-        });
+        imageButtonFechaNacimiento.setOnClickListener(v -> dateFechaNacimiento());
 
         ip_registro_empleado_nombre = findViewById(R.id.ip_registro_empleado_nombre);
         ip_registro_empleado_direccion = findViewById(R.id.ip_registro_empleado_direccion);
@@ -181,23 +169,82 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         ip_registro_empleado_sueldo = findViewById(R.id.ip_registro_empleado_sueldo);
         ip_registro_empleado_turno = findViewById(R.id.ip_registro_empleado_turno);
 
-        checkbor_clientes_registro_empleado = findViewById(R.id.checkbor_clientes_registro_empleado);
-        checkbor_productos_registro_empleado = findViewById(R.id.checkbor_productos_registro_empleado);
-        checkbor_ventas_registro_empleado = findViewById(R.id.checkbor_ventas_registro_empleado);
-        checkbor_empleados_registro_empleado = findViewById(R.id.checkbor_empleados_registro_empleado);
-
-
-        checkbor_inventarios_registro_empleado = findViewById(R.id.checkbor_inventario_registro_empleado);
-        checkbor_cobranza_registro_empleado = findViewById(R.id.checkbor_cobranza_registro_empleado);
+        checkbox_clientes_registro_empleado = findViewById(R.id.checkbox_clientes_registro_empleado);
+        checkbox_productos_registro_empleado = findViewById(R.id.checkbox_productos_registro_empleado);
+        checkbox_ventas_registro_empleado = findViewById(R.id.checkbox_ventas_registro_empleado);
+        checkbox_empleados_registro_empleado = findViewById(R.id.checkbox_empleados_registro_empleado);
+        checkbox_inventarios_registro_empleado = findViewById(R.id.checkbox_inventario_registro_empleado);
+        checkbox_cobranza_registro_empleado = findViewById(R.id.checkbox_cobranza_registro_empleado);
+        checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
 
         loadSpinnerRegion();
         loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRuteAndDay();
     }
 
+    private void loadSpinnerRuteAndDay() {
+        //Obtiene el array de las unidades de medida
+
+        final RuteClientDao dao = new RuteClientDao();
+
+        //Obtiene la lista de Strings
+        /*List<String> arrayListRute = dao.getAllRutes();
+        if (arrayListRute.size() < 2) {
+            String[] array = getArrayString(R.array.ruteo_rango_rutas);
+            arrayListRute = Utils.convertArrayStringListString(array);
+        }*/
+        String[] array = getArrayString(R.array.ruteo_rango_rutas);
+        List<String> arrayListRute = Utils.convertArrayStringListString(array);
+
+        if (ruta_seleccionado == null || ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        //Obtiene el array de las unidades de medida
+        String[] arrayDay = getArrayString(R.array.edit_day);
+
+        //Obtiene la lista de Strings
+        List<String> arrayListDay = Utils.convertArrayStringListString(arrayDay);
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterDay = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListDay);
+        day_employee_spinner = findViewById(R.id.day_employee_spinner);
+        day_employee_spinner.setAdapter(adapterDay);
+        day_employee_spinner.setSelection(arrayListDay.indexOf(dia_seleccionado));
+        day_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                dia_seleccionado = day_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
 
     private void loadSpinnerRegion() {
-
         //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.region);
 
@@ -222,7 +269,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     }
 
     private void loadSpinnerTipoContrato() {
-
         //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.tipo_contrato);
 
@@ -664,120 +710,78 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             empleado.setPath_image(getStringImage(decoded));
         }
 
+        empleado.setRute(ruta_seleccionado);
+
+        if (dia_seleccionado.compareToIgnoreCase("Lunes") == 0) {
+            empleado.setDay(1);
+        } else if (dia_seleccionado.compareToIgnoreCase("Martes") == 0) {
+            empleado.setDay(2);
+        } else if (dia_seleccionado.compareToIgnoreCase("Miercoles") == 0) {
+            empleado.setDay(3);
+        } else if (dia_seleccionado.compareToIgnoreCase("Jueves") == 0) {
+            empleado.setDay(4);
+        } else if (dia_seleccionado.compareToIgnoreCase("Viernes") == 0) {
+            empleado.setDay(5);
+        } else if (dia_seleccionado.compareToIgnoreCase("Sabado") == 0) {
+            empleado.setDay(6);
+        } else if (dia_seleccionado.compareToIgnoreCase("Domingo") == 0) {
+            empleado.setDay(7);
+        } else {
+            empleado.setDay(0);
+        }
+
         employeeDao.insert(empleado);
 
-        //Insera el registro de los modulos
-        if (checkbor_clientes_registro_empleado.isChecked()) {
-            RolesBean rolCliente = new RolesBean();
-            RolesDao rolClienteDao = new RolesDao();
-            rolCliente.setEmpleado(empleado);
-            rolCliente.setModulo("Clientes");
-            rolCliente.setActive(true);
-            rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolClienteDao.insert(rolCliente);
-        }else {
-            RolesBean rolCliente = new RolesBean();
-            RolesDao rolClienteDao = new RolesDao();
-            rolCliente.setEmpleado(empleado);
-            rolCliente.setModulo("Clientes");
-            rolCliente.setActive(false);
-            rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolClienteDao.insert(rolCliente);
-        }
+        RolesDao rolEmployeeDao = new RolesDao();
 
-        if (checkbor_productos_registro_empleado.isChecked()) {
-            RolesBean rolProducto = new RolesBean();
-            RolesDao rolProductoDao = new RolesDao();
-            rolProducto.setEmpleado(empleado);
-            rolProducto.setModulo("Productos");
-            rolProducto.setActive(true);
-            rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolProductoDao.insert(rolProducto);
-        }else{
-            RolesBean rolProducto = new RolesBean();
-            RolesDao rolProductoDao = new RolesDao();
-            rolProducto.setEmpleado(empleado);
-            rolProducto.setModulo("Productos");
-            rolProducto.setActive(false);
-            rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolProductoDao.insert(rolProducto);
-        }
+        RolesBean rolRoutes = new RolesBean();
+        rolRoutes.setEmpleado(empleado);
+        rolRoutes.setModulo("Rutas");
+        rolRoutes.setActive(checkbox_edit_rute.isChecked());
+        rolRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolRoutes);
 
-        if (checkbor_ventas_registro_empleado.isChecked()) {
-            RolesBean rolVentas = new RolesBean();
-            RolesDao rolVentasDao = new RolesDao();
-            rolVentas.setEmpleado(empleado);
-            rolVentas.setModulo("Ventas");
-            rolVentas.setActive(true);
-            rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolVentasDao.insert(rolVentas);
-        }else{
-            RolesBean rolVentas = new RolesBean();
-            RolesDao rolVentasDao = new RolesDao();
-            rolVentas.setEmpleado(empleado);
-            rolVentas.setModulo("Ventas");
-            rolVentas.setActive(false);
-            rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolVentasDao.insert(rolVentas);
-        }
+        RolesBean rolCliente = new RolesBean();
+        rolCliente.setEmpleado(empleado);
+        rolCliente.setModulo("Clientes");
+        rolCliente.setActive(checkbox_clientes_registro_empleado.isChecked());
+        rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolCliente);
 
-        if (checkbor_empleados_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Empleados");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Empleados");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
+        RolesBean rolProducto = new RolesBean();
+        rolProducto.setEmpleado(empleado);
+        rolProducto.setModulo("Productos");
+        rolProducto.setActive(checkbox_productos_registro_empleado.isChecked());
+        rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolProducto);
 
-        if (checkbor_inventarios_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Inventarios");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Inventarios");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
+        RolesBean rolVentas = new RolesBean();
+        rolVentas.setEmpleado(empleado);
+        rolVentas.setModulo("Ventas");
+        rolVentas.setActive(checkbox_ventas_registro_empleado.isChecked());
+        rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolVentas);
 
+        RolesBean rolEmpleado = new RolesBean();
+        rolEmpleado.setEmpleado(empleado);
+        rolEmpleado.setModulo("Empleados");
+        rolEmpleado.setActive(checkbox_empleados_registro_empleado.isChecked());
+        rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolEmpleado);
 
-        if (checkbor_cobranza_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Cobranza");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Cobranza");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
+        RolesBean rolStock = new RolesBean();
+        rolStock.setEmpleado(empleado);
+        rolStock.setModulo("Inventarios");
+        rolStock.setActive(checkbox_inventarios_registro_empleado.isChecked());
+        rolStock.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolStock);
 
-
-
+        RolesBean rolCharge = new RolesBean();
+        rolCharge.setEmpleado(empleado);
+        rolCharge.setModulo("Cobranza");
+        rolCharge.setActive(checkbox_cobranza_registro_empleado.isChecked());
+        rolCharge.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolCharge);
 
         idEmpleado = String.valueOf(empleado.getId());
 
@@ -964,6 +968,18 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setTurno("--");
             }else{
                 empleado.setTurno(item.getEntrada_comer());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            if (item.day > 0 && item.day <=7) {
+                empleado.setDay(item.getDay());
+            } else {
+                empleado.setDay(0);
             }
 
             listEmpleados.add(empleado);

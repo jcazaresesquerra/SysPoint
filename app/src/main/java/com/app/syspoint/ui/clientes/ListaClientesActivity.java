@@ -19,7 +19,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -108,8 +112,9 @@ public class ListaClientesActivity extends AppCompatActivity {
 
 
     private void initRecyclerView() {
-
-        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_lista_clientes);
         recyclerView.setHasFixedSize(true);

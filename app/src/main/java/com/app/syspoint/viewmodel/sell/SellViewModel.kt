@@ -481,7 +481,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.cliente = clienteMatriz?.cuenta ?: clienteID
                     cobranzaBean.importe = totalVenta
                     cobranzaBean.saldo = totalVenta
-                    cobranzaBean.venta = Integer.valueOf(ventasBean.ticket)
+                    cobranzaBean.venta = ventasBean.ticket.toLong()
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Se realiza la venta a crédito para sucursal ${clienteBean1.cuenta} ${clienteBean1.nombre_comercial} con cargo a Matriz ${clienteMatriz?.cuenta} ${clienteMatriz?.nombre_comercial} ${ventasBean.fecha} hora ${ventasBean.hora}"
                     cobranzaBean.fecha = ventasBean.fecha
@@ -510,7 +510,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.cliente = clienteBean1.cuenta
                     cobranzaBean.importe = totalVenta
                     cobranzaBean.saldo = totalVenta
-                    cobranzaBean.venta = Integer.valueOf(ventasBean.ticket)
+                    cobranzaBean.venta = ventasBean.ticket.toLong()
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Venta a crédito " + ventasBean.fecha + " hora " + ventasBean.hora
                     cobranzaBean.fecha = ventasBean.fecha

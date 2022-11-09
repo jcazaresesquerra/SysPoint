@@ -28,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,6 +47,7 @@ import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.Utils;
@@ -97,7 +97,12 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_actualiza_empleado_entrada_comida;
     private EditText ip_actualiza_empleado_turno;
     private Spinner spinner_actualiza_empleado_status;
+    private Spinner rute_employee_spinner;
+    private Spinner day_employee_spinner;
     private String status_seleccionado;
+
+    private String ruta_seleccionado;
+    private String dia_seleccionado;
 
     private ImageButton imageButtonFechaIngreso;
     private ImageButton imageButtonFechaEgreso;
@@ -105,18 +110,18 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private int mYear, mMonth, mDay;
     private List<String> listaCamposValidos;
     private String empladoGlobal;
-    EmpleadoBean empleadoBean = null;
     CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
 
 
-    private SwitchCompat checkbor_clientes_actualiza_empleado;
-    private SwitchCompat checkbor_productos_actualiza_empleado;
-    private SwitchCompat checkbor_ventas_actualiza_empleado;
-    private SwitchCompat checkbor_empleados_actualiza_empleado;
-    private SwitchCompat checkbor_inventario_actualiza_empleado;
-    private SwitchCompat checkbor_cobranza_actualiza_empleado;
+    private SwitchCompat checkbox_clientes_actualiza_empleado;
+    private SwitchCompat checkbox_productos_actualiza_empleado;
+    private SwitchCompat checkbox_ventas_actualiza_empleado;
+    private SwitchCompat checkbox_empleados_actualiza_empleado;
+    private SwitchCompat checkbox_inventario_actualiza_empleado;
+    private SwitchCompat checkbox_cobranza_actualiza_empleado;
+    private SwitchCompat checkbox_edit_rute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +134,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         loadSpinnerRegion();
         loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRuteAndDay();
     }
 
     private void getData(){
@@ -163,14 +169,33 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 ip_actualiza_empleado_entrada_comida.setText(empleadoBean.entrada_comer);
                 ip_actualiza_empleado_sueldo.setText(String.valueOf(empleadoBean.getSueldo_diario()));
                 ip_actualiza_empleado_turno.setText(empleadoBean.getTurno());
-
                 tipo_contrato_seleccionado = empleadoBean.getTipo_contrato();
+
                 if (empleadoBean.getStatus()) {
                     status_seleccionado = "InActivo";
                 } else {
                     status_seleccionado = "Activo";
                 }
 
+                // set rute and day
+                ruta_seleccionado = empleadoBean.getRute();
+                if (empleadoBean.getDay() == 1) {
+                    dia_seleccionado = "Lunes";
+                } else if (empleadoBean.getDay() == 2) {
+                    dia_seleccionado = "Martes";
+                } else if (empleadoBean.getDay() == 3) {
+                    dia_seleccionado = "Miercoles";
+                } else if (empleadoBean.getDay() == 4) {
+                    dia_seleccionado = "Jueves";
+                } else if (empleadoBean.getDay() == 5) {
+                    dia_seleccionado = "Viernes";
+                } else if (empleadoBean.getDay() == 6) {
+                    dia_seleccionado = "Sabado";
+                } else if (empleadoBean.getDay() == 7) {
+                    dia_seleccionado = "Domingo";
+                } else {
+                    dia_seleccionado = "Lunes";
+                }
 
                 final RolesDao rolesDao = new RolesDao();
                 final List<RolesBean> listRoles = rolesDao.getListaRolesByEmpleado(empleadoBean.getIdentificador());
@@ -179,22 +204,25 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 for(RolesBean item: listRoles){
 
                     if (item.getModulo().compareToIgnoreCase("Clientes") == 0){
-                        checkbor_clientes_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_clientes_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Productos") == 0){
-                        checkbor_productos_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_productos_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Ventas") == 0){
-                        checkbor_ventas_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_ventas_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Empleados") == 0){
-                        checkbor_empleados_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_empleados_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Inventarios") == 0){
-                        checkbor_inventario_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_inventario_actualiza_empleado.setChecked(item.getActive());
                     }
                     if(item.getModulo().compareToIgnoreCase("Cobranza") == 0){
-                        checkbor_cobranza_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_cobranza_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if(item.getModulo().compareToIgnoreCase("Rutas") == 0){
+                        checkbox_edit_rute.setChecked(item.getActive());
                     }
                 }
 
@@ -262,12 +290,13 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         ip_actualiza_empleado_sueldo = findViewById(R.id.ip_actualiza_empleado_sueldo);
         ip_actualiza_empleado_turno = findViewById(R.id.ip_actualiza_empleado_turno);
 
-        checkbor_clientes_actualiza_empleado = findViewById(R.id.checkbor_clientes_actualiza_empleado);
-        checkbor_productos_actualiza_empleado = findViewById(R.id.checkbor_productos_actualiza_empleado);
-        checkbor_ventas_actualiza_empleado = findViewById(R.id.checkbor_ventas_actualiza_empleado);
-        checkbor_empleados_actualiza_empleado = findViewById(R.id.checkbor_empleados_actualiza_empleado);
-        checkbor_inventario_actualiza_empleado = findViewById(R.id.checkbor_inventarios_actualiza_empleado);
-        checkbor_cobranza_actualiza_empleado = findViewById(R.id.checkbor_cobranza_actualiza_empleado);
+        checkbox_clientes_actualiza_empleado = findViewById(R.id.checkbox_clientes_actualiza_empleado);
+        checkbox_productos_actualiza_empleado = findViewById(R.id.checkbox_productos_actualiza_empleado);
+        checkbox_ventas_actualiza_empleado = findViewById(R.id.checkbox_ventas_actualiza_empleado);
+        checkbox_empleados_actualiza_empleado = findViewById(R.id.checkbox_empleados_actualiza_empleado);
+        checkbox_inventario_actualiza_empleado = findViewById(R.id.checkbox_inventarios_actualiza_empleado);
+        checkbox_cobranza_actualiza_empleado = findViewById(R.id.checkbox_cobranza_actualiza_empleado);
+        checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
     }
 
     private void loadSpinnerRegion() {
@@ -348,6 +377,61 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void loadSpinnerRuteAndDay() {
+        //Obtiene el array de las unidades de medida
+
+        final RuteClientDao dao = new RuteClientDao();
+
+        //Obtiene la lista de Strings
+        List<String> arrayListRute = dao.getAllRutes();
+
+        if (ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        //Obtiene el array de las unidades de medida
+        String[] arrayDay = getArrayString(R.array.edit_day);
+
+        //Obtiene la lista de Strings
+        List<String> arrayListDay = Utils.convertArrayStringListString(arrayDay);
+
+        //Creamos el adaptador
+        ArrayAdapter<String> adapterDay = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListDay);
+        day_employee_spinner = findViewById(R.id.day_employee_spinner);
+        day_employee_spinner.setAdapter(adapterDay);
+        day_employee_spinner.setSelection(arrayListDay.indexOf(dia_seleccionado));
+        day_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                dia_seleccionado = day_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
 
@@ -717,6 +801,25 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         } else {
             bean.setStatus(false);
         }
+
+        bean.setRute(ruta_seleccionado);
+
+        if (dia_seleccionado.compareToIgnoreCase("Lunes") == 0) {
+            bean.setDay(1);
+        } else if (dia_seleccionado.compareToIgnoreCase("Martes") == 0) {
+            bean.setDay(2);
+        } else if (dia_seleccionado.compareToIgnoreCase("Miercoles") == 0) {
+            bean.setDay(3);
+        } else if (dia_seleccionado.compareToIgnoreCase("Jueves") == 0) {
+            bean.setDay(4);
+        } else if (dia_seleccionado.compareToIgnoreCase("Viernes") == 0) {
+            bean.setDay(5);
+        } else if (dia_seleccionado.compareToIgnoreCase("Sabado") == 0) {
+            bean.setDay(6);
+        } else if (dia_seleccionado.compareToIgnoreCase("Domingo") == 0) {
+            bean.setDay(7);
+        }
+
         if (decoded != null) {
             bean.setPath_image(getStringImage(decoded));
         }
@@ -725,130 +828,96 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
 
         final RolesDao rolesDao = new RolesDao();
-        final RolesBean moduloClientes;
-        final RolesBean moduloProductos;
-        final RolesBean moduloVentas;
-        final RolesBean moduloEmpleado;
-        final RolesBean moduloInventario;
-        final RolesBean moduloCobranza;
 
-        if  (checkbor_clientes_actualiza_empleado.isChecked()){
-            moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
-            if (moduloClientes != null){
-                moduloClientes.setActive(true);
-                rolesDao.save(moduloClientes);
-            }
-        }else {
-            moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
-            if (moduloClientes != null){
-                moduloClientes.setActive(false);
-                rolesDao.save(moduloClientes);
-            }
+        RolesBean moduloRuta = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Rutas");
+        if (moduloRuta != null){
+            moduloRuta.setActive(checkbox_edit_rute.isChecked());
+            rolesDao.save(moduloRuta);
+        } else {
+            moduloRuta = new RolesBean();
+            moduloRuta.setEmpleado(bean);
+            moduloRuta.setModulo("Rutas");
+            moduloRuta.setActive(checkbox_edit_rute.isChecked());
+            moduloRuta.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloRuta);
         }
 
-        if (checkbor_productos_actualiza_empleado.isChecked()) {
-            moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
-            if (moduloProductos != null){
-                moduloProductos.setActive(true);
-                rolesDao.save(moduloProductos);
-            }
-        }else {
-            moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
-            if (moduloProductos != null){
-                moduloProductos.setActive(false);
-                rolesDao.save(moduloProductos);
-            }
+        RolesBean moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
+        if (moduloClientes != null){
+            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            rolesDao.save(moduloClientes);
+        } else {
+            moduloClientes = new RolesBean();
+            moduloClientes.setEmpleado(bean);
+            moduloClientes.setModulo("Clientes");
+            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            moduloClientes.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloClientes);
         }
 
-        if (checkbor_ventas_actualiza_empleado.isChecked()){
-            moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
-            if (moduloVentas != null){
-                moduloVentas.setActive(true);
-                rolesDao.save(moduloVentas);
-            }
-
-        }else {
-            moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
-            if (moduloVentas != null){
-                moduloVentas.setActive(false);
-                rolesDao.save(moduloVentas);
-            }
+        RolesBean moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
+        if (moduloProductos != null){
+            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            rolesDao.save(moduloProductos);
+        } else {
+            moduloProductos = new RolesBean();
+            moduloProductos.setEmpleado(bean);
+            moduloProductos.setModulo("Productos");
+            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            moduloProductos.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloProductos);
         }
 
-
-        if (checkbor_empleados_actualiza_empleado.isChecked()){
-            moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
-            if (moduloEmpleado != null){
-                moduloEmpleado.setActive(true);
-                rolesDao.save(moduloEmpleado);
-            }
-        }else {
-            moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
-            if (moduloEmpleado != null){
-                moduloEmpleado.setActive(false);
-                rolesDao.save(moduloEmpleado);
-            }
+        RolesBean moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
+        if (moduloVentas != null){
+            moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
+            rolesDao.save(moduloVentas);
+        } else {
+            moduloVentas = new RolesBean();
+            moduloVentas.setEmpleado(bean);
+            moduloVentas.setModulo("Ventas");
+            moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
+            moduloVentas.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloVentas);
         }
 
-
-        if (checkbor_inventario_actualiza_empleado.isChecked()){
-            moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
-            if (moduloInventario != null){
-                moduloInventario.setActive(true);
-                rolesDao.save(moduloInventario);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Inventarios");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
-        }else {
-            moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
-            if (moduloInventario != null){
-                moduloInventario.setActive(false);
-                rolesDao.save(moduloInventario);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Inventarios");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
+        RolesBean moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
+        if (moduloEmpleado != null){
+            moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
+            rolesDao.save(moduloEmpleado);
+        } else {
+            moduloEmpleado = new RolesBean();
+            moduloEmpleado.setEmpleado(bean);
+            moduloEmpleado.setModulo("Empleados");
+            moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
+            moduloEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloEmpleado);
         }
 
-        if (checkbor_cobranza_actualiza_empleado.isChecked()){
-            moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
-            if (moduloCobranza != null){
-                moduloCobranza.setActive(true);
-                rolesDao.save(moduloCobranza);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Cobranza");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
-        }else {
-            moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
-            if (moduloCobranza != null){
-                moduloCobranza.setActive(false);
-                rolesDao.save(moduloCobranza);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Cobranza");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
+        RolesBean moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
+        if (moduloInventario != null){
+            moduloInventario.setActive(checkbox_inventario_actualiza_empleado.isChecked());
+            rolesDao.save(moduloInventario);
+        }else{
+            RolesBean rolEmpleado = new RolesBean();
+            rolEmpleado.setEmpleado(bean);
+            rolEmpleado.setModulo("Inventarios");
+            rolEmpleado.setActive(checkbox_inventario_actualiza_empleado.isChecked());
+            rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(rolEmpleado);
+        }
+
+        RolesBean moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
+        if (moduloCobranza != null){
+            moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
+            rolesDao.save(moduloCobranza);
+        }else{
+            moduloCobranza = new RolesBean();
+            moduloCobranza.setEmpleado(bean);
+            moduloCobranza.setModulo("Cobranza");
+            moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
+            moduloCobranza.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloCobranza);
         }
 
         idEmpleado = String.valueOf(bean.getId());
@@ -1037,6 +1106,18 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 empleado.setTurno("--");
             }else{
                 empleado.setTurno(item.getEntrada_comer());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            if (item.day > 0 && item.day <=7) {
+                empleado.setDay(item.getDay());
+            } else {
+                empleado.setDay(0);
             }
 
             listEmpleados.add(empleado);

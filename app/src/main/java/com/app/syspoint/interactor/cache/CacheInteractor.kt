@@ -7,8 +7,14 @@ import com.app.syspoint.utils.JsonParser
 
 class CacheInteractor() {
 
-    fun saveSeller(empleadoBean: EmpleadoBean) {
-        val json = JsonParser.parceObjectToJson(empleadoBean)
+    fun removeSellerFromCache() {
+        App.INSTANCE?.baseContext?.let {
+            SharedPreferencesManager(it).removeSellerFromCache()
+        }
+    }
+
+    fun saveSeller(empleadoBean: EmpleadoBean?) {
+        val json = if (empleadoBean != null) JsonParser.parceObjectToJson(empleadoBean) else null
         App.INSTANCE?.baseContext?.let {
             SharedPreferencesManager(it).storeJsonSeller(json)
         }

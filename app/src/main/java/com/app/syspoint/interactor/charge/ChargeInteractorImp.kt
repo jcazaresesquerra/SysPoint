@@ -15,6 +15,14 @@ class ChargeInteractorImp: ChargeInteractor() {
     }
 
     @Synchronized
+    override fun executeGetChargeByEmployee(id: String, onGetChargeByEmployeeListener: OnGetChargeByEmployeeListener) {
+        super.executeGetChargeByEmployee(id, onGetChargeByEmployeeListener)
+        GlobalScope.launch {
+            RequestCharge.requestGetChargeByEmployee(id, onGetChargeByEmployeeListener)
+        }
+    }
+
+    @Synchronized
     override fun executeGetChargeByClient(account: String, onGetChargeByClientListener: OnGetChargeByClientListener) {
         super.executeGetChargeByClient(account, onGetChargeByClientListener)
         GlobalScope.launch {

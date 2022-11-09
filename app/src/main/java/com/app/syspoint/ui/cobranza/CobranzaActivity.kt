@@ -36,6 +36,8 @@ class CobranzaActivity: AppCompatActivity() {
 
     private val TAG = "ChargeViewModel"
 
+    private var endCharge = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -280,11 +282,15 @@ class CobranzaActivity: AppCompatActivity() {
             .setAnimationEnabled(false)
             .setIcon(R.drawable.ic_save_white, R.color.purple_500) { dialog.dismiss() }
             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
-                dialog.dismiss()
-                Utils.addActivity2Stack(this@CobranzaActivity)
-                val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
-                val import = headerBinding.textViewImpuestoCobranzaView.text.toString()
-                viewModel.handleEndChargeWithDocument(clientId, import)
+                if (!endCharge) {
+                    endCharge = true
+                    dialog.dismiss()
+                    Utils.addActivity2Stack(this@CobranzaActivity)
+                    val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
+                    val import = headerBinding.textViewImpuestoCobranzaView.text.toString()
+                    viewModel.handleEndChargeWithDocument(clientId, import)
+                    endCharge = false
+                }
             }.addButton(
                 getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900
             ) { dialog.dismiss() }

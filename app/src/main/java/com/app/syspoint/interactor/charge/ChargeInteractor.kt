@@ -16,6 +16,11 @@ abstract class ChargeInteractor {
         fun onGetChargeByClientError()
     }
 
+    interface OnGetChargeByEmployeeListener {
+        fun onGetChargeByEmployeeSuccess(chargeByClientList: List<CobranzaBean>)
+        fun onGetChargeByEmployeeError()
+    }
+
     interface OnSaveChargeListener {
         fun onSaveChargeSuccess()
         fun onSaveChargeError()
@@ -27,6 +32,7 @@ abstract class ChargeInteractor {
     }
 
     open fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {}
+    open fun executeGetChargeByEmployee(id: String, onGetChargeByEmployeeListener: OnGetChargeByEmployeeListener) {}
     open fun executeGetChargeByClient(account: String, onGetChargeByClientListener: OnGetChargeByClientListener) {}
     open fun executeSaveCharge(charges: List<Payment>, onSaveChargeListener: OnSaveChargeListener) {}
     open fun executeUpdateCharge(charges: List<Payment>, onUpdateChargeListener: OnUpdateChargeListener) {}

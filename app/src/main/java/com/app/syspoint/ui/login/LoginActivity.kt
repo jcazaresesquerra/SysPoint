@@ -54,10 +54,10 @@ class LoginActivity: AppCompatActivity() {
 
     private fun loginViewState(viewState: LoginViewState) {
         when(viewState) {
-            LoggedIn -> showMainActivity()
-            LoginError -> showErrorDialog()
-            LoadingDataStart -> binding.rlprogressLogin.setVisible()
-            LoadingDataFinish -> {
+            is LoggedIn -> showMainActivity()
+            is LoginError -> showErrorDialog(viewState.error)
+            is LoadingDataStart -> binding.rlprogressLogin.setVisible()
+            is LoadingDataFinish -> {
                 binding.rlprogressLogin.setInvisible()
                 if (isConnected) {
                     hideNotInternetConnectionError()
@@ -65,11 +65,11 @@ class LoginActivity: AppCompatActivity() {
                     showNotInternetConnectionError()
                 }
             }
-            ConnectedToInternet -> {
+            is ConnectedToInternet -> {
                 isConnected = true
                 hideNotInternetConnectionError()
             }
-            NotInternetConnection -> {
+            is NotInternetConnection -> {
                 isConnected = false
                 binding.rlprogressLogin.setInvisible()
                 showNotInternetConnectionError()
@@ -128,12 +128,12 @@ class LoginActivity: AppCompatActivity() {
         finish()
     }
 
-    private fun showErrorDialog() {
+    private fun showErrorDialog(message: String) {
         binding.btnSignIn.isEnabled = true
         val dialog = PrettyDialog(this)
-        dialog.setTitle("No encontrado")
+        dialog.setTitle("Error")
             .setTitleColor(R.color.purple_500)
-            .setMessage("Usuario no encontrado verifique los datos de acceso")
+            .setMessage(message)
             .setMessageColor(R.color.purple_700)
             .setAnimationEnabled(false)
             .setIcon(

@@ -3,6 +3,7 @@ package com.app.syspoint.repository.request
 import android.util.Log
 import com.app.syspoint.interactor.charge.ChargeInteractor
 import com.app.syspoint.models.Payment
+import com.app.syspoint.models.RequestChargeByRute
 import com.app.syspoint.models.json.PaymentJson
 import com.app.syspoint.models.json.RequestCobranza
 import com.app.syspoint.repository.database.bean.CobranzaBean
@@ -67,6 +68,63 @@ class RequestCharge {
 
                 override fun onFailure(call: Call<PaymentJson>, t: Throwable) {
                     onGetChargeListener.onGetChargeError()
+                }
+
+            })
+
+        }
+
+        fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {
+            val requestChargesByRute = RequestChargeByRute(id)
+            val getCharge = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getAllCobranzaByEmployee(requestChargesByRute)
+
+            getCharge.enqueue(object: Callback<PaymentJson> {
+                override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    if (response.isSuccessful) {
+                        val paymentDao = PaymentDao()
+                        val chargeList = arrayListOf<CobranzaBean>()
+                        for (item in response.body()!!.payments!!) {
+                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
+                            if (cobranzaBean == null) {
+                                val chargeBean = CobranzaBean()
+                                val paymentDao1 = PaymentDao()
+                                chargeBean.cobranza = item.cobranza
+                                chargeBean.cliente = item.cuenta
+                                chargeBean.importe = item.importe
+                                chargeBean.saldo = item.saldo
+                                chargeBean.venta = item.venta
+                                chargeBean.estado = item.estado
+                                chargeBean.observaciones = item.observaciones
+                                chargeBean.fecha = item.fecha
+                                chargeBean.hora = item.hora
+                                chargeBean.empleado = item.identificador
+                                paymentDao1.insert(chargeBean)
+                                chargeList.add(chargeBean)
+                            } else {
+                                cobranzaBean.cobranza = item.cobranza
+                                cobranzaBean.cliente = item.cuenta
+                                cobranzaBean.importe = item.importe
+                                cobranzaBean.saldo = item.saldo
+                                cobranzaBean.venta = item.venta
+                                cobranzaBean.estado = item.estado
+                                cobranzaBean.observaciones = item.observaciones
+                                cobranzaBean.fecha = item.fecha
+                                cobranzaBean.hora = item.hora
+                                cobranzaBean.empleado = item.identificador
+                                paymentDao.save(cobranzaBean)
+                                chargeList.add(cobranzaBean)
+                            }
+                        }
+                        onGetChargeListener.onGetChargeByEmployeeSuccess(chargeList)
+                    } else {
+                        onGetChargeListener.onGetChargeByEmployeeError()
+                    }
+                }
+
+                override fun onFailure(call: Call<PaymentJson>, t: Throwable) {
+                    onGetChargeListener.onGetChargeByEmployeeError()
                 }
 
             })
