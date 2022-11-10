@@ -297,13 +297,13 @@ class SellViewModel: ViewModel() {
             val clientBean = clientDao.getClientByAccount(clientId)
             val params = HashMap<String, String>()
             clientBean?.let {
-                params[Actividades.PARAM_1] = clientBean.cuenta
-                params[Actividades.PARAM_2] = clientBean.calle
-                params[Actividades.PARAM_3] = clientBean.numero
-                params[Actividades.PARAM_4] = clientBean.colonia
-                params[Actividades.PARAM_5] = clientBean.nombre_comercial
-                params[Actividades.PARAM_6] = clientBean.latitud
-                params[Actividades.PARAM_7] = clientBean.longitud
+                params[Actividades.PARAM_1] = it.cuenta
+                params[Actividades.PARAM_2] = it.calle
+                params[Actividades.PARAM_3] = it.numero
+                params[Actividades.PARAM_4] = it.colonia
+                params[Actividades.PARAM_5] = it.nombre_comercial
+                params[Actividades.PARAM_6] = it.latitud ?: ""
+                params[Actividades.PARAM_7] = it.longitud ?: ""
 
                 sellViewState.postValue(SellViewState.PrecatureParamsCreated(params))
             }
@@ -358,10 +358,10 @@ class SellViewModel: ViewModel() {
             var saldoDisponible = 0.0
 
             clienteBean?.let {
-                if (clienteBean.is_credito ) {
+                if (clienteBean.is_credito && !clienteBean.matriz.isNullOrEmpty()) {
                     val clienteMatriz = clientDao.getClientByAccount(clienteBean.matriz)
 
-                    if (clienteMatriz != null && clienteBean.matriz != null && clienteBean.matriz.isNotEmpty()) {
+                    if (clienteMatriz != null) {
                         saldoDisponible = clienteMatriz.limite_credito - clienteMatriz.saldo_credito
 
                         if (saldoDisponible < (sellImport.value?:0.0)) {
@@ -418,7 +418,6 @@ class SellViewModel: ViewModel() {
             val clientDao1 = ClientDao()
             val clienteBean1 = clientDao1.getClientByAccount(clientId)
             var clienteID = clienteBean1!!.id.toString()
-            val clienteMatriz = clientDao1.getClientByAccount(clienteBean1.matriz)
 
             clienteBean1.visitado = 1
             clienteBean1.visitasNoefectivas = 0
@@ -456,8 +455,12 @@ class SellViewModel: ViewModel() {
             ventasBean.tipo_venta = sellType.value
             ventasBean.usuario_cancelo = ""
 
-            clienteMatriz?.let {
-                ventasBean.factudado = clienteMatriz.cuenta
+            var clienteMatriz: ClienteBean? = null
+            if (!clienteBean1.matriz.isNullOrEmpty()) {
+                clienteMatriz = clientDao1.getClientByAccount(clienteBean1.matriz)
+                clienteMatriz?.let {
+                    ventasBean.factudado = clienteMatriz.cuenta
+                }
             }
 
             ventasBean.ticket = Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", "")
