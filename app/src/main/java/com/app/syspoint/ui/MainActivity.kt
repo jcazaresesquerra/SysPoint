@@ -4,7 +4,10 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.os.Handler
-import android.view.*
+import android.view.Menu
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.widget.AppCompatButton
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -15,8 +18,11 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
 import com.app.syspoint.databinding.NavHeaderMainBinding
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
+import com.app.syspoint.repository.database.bean.AppBundle
+import com.app.syspoint.repository.database.dao.RolesDao
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.NetworkStateTask
 
@@ -42,8 +48,26 @@ class MainActivity: BaseActivity() {
 
         val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
 
+        var vendedoresBean = AppBundle.getUserBean()
+        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
+        val identificador = if (vendedoresBean != null) vendedoresBean.getIdentificador() else ""
+
+        val rolesDao = RolesDao()
+        val productsRolesBean = rolesDao.getRolByEmpleado(identificador, "Productos")
+        val employeesRolesBean = rolesDao.getRolByEmpleado(identificador, "Empleados")
+
+        val productsActive = productsRolesBean?.active ?: false
+        val employeesActive = employeesRolesBean?.active ?: false
+
+        binding.navView.apply {
+            menu.clear()
+            inflateMenu(R.menu.activity_main_drawer)
+        }
+
+        configureMenu(isAdmin, employeesActive, productsActive)
+
         mAppBarConfiguration =
-            AppBarConfiguration.Builder(buildSetMenu(isAdmin))
+            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive))
            .setDrawerLayout(binding.drawerLayout)
                 .build()
 
@@ -68,18 +92,9 @@ class MainActivity: BaseActivity() {
             }
         }
 
-        binding.navView.apply {
-            menu.clear()
-            if (isAdmin)
-                inflateMenu(R.menu.activty_main_drawer_admin)
-            else
-                inflateMenu(R.menu.activity_main_drawer)
-        }
-
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration!!)
         NavigationUI.setupWithNavController(binding.navView, navController)
         apikey = getString(R.string.google_maps_key)
-
 
         getUpdates()
     }
@@ -127,28 +142,34 @@ class MainActivity: BaseActivity() {
         }
     }
 
-    private fun buildSetMenu(isAdmin: Boolean): Set<Int> {
-        return if (isAdmin)
-            mutableSetOf(
-                R.id.nav_home,
-                R.id.nav_ruta,
-                R.id.nav_empleado,
-                R.id.nav_producto,
-                R.id.nav_cliente,
-                R.id.nav_historial,
-                R.id.nav_inventario,
-                R.id.nav_cobranza
-            )
-         else
-            mutableSetOf(
-                R.id.nav_home,
-                R.id.nav_ruta,
-                R.id.nav_empleado,
-                R.id.nav_producto,
-                R.id.nav_cliente,
-                R.id.nav_historial
-            )
+    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean) {
+        val menu = binding.navView.menu
+        menu.findItem(R.id.nav_home).isVisible = true
+        menu.findItem(R.id.nav_producto).isVisible = true
+        menu.findItem(R.id.nav_empleado).isVisible = employeesActive
+        menu.findItem(R.id.nav_producto).isVisible = productsActive
+        menu.findItem(R.id.nav_cliente).isVisible = true
+        menu.findItem(R.id.nav_historial).isVisible = true
+        menu.findItem(R.id.nav_inventario).isVisible = isAdmin
+        menu.findItem(R.id.nav_cobranza).isVisible = isAdmin
+    }
 
+    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean): Set<Int> {
+        //Obtiene el nombre del vendedor
+        val menuSet = mutableSetOf(R.id.nav_home, R.id.nav_ruta)
+
+        if (employeesActive) menuSet.add(R.id.nav_empleado)
+        if (productsActive) menuSet.add(R.id.nav_producto)
+
+        menuSet.add(R.id.nav_cliente)
+        menuSet.add(R.id.nav_historial)
+
+        if (isAdmin) {
+            menuSet.add(R.id.nav_inventario)
+            menuSet.add(R.id.nav_cobranza)
+        }
+
+        return menuSet
     }
 
     fun goHome() {
