@@ -4,6 +4,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -65,8 +67,6 @@ public class CobranzaFragment extends Fragment {
     private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
 
     private BluetoothAdapter mBTAdapter;
-    private Set<BluetoothDevice> mPairedDevices;
-    private ArrayAdapter<String> mBTArrayAdapter;
 
     private Handler mHandler; // Our main handler that will receive callback notifications
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
@@ -159,17 +159,28 @@ public class CobranzaFragment extends Fragment {
         recyclerView.setLayoutManager(manager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         mAdapter = new AdapterListaCobranzas(partidas, position -> {
-            CobrosBean cobrosBean = partidas.get(position);
-            DepositTicket depositTicket = new DepositTicket();
-            depositTicket.setBean(cobrosBean);
-            depositTicket.template();
-            Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
-            if(mConnectedThread != null) //First check to make sure thread created
-               mConnectedThread.write(depositTicket.getDocument());
+
+            AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
+            builderSingle.setIcon(R.drawable.logo);
+            builderSingle.setTitle("Seleccionar opción");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
+            arrayAdapter.add("Reimprimir");
+
+            builderSingle.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+            builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
+                CobrosBean cobrosBean = partidas.get(position);
+                DepositTicket depositTicket = new DepositTicket();
+                depositTicket.setBean(cobrosBean);
+                depositTicket.template();
+                Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
+                if (mConnectedThread != null) //First check to make sure thread created
+                    mConnectedThread.write(depositTicket.getDocument());
+            });
+            builderSingle.show();
 
         });
         recyclerView.setAdapter(mAdapter);
-
     }
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {

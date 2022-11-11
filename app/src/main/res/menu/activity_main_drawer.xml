@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+    tools:showIn="navigation_view_admin">
 
     <group android:checkableBehavior="single">
 
@@ -35,6 +35,16 @@
             android:id="@+id/nav_historial"
             android:icon="@drawable/ic_shopping_cart_black"
             android:title="@string/menu_historial_ventas" />
+
+        <item
+            android:id="@+id/nav_inventario"
+            android:icon="@drawable/ic_inventario"
+            android:title="@string/menu_inventario" />
+
+        <item
+            android:id="@+id/nav_cobranza"
+            android:icon="@drawable/ic_money"
+            android:title="@string/menu_cobranza" />
 
     </group>
 </menu>

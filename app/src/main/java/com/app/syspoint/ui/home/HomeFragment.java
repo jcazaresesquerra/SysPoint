@@ -235,116 +235,119 @@ public class HomeFragment extends Fragment {
 
     private void showDialog() {
         EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-        RolesBean rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.identificador, "Rutas");
+        if (vendedoresBean !=  null) {
+            RolesBean rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.identificador, "Rutas");
 
-        boolean editRuta = rutasRol != null && rutasRol.getActive();
+            boolean editRuta = rutasRol != null && rutasRol.getActive();
 
-        DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), editRuta, new DialogoRuteo.DialogListener() {
-            @Override
-            public void ready(String dia, String ruta) {
+            DialogoRuteo dialogoRuteo = new DialogoRuteo(getActivity(), editRuta, new DialogoRuteo.DialogListener() {
+                @Override
+                public void ready(String dia, String ruta) {
 
-                //Preguntamos si queremos agregar un nuevo ruteo
-                final PrettyDialog dialog = new PrettyDialog(getContext());
-                dialog.setTitle("Establecer")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("Desea establecer la ruta inicial")
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                if (getActivity() != null) {
-                                    //((MainActivity) getActivity()).goHome();
+                    //Preguntamos si queremos agregar un nuevo ruteo
+                    final PrettyDialog dialog = new PrettyDialog(getContext());
+                    dialog.setTitle("Establecer")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("Desea establecer la ruta inicial")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    if (getActivity() != null) {
+                                        //((MainActivity) getActivity()).goHome();
+                                    }
+                                    dialog.dismiss();
                                 }
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
+                            })
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
 
-                                //Clientes normales
-                                ClientDao clientDao = new ClientDao();
-                                clientDao.updateVisited();
+                                    //Clientes normales
+                                    ClientDao clientDao = new ClientDao();
+                                    clientDao.updateVisited();
 
-                                RoutingDao routingDao = new RoutingDao();
-                                routingDao.clear();
+                                    RoutingDao routingDao = new RoutingDao();
+                                    routingDao.clear();
 
-                                RuteoBean ruteoBean = new RuteoBean();
+                                    RuteoBean ruteoBean = new RuteoBean();
 
-                                if (dia.compareToIgnoreCase("Lunes") == 0) {
-                                    ruteoBean.setDia(1);
-                                } else if (dia.compareToIgnoreCase("Martes") == 0) {
-                                    ruteoBean.setDia(2);
-                                } else if (dia.compareToIgnoreCase("Miercoles") == 0) {
-                                    ruteoBean.setDia(3);
-                                } else if (dia.compareToIgnoreCase("Jueves") == 0) {
-                                    ruteoBean.setDia(4);
-                                } else if (dia.compareToIgnoreCase("Viernes") == 0) {
-                                    ruteoBean.setDia(5);
-                                } else if (dia.compareToIgnoreCase("Sabado") == 0) {
-                                    ruteoBean.setDia(6);
-                                } else if (dia.compareToIgnoreCase("Domingo") == 0) {
-                                    ruteoBean.setDia(7);
+                                    if (dia.compareToIgnoreCase("Lunes") == 0) {
+                                        ruteoBean.setDia(1);
+                                    } else if (dia.compareToIgnoreCase("Martes") == 0) {
+                                        ruteoBean.setDia(2);
+                                    } else if (dia.compareToIgnoreCase("Miercoles") == 0) {
+                                        ruteoBean.setDia(3);
+                                    } else if (dia.compareToIgnoreCase("Jueves") == 0) {
+                                        ruteoBean.setDia(4);
+                                    } else if (dia.compareToIgnoreCase("Viernes") == 0) {
+                                        ruteoBean.setDia(5);
+                                    } else if (dia.compareToIgnoreCase("Sabado") == 0) {
+                                        ruteoBean.setDia(6);
+                                    } else if (dia.compareToIgnoreCase("Domingo") == 0) {
+                                        ruteoBean.setDia(7);
+                                    }
+                                    ruteoBean.setId(1L);
+                                    ruteoBean.setFecha(Utils.fechaActual());
+
+                                    EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                                    String ruta_ = ruta != null && !ruta.isEmpty() ? ruta : vendedoresBean.getRute();
+
+                                    ruteoBean.setRuta(ruta_);
+
+                                    try {
+                                        routingDao.insert(ruteoBean);
+                                    } catch (Exception e) {
+                                        routingDao.save(ruteoBean);
+                                    }
+
+                                    estableceRuta();
+
+                                    vendedoresBean.setDay(ruteoBean.getDia());
+                                    vendedoresBean.setRute(ruta_);
+
+                                    new EmployeeDao().save(vendedoresBean);
+                                    String idEmpleado = String.valueOf(vendedoresBean.getId());
+                                    testLoadEmpleado(idEmpleado);
+
+
+                                    if (getActivity() != null) {
+                                        //((MainActivity) getActivity()).goHome();
+                                    }
+                                    dialog.dismiss();
                                 }
-                                ruteoBean.setId(1L);
-                                ruteoBean.setFecha(Utils.fechaActual());
-
-                                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-                                String ruta_ = ruta != null && !ruta.isEmpty() ? ruta: vendedoresBean.getRute();
-
-                                ruteoBean.setRuta(ruta_);
-
-                                try {
-                                    routingDao.insert(ruteoBean);
-                                } catch (Exception e) {
-                                    routingDao.save(ruteoBean);
+                            })
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    if (getActivity() != null) {
+                                        //((MainActivity) getActivity()).goHome();
+                                    }
+                                    dialog.dismiss();
                                 }
+                            });
+                    dialog.setCancelable(false);
+                    dialog.show();
 
-                                estableceRuta();
+                }
 
-                                vendedoresBean.setDay(ruteoBean.getDia());
-                                vendedoresBean.setRute(ruta_);
+                @Override
+                public void cancelled() {
 
-                                new EmployeeDao().save(vendedoresBean);
-                                String idEmpleado = String.valueOf(vendedoresBean.getId());
-                                testLoadEmpleado(idEmpleado);
-
-
-
-                                if (getActivity() != null) {
-                                    //((MainActivity) getActivity()).goHome();
-                                }
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                if (getActivity() != null) {
-                                    //((MainActivity) getActivity()).goHome();
-                                }
-                                dialog.dismiss();
-                            }
-                        });
-                dialog.setCancelable(false);
-                dialog.show();
-
-            }
-
-            @Override
-            public void cancelled() {
-
-            }
-        });
+                }
+            });
 
 
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialogoRuteo.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        dialogoRuteo.show();
-        dialogoRuteo.getWindow().setAttributes(lp);
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(dialogoRuteo.getWindow().getAttributes());
+            lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            dialogoRuteo.show();
+            dialogoRuteo.getWindow().setAttributes(lp);
+        } else {
+            Toast.makeText(getContext(), "Error al obtener usuario", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

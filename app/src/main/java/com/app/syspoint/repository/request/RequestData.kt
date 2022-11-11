@@ -302,35 +302,29 @@ class RequestData {
                             val specialPricesDao = SpecialPricesDao()
 
                             response.body()!!.data.precios.map { item ->
-                                val clientBean = clientDao.getClientByAccount(item.cliente)
-                                if (clientBean != null) {
 
-                                    //Para obtener los datos del producto
 
-                                    val productoBean = productDao.getProductoByArticulo(item.articulo)
-                                    if (productoBean == null) onGetAllDataListener.onGetAllDataError()
+                                        val preciosEspecialesBean =
+                                            specialPricesDao.getPrecioEspeciaPorCliente(
+                                                item.articulo,
+                                                item.cliente
+                                            )
 
-                                    val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
-                                        productoBean?.articulo,
-                                        clientBean.cuenta
-                                    )
-
-                                    //Si no hay precios especiales entonces crea un precio
-                                    if (preciosEspecialesBean == null) {
-                                        val bean = PreciosEspecialesBean()
-                                        bean.cliente = clientBean.cuenta
-                                        bean.articulo = productoBean?.articulo
-                                        bean.precio = item.precio
-                                        bean.active = item.active == 1
-                                        specialPricesDao.insert(bean)
-                                    } else {
-                                        preciosEspecialesBean.cliente = clientBean.cuenta
-                                        preciosEspecialesBean.articulo = productoBean?.articulo
-                                        preciosEspecialesBean.precio = item.precio
-                                        preciosEspecialesBean.active = item.active == 1
-                                        specialPricesDao.save(preciosEspecialesBean)
-                                    }
-                            }
+                                        //Si no hay precios especiales entonces crea un precio
+                                        if (preciosEspecialesBean == null) {
+                                            val bean = PreciosEspecialesBean()
+                                            bean.cliente = item.cliente
+                                            bean.articulo = item.articulo
+                                            bean.precio = item.precio
+                                            bean.active = item.active == 1
+                                            specialPricesDao.insert(bean)
+                                        } else {
+                                            preciosEspecialesBean.cliente = item.cliente
+                                            preciosEspecialesBean.articulo = item.articulo
+                                            preciosEspecialesBean.precio = item.precio
+                                            preciosEspecialesBean.active = item.active == 1
+                                            specialPricesDao.save(preciosEspecialesBean)
+                                        }
 
                             }
                         }
@@ -632,42 +626,38 @@ class RequestData {
                                 val clientDao = ClientDao()
                                 val clienteBean = clientDao.getClientByAccount(item.cliente)
 
-                                if (clienteBean == null) {
-                                    onGetAllDataByDateListener.onGetAllDataByDateError()
-                                    return
-                                }
+                                if (clienteBean != null) {
+                                    //Para obtener los datos del producto
+                                    val productDao = ProductDao()
+                                    val productoBean =
+                                        productDao.getProductoByArticulo(item.articulo)
 
-                                //Para obtener los datos del producto
-                                val productDao = ProductDao()
-                                val productoBean = productDao.getProductoByArticulo(item.articulo)
+                                    if (productoBean != null) {
+                                        val specialPricesDao = SpecialPricesDao()
+                                        val preciosEspecialesBean =
+                                            specialPricesDao.getPrecioEspeciaPorCliente(
+                                                productoBean.articulo,
+                                                clienteBean.cuenta
+                                            )
 
-                                if (productoBean == null) {
-                                    onGetAllDataByDateListener.onGetAllDataByDateError()
-                                    return
-                                }
-
-                                val specialPricesDao = SpecialPricesDao()
-                                val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
-                                    productoBean.articulo,
-                                    clienteBean.cuenta
-                                )
-
-                                //Si no hay precios especiales entonces crea un precio
-                                if (preciosEspecialesBean == null) {
-                                    val dao = SpecialPricesDao()
-                                    val bean = PreciosEspecialesBean()
-                                    bean.cliente = clienteBean.cuenta
-                                    bean.articulo = productoBean.articulo
-                                    bean.precio = item.precio
-                                    bean.active = item.active == 1
-                                    dao.insert(bean)
-                                    specialPricesDao.save(bean)
-                                } else {
-                                    preciosEspecialesBean.cliente = clienteBean.cuenta
-                                    preciosEspecialesBean.articulo = productoBean.articulo
-                                    preciosEspecialesBean.precio = item.precio
-                                    preciosEspecialesBean.active = item.active == 1
-                                    specialPricesDao.save(preciosEspecialesBean)
+                                        //Si no hay precios especiales entonces crea un precio
+                                        if (preciosEspecialesBean == null) {
+                                            val dao = SpecialPricesDao()
+                                            val bean = PreciosEspecialesBean()
+                                            bean.cliente = clienteBean.cuenta
+                                            bean.articulo = productoBean.articulo
+                                            bean.precio = item.precio
+                                            bean.active = item.active == 1
+                                            dao.insert(bean)
+                                            specialPricesDao.save(bean)
+                                        } else {
+                                            preciosEspecialesBean.cliente = clienteBean.cuenta
+                                            preciosEspecialesBean.articulo = productoBean.articulo
+                                            preciosEspecialesBean.precio = item.precio
+                                            preciosEspecialesBean.active = item.active == 1
+                                            specialPricesDao.save(preciosEspecialesBean)
+                                        }
+                                    }
                                 }
                             }
                             onGetAllDataByDateListener.onGetAllDataByDateSuccess()
