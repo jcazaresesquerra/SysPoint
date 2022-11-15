@@ -38,19 +38,18 @@ public class ClientesRutaBean extends Bean {
     private String latitud;
     private String longitud;
     private String phone_contact;
-    private String categoria;
     private boolean status;
     private boolean is_credito;
     private String recordatorio;
     private boolean is_recordatorio;
     private String date_sync;
-@Generated(hash = 1882695025)
+@Generated(hash = 1500931696)
 public ClientesRutaBean(Long id, String nombre_comercial, String calle, String numero,
         String colonia, String cuenta, String rango, int lun, int mar, int mie, int jue, int vie,
         int sab, int dom, int lunOrder, int marOrder, int mieOrder, int jueOrder, int vieOrder,
         int sabOrder, int domOrder, int order, int visitado, String latitud, String longitud,
-        String phone_contact, String categoria, boolean status, boolean is_credito,
-        String recordatorio, boolean is_recordatorio, String date_sync) {
+        String phone_contact, boolean status, boolean is_credito, String recordatorio,
+        boolean is_recordatorio, String date_sync) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -77,7 +76,6 @@ public ClientesRutaBean(Long id, String nombre_comercial, String calle, String n
     this.latitud = latitud;
     this.longitud = longitud;
     this.phone_contact = phone_contact;
-    this.categoria = categoria;
     this.status = status;
     this.is_credito = is_credito;
     this.recordatorio = recordatorio;
@@ -202,12 +200,6 @@ public String getPhone_contact() {
 }
 public void setPhone_contact(String phone_contact) {
     this.phone_contact = phone_contact;
-}
-public String getCategoria() {
-    return this.categoria;
-}
-public void setCategoria(String categoria) {
-    this.categoria = categoria;
 }
 public boolean getStatus() {
     return this.status;

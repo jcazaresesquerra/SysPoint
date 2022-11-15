@@ -427,22 +427,10 @@ class HomeViewModel: ViewModel() {
                 client.ciudad = item.ciudad
                 client.codigoPostal = item.codigo_postal
                 client.fechaRegistro = item.fecha_registro
-                client.fechaBaja = item.fecha_baja
                 client.cuenta = item.cuenta
-                client.grupo = item.grupo
-                client.categoria = item.categoria
-                if (item.status) {
-                    client.status = 1
-                } else {
-                    client.status = 0
-                }
+                client.status = if (item.status) 1 else 0
                 client.consec = item.consec
-                client.region = item.region
-                client.sector = item.sector
                 client.rango = item.rango
-                client.secuencia = item.secuencia
-                client.periodo = item.periodo
-                client.ruta = item.ruta
                 client.lun = item.lun
                 client.mar = item.mar
                 client.mie = item.mie

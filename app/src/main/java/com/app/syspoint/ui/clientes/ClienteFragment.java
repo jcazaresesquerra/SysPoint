@@ -25,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.SearchView;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -86,9 +85,7 @@ public class ClienteFragment extends Fragment {
                 client = new ClienteBean(1L, "Publico General",
                         "Industrias del Valle", "1", "Parque Canacintra",
                         "Culiacán Rosales", 80150, "22-08-2021",
-                        "22-08-2021", "0001", "Publico General",
-                        "Independiente", true, 0, "UNO", "A",
-                        "01", "1", 1, 7, 0,0,0,0,
+                        "0001", true, 0, "01", 0,0,0,0,
                         0,0,0, 0,0,0,0,0,
                         0,0, 0, "24.777435983809422",
                         "-107.437107128804", null, null,
@@ -597,22 +594,10 @@ public class ClienteFragment extends Fragment {
             cliente.setCiudad(item.getCiudad());
             cliente.setCodigoPostal(item.getCodigo_postal());
             cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
             cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
-            if (item.getStatus()) {
-                cliente.setStatus(1);
-            } else {
-                cliente.setStatus(0);
-            }
+            cliente.setStatus(item.getStatus()? 1 : 0);
             cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
             cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
             cliente.setLun(item.getLun());
             cliente.setMar(item.getMar());
             cliente.setMie(item.getMie());
@@ -659,7 +644,7 @@ public class ClienteFragment extends Fragment {
     private void editCliente(String cuenta) {
         HashMap<String, String> parametros = new HashMap<>();
         parametros.put(Actividades.PARAM_1, cuenta);
-        Actividades.getSingleton(getActivity(), ActualizaClienteActivity.class).muestraActividad(parametros);
+        Actividades.getSingleton(getActivity(), UpdateClientActivity.class).muestraActividad(parametros);
     }
 
     private void getData() {

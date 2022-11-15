@@ -99,7 +99,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
         TextView textViewNombre;
         TextView textViewCuenta;
-        TextView textViewCategoria;
         TextView textViewColonia;
         ImageView imageView;
 
@@ -107,7 +106,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             super(itemView);
             this.textViewNombre = itemView.findViewById(R.id.textView_item_nombre_cliente_lista);
             this.textViewCuenta = itemView.findViewById(R.id.textView_item_cuenta_cliente_lista);
-            this.textViewCategoria = itemView.findViewById(R.id.textView_item_categoria_cliente_lista);
             this.textViewColonia = itemView.findViewById(R.id.textView_item_colonia_cliente_lista);
             //this.imageView = itemView.findViewById(R.id.img_more);
         }
@@ -116,7 +114,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
             textViewNombre.setText(""+ cliente.getNombre_comercial());
             textViewCuenta.setText("" + cliente.getCuenta());
-            textViewCategoria.setText("" + cliente.getCategoria());
             textViewColonia.setText("Col. " + cliente.getColonia());
 
             itemView.setOnLongClickListener(v -> {

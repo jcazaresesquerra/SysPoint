@@ -270,22 +270,10 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             cliente.setCiudad(item.getCiudad());
             cliente.setCodigoPostal(item.getCodigo_postal());
             cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
             cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
-                cliente.setStatus(1);
-            }
+            cliente.setStatus(item.getStatus()? 1 : 0);
             cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
             cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
             cliente.setLun(item.getLun());
             cliente.setMar(item.getMar());
             cliente.setMie(item.getMie());

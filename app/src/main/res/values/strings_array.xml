@@ -69,15 +69,6 @@
         <item>Sucursal</item>
     </string-array>
 
-    <string-array name="tipo_contrato">
-        <item>Capacitación Inicial</item>
-        <item>Por obra</item>
-        <item>Tiempo Determinado</item>
-        <item>Temporada</item>
-        <item>Periodo de prueba</item>
-        <item>Tiempo indeterminado</item>
-    </string-array>
-
     <string-array name="ruteo_sector">
         <item>A</item>
         <item>B</item>

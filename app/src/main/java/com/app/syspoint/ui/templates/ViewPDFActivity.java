@@ -301,22 +301,10 @@ public class ViewPDFActivity extends AppCompatActivity {
             client.setCiudad(item.getCiudad());
             client.setCodigoPostal(item.getCodigo_postal());
             client.setFechaRegistro(item.getFecha_registro());
-            client.setFechaBaja(item.getFecha_baja());
             client.setCuenta(item.getCuenta());
-            client.setGrupo(item.getGrupo());
-            client.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                client.setStatus(0);
-            } else {
-                client.setStatus(1);
-            }
+            client.setStatus(item.getStatus()? 1 : 0);
             client.setConsec(item.getConsec());
-            client.setRegion(item.getRegion());
-            client.setSector(item.getSector());
             client.setRango(item.getRango());
-            client.setSecuencia(item.getSecuencia());
-            client.setPeriodo(item.getPeriodo());
-            client.setRuta(item.getRuta());
             client.setLun(item.getLun());
             client.setMar(item.getMar());
             client.setMie(item.getMie());
@@ -432,11 +420,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         PrinterDao existeImpresora = new PrinterDao();
         int existe = existeImpresora.existeConfiguracionImpresora();
 
-        if (existe > 0) {
-            return true;
-        }
-
-        return false;
+        return existe > 0;
     }
 
     public boolean isBluetoothEnabled() {

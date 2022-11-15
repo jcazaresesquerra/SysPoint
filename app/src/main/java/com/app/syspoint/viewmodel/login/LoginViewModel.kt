@@ -77,11 +77,9 @@ class LoginViewModel: BaseViewModel() {
         if (ruteoBean != null) {
             ruteoBean.id = 1L
             ruteoBean.fecha = Utils.fechaActual()
-            if (employeeBean.getDay() > 0 && !employeeBean.getRute().isNullOrEmpty()) {
-                ruteoBean.dia = employeeBean.getDay()
+            if (!employeeBean.getRute().isNullOrEmpty()) {
                 ruteoBean.ruta = employeeBean.getRute()
             } else {
-                ruteoBean.dia = 0
                 ruteoBean.ruta = ""
             }
             routingDao.save(ruteoBean)
@@ -91,11 +89,9 @@ class LoginViewModel: BaseViewModel() {
             ruteo.id = 1L
             ruteo.fecha = Utils.fechaActual()
 
-            if (employeeBean.getDay() > 0 && !employeeBean.getRute().isNullOrEmpty()) {
-                ruteo.dia = employeeBean.getDay()
+            if (!employeeBean.getRute().isNullOrEmpty()) {
                 ruteo.ruta = employeeBean.getRute()
             } else {
-                ruteo.dia = 0
                 ruteo.ruta = ""
             }
             routingDao.insert(ruteo)
@@ -203,23 +199,9 @@ class LoginViewModel: BaseViewModel() {
             employee.setTelefono("6672081920")
             employee.setFecha_nacimiento("00/00/0000")
             employee.setFecha_ingreso("00/00/0000")
-            employee.setFecha_egreso("00/00/0000")
             employee.setContrasenia("123")
             employee.setIdentificador("E001")
-            employee.setNss("")
-            employee.setRfc("")
-            employee.setCurp("")
-            employee.setPuesto("")
-            employee.setArea_depto("SYS")
-            employee.setTipo_contrato("INDETERMINADO")
             employee.setRegion("UNO")
-            employee.setHora_entrada("10:00")
-            employee.setHora_salida("17:00")
-            employee.setSalida_comer("13:00")
-            employee.setEntrada_comer("13:30")
-            employee.setSueldo_diario(0.0)
-            employee.setTurno("")
-            //employee.setEdit_ruta(false)
             dao.insert(employee)
             val rolCliente = RolesBean()
             val rolClienteDao =

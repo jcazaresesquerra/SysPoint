@@ -7,7 +7,6 @@ import com.app.syspoint.models.RequestClientsByRute
 import com.app.syspoint.models.json.ClientJson
 import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.bean.ClientesRutaBean
-import com.app.syspoint.repository.database.bean.RuteoBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.repository.database.dao.RuteClientDao
 import com.app.syspoint.repository.request.http.ApiServices
@@ -16,6 +15,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.nio.CharBuffer
 
 class RequestClient {
     companion object {
@@ -43,19 +43,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
                                 clienteBean.consec = item.consec
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -83,23 +75,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
                                 bean.consec = item.consec
-                                if (bean.visitado == 0) {
-                                    bean.visitado = 0
-                                } else if (bean.visitado == 1) {
-                                    bean.visitado = 1
-                                }
-                                bean.region = item.region
-                                bean.sector = item.sector
+                                bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -167,19 +147,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
                                 clienteBean.consec = item.consec
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -207,19 +179,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
                                 bean.consec = item.consec
                                 bean.visitado = if (bean.visitado == 0) 0 else 1
-                                bean.region = item.region
-                                bean.sector = item.sector
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -259,7 +223,6 @@ class RequestClient {
                                 clienteBeanRute.cuenta = item.cuenta
                                 clienteBeanRute.visitado = 0
                                 clienteBeanRute.rango = item.rango
-                                clienteBeanRute.categoria = item.categoria
                                 clienteBeanRute.status = item.status == 1
                                 clienteBeanRute.lun = item.lun
                                 clienteBeanRute.mar = item.mar
@@ -286,7 +249,6 @@ class RequestClient {
                                 beanRute.cuenta = item.cuenta
                                 beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
                                 beanRute.rango = item.rango
-                                beanRute.categoria = item.categoria
                                 beanRute.status = item.status == 1
                                 beanRute.lun = item.lun
                                 beanRute.mar = item.mar
@@ -351,19 +313,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
                                 clienteBean.consec = item.consec
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -384,23 +338,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
                                 bean.consec = item.consec
-                                if (bean.visitado == 0) {
-                                    bean.visitado = 0
-                                } else if (bean.visitado == 1) {
-                                    bean.visitado = 1
-                                }
-                                bean.region = item.region
-                                bean.sector = item.sector
+                                bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -449,6 +391,9 @@ class RequestClient {
                     if (response.isSuccessful) {
                         onSaveClientListener.onSaveClientSuccess()
                     } else {
+                        val error = response.errorBody()
+                        val err = charArrayOf()
+                        val message = error!!.charStream().read(err)
                         onSaveClientListener.onSaveClientError()
                     }
                 }

@@ -60,59 +60,40 @@ import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class RegistroClienteActivity extends AppCompatActivity {
 
-    Spinner spinner_grupo_registro_cliente;
-    Spinner spinner_categoria_registro_cliente;
-    Spinner spinner_status_registro_cliente;
-    Spinner spinner_region_registro_cliente;
-    Spinner spinner_sector_registro_cliente;
-    Spinner spinner_ruta_registro_cliente;
-    Spinner spinner_periodo_registro_cliente;
-
-    EditText editText_nombre_registro_cliente;
-    EditText editText_calle_registro_cliente;
-    EditText editText_numero_registro_cliente;
-    EditText editText_colonia_registro_cliente;
-    EditText editText_ciudad_registro_cliente;
-    EditText editText_cp_registro_cliente;
-    EditText editText_fecha_alta_registro_cliente;
-    EditText inp_contacto_phone_registro_cliente;
-    ImageButton img_fecha_alta_registro_cliente;
-    EditText editText_fecha_baja_registro_cliente;
-    ImageButton img_fecha_baja_registro_cliente;
-    EditText editText_no_cuenta_registro_cliente;
-    EditText inp_matriz_asignada_registro_cliente;
-    String status_seleccionado;
-    String categoria_seleccionada;
-    String grupo_seleccionado;
-    String region_seleccionado;
-    String sector_seleccionado;
-    String ruta_seleccionado;
-    String periodo_seleccionado;
-    EditText inp_ruta_registro_cliente;
-    EditText inp_secuencia_registro_cliente;
-    CheckBox checkbor_lunes_registro_cliente;
-    CheckBox checkbor_martes_registro_cliente;
-    CheckBox checkbor_miercoles_registro_cliente;
-    CheckBox checkbor_jueves_registro_cliente;
-    CheckBox checkbor_viernes_registro_cliente;
-    CheckBox checkbor_sabado_registro_cliente;
-    CheckBox checkbor_domingo_registro_cliente;
-    CheckBox checkbox_registro_credito;
-    ImageButton img_search_cliente_registro_cliente;
-
-    EditText et_registro_limite_credito;
-    EditText et_registro_saldo_credito;
-
+    private Spinner spinner_status_registro_cliente;
+    private Spinner spinner_ruta_registro_cliente;
+    private EditText editText_nombre_registro_cliente;
+    private EditText editText_calle_registro_cliente;
+    private EditText editText_numero_registro_cliente;
+    private EditText editText_colonia_registro_cliente;
+    private EditText editText_ciudad_registro_cliente;
+    private EditText editText_cp_registro_cliente;
+    private EditText editText_fecha_alta_registro_cliente;
+    private EditText inp_contacto_phone_registro_cliente;
+    private EditText editText_no_cuenta_registro_cliente;
+    private EditText inp_matriz_asignada_registro_cliente;
+    private EditText et_registro_limite_credito;
+    private EditText et_registro_saldo_credito;
+    private EditText editTextLatitud;
+    private EditText editTextLongitud;
+    private CheckBox checkbor_lunes_registro_cliente;
+    private CheckBox checkbor_martes_registro_cliente;
+    private CheckBox checkbor_miercoles_registro_cliente;
+    private CheckBox checkbor_jueves_registro_cliente;
+    private CheckBox checkbor_viernes_registro_cliente;
+    private CheckBox checkbor_sabado_registro_cliente;
+    private CheckBox checkbor_domingo_registro_cliente;
+    private CheckBox checkbox_registro_credito;
+    private ImageButton img_fecha_alta_registro_cliente;
+    private ImageButton img_search_cliente_registro_cliente;
+    private ImageButton buttonLocation;
     private RelativeLayout rlprogress;
+
     private List<String> listaCamposValidos;
-    private int mYear, mMonth, mDay;
-    int no_cuenta = 0;
-
-    EditText editTextLatitud;
-    EditText editTextLongitud;
-    ImageButton buttonLocation;
-
-    boolean isLocation = false;
+    private String status_seleccionado;
+    private String ruta_seleccionado;
+    private String idCliente;
+    private int no_cuenta = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,35 +102,41 @@ public class RegistroClienteActivity extends AppCompatActivity {
         rlprogress = findViewById(R.id.rlprogress_cliente_registro);
         initToolBar();
         this.initControls();
-        this.loadSpinnerCategoria();
         this.loadSpinnerStatus();
-        this.loadSpinnerRegion();
-        this.loadSpinnerSector();
         this.loadSpinnerRuta();
-        this.loadSpinnerPeriodo();
         this.loadConsecCuenta();
-        this.loadSpinnerGrupo();
 
-        isLocation = true;
         //locationStart();
 
         editText_fecha_alta_registro_cliente.setText(Utils.fechaActualPicker());
-        editText_fecha_baja_registro_cliente.setText(Utils.fechaActualPicker());
-
     }
 
-    void initToolBar() {
-        Toolbar toolbar = findViewById(R.id.toolbar_registro_cliente);
-        toolbar.setTitle("Registro cliente");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
+        if (resultCode == Activity.RESULT_CANCELED) return;
+
+        if (requestCode == 200){
+            String cuenta = data.getStringExtra(Actividades.PARAM_1);
+            inp_matriz_asignada_registro_cliente.setText(cuenta);
+        }else if(requestCode == 300) {
+            String numero = data.getStringExtra(Actividades.PARAM_1);
+            String calle = data.getStringExtra(Actividades.PARAM_2);
+            String localidad = data.getStringExtra(Actividades.PARAM_3);
+            String colonia = data.getStringExtra(Actividades.PARAM_5);
+            String cp = data.getStringExtra(Actividades.PARAM_7);
+            String lat = data.getStringExtra(Actividades.PARAM_8);
+            String lng = data.getStringExtra(Actividades.PARAM_9);
+
+            editText_calle_registro_cliente.setText(calle);
+            editText_cp_registro_cliente.setText(cp);
+            editText_colonia_registro_cliente.setText(localidad);
+            editText_ciudad_registro_cliente.setText(colonia);
+            editText_numero_registro_cliente.setText(numero);
+            editTextLatitud.setText(lat);
+            editTextLongitud.setText(lng);
         }
-
     }
 
     @Override
@@ -161,8 +148,6 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-
         switch (item.getItemId()) {
 
             case android.R.id.home:
@@ -170,7 +155,6 @@ public class RegistroClienteActivity extends AppCompatActivity {
                 return true;
 
             case R.id.ubicaciobCliente:
-                isLocation = false;
                 Actividades.getSingleton(RegistroClienteActivity.this, MapsClienteActivity.class).muestraActividadForResult(300);
                 return true;
 
@@ -185,27 +169,12 @@ public class RegistroClienteActivity extends AppCompatActivity {
                                 .setMessage("Desea registar el cliente")
                                 .setMessageColor(R.color.purple_700)
                                 .setAnimationEnabled(false)
-                                .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialog.dismiss();
-                                    }
+                                .setIcon(R.drawable.ic_save_white, R.color.purple_500, () -> dialog.dismiss())
+                                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
+                                    registraCliente();
+                                    dialog.dismiss();
                                 })
-                                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        registraCliente();
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-
-                                        dialog.dismiss();
-
-                                    }
-                                });
+                                .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, () -> dialog.dismiss());
                         dialog.setCancelable(false);
                         dialog.show();
 
@@ -216,18 +185,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
                                 .setMessage("Ya existe un registro con el numero de cuenta  " + editText_no_cuenta_registro_cliente.getText().toString())
                                 .setMessageColor(R.color.purple_700)
                                 .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.light_blue_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialog.dismiss();
-                                    }
-                                });
+                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialog.dismiss())
+                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.light_blue_800, () -> dialog.dismiss());
 
                         dialog.setCancelable(false);
                         dialog.show();
@@ -245,18 +204,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
                             .setMessage("Debe de completar los campos requeridos " + "\n" + campos)
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialog.dismiss();
-                                }
-                            });
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialog.dismiss())
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, () -> dialog.dismiss());
 
                     dialog.setCancelable(false);
                     dialog.show();
@@ -266,7 +215,19 @@ public class RegistroClienteActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
 
+    void initToolBar() {
+        Toolbar toolbar = findViewById(R.id.toolbar_registro_cliente);
+        toolbar.setTitle("Registro cliente");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
+        }
     }
 
     private void loadConsecCuenta() {
@@ -315,26 +276,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
         et_registro_limite_credito = findViewById(R.id.et_registro_limite_credito);
         et_registro_saldo_credito  = findViewById(R.id.et_registro_limite_credito);
         checkbox_registro_credito = findViewById(R.id.checkbox_registro_credito);
-        editText_fecha_baja_registro_cliente = findViewById(R.id.inp_fecha_baja_registro_cliente);
-        img_fecha_baja_registro_cliente = findViewById(R.id.img_fecha_baja_registro_cliente);
         inp_matriz_asignada_registro_cliente = findViewById(R.id.inp_matriz_asignada_registro_cliente);
-        img_fecha_alta_registro_cliente.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateFechaRegistro();
-            }
-        });
+        img_fecha_alta_registro_cliente.setOnClickListener(v -> dateFechaRegistro());
 
-
-        img_fecha_baja_registro_cliente.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateFechaBaja();
-            }
-        });
-
-        inp_ruta_registro_cliente = findViewById(R.id.inp_ruta_registro_cliente);
-        inp_secuencia_registro_cliente = findViewById(R.id.inp_secuencia_registro_cliente);
         checkbor_lunes_registro_cliente = findViewById(R.id.checkbor_lunes_registro_cliente);
         checkbor_martes_registro_cliente = findViewById(R.id.checkbor_martes_registro_cliente);
         checkbor_miercoles_registro_cliente = findViewById(R.id.checkbor_miercoles_registro_cliente);
@@ -351,67 +295,28 @@ public class RegistroClienteActivity extends AppCompatActivity {
         et_registro_limite_credito = findViewById(R.id.et_registro_limite_credito);
         et_registro_saldo_credito = findViewById(R.id.et_registro_saldo_credito);
 
-        buttonLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isLocation = true;
-                //locationStart();
-            }
+        buttonLocation.setOnClickListener(v -> {
+            //locationStart();
         });
 
     }
 
     private void dateFechaRegistro() {
-
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        if (dayOfMonth < 9) {
-                            editText_fecha_alta_registro_cliente.setText("0" + dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                        } else {
-                            editText_fecha_alta_registro_cliente.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                        }
-
-                    }
-                }, mYear, mMonth, mDay);
-        datePickerDialog.show();
-
-    }
-
-    private void dateFechaBaja() {
-
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
+        Calendar c = Calendar.getInstance();
+        int mYear = c.get(Calendar.YEAR);
+        int mMonth = c.get(Calendar.MONTH);
+        int mDay = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        if (dayOfMonth < 9) {
-                            editText_fecha_baja_registro_cliente.setText("0" + dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                        } else {
-                            editText_fecha_baja_registro_cliente.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-                        }
-
-
+                (view, year, monthOfYear, dayOfMonth) -> {
+                    if (dayOfMonth < 9) {
+                        editText_fecha_alta_registro_cliente.setText("0" + dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
+                    } else {
+                        editText_fecha_alta_registro_cliente.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
                     }
+
                 }, mYear, mMonth, mDay);
         datePickerDialog.show();
-
     }
 
     //Apartir de aqui empezamos a obtener la direciones y coordenadas
@@ -539,56 +444,6 @@ public class RegistroClienteActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSpinnerGrupo() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.grupo);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_grupo_registro_cliente = findViewById(R.id.spinner_grupo_registro_cliente);
-        spinner_grupo_registro_cliente.setAdapter(adapter);
-        spinner_grupo_registro_cliente.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                grupo_seleccionado = spinner_grupo_registro_cliente.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadSpinnerCategoria() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.categoria);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_categoria_registro_cliente = findViewById(R.id.spinner_categoria_registro_cliente);
-        spinner_categoria_registro_cliente.setAdapter(adapter);
-        spinner_categoria_registro_cliente.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                categoria_seleccionada = spinner_categoria_registro_cliente.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
     private void loadSpinnerStatus() {
 
         //Obtiene el array de las unidades de medida
@@ -614,65 +469,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
         });
     }
 
-    private void loadSpinnerRegion() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.region);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_registro_cliente = findViewById(R.id.spinner_region_registro_cliente);
-        spinner_region_registro_cliente.setAdapter(adapter);
-        spinner_region_registro_cliente.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionado = spinner_region_registro_cliente.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadSpinnerSector() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.ruteo_sector);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_sector_registro_cliente = findViewById(R.id.spinner_sector_registro_cliente);
-        spinner_sector_registro_cliente.setAdapter(adapter);
-        spinner_sector_registro_cliente.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                sector_seleccionado = spinner_sector_registro_cliente.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
     private void loadSpinnerRuta() {
-
-        //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.ruteo_rango_rutas);
-
-        //Obtiene la lista de Strings
         List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
         spinner_ruta_registro_cliente = findViewById(R.id.spinner_rango_registro_cliente);
         spinner_ruta_registro_cliente.setAdapter(adapter);
@@ -683,34 +482,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadSpinnerPeriodo() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.ruteo_periodo);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_periodo_registro_cliente = findViewById(R.id.spinner_periodo_registro_cliente);
-        spinner_periodo_registro_cliente.setAdapter(adapter);
-        spinner_periodo_registro_cliente.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                periodo_seleccionado = spinner_periodo_registro_cliente.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
@@ -719,22 +491,15 @@ public class RegistroClienteActivity extends AppCompatActivity {
     }
 
     private boolean validaCampos() {
-
+        boolean valida = true;
         listaCamposValidos = new ArrayList<>();
 
-        boolean valida = true;
-
         String nombre = editText_nombre_registro_cliente.getText().toString();
-
         String calle = editText_calle_registro_cliente.getText().toString();
-
         String numero = editText_numero_registro_cliente.getText().toString();
-
         String colonia = editText_colonia_registro_cliente.getText().toString();
         String ciudad = editText_ciudad_registro_cliente.getText().toString();
-
         String cp = editText_cp_registro_cliente.getText().toString();
-
 
         if (nombre.isEmpty()) {
             valida = false;
@@ -744,17 +509,6 @@ public class RegistroClienteActivity extends AppCompatActivity {
         if (calle.isEmpty()) {
             valida = false;
             listaCamposValidos.add("ciudad");
-        }
-
-        if (numero.isEmpty()) {
-            valida = false;
-            listaCamposValidos.add("numero");
-        }
-
-
-        if (numero.isEmpty()) {
-            valida = false;
-            listaCamposValidos.add("numero");
         }
 
         if (numero.isEmpty()) {
@@ -779,125 +533,74 @@ public class RegistroClienteActivity extends AppCompatActivity {
     }
 
     private boolean validaCliente() {
-
-        boolean valida = true;
-
         ClientDao dao = new ClientDao();
         ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_registro_cliente.getText().toString());
-
-        if (bean == null) {
-            valida = false;
-        } else {
-            valida = true;
-        }
-        return valida;
+        return bean != null;
     }
 
-    String idCliente;
-
     private void registraCliente() {
+        String numero = inp_contacto_phone_registro_cliente.getText().toString();
+        if (numero != null && !numero.isEmpty() && !numero.equals("null")) {
+            final ClienteBean clienteBean = new ClienteBean();
+            final ClientDao clientDao = new ClientDao();
+            clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
+            clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
+            clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
+            clienteBean.setColonia(editText_colonia_registro_cliente.getText().toString());
+            clienteBean.setCiudad(editText_ciudad_registro_cliente.getText().toString());
+            clienteBean.setCodigo_postal(Integer.parseInt(editText_cp_registro_cliente.getText().toString()));
+            clienteBean.setFecha_registro(editText_fecha_alta_registro_cliente.getText().toString());
+            clienteBean.setCuenta(editText_no_cuenta_registro_cliente.getText().toString());
+            clienteBean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
+            clienteBean.setConsec(no_cuenta);
+            clienteBean.setRango(ruta_seleccionado);
 
-        final ClienteBean clienteBean = new ClienteBean();
-        final ClientDao clientDao = new ClientDao();
-        clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
-        clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
-        clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
-        clienteBean.setColonia(editText_colonia_registro_cliente.getText().toString());
-        clienteBean.setCiudad(editText_ciudad_registro_cliente.getText().toString());
-        clienteBean.setCodigo_postal(Integer.parseInt(editText_cp_registro_cliente.getText().toString()));
-        ;
-        clienteBean.setFecha_registro(editText_fecha_alta_registro_cliente.getText().toString());
-        clienteBean.setFecha_baja(editText_fecha_baja_registro_cliente.getText().toString());
-        clienteBean.setCuenta(editText_no_cuenta_registro_cliente.getText().toString());
-        clienteBean.setGrupo(grupo_seleccionado);
-        clienteBean.setCategoria(categoria_seleccionada);
-        if (status_seleccionado.compareToIgnoreCase("Activo") == 0) {
-            clienteBean.setStatus(true);
-        } else {
-            clienteBean.setStatus(false);
-        }
-        clienteBean.setConsec(no_cuenta);
-        clienteBean.setRegion(region_seleccionado);
-        clienteBean.setSector(sector_seleccionado);
-        clienteBean.setRango(ruta_seleccionado);
-        clienteBean.setRuta(inp_ruta_registro_cliente.getText().toString());
-        clienteBean.setSecuencia(Integer.parseInt(inp_secuencia_registro_cliente.getText().toString()));
-        clienteBean.setPeriodo(Integer.parseInt(periodo_seleccionado));
-        if (checkbor_lunes_registro_cliente.isChecked()) {
-            clienteBean.setLun(1);
-        } else {
-            clienteBean.setLun(0);
-        }
-        if (checkbor_martes_registro_cliente.isChecked()) {
-            clienteBean.setMar(1);
-        } else {
-            clienteBean.setMar(0);
-        }
-        if (checkbor_miercoles_registro_cliente.isChecked()) {
-            clienteBean.setMie(1);
-        } else {
-            clienteBean.setMie(0);
-        }
-        if (checkbor_jueves_registro_cliente.isChecked()) {
-            clienteBean.setJue(1);
-        } else {
-            clienteBean.setJue(0);
-        }
-        if (checkbor_viernes_registro_cliente.isChecked()) {
-            clienteBean.setVie(1);
-        } else {
-            clienteBean.setVie(0);
-        }
-        if (checkbor_sabado_registro_cliente.isChecked()) {
-            clienteBean.setSab(1);
-        } else {
-            clienteBean.setSab(0);
-        }
-        if (checkbor_domingo_registro_cliente.isChecked()) {
-            clienteBean.setDom(1);
-        } else {
-            clienteBean.setDom(0);
-        }
-        clienteBean.setContacto_phone(inp_contacto_phone_registro_cliente.getText().toString());
-        clienteBean.setLatitud(editTextLatitud.getText().toString());
-        clienteBean.setLongitud(editTextLongitud.getText().toString());
-        if (checkbox_registro_credito.isChecked()){
-            clienteBean.setIs_credito(true);
-        }else {
-            clienteBean.setIs_credito(false);
-        }
-        String limite = et_registro_limite_credito.getText().toString();
+            clienteBean.setLun(checkbor_lunes_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setMar(checkbor_martes_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setMie(checkbor_miercoles_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setJue(checkbor_jueves_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setVie(checkbor_viernes_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setSab(checkbor_sabado_registro_cliente.isChecked() ? 1 : 0);
+            clienteBean.setDom(checkbor_domingo_registro_cliente.isChecked() ? 1 : 0);
 
-        if  (limite.isEmpty()){
-            clienteBean.setLimite_credito(0.00);
-        }else {
-            clienteBean.setLimite_credito(Double.parseDouble(et_registro_limite_credito.getText().toString()));
-        }
+            clienteBean.setContacto_phone(inp_contacto_phone_registro_cliente.getText().toString());
+            clienteBean.setLatitud(editTextLatitud.getText().toString());
+            clienteBean.setLongitud(editTextLongitud.getText().toString());
+            clienteBean.setIs_credito(checkbox_registro_credito.isChecked());
 
-        if (checkbox_registro_credito.isChecked()){
-            clienteBean.setMatriz(inp_matriz_asignada_registro_cliente.getText().toString());
-            clienteBean.setIs_credito(true);
-        }else{
-            clienteBean.setIs_credito(false);
-            clienteBean.setMatriz("null");
-        }
+            String limite = et_registro_limite_credito.getText().toString();
+            if (limite.isEmpty()) {
+                clienteBean.setLimite_credito(0.00);
+            } else {
+                clienteBean.setLimite_credito(Double.parseDouble(et_registro_limite_credito.getText().toString()));
+            }
 
-        clienteBean.setSaldo_credito(0.00);
-        clienteBean.setDate_sync(Utils.fechaActual());
+            if (checkbox_registro_credito.isChecked()) {
+                clienteBean.setMatriz(inp_matriz_asignada_registro_cliente.getText().toString());
+                clienteBean.setIs_credito(true);
+            } else {
+                clienteBean.setIs_credito(false);
+                clienteBean.setMatriz("null");
+            }
 
-        clientDao.insert(clienteBean);
+            clienteBean.setSaldo_credito(0.00);
+            clienteBean.setDate_sync(Utils.fechaActual());
 
-        idCliente = String.valueOf(clienteBean.getId());
-        if (!Utils.isNetworkAvailable(getApplication())) {
-            //showDialogNotConnectionInternet();
+            clientDao.insert(clienteBean);
+
+            idCliente = String.valueOf(clienteBean.getId());
+            if (!Utils.isNetworkAvailable(getApplication())) {
+                //showDialogNotConnectionInternet();
+            } else {
+                testLoadClientes(idCliente);
+            }
         } else {
-            testLoadClientes(idCliente);
+            Toast.makeText(getApplicationContext(), "Debe introducir un telefono de contacto",Toast.LENGTH_SHORT).show();
         }
     }
 
     private void showDialogNotConnectionInternet() {
-
-        final Dialog dialog = new Dialog(this);
+        Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
         dialog.setContentView(R.layout.dialog_warning);
         dialog.setCancelable(true);
@@ -907,12 +610,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                testLoadClientes(idCliente);
-                dialog.dismiss();
-            }
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
+            testLoadClientes(idCliente);
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -920,14 +620,10 @@ public class RegistroClienteActivity extends AppCompatActivity {
     }
 
     private void testLoadClientes(String idCliente) {
-
-
         progressshow();
 
-        final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getByIDClient(idCliente);
-
+        ClientDao clientDao = new ClientDao();
+        List<ClienteBean> listaClientesDB = clientDao.getByIDClient(idCliente);
         List<Client> listaClientes = new ArrayList<>();
 
         for (ClienteBean item : listaClientesDB) {
@@ -939,22 +635,10 @@ public class RegistroClienteActivity extends AppCompatActivity {
             cliente.setCiudad(item.getCiudad());
             cliente.setCodigoPostal(item.getCodigo_postal());
             cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
             cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
-                cliente.setStatus(1);
-            }
+            cliente.setStatus(item.getStatus()? 1 : 0);
             cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
             cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
             cliente.setLun(item.getLun());
             cliente.setMar(item.getMar());
             cliente.setMie(item.getMie());
@@ -964,19 +648,16 @@ public class RegistroClienteActivity extends AppCompatActivity {
             cliente.setDom(item.getDom());
             cliente.setLatitud(item.getLatitud());
             cliente.setLongitud(item.getLongitud());
-            cliente.setPhone_contacto(""+item.getContacto_phone());
-            cliente.setRecordatorio(""+item.getRecordatorio());
+            cliente.setPhone_contacto(item.getContacto_phone());
+            cliente.setRecordatorio(item.getRecordatorio() != null? item.getRecordatorio() : "");
             cliente.setVisitas(item.getVisitasNoefectivas());
-            if (item.getIs_credito()){
-                cliente.setCredito(1);
-            }else{
-                cliente.setCredito(0);
-            }
+            cliente.setCredito(item.getIs_credito()? 1 : 0);
+
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
-            if (item.getMatriz()== "null" && item.getMatriz() == null) {
+            if (item.getMatriz().equals("null") || item.getMatriz() == null) {
                 cliente.setMatriz("null");
-            }else{
+            } else{
                 cliente.setMatriz(item.getMatriz());
             }
             listaClientes.add(cliente);
@@ -1006,35 +687,4 @@ public class RegistroClienteActivity extends AppCompatActivity {
     public void progresshide() {
         rlprogress.setVisibility(View.GONE);
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_CANCELED)
-            return;
-
-        if (requestCode == 200){
-            String cuenta = data.getStringExtra(Actividades.PARAM_1);
-            inp_matriz_asignada_registro_cliente.setText(""+cuenta);
-        }else if(requestCode == 300) {
-            String numero = data.getStringExtra(Actividades.PARAM_1);
-            String calle = data.getStringExtra(Actividades.PARAM_2);
-            String localidad = data.getStringExtra(Actividades.PARAM_3);
-            String colonia = data.getStringExtra(Actividades.PARAM_5);
-            String cp = data.getStringExtra(Actividades.PARAM_7);
-            String lat = data.getStringExtra(Actividades.PARAM_8);
-            String lng = data.getStringExtra(Actividades.PARAM_9);
-
-            editText_calle_registro_cliente.setText("" + calle);
-            editText_cp_registro_cliente.setText("" + cp);
-            editText_colonia_registro_cliente.setText("" + localidad);
-            editText_ciudad_registro_cliente.setText("" + colonia);
-            editText_numero_registro_cliente.setText("" + numero);
-            editTextLatitud.setText(lat);
-            editTextLongitud.setText(lng);
-        }
-
-    }
-
 }
