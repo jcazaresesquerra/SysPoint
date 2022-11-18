@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.databinding.FragmentEmployeeBinding
 import com.app.syspoint.models.sealed.EmployeeViewState
+import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.ui.employees.activities.ActualizarEmpleadoActivity
 import com.app.syspoint.ui.employees.activities.RegistarEmpleadoActivity
@@ -28,6 +29,7 @@ import com.app.syspoint.ui.employees.adapters.EmployeeListAdapter
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.employee.EmployeeViewModel
 import kotlinx.android.synthetic.main.fragment_employee.*
+import java.util.function.Predicate
 
 class EmployeeFragment: Fragment() {
 

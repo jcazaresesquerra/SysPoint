@@ -29,7 +29,7 @@ interface PointApi {
     @GET("getEmpleadoByID")
     fun getEmpleadoByID(@Query("identificador") identificador: String?): Call<EmployeeJson>
 
-    @POST("saveEmpleado")
+    @POST("saveEmpleadoV2")
     fun sendEmpleado(@Body param: EmployeeJson?): Call<EmployeeJson>
 
     // PRODUCTOS
@@ -53,7 +53,7 @@ interface PointApi {
     @POST("getClienteByID")
     fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
 
-    @POST("saveCliente")
+    @POST("saveClienteV2")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
 
     // ROLES

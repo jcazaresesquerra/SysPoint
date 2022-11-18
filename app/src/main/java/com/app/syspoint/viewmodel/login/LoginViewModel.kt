@@ -201,7 +201,6 @@ class LoginViewModel: BaseViewModel() {
             employee.setFecha_ingreso("00/00/0000")
             employee.setContrasenia("123")
             employee.setIdentificador("E001")
-            employee.setRegion("UNO")
             dao.insert(employee)
             val rolCliente = RolesBean()
             val rolClienteDao =

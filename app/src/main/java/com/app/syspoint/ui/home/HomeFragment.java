@@ -942,7 +942,6 @@ public class HomeFragment extends Fragment {
 
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            empleado.setRegion(item.getRegion());
             empleado.setStatus(item.getStatus()? 1 : 0);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){

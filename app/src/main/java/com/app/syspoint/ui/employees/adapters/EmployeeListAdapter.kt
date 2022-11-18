@@ -37,6 +37,7 @@ class EmployeeListAdapter(
 
     fun setData(data: List<EmpleadoBean?>) {
         mDataFilter = data
+        mData = data
         notifyDataSetChanged()
     }
 

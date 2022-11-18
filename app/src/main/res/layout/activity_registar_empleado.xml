@@ -283,14 +283,6 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Spinner
-                android:id="@+id/spinner_registro_empleado_status"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-            </Spinner>
 
         </LinearLayout>
 
@@ -318,7 +310,7 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                 android:textAlignment="center"
                 android:textColor="@color/purple_700"
                 android:textStyle="bold"
-                android:hint="Region"/>
+                android:hint="Estatus"/>
         </LinearLayout>
 
 
@@ -334,13 +326,16 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                 android:layout_marginTop="5dp"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"/>
+
             <Spinner
-                android:id="@+id/spinner_region_registro_empleado"
+                android:id="@+id/spinner_registro_empleado_status"
                 android:layout_marginTop="5dp"
-                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"/>
+                android:layout_height="50dp">
+            </Spinner>
+
         </LinearLayout>
 
 

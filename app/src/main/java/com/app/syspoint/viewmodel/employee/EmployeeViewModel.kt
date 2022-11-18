@@ -30,12 +30,12 @@ class EmployeeViewModel: BaseViewModel() {
     }
 
     fun setUpEmployees() {
-        val data = EmployeeDao().list() as List<EmpleadoBean?>
+        val data = EmployeeDao().getActiveEmployees()
         employeeViewState.postValue(EmployeeViewState.SetUpEmployeesState(data))
     }
 
     fun refreshEmployees() {
-        val data = EmployeeDao().list() as List<EmpleadoBean?>
+        val data = EmployeeDao().getActiveEmployees()
         employeeViewState.postValue(EmployeeViewState.RefreshEmployeesState(data))
     }
 

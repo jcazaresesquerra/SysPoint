@@ -13,6 +13,13 @@ class EmployeeDao: Dao("EmpleadoBean") {
         return if (employeeBean.isNotEmpty()) employeeBean[0] as EmpleadoBean? else null
     }
 
+    fun getActiveEmployees(): List<EmpleadoBean> {
+        return dao.queryBuilder()
+            .where(EmpleadoBeanDao.Properties.Status.eq(1))
+            .orderAsc(EmpleadoBeanDao.Properties.Id)
+            .list() as List<EmpleadoBean>
+    }
+
     //Retorna el empleado por identificador
     fun validateLogin(email: String?, password: String?): EmpleadoBean? {
         val employeeBeans = dao.queryBuilder()

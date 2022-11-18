@@ -75,7 +75,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_registro_empleado_contrasenia_valida;
     private EditText ip_registro_empleado_id;
     private Spinner rute_employee_spinner;
-    private Spinner spinner_region_registro_empleado;
     private Spinner spinner_registro_empleado_status;
     private SwitchCompat checkbox_clientes_registro_empleado;
     private SwitchCompat checkbox_productos_registro_empleado;
@@ -89,7 +88,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
     private List<String> listaCamposValidos;
     private String ruta_seleccionado;
-    private String region_seleccionada;
     private String status_seleccionado;
     private int mYear, mMonth, mDay;
     byte[] imageByteArray;
@@ -133,10 +131,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         checkbox_cobranza_registro_empleado = findViewById(R.id.checkbox_cobranza_registro_empleado);
         checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
 
-        loadSpinnerRegion();
         loadSpinnerStatus();
         loadSpinnerRuteAndDay();
-        loadSpinnerSelectedRegion();
     }
 
     private void loadSpinnerRuteAndDay() {
@@ -160,40 +156,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-    }
-
-    private void loadSpinnerSelectedRegion() {
-        String[] array = getArrayString(R.array.region);
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_registro_empleado = findViewById(R.id.spinner_region_registro_empleado);
-        spinner_region_registro_empleado.setAdapter(adapter);
-        spinner_region_registro_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_region_registro_empleado.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-    }
-
-    private void loadSpinnerRegion() {
-        String[] array = getArrayString(R.array.region);
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_registro_empleado = findViewById(R.id.spinner_region_registro_empleado);
-        spinner_region_registro_empleado.setAdapter(adapter);
-        spinner_region_registro_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_region_registro_empleado.getSelectedItem().toString();
             }
 
             @Override
@@ -510,7 +472,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         employee.setFecha_ingreso(ip_registro_empleado_fecha_ingreso.getText().toString());
         employee.setContrasenia(ip_registro_empleado_contrasenia.getText().toString());
         employee.setIdentificador(ip_registro_empleado_id.getText().toString());
-        employee.setRegion(region_seleccionada);
         employee.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
         employee.setRute(ruta_seleccionado);
         if (decoded != null) employee.setPath_image(getStringImage(decoded));
@@ -660,7 +621,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            empleado.setRegion(item.getRegion());
             empleado.setStatus(item.getStatus()? 1 : 0);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){

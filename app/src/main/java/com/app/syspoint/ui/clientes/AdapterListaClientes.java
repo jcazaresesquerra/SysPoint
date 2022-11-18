@@ -87,6 +87,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
     public void setClients(List<ClienteBean> data) {
         this.mDataFiltrable  = data;
+        this.mData = data;
         notifyDataSetChanged();
     }
 

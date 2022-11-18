@@ -21,15 +21,13 @@ public class EmpleadoBean extends Bean{
     public String contrasenia;
     public String identificador;
     public boolean status;
-    public String region;
     public String path_image;
     public String rute;
 
-@Generated(hash = 542234587)
-public EmpleadoBean(Long id, String nombre, String direccion, String email,
-        String telefono, String fecha_nacimiento, String fecha_ingreso,
-        String contrasenia, String identificador, boolean status, String region,
-        String path_image, String rute) {
+@Generated(hash = 328668531)
+public EmpleadoBean(Long id, String nombre, String direccion, String email, String telefono,
+        String fecha_nacimiento, String fecha_ingreso, String contrasenia, String identificador,
+        boolean status, String path_image, String rute) {
     this.id = id;
     this.nombre = nombre;
     this.direccion = direccion;
@@ -40,7 +38,6 @@ public EmpleadoBean(Long id, String nombre, String direccion, String email,
     this.contrasenia = contrasenia;
     this.identificador = identificador;
     this.status = status;
-    this.region = region;
     this.path_image = path_image;
     this.rute = rute;
 }
@@ -108,14 +105,6 @@ public boolean getStatus() {
 public void setStatus(boolean status) {
     this.status = status;
 }
-
-public String getRegion() {
-    return this.region;
-}
-public void setRegion(String region) {
-    this.region = region;
-}
-
 public String getPath_image() {
     return this.path_image;
 }

@@ -44,10 +44,6 @@ data class Employee (
     @Expose
     var status: Int? = null,
     
-    @SerializedName("region")
-    @Expose
-    var region: String? = null,
-    
     @SerializedName("path_image")
     @Expose
     var pathImage: String? = null,

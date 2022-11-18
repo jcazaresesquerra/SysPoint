@@ -76,7 +76,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_actualiza_empleado_contrasenia;
     private EditText ip_actualiza_empleado_contrasenia_valida;
     private EditText ip_actualiza_empleado_id;
-    private Spinner spinner_region_actualiza_empleado;
     private Spinner spinner_actualiza_empleado_status;
     private Spinner rute_employee_spinner;
     private SwitchCompat checkbox_clientes_actualiza_empleado;
@@ -90,7 +89,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private RelativeLayout rlprogress;
 
     private List<String> listaCamposValidos;
-    private String region_seleccionada;
     private String status_seleccionado;
     private String ruta_seleccionado;
     private String idEmpleado;
@@ -107,7 +105,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         this.initToolBar();
         this.initControls();
         getData();
-        loadSpinnerRegion();
         loadSpinnerStatus();
         loadSpinnerRute();
     }
@@ -168,7 +165,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                     }
                 }
 
-                region_seleccionada = empleadoBean.getRegion();
                 if (empleadoBean.getPath_image() != null){
                     byte[] decodedString = Base64.decode(empleadoBean.getPath_image(), Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
@@ -204,25 +200,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         checkbox_inventario_actualiza_empleado = findViewById(R.id.checkbox_inventarios_actualiza_empleado);
         checkbox_cobranza_actualiza_empleado = findViewById(R.id.checkbox_cobranza_actualiza_empleado);
         checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
-    }
-
-    private void loadSpinnerRegion() {
-        String[] array = getArrayString(R.array.region);
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_actualiza_empleado = findViewById(R.id.spinner_region_actualiza_empleado);
-        spinner_region_actualiza_empleado.setAdapter(adapter);
-        spinner_region_actualiza_empleado.setSelection(arrayList.indexOf(region_seleccionada));
-        spinner_region_actualiza_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_region_actualiza_empleado.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
     }
 
     private void loadSpinnerStatus() {
@@ -537,7 +514,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         bean.setFecha_ingreso(ip_actualiza_empleado_fecha_ingreso.getText().toString());
         bean.setContrasenia(ip_actualiza_empleado_contrasenia.getText().toString());
         bean.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-        bean.setRegion(region_seleccionada);
         bean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
         bean.setRute(ruta_seleccionado);
 
@@ -732,7 +708,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            empleado.setRegion(item.getRegion());
             empleado.setStatus(item.getStatus()? 1 : 0);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){

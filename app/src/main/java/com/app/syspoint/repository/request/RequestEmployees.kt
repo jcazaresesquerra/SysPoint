@@ -44,9 +44,9 @@ class RequestEmployees {
                                 employee.setFecha_ingreso(item.fechaIngreso)
                                 employee.setContrasenia(item.contrasenia)
                                 employee.setIdentificador(item.identificador)
-                                employee.setRegion(item.region)
                                 employee.setPath_image(item.pathImage)
                                 employee.setRute(item.rute)
+                                employee.setStatus(item.status == 1)
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
@@ -58,9 +58,9 @@ class RequestEmployees {
                                 employeeBean.setFecha_ingreso(item.fechaIngreso)
                                 employeeBean.setContrasenia(item.contrasenia)
                                 employeeBean.setIdentificador(item.identificador)
-                                employeeBean.setRegion(item.region)
                                 employeeBean.setPath_image(item.pathImage)
                                 employeeBean.setRute(item.rute)
+                                employeeBean.setStatus(item.status == 1)
                                 dao.save(employeeBean)
                                 employees.add(employeeBean)
                             }

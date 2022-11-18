@@ -71,6 +71,7 @@ class AdapterListaProductos(
     }
 
     fun setData(data: List<ProductoBean?>) {
+        mDataFilter = data
         mData = data
         notifyDataSetChanged()
     }

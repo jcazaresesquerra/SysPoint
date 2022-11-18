@@ -39,9 +39,9 @@ class RequestData {
                                     employee.setFecha_ingreso(it.fechaIngreso)
                                     employee.setContrasenia(it.contrasenia)
                                     employee.setIdentificador(it.identificador)
-                                    employee.setRegion(it.region)
                                     employee.setPath_image(it.pathImage)
                                     employee.setRute(it.rute)
+                                    employee.setStatus(it.status == 1)
                                     dao.insert(employee)
                                 } else {
                                     employeeBean.setNombre(it.nombre)
@@ -52,9 +52,9 @@ class RequestData {
                                     employeeBean.setFecha_ingreso(it.fechaIngreso)
                                     employeeBean.setContrasenia(it.contrasenia)
                                     employeeBean.setIdentificador(it.identificador)
-                                    employeeBean.setRegion(it.region)
                                     employeeBean.setPath_image(it.pathImage)
                                     employeeBean.setRute(it.rute)
+                                    employeeBean.setStatus(it.status == 1)
                                     dao.save(employeeBean)
                                 }
                             }
@@ -319,9 +319,9 @@ class RequestData {
                                     empleado.setFecha_ingreso(item.fechaIngreso)
                                     empleado.setContrasenia(item.contrasenia)
                                     empleado.setIdentificador(item.identificador)
-                                    empleado.setRegion(item.region)
                                     empleado.setPath_image(item.pathImage)
                                     empleado.setRute(item.rute)
+                                    empleado.setStatus(item.status == 1)
                                     employeeDao.insert(empleado)
                                 } else {
                                     empleadoBean.setNombre(item.nombre)
@@ -332,9 +332,9 @@ class RequestData {
                                     empleadoBean.setFecha_ingreso(item.fechaIngreso)
                                     empleadoBean.setContrasenia(item.contrasenia)
                                     empleadoBean.setIdentificador(item.identificador)
-                                    empleadoBean.setRegion(item.region)
                                     empleadoBean.setPath_image(item.pathImage)
                                     empleadoBean.setRute(item.rute)
+                                    empleadoBean.setStatus(item.status == 1)
                                     dao.save(empleadoBean)
                                 }
                             }
