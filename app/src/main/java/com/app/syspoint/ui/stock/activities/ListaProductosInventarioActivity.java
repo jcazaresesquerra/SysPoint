@@ -38,7 +38,6 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
     private LinearLayout lyt_productos;
     public static String articuloSeleccionado;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,23 +48,23 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
 
         this.initToolBar();
         this.initRecyclerView();
-
     }
 
-    private void initToolBar() {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        Toolbar toolbar = findViewById(R.id.toolbar_productos_inventarios);
-        toolbar.setTitle("Productos");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        if(resultCode == Activity.RESULT_CANCELED)
+            return;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        String cantidad = data.getStringExtra(Actividades.PARAM_1);
 
+        //Establece el resultado que debe de regresar
+        Intent intent = new Intent();
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -74,21 +73,15 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
         final MenuItem searchMenuItem = menu.findItem(R.id.buscarProductoInv);
         final SearchView searchView = (SearchView) searchMenuItem.getActionView();
 
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                // TODO Auto-generated method stub
-                if (!hasFocus) {
-                    searchMenuItem.collapseActionView();
-                    searchView.setQuery("", false);
-
-                }
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            // TODO Auto-generated method stub
+            if (!hasFocus) {
+                searchMenuItem.collapseActionView();
+                searchView.setQuery("", false);
             }
         });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
             @Override
             public boolean onQueryTextSubmit(String arg0) {
                 // TODO Auto-generated method stub
@@ -114,22 +107,29 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch (item.getItemId()) {
-
             case android.R.id.home:
                 finish();
                 return true;
-
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    private void initToolBar() {
+        Toolbar toolbar = findViewById(R.id.toolbar_productos_inventarios);
+        toolbar.setTitle("Productos");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
+    }
+
     private void initRecyclerView() {
 
         mData = new ArrayList<>();
-        mData = (List<ProductoBean>) (List<?>) new ProductDao().list();
+        mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -144,32 +144,11 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
 
 
-        mAdapter = new AdapterListaProductosInv(mData, new AdapterListaProductosInv.OnItemClickListener() {
-            @Override
-            public void onItemClick(@Nullable ProductoBean productoBean) {
-                articuloSeleccionado = productoBean.getArticulo();
-                //Muestra el dialogo para seleccion de cantidades
-                Actividades.getSingleton(ListaProductosInventarioActivity.this, CantidadInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-            }
+        mAdapter = new AdapterListaProductosInv(mData, productoBean -> {
+            articuloSeleccionado = productoBean.getArticulo();
+            //Muestra el dialogo para seleccion de cantidades
+            Actividades.getSingleton(ListaProductosInventarioActivity.this, CantidadInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });
         recyclerView.setAdapter(mAdapter);
     }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(resultCode == Activity.RESULT_CANCELED)
-            return;
-
-        String cantidad = data.getStringExtra(Actividades.PARAM_1);
-
-        //Establece el resultado que debe de regresar
-        Intent intent = new Intent();
-        setResult(Activity.RESULT_OK, intent);
-        finish();
-
-    }
-
 }

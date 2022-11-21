@@ -28,7 +28,7 @@ public class Utils {
         otherSymbols.setGroupingSeparator(',');
 
         //Devuelve ya con formato
-        return new DecimalFormat("$ ##,##0.00", otherSymbols).format(cantidad);
+        return new DecimalFormat("$##,##0.00", otherSymbols).format(cantidad);
     }
 
     static public String formatMoneyMX(final double cantidad){

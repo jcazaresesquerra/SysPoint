@@ -20,7 +20,6 @@ public class PartidasBean extends Bean {
     private ProductoBean articulo;
     private int cantidad;
     private double precio;
-    private double costo;
     private double impuesto;
     private String descripcion;
     private String observ;
@@ -32,15 +31,14 @@ public class PartidasBean extends Bean {
     /** Used for active entity operations. */
     @Generated(hash = 1422542357)
     private transient PartidasBeanDao myDao;
-    @Generated(hash = 352157130)
-    public PartidasBean(Long id, Long venta, long articuloId, int cantidad, double precio, double costo,
+    @Generated(hash = 1011504966)
+    public PartidasBean(Long id, Long venta, long articuloId, int cantidad, double precio,
             double impuesto, String descripcion, String observ, Date fecha, String hora) {
         this.id = id;
         this.venta = venta;
         this.articuloId = articuloId;
         this.cantidad = cantidad;
         this.precio = precio;
-        this.costo = costo;
         this.impuesto = impuesto;
         this.descripcion = descripcion;
         this.observ = observ;
@@ -79,12 +77,6 @@ public class PartidasBean extends Bean {
     }
     public void setPrecio(double precio) {
         this.precio = precio;
-    }
-    public double getCosto() {
-        return this.costo;
-    }
-    public void setCosto(double costo) {
-        this.costo = costo;
     }
     public double getImpuesto() {
         return this.impuesto;

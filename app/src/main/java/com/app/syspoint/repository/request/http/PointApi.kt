@@ -39,7 +39,7 @@ interface PointApi {
     @POST("getProductoByID")
     fun getProductoByID(@Query("articulo") articulo: String?): Call<EmployeeJson>
 
-    @POST("saveProducto")
+    @POST("saveProductoV2")
     fun sendProducto(@Body param: ProductJson?): Call<ProductJson>
 
     // CLIENTES

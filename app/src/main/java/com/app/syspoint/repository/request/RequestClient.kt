@@ -65,6 +65,7 @@ class RequestClient {
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -169,6 +170,7 @@ class RequestClient {
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -240,6 +242,7 @@ class RequestClient {
                                 clienteBeanRute.domOrder = item.domOrder
                                 clienteBeanRute.is_credito = item.isCredito == 1
                                 clienteBeanRute.recordatorio = item.recordatorio
+                                clienteBeanRute.phone_contact = item.phone_contacto
                                 clientDaoRute.insert(clienteBeanRute)
                             } else {
                                 beanRute.nombre_comercial = item.nombreComercial
@@ -268,6 +271,7 @@ class RequestClient {
                                 beanRute.longitud = item.longitud
                                 beanRute.is_credito = item.isCredito == 1
                                 beanRute.recordatorio = item.recordatorio
+                                beanRute.phone_contact = item.phone_contacto
                                 daoRute.save(beanRute)
                             }
                         }
@@ -328,6 +332,7 @@ class RequestClient {
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -391,9 +396,7 @@ class RequestClient {
                     if (response.isSuccessful) {
                         onSaveClientListener.onSaveClientSuccess()
                     } else {
-                        val error = response.errorBody()
-                        val err = charArrayOf()
-                        val message = error!!.charStream().read(err)
+                        val error = response.errorBody()!!.string()
                         onSaveClientListener.onSaveClientError()
                     }
                 }

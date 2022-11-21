@@ -269,7 +269,7 @@ class SellViewModel: ViewModel() {
         }
     }
 
-    fun addItem(articulo: String, descripcion: String, precio: Double, costo: Double,
+    fun addItem(articulo: String, descripcion: String, precio: Double,
                 impuesto: Int, cantidad: Int): ArrayList<VentasModelBean?> {
 
         val item = VentasModelBean()
@@ -278,7 +278,6 @@ class SellViewModel: ViewModel() {
         item.descripcion = descripcion
         item.cantidad = cantidad
         item.precio = precio
-        item.costo = costo
         item.impuesto = impuesto.toDouble()
         item.observ = descripcion
         dao.insert(item)
@@ -402,7 +401,6 @@ class SellViewModel: ViewModel() {
                         partidaBean.articulo = productosBean
                         partidaBean.cantidad = partida.cantidad
                         partidaBean.precio = partida.precio
-                        partidaBean.costo = partida.costo
                         partidaBean.impuesto = partida.impuesto
                         partidaBean.observ = productosBean!!.descripcion
                         partidaBean.fecha = Date()

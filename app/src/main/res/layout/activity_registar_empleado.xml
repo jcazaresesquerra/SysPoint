@@ -274,8 +274,11 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/ip_registro_empleado_id"
-                    android:inputType="text"
-                    android:maxLength="4"
+                    android:inputType="none"
+                    android:editable="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:focusableInTouchMode="false"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 

@@ -145,7 +145,6 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             productoBean.articulo,
             productoBean.descripcion,
             precioEspacial?.precio ?: productoBean.precio,
-            productoBean.costo,
             productoBean.iva,
             cantidadVendida
         )
@@ -464,7 +463,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private fun showClientInfo(clientName: String, account: String, saldoCredito: String) {
         headerBinding.textViewClienteNombreVentaView.text = clientName
-        headerBinding.textViewClienteVentaView.text = "$account($saldoCredito)"
+        headerBinding.textViewClienteVentaView.text = "$account(${saldoCredito.replace(" ", "")})"
         hideLoading()
     }
 

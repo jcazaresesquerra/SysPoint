@@ -92,7 +92,178 @@ class AdapterRutaClientes(
                 val calendar = Calendar.getInstance()
                 val day = calendar[Calendar.DAY_OF_WEEK]
 
-                val routingDao = RoutingDao()
+                binding.textViewFechaVisitaClienteRuta.apply {
+                    when (day) {
+                        Calendar.SUNDAY -> if (clienteBean.lun == 1) {
+                            text = "Sig visita LUNES"
+                            return
+                        } else if (clienteBean.mar == 1) {
+                            text = "Sig visita MARTES"
+                            return
+                        } else if (clienteBean.mie == 1) {
+                            text = "Sig visita MIERCOLES"
+                            return
+                        } else if (clienteBean.jue == 1) {
+                            text = "Sig visita JUEVES"
+                            return
+                        } else if (clienteBean.vie == 1) {
+                            text = "Sig visita VIERNES"
+                            return
+                        } else if (clienteBean.sab == 1) {
+                            text = "Sig visita SABADO"
+                            return
+                        } else if (clienteBean.dom == 1) {
+                            text = "Sig visita DOMINGO"
+                            return
+                        }
+                        Calendar.MONDAY -> {
+                            if (clienteBean.mar == 1) {
+                                text = "Sig visita MARTES"
+                                return
+                            } else if (clienteBean.mie == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            } else if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            } else if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            } else if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            } else if (clienteBean.dom == 1) {
+                                text = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            }
+                        }
+                        Calendar.TUESDAY -> {
+                            if (clienteBean.mie == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            } else if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            } else if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            } else if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            } else if (clienteBean.dom == 1) {
+                                text = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text = "Sig visita MARTES"
+                                return
+                            }
+                        }
+                        Calendar.WEDNESDAY -> {
+                            if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            } else if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            } else if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            } else if (clienteBean.dom == 1) {
+                                text = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mie == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            }
+                        }
+                        Calendar.THURSDAY -> {
+                            if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            } else if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            } else if (clienteBean.dom == 1) {
+                                text  = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text = "Sig visita MARTES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            } else if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            }
+                        }
+                        Calendar.FRIDAY -> {
+                            if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            } else if (clienteBean.dom == 1) {
+                                text = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text  =  "Sig visita MARTES"
+                                return
+                            } else if (clienteBean.mie == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            } else if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            } else if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            }
+                        }
+                        Calendar.SATURDAY -> {
+                            if (clienteBean.dom == 1) {
+                                text = "Sig visita DOMINGO"
+                                return
+                            } else if (clienteBean.lun == 1) {
+                                text = "Sig visita LUNES"
+                                return
+                            } else if (clienteBean.mar == 1) {
+                                text = "Sig visita MARTES"
+                                return
+                            } else if (clienteBean.mie == 1) {
+                                text = "Sig visita MIERCOLES"
+                                return
+                            } else if (clienteBean.jue == 1) {
+                                text = "Sig visita JUEVES"
+                                return
+                            } else if (clienteBean.vie == 1) {
+                                text = "Sig visita VIERNES"
+                                return
+                            } else if (clienteBean.sab == 1) {
+                                text = "Sig visita SABADO"
+                                return
+                            }
+                        }
+                    }
+                }
+
+                /*val routingDao = RoutingDao()
                 val ruteoBean = routingDao.getRutaEstablecida()
 
                 ruteoBean?.let { bean ->
@@ -120,7 +291,7 @@ class AdapterRutaClientes(
                             return
                         }
                     }
-                }
+                }*/
 
 
             }

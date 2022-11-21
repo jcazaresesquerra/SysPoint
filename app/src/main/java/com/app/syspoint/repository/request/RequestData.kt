@@ -98,16 +98,8 @@ class RequestData {
                                     producto.articulo = it.articulo
                                     producto.descripcion = it.descripcion
                                     producto.status = it.status
-                                    producto.unidad_medida = it.unidadMedida
-                                    producto.clave_sat = it.claveSat
-                                    producto.unidad_sat = it.unidadSat
                                     producto.precio = it.precio
-                                    producto.costo = it.costo
                                     producto.iva = it.iva
-                                    producto.ieps = it.ieps
-                                    producto.prioridad = it.prioridad
-                                    producto.region = it.region
-                                    producto.codigo_alfa = it.codigoAlfa
                                     producto.codigo_barras = it.codigoBarras
                                     producto.path_img = it.pathImage
                                     productDao.insert(producto)
@@ -115,16 +107,8 @@ class RequestData {
                                     productoBean.articulo = it.articulo
                                     productoBean.descripcion = it.descripcion
                                     productoBean.status = it.status
-                                    productoBean.unidad_medida = it.unidadMedida
-                                    productoBean.clave_sat = it.claveSat
-                                    productoBean.unidad_sat = it.unidadSat
                                     productoBean.precio = it.precio
-                                    productoBean.costo = it.costo
                                     productoBean.iva = it.iva
-                                    productoBean.ieps = it.ieps
-                                    productoBean.prioridad = it.prioridad
-                                    productoBean.region = it.region
-                                    productoBean.codigo_alfa = it.codigoAlfa
                                     productoBean.codigo_barras = it.codigoBarras
                                     productoBean.path_img = it.pathImage
                                     productDao.save(productoBean)
@@ -374,16 +358,8 @@ class RequestData {
                                     producto.articulo = item.articulo
                                     producto.descripcion = item.descripcion
                                     producto.status = item.status
-                                    producto.unidad_medida = item.unidadMedida
-                                    producto.clave_sat = item.claveSat
-                                    producto.unidad_sat = item.unidadSat
                                     producto.precio = item.precio
-                                    producto.costo = item.costo
                                     producto.iva = item.iva
-                                    producto.ieps = item.ieps
-                                    producto.prioridad = item.prioridad
-                                    producto.region = item.region
-                                    producto.codigo_alfa = item.codigoAlfa
                                     producto.codigo_barras = item.codigoBarras
                                     producto.path_img = item.pathImage
                                     dao.insert(producto)
@@ -391,16 +367,8 @@ class RequestData {
                                     productoBean.articulo = item.articulo
                                     productoBean.descripcion = item.descripcion
                                     productoBean.status = item.status
-                                    productoBean.unidad_medida = item.unidadMedida
-                                    productoBean.clave_sat = item.claveSat
-                                    productoBean.unidad_sat = item.unidadSat
                                     productoBean.precio = item.precio
-                                    productoBean.costo = item.costo
                                     productoBean.iva = item.iva
-                                    productoBean.ieps = item.ieps
-                                    productoBean.prioridad = item.prioridad
-                                    productoBean.region = item.region
-                                    productoBean.codigo_alfa = item.codigoAlfa
                                     productoBean.codigo_barras = item.codigoBarras
                                     productoBean.path_img = item.pathImage
                                     productDao.save(productoBean)

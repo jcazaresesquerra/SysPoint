@@ -83,15 +83,10 @@ class AdapterListaProductos(
                 binding.textViewArticuloList.text = producto.articulo
                 binding.textViewDescripcionProductoList.text = producto.descripcion
                 binding.textViewPreciosArticuloList.text = "$" + producto.precio
-                binding.textViewArticuloUnidadMedidaList.text = producto.unidad_medida
                 binding.textViewArticuloIVAList.text = producto.iva.toString() + "%"
-                binding.textViewArticuloIESPList.text = producto.ieps.toString() + "%"
                 binding.textViewArticuloCategoriaList.text = "SYS"
-                binding.textViewArticuloPrioridadList.text = producto.prioridad.toString()
                 binding.textViewArticuloStatusList.text = producto.status
-                binding.textViewArticuloCodAlfaList.text = producto.codigo_alfa
                 binding.textViewArticuloCodBarrasList.text = producto.codigo_barras
-                binding.textViewArticuloRegionList.text = producto.region
 
                 if (producto.path_img != null) {
                     val decodedString: ByteArray =

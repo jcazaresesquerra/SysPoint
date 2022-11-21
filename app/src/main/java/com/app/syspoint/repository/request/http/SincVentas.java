@@ -13,23 +13,20 @@ import java.util.List;
 
 public class SincVentas extends Servicio {
 
-
     private Response responseVentas;
 
     public SincVentas() throws Exception {
-
-        super("saveSale");
+        super("saveSaleV2");
 
         final SellsDao sellsDao = new SellsDao();
         final List<VentasBean> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());
 
         final JSONArray jsonArrayVentas = new JSONArray();
 
-
         //Recorremos la lista de ventas
         for (VentasBean items : listaVentas){
 
-            final JSONObject jsonObjectVenta = new JSONObject();
+            JSONObject jsonObjectVenta = new JSONObject();
             jsonObjectVenta.put("venta", ""+ items.getVenta());
             jsonObjectVenta.put("tipo_doc", ""+ items.getTipo_doc());
             jsonObjectVenta.put("fecha", ""+ items.getFecha());
@@ -52,19 +49,17 @@ public class SincVentas extends Servicio {
             }
             //jsonObjectVenta.put("usuario_cancelo", items.getUsuario_cancelo());
 
-
-            final JSONArray jsonArrayPartidas = new JSONArray();
+            JSONArray jsonArrayPartidas = new JSONArray();
             jsonObjectVenta.put("partidas", jsonArrayPartidas);
 
             //Recoremos los items de los productos
             for(PartidasBean detalle : items.getListaPartidas()){
 
-                final JSONObject jsonObjectPatidas = new JSONObject();
+                JSONObject jsonObjectPatidas = new JSONObject();
                 jsonObjectPatidas.put("venta", "" + detalle.getVenta());
                 jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getArticulo());
                 jsonObjectPatidas.put("cantidad", "" + detalle.getCantidad());
                 jsonObjectPatidas.put("precio", "" + detalle.getPrecio());
-                jsonObjectPatidas.put("costo", "" + detalle.getCosto());
                 jsonObjectPatidas.put("impuesto", "" + detalle.getImpuesto());
                 jsonObjectPatidas.put("observ", "" + detalle.getObserv());
                 jsonObjectPatidas.put("fecha", "" + detalle.getFecha());

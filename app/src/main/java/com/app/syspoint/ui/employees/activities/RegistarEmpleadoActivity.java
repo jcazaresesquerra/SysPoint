@@ -44,6 +44,7 @@ import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
 import com.app.syspoint.repository.database.bean.EmpleadoBean;
 import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.utils.Constants;
@@ -90,6 +91,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private String ruta_seleccionado;
     private String status_seleccionado;
     private int mYear, mMonth, mDay;
+    private int no_cuenta = 0;
     byte[] imageByteArray;
     Bitmap decoded;
 
@@ -133,6 +135,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
         loadSpinnerStatus();
         loadSpinnerRuteAndDay();
+        this.loadConsecCuenta();
     }
 
     private void loadSpinnerRuteAndDay() {
@@ -178,6 +181,26 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
+
+    private void loadConsecCuenta() {
+
+        final EmployeeDao employeeDao = new EmployeeDao();
+        no_cuenta = employeeDao.getLastConsec();
+        String consectivo = "";
+        if (no_cuenta < 10) {
+            consectivo = "E00" + no_cuenta;
+        } else if (no_cuenta >= 10 && no_cuenta <= 99) {
+            consectivo = "E0" + no_cuenta;
+        } else if (no_cuenta >= 100 && no_cuenta <= 999) {
+            consectivo = "E0" + no_cuenta;
+        } else if (no_cuenta >= 1000 && no_cuenta <= 9999) {
+            consectivo = "E" + no_cuenta;
+        } else {
+            consectivo = "E" + no_cuenta;
+        }
+
+        ip_registro_empleado_id.setText(consectivo);
     }
 
 
@@ -350,10 +373,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private boolean validaEmpleado() {
@@ -567,7 +588,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
         for (RolesBean items : listaRolDB){
             Role role = new Role();
-            role.setEmpleado(items.getEmpleado().identificador);
+            role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
             role.setActivo(items.getActive()? 1 : 0);
             listaRoles.add(role);

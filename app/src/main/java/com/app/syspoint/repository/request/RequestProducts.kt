@@ -37,16 +37,8 @@ class RequestProducts {
                                 producto.articulo = items.articulo
                                 producto.descripcion = items.descripcion
                                 producto.status = items.status
-                                producto.unidad_medida = items.unidadMedida
-                                producto.clave_sat = items.claveSat
-                                producto.unidad_sat = items.unidadSat
                                 producto.precio = items.precio
-                                producto.costo = items.costo
                                 producto.iva = items.iva
-                                producto.ieps = items.ieps
-                                producto.prioridad = items.prioridad
-                                producto.region = items.region
-                                producto.codigo_alfa = items.codigoAlfa
                                 producto.codigo_barras = items.codigoBarras
                                 producto.path_img = items.pathImage
                                 dao.insert(producto)
@@ -55,16 +47,8 @@ class RequestProducts {
                                 productBean.articulo = items.articulo
                                 productBean.descripcion = items.descripcion
                                 productBean.status = items.status
-                                productBean.unidad_medida = items.unidadMedida
-                                productBean.clave_sat = items.claveSat
-                                productBean.unidad_sat = items.unidadSat
                                 productBean.precio = items.precio
-                                productBean.costo = items.costo
                                 productBean.iva = items.iva
-                                productBean.ieps = items.ieps
-                                productBean.prioridad = items.prioridad
-                                productBean.region = items.region
-                                productBean.codigo_alfa = items.codigoAlfa
                                 productBean.codigo_barras = items.codigoBarras
                                 productBean.path_img = items.pathImage
                                 productDao.save(productBean)

@@ -88,6 +88,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
     double longitudMarket;
     String lngMarker = "";
     String latMarker = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,8 +104,6 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                 .findFragmentById(R.id.mapView);
         Objects.requireNonNull(mapFragment).getMapAsync(this);
 
-        setPickUpButton = findViewById(R.id.pickUpButton);
-
         if (googleApiClient == null) {
             googleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
@@ -113,6 +112,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                     .build();
         }
 
+        setPickUpButton = findViewById(R.id.pickUpButton);
         setPickUpButton.setOnClickListener(view -> onPickUp());
 
         bnt_direcction_client = findViewById(R.id.bnt_direcction_client);
@@ -134,30 +134,11 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
         });
 
         imageView = findViewById(R.id.back_btn);
-
         imageViewSearch = findViewById(R.id.fb_search_map);
-
         pickUpText = findViewById(R.id.pickUpText);
-
-        pickUpText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openAutocompleteActivity(1);
-            }
-        });
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-
-        imageViewSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openAutocompleteActivity(1);
-            }
-        });
+        pickUpText.setOnClickListener(view -> openAutocompleteActivity(1));
+        imageView.setOnClickListener(view -> finish());
+        imageViewSearch.setOnClickListener(view -> openAutocompleteActivity(1));
 
        // updateLastLocation(false);
     }
@@ -188,10 +169,13 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                     BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.market);
                     Bitmap b = bitmapdraw.getBitmap();
                     Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
-                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(latLng.latitude, latLng.longitude), 15f)
-                    );
-                    gMap.addMarker(new MarkerOptions().position(latLng).title("Aqui estoy").draggable(true).icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+                    if (gMap != null) {
+                        gMap.clear();
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(latLng.latitude, latLng.longitude), 15f)
+                        );
+                        gMap.addMarker(new MarkerOptions().position(latLng).title("Aqui estoy").draggable(true).icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+                    }
                     lat = String.valueOf(latLng.latitude);
                     lng = String.valueOf(latLng.longitude);
                     onPickUp();

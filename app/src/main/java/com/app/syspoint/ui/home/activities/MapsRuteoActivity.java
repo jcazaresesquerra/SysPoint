@@ -1,24 +1,14 @@
 package com.app.syspoint.ui.home.activities;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,7 +27,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -62,7 +51,6 @@ import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMarkerClickListener {
 
-
     List<ClientesRutaBean> mData = null;
     private static final int REQUEST_PERMISSION_LOCATION = 991;
     private GoogleMap gMap;
@@ -82,7 +70,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getDataRuteo();
-
 
         dialogOptionsClients = new DialogOptionsClients(this);
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
@@ -115,7 +102,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                     updateLastLocation(true);
                 }
             }
-
         }
     }
 
@@ -126,7 +112,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 updateLastLocation(true);
             }
         }
-
     }
 
     @Override
@@ -136,7 +121,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 updateLastLocation(true);
             }
         }
-
     }
 
     @Override
@@ -153,7 +137,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
         gMap.setOnMarkerClickListener(this);
-
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
@@ -180,12 +163,10 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private void updateLastLocation(boolean move) {
-
         RoutingDao routingDao = new RoutingDao();
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-
             //if (ruteoBean.getDia() == 1) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaLunes(ruteoBean.getRuta(), 1);
             //} else if (ruteoBean.getDia() == 2) {
@@ -206,9 +187,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             //if (ruteoBean.getDia() == 7) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
             //}
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
-
-
+            mData = (List<ClientesRutaBean>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
         LatLng position = null;
@@ -231,7 +210,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         gMap.setOnMarkerClickListener(this);
-
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
@@ -314,7 +292,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
            //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
            //}
 
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
+            mData = (List<ClientesRutaBean>)new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
     }
@@ -382,33 +360,22 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                             lastKnownPosition = marker.getPosition();
                         }
                     })
-                    .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
-                            startActivity(intent);
-                            markerClick = false;
-                            lastKnownPosition = marker.getPosition();
-                        }
-
-
+                    .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, () -> {
+                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
+                        startActivity(intent);
+                        markerClick = false;
+                        lastKnownPosition = marker.getPosition();
                     })
-                    .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            Intent intent = new Intent(Intent.ACTION_VIEW,
-                                    Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
-                            startActivity(intent);
-                            dialog.dismiss();
-                            markerClick = false;
-                        }
+                    .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, () -> {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
+                        startActivity(intent);
+                        dialog.dismiss();
+                        markerClick = false;
                     })
-                    .addButton("Cancelar", R.color.white, R.color.red_900, new PrettyDialogCallback() {
-                        @Override
-                        public void onClick() {
-                            dialog.dismiss();
-                            markerClick = false;
-                        }
+                    .addButton("Cancelar", R.color.white, R.color.red_900, () -> {
+                        dialog.dismiss();
+                        markerClick = false;
                     });
             dialog.setCancelable(false);
             dialog.show();

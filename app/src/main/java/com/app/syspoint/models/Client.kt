@@ -107,7 +107,7 @@ data class Client (
 
     @SerializedName("comentarios")
     @Expose
-    var recordatorio: String = "null",
+    var recordatorio: String? = "null",
 
     @SerializedName("saldo_credito")
     @Expose

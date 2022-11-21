@@ -94,6 +94,7 @@ class RequestEmployees {
                     if(response.isSuccessful){
                         onSaveEmployeeListener.onSaveEmployeeSuccess()
                     } else {
+                        //val error = response.errorBody()!!.string()
                         onSaveEmployeeListener.onSaveEmployeeError()
                     }
                 }

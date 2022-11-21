@@ -17,13 +17,14 @@ class ProductDao: Dao("ProductoBean") {
         val productoBeans = dao.queryBuilder()
             .where(ProductoBeanDao.Properties.Articulo.eq(articulo))
             .list() as List<ProductoBean>
-        return if (productoBeans.size > 0) productoBeans[0] else null
+        return if (productoBeans.isNotEmpty()) productoBeans[0] else null
     }
 
 
     fun getProductosInventario(): List<ProductoBean> {
         return dao.queryBuilder()
             .where(ProductoBeanDao.Properties.Existencia.ge(1))
+            .where(ProductoBeanDao.Properties.Status.eq("Activo"))
             .orderAsc(ProductoBeanDao.Properties.Id)
             .list() as List<ProductoBean>
     }

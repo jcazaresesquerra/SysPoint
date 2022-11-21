@@ -222,10 +222,12 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     }
 
     private void loadSpinnerRute() {
-        RuteClientDao dao = new RuteClientDao();
-        List<String> arrayListRute = dao.getAllRutes();
+        /*RuteClientDao dao = new RuteClientDao();
+        List<String> arrayListRute = dao.getAllRutes();*/
+        String[] array = getArrayString(R.array.ruteo_rango_rutas);
+        List<String> arrayListRute = Utils.convertArrayStringListString(array);
 
-        if (ruta_seleccionado.isEmpty()) {
+        if (ruta_seleccionado == null || ruta_seleccionado.isEmpty()) {
             ruta_seleccionado = arrayListRute.get(0);
         }
 
@@ -390,10 +392,8 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private boolean validaEmpleado() {
@@ -652,7 +652,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
         for (RolesBean items : listaRolDB){
             Role role = new Role();
-            role.setEmpleado(items.getEmpleado().identificador);
+            role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
             role.setActivo(items.getActive()? 1 : 0);
 
@@ -730,12 +730,14 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
             public void onSaveEmployeeSuccess() {
                 progresshide();
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
+                finish();
             }
 
             @Override
             public void onSaveEmployeeError() {
                 progresshide();
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
+                finish();
             }
         });
     }
