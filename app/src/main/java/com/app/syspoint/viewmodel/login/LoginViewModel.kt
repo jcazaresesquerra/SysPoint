@@ -7,6 +7,7 @@ import com.app.syspoint.App
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
+import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.database.bean.*
@@ -14,12 +15,14 @@ import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.viewmodel.BaseViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class LoginViewModel: BaseViewModel() {
 
     val loginViewState = MutableLiveData<LoginViewState>()
+    val downloadingViewState = MutableLiveData<DownloadingViewState>()
 
     init {
         //createUser()
@@ -268,15 +271,17 @@ class LoginViewModel: BaseViewModel() {
                     if (connected) {
                         viewModelScope.launch {
                             loginViewState.postValue(LoginViewState.ConnectedToInternet)
+                            downloadingViewState.postValue(DownloadingViewState.StartDownloadViewState)
                             GetAllDataInteractorImp().executeGetAllData(object :
                                 GetAllDataInteractor.OnGetAllDataListener {
                                 override fun onGetAllDataSuccess() {
-                                    //updateSession(true)
+                                    updateSession(true)
+                                    downloadingViewState.postValue(DownloadingViewState.DownloadCompletedViewState)
                                     loginViewState.postValue(LoginViewState.LoadingDataFinish)
                                 }
 
                                 override fun onGetAllDataError() {
-                                    //updateSession(false)
+                                    downloadingViewState.postValue(DownloadingViewState.DownloadCancelledViewState)
                                     loginViewState.postValue(LoginViewState.LoadingDataFinish)
                                     removeLocalSync()
                                     loginViewState.postValue(LoginViewState.NotInternetConnection)
@@ -301,9 +306,9 @@ class LoginViewModel: BaseViewModel() {
         val taskDao = TaskDao()
         val taskBean = taskDao.getTask(Utils.fechaActual())
         val exist: Boolean
-        //val isUpdated = isSessionUpdated()
+        val isUpdated = isSessionUpdated()
 
-        if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual())) {
+        if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual()) || !isUpdated) {
             val stockDao = StockDao()
             stockDao.clear()
             val historialDao = StockHistoryDao()

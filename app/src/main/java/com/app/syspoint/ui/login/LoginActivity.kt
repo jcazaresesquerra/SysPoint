@@ -17,8 +17,10 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
+import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
+import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
 import libs.mjn.prettydialog.PrettyDialog
@@ -50,6 +52,12 @@ class LoginActivity: AppCompatActivity() {
         registerNetworkBroadcastForNougat()
 
         viewModel.loginViewState.observe(this, ::loginViewState)
+    }
+
+    override fun onDestroy() {
+        if (viewModel.downloadingViewState.value is DownloadingViewState.StartDownloadViewState)
+            SharedPreferencesManager(this).storeLocalSession(false)
+        super.onDestroy()
     }
 
     private fun loginViewState(viewState: LoginViewState) {

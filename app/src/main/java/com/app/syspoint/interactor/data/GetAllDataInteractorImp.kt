@@ -1,10 +1,7 @@
 package com.app.syspoint.interactor.data
 
 import com.app.syspoint.repository.request.RequestData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class GetAllDataInteractorImp: GetAllDataInteractor() {
 

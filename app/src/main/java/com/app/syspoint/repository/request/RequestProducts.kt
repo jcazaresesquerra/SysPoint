@@ -87,6 +87,7 @@ class RequestProducts {
                     if (response.isSuccessful) {
                         onSaveProductsListener.onSaveProductsSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onSaveProductsListener.onSaveProductsError()
                     }
                 }

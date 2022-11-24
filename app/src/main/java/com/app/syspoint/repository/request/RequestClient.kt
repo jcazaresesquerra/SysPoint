@@ -62,6 +62,8 @@ class RequestClient {
                                 clienteBean.vieOrder = item.vieOrder
                                 clienteBean.sabOrder = item.sabOrder
                                 clienteBean.domOrder = item.domOrder
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
@@ -167,6 +169,8 @@ class RequestClient {
                                 clienteBean.vieOrder = item.vieOrder
                                 clienteBean.sabOrder = item.sabOrder
                                 clienteBean.domOrder = item.domOrder
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
@@ -240,6 +244,8 @@ class RequestClient {
                                 clienteBeanRute.vieOrder = item.vieOrder
                                 clienteBeanRute.sabOrder = item.sabOrder
                                 clienteBeanRute.domOrder = item.domOrder
+                                clienteBeanRute.latitud = item.latitud
+                                clienteBeanRute.longitud = item.longitud
                                 clienteBeanRute.is_credito = item.isCredito == 1
                                 clienteBeanRute.recordatorio = item.recordatorio
                                 clienteBeanRute.phone_contact = item.phone_contacto
@@ -329,6 +335,8 @@ class RequestClient {
                                 clienteBean.vie = item.vie
                                 clienteBean.sab = item.sab
                                 clienteBean.dom = item.dom
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito

@@ -13,9 +13,6 @@ import retrofit2.http.*
 interface PointApi {
 
     // GET AL DATA RESONSE
-    @GET("getAllData")
-    fun getAllData(): Call<Data>
-
     @GET("getAllDataV2")
     fun getAllDataV2(): Call<Data>
 
@@ -33,7 +30,7 @@ interface PointApi {
     fun sendEmpleado(@Body param: EmployeeJson?): Call<EmployeeJson>
 
     // PRODUCTOS
-    @GET("getAllProductos")
+    @GET("getAllProductosV2")
     fun getAllProductos(): Call<ProductJson>
 
     @POST("getProductoByID")

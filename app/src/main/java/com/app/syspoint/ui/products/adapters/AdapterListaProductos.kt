@@ -33,10 +33,10 @@ class AdapterListaProductos(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(mData[position], onItemClickListener)
+        holder.bind(mDataFilter[position], onItemClickListener)
     }
 
-    override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
+    override fun getItemCount(): Int = if (mDataFilter.isEmpty()) 0 else mDataFilter.size
 
     override fun getFilter(): Filter {
         return object : Filter() {
@@ -49,8 +49,8 @@ class AdapterListaProductos(
                     val filtroProductos: MutableList<ProductoBean> = ArrayList()
                     for (row in mDataFilter) {
                         row?.let {
-                            if (row.articulo.lowercase(Locale.getDefault()).contains(filtro) ||
-                                row.descripcion.lowercase(Locale.getDefault()).contains(filtro)
+                            if (row.articulo.toLowerCase().contains(filtro.toLowerCase()) ||
+                                row.descripcion.toLowerCase().contains(filtro.toLowerCase())
                             ) {
                                 filtroProductos.add(row)
                             }

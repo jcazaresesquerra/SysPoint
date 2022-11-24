@@ -199,42 +199,6 @@ class RequestData {
                                 }
                             }
 
-                            val cobranzaDao = PaymentDao()
-                            var cobranzaBean1 = CobranzaBean()
-
-                            /*response.body()!!.data.cobranzas.map { item ->
-                                val cobranzaBean = cobranzaDao.getByCobranza(item.cobranza)
-
-                                if (cobranzaBean == null) {
-                                    cobranzaBean1 = CobranzaBean()
-                                    cobranzaBean1.cobranza = item.cobranza
-                                    cobranzaBean1.cliente = item.cuenta
-                                    cobranzaBean1.importe = item.importe
-                                    cobranzaBean1.saldo = item.saldo
-                                    cobranzaBean1.venta = item.venta
-                                    cobranzaBean1.estado = item.estado
-                                    cobranzaBean1.observaciones = item.observaciones
-                                    cobranzaBean1.fecha = item.fecha
-                                    cobranzaBean1.hora = item.hora
-                                    cobranzaBean1.empleado = item.identificador
-                                    cobranzaBean1.isCheck = false
-                                    cobranzaDao.insert(cobranzaBean1)
-                                } else {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.isCheck = false
-                                    cobranzaDao.save(cobranzaBean)
-                                }
-                            }*/
-
                             val specialPricesDao = SpecialPricesDao()
 
                             response.body()!!.data.precios.map { item ->
