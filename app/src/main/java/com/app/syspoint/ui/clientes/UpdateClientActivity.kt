@@ -289,6 +289,8 @@ class UpdateClientActivity: AppCompatActivity() {
         val numero: String = binding.etNumeroActualizaCliente.text.toString()
         if (!cp.isNullOrEmpty() && !numero.isNullOrEmpty() && numero != "null") {
             val dao = ClientDao()
+            val clienteBean = dao.getClientByAccount(clienteGlobal)
+
             val bean = dao.getClientByAccount(binding.inpNoCuentaActualizaCliente.text.toString())
             bean!!.nombre_comercial = binding.etNombreActualizaCliente.text.toString()
             bean.calle = binding.etCalleActualizaCliente.text.toString()
@@ -299,8 +301,7 @@ class UpdateClientActivity: AppCompatActivity() {
             bean.fecha_registro = binding.inpFechaAltaActualizaCliente.text.toString()
             bean.cuenta = binding.inpNoCuentaActualizaCliente.text.toString()
             bean.status = status_seleccionado!!.compareTo("Activo", ignoreCase = true) == 0
-            val no_cuenta = 0
-            bean.consec = no_cuenta
+            bean.consec = if (bean.consec != 0) bean.consec else clienteBean?.consec ?: 0
             bean.rango = ruta_seleccionado
             bean.lun = if (binding.checkborLunesActualizaCliente.isChecked) 1 else 0
             bean.mar = if (binding.checkborMartesActualizaCliente.isChecked) 1 else 0
@@ -315,7 +316,7 @@ class UpdateClientActivity: AppCompatActivity() {
             bean.is_credito = binding.etActualizaCredito.isChecked
             bean.limite_credito = binding.etRegistroActualizaLimiteCredito.text.toString().replace("$", "").replace(" ", "").toDouble()
             bean.saldo_credito = binding.etRegistroActualizaCredito.text.toString().replace("$", "").replace(" ", "").toDouble()
-            bean.matriz = binding.inpMatrizAsignadaActualizaCliente.getText().toString()
+            bean.matriz = binding.inpMatrizAsignadaActualizaCliente.text.toString()
             bean.date_sync = Utils.fechaActual()
             dao.save(bean)
             idCliente = bean.id.toString()

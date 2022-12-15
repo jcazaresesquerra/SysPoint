@@ -45,7 +45,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -80,7 +80,7 @@ class RequestClient {
                                 bean.fecha_registro = item.fechaRegistro
                                 bean.cuenta = item.cuenta
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
+                                bean.consec = item.consec ?: 0
                                 bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
                                 bean.lun = item.lun
@@ -152,7 +152,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -175,6 +175,7 @@ class RequestClient {
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.matriz = item.matriz
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -187,7 +188,7 @@ class RequestClient {
                                 bean.fecha_registro = item.fechaRegistro
                                 bean.cuenta = item.cuenta
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
+                                bean.consec = item.consec ?: 0
                                 bean.visitado = if (bean.visitado == 0) 0 else 1
                                 bean.rango = item.rango
                                 bean.lun = item.lun
@@ -325,7 +326,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -341,6 +342,8 @@ class RequestClient {
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.matriz = item.matriz
+
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -353,7 +356,7 @@ class RequestClient {
                                 bean.fecha_registro = item.fechaRegistro
                                 bean.cuenta = item.cuenta
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
+                                bean.consec = item.consec ?: 0
                                 bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
                                 bean.lun = item.lun
@@ -413,7 +416,27 @@ class RequestClient {
                     onSaveClientListener.onSaveClientError()
                 }
             })
+        }
 
+        fun findClient(clientName: String, onFindClientListener: ClientInteractor.FindClientListener) {
+            val saveClients = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).findClient(clientName)
+
+            saveClients.enqueue(object: Callback<ClientJson> {
+                override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
+                    if (response.isSuccessful) {
+                        onFindClientListener.onFindClientSuccess()
+                    } else {
+                        val error = response.errorBody()!!.string()
+                        onFindClientListener.onFindClientError()
+                    }
+                }
+
+                override fun onFailure(call: Call<ClientJson>, t: Throwable) {
+                    onFindClientListener.onFindClientError()
+                }
+            })
         }
     }
 }

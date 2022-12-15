@@ -132,7 +132,7 @@ class RequestData {
                                     clienteBean.fecha_registro = it.fechaRegistro
                                     clienteBean.cuenta = it.cuenta
                                     clienteBean.status = it.status == 1
-                                    clienteBean.consec = it.consec
+                                    clienteBean.consec = it.consec ?: 0
                                     clienteBean.visitado = 0
                                     clienteBean.rango = it.rango
                                     clienteBean.lun = it.lun
@@ -169,7 +169,7 @@ class RequestData {
                                     bean.fecha_registro = it.fechaRegistro
                                     bean.cuenta = it.cuenta
                                     bean.status = it.status == 1
-                                    bean.consec = it.consec
+                                    bean.consec = it.consec ?: 0
                                     bean.visitado = if (bean.visitado == 1) 1 else  0
                                     bean.rango = it.rango
                                     bean.lun = it.lun
@@ -356,7 +356,7 @@ class RequestData {
                                     clienteBean.fecha_registro = item.fechaRegistro
                                     clienteBean.cuenta = item.cuenta
                                     clienteBean.status = item.status == 1
-                                    clienteBean.consec = item.consec
+                                    clienteBean.consec = item.consec ?: 0
                                     clienteBean.visitado = 0
                                     clienteBean.rango = item.rango
                                     clienteBean.lun = item.lun
@@ -386,7 +386,7 @@ class RequestData {
                                     bean.fecha_registro = item.fechaRegistro
                                     bean.cuenta = item.cuenta
                                     bean.status = item.status == 1
-                                    bean.consec = item.consec
+                                    bean.consec = item.consec ?: 0
                                     bean.visitado = if (bean.visitado == 1) 1 else  0
                                     bean.rango = item.rango
                                     bean.lun = item.lun

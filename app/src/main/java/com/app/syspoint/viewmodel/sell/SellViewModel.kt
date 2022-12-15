@@ -416,6 +416,7 @@ class SellViewModel: ViewModel() {
             val clientDao1 = ClientDao()
             val clienteBean1 = clientDao1.getClientByAccount(clientId)
             var clienteID = clienteBean1!!.id.toString()
+            var account = clienteBean1.cuenta.toString()
 
             clienteBean1.visitado = 1
             clienteBean1.visitasNoefectivas = 0
@@ -552,7 +553,7 @@ class SellViewModel: ViewModel() {
             val ticket = sellTicket.document
 
             sellViewState.postValue(SellViewState.LoadingFinish)
-            sellViewState.postValue(SellViewState.PrecatureFinished(ticket, ventaID, clienteID))
+            sellViewState.postValue(SellViewState.PrecatureFinished(ticket, ventaID, clienteID, account))
         }
     }
 

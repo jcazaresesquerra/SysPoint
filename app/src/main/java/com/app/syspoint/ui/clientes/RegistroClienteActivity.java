@@ -94,6 +94,8 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private String ruta_seleccionado;
     private String idCliente;
     private int no_cuenta = 0;
+    private boolean latitudeSet = false;
+    private boolean longitudeSet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +137,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
             editText_ciudad_registro_cliente.setText(colonia);
             editText_numero_registro_cliente.setText(numero);
             editTextLatitud.setText(lat);
+            latitudeSet = true;
             editTextLongitud.setText(lng);
+            longitudeSet = true;
         }
     }
 
@@ -539,58 +543,62 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private void registraCliente() {
         String numero = inp_contacto_phone_registro_cliente.getText().toString();
         if (numero != null && !numero.isEmpty() && !numero.equals("null")) {
-            final ClienteBean clienteBean = new ClienteBean();
-            final ClientDao clientDao = new ClientDao();
-            clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
-            clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
-            clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
-            clienteBean.setColonia(editText_colonia_registro_cliente.getText().toString());
-            clienteBean.setCiudad(editText_ciudad_registro_cliente.getText().toString());
-            clienteBean.setCodigo_postal(Integer.parseInt(editText_cp_registro_cliente.getText().toString()));
-            clienteBean.setFecha_registro(editText_fecha_alta_registro_cliente.getText().toString());
-            clienteBean.setCuenta(editText_no_cuenta_registro_cliente.getText().toString());
-            clienteBean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
-            clienteBean.setConsec(no_cuenta);
-            clienteBean.setRango(ruta_seleccionado);
+            if (latitudeSet && longitudeSet) {
+                final ClienteBean clienteBean = new ClienteBean();
+                final ClientDao clientDao = new ClientDao();
+                clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
+                clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
+                clienteBean.setNumero(editText_numero_registro_cliente.getText().toString());
+                clienteBean.setColonia(editText_colonia_registro_cliente.getText().toString());
+                clienteBean.setCiudad(editText_ciudad_registro_cliente.getText().toString());
+                clienteBean.setCodigo_postal(Integer.parseInt(editText_cp_registro_cliente.getText().toString()));
+                clienteBean.setFecha_registro(editText_fecha_alta_registro_cliente.getText().toString());
+                clienteBean.setCuenta(editText_no_cuenta_registro_cliente.getText().toString());
+                clienteBean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
+                clienteBean.setConsec(no_cuenta);
+                clienteBean.setRango(ruta_seleccionado);
 
-            clienteBean.setLun(checkbor_lunes_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setMar(checkbor_martes_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setMie(checkbor_miercoles_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setJue(checkbor_jueves_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setVie(checkbor_viernes_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setSab(checkbor_sabado_registro_cliente.isChecked() ? 1 : 0);
-            clienteBean.setDom(checkbor_domingo_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setLun(checkbor_lunes_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setMar(checkbor_martes_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setMie(checkbor_miercoles_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setJue(checkbor_jueves_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setVie(checkbor_viernes_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setSab(checkbor_sabado_registro_cliente.isChecked() ? 1 : 0);
+                clienteBean.setDom(checkbor_domingo_registro_cliente.isChecked() ? 1 : 0);
 
-            clienteBean.setContacto_phone(inp_contacto_phone_registro_cliente.getText().toString());
-            clienteBean.setLatitud(editTextLatitud.getText().toString());
-            clienteBean.setLongitud(editTextLongitud.getText().toString());
-            clienteBean.setIs_credito(checkbox_registro_credito.isChecked());
+                clienteBean.setContacto_phone(inp_contacto_phone_registro_cliente.getText().toString());
+                clienteBean.setLatitud(editTextLatitud.getText().toString());
+                clienteBean.setLongitud(editTextLongitud.getText().toString());
+                clienteBean.setIs_credito(checkbox_registro_credito.isChecked());
 
-            String limite = et_registro_limite_credito.getText().toString();
-            if (limite.isEmpty()) {
-                clienteBean.setLimite_credito(0.00);
+                String limite = et_registro_limite_credito.getText().toString();
+                if (limite.isEmpty()) {
+                    clienteBean.setLimite_credito(0.00);
+                } else {
+                    clienteBean.setLimite_credito(Double.parseDouble(et_registro_limite_credito.getText().toString()));
+                }
+
+                if (checkbox_registro_credito.isChecked()) {
+                    clienteBean.setMatriz(inp_matriz_asignada_registro_cliente.getText().toString());
+                    clienteBean.setIs_credito(true);
+                } else {
+                    clienteBean.setIs_credito(false);
+                    clienteBean.setMatriz("null");
+                }
+
+                clienteBean.setSaldo_credito(0.00);
+                clienteBean.setDate_sync(Utils.fechaActual());
+
+                clientDao.insert(clienteBean);
+
+                idCliente = String.valueOf(clienteBean.getId());
+                if (!Utils.isNetworkAvailable(getApplication())) {
+                    //showDialogNotConnectionInternet();
+                } else {
+                    testLoadClientes(idCliente);
+                }
             } else {
-                clienteBean.setLimite_credito(Double.parseDouble(et_registro_limite_credito.getText().toString()));
-            }
-
-            if (checkbox_registro_credito.isChecked()) {
-                clienteBean.setMatriz(inp_matriz_asignada_registro_cliente.getText().toString());
-                clienteBean.setIs_credito(true);
-            } else {
-                clienteBean.setIs_credito(false);
-                clienteBean.setMatriz("null");
-            }
-
-            clienteBean.setSaldo_credito(0.00);
-            clienteBean.setDate_sync(Utils.fechaActual());
-
-            clientDao.insert(clienteBean);
-
-            idCliente = String.valueOf(clienteBean.getId());
-            if (!Utils.isNetworkAvailable(getApplication())) {
-                //showDialogNotConnectionInternet();
-            } else {
-                testLoadClientes(idCliente);
+                Toast.makeText(getApplicationContext(), "Debe introducir las coordenadas (latitud y longitud)",Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(getApplicationContext(), "Debe introducir un telefono de contacto",Toast.LENGTH_SHORT).show();

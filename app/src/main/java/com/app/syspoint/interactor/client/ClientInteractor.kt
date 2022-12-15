@@ -20,8 +20,14 @@ abstract class ClientInteractor {
         fun onSaveClientError()
     }
 
+    interface FindClientListener {
+        fun onFindClientSuccess()
+        fun onFindClientError()
+    }
+
     open fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {}
     open fun executeGetAllClientsByDate(ruteByEmployee: String, onGetAllClientsListener: GetAllClientsListener) {}
     open fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {}
     open fun executeSaveClient(clientList: List<Client>, onSaveClientListener: SaveClientListener) {}
+    open fun executeFindClient(clientName: String, onFindClientListener: FindClientListener) {}
 }

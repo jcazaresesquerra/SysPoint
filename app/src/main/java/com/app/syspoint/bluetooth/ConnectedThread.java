@@ -64,14 +64,12 @@ public class ConnectedThread extends Thread {
         Thread t = new Thread() {
             public void run() {
                 try {
-
                     //printCustom(input, 1,1);
                     OutputStream os = mmSocket.getOutputStream();
-                    byte[] printFormat = new byte[]{0x1B,0x21,0x03};
-                    os.write(printFormat);
+                    //byte[] printFormat = new byte[]{0x1B,0x21,0x03};
+                    //os.write(printFormat);
 
                     os.write(input.getBytes());
-
 
                     int gs = 29;
                     os.write(intToByteArray(gs));

@@ -50,7 +50,7 @@ data class Client (
 
     @SerializedName("consec")
     @Expose
-    var consec: Int = 0,
+    var consec: Int? = 0,
 
     @SerializedName("rango")
     @Expose

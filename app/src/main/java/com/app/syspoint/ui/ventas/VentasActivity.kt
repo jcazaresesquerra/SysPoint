@@ -86,13 +86,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     clienteBean.recordatorio
                 )
             }
-            val saldoCLient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
+            val saldoClient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
                 Utils.FDinero(clienteBean.saldo_credito)
             } else {
                 val clientMatriz = clientDao.getClientByAccount(clienteBean.matriz)
                 Utils.FDinero(clientMatriz?.saldo_credito ?: 0.0)
             }
-            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoCLient)
+            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoClient)
         }
         //viewModel.loadClients(clientId)
 
@@ -238,6 +238,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 intent1.putExtra("ticket", sellViewState.ticket)
                 intent1.putExtra("venta", sellViewState.sellId)
                 intent1.putExtra("clienteID", sellViewState.clientId)
+                intent1.putExtra("account", sellViewState.account)
+
                 intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent1)
                 binding.imgBtnFinishSale.isEnabled = true

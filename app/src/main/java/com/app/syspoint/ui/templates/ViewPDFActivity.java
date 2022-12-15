@@ -54,6 +54,7 @@ import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
+import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -65,6 +66,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +94,7 @@ public class ViewPDFActivity extends AppCompatActivity {
     private TextView textViewStatus;
     int venta;
     String clienteID;
+    String account;
     public String templateTicket;
     private boolean isConnectada = false;
     @Override
@@ -110,6 +113,7 @@ public class ViewPDFActivity extends AppCompatActivity {
             templateTicket = bundle.getString("ticket");
             venta = Integer.parseInt( bundle.getString("venta"));
             clienteID = bundle.getString("clienteID");
+            account = bundle.getString("account");
         }
 
         addProductosInventori();
@@ -117,7 +121,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
 
         ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClient(String.valueOf(clienteID));
+        ClienteBean clienteBean = clientDao.getClientByAccount(String.valueOf(account));
 
         if (clienteBean != null){
             clienteBean.setVisitado(1);
@@ -128,6 +132,42 @@ public class ViewPDFActivity extends AppCompatActivity {
             PaymentDao paymentDao = new PaymentDao();
             try {
                 double saldoCliente = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+
+                float saldoClient = (float) saldoCliente;
+
+                if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
+                    saldoClient = (float) clienteBean.getSaldo_credito();
+                } else {
+                    ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                    if (clientMatriz != null) {
+                        saldoClient = (float) clientMatriz.getSaldo_credito();
+                    }
+                }
+
+                Button buttonDoCharge = findViewById(R.id.btnCobranza);
+                if (saldoClient > 0) {
+                    buttonDoCharge.setVisibility(View.VISIBLE);
+                    buttonDoCharge.setText(getString(R.string.do_charge_text_button, saldoClient));
+
+                    buttonDoCharge.setOnClickListener(v -> {
+                        Utils.finishActivitiesFromStack();
+                        finish();
+                        HashMap<String, String> parametros = new HashMap<>();
+                        if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
+                            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        } else {
+                            ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                            if (clientMatriz != null) {
+                                parametros.put(Actividades.PARAM_1, clientMatriz.getCuenta());
+                            } else {
+                                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                            }
+                        }
+                        Actividades.getSingleton(this, CobranzaActivity.class).muestraActividad(parametros);
+                    });
+                }
+                else buttonDoCharge.setVisibility(View.GONE);
+
                 clienteBean.setSaldo_credito(saldoCliente);
             } catch (Exception e) {
                 e.printStackTrace();

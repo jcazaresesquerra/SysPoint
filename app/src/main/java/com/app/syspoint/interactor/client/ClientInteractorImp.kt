@@ -39,4 +39,12 @@ class ClientInteractorImp: ClientInteractor() {
             RequestClient.saveClients(clientList, onSaveClientListener)
         }
     }
+
+    @Synchronized
+    override fun executeFindClient(clientName: String, onFindClientListener: FindClientListener) {
+        super.executeFindClient(clientName, onFindClientListener)
+        GlobalScope.launch {
+            RequestClient.findClient(clientName, onFindClientListener)
+        }
+    }
 }

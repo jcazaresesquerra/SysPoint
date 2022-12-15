@@ -14,7 +14,7 @@ sealed class SellViewState {
     data class ChargeByClientLoaded(val account: String, val saldo: Double): SellViewState()
     data class PrecatureParamsCreated(val params: HashMap<String, String>): SellViewState()
     data class ClientType(val clientType: SellType): SellViewState()
-    data class PrecatureFinished(val ticket: String, val sellId: String, val clientId: String): SellViewState()
+    data class PrecatureFinished(val ticket: String, val sellId: String, val clientId: String, val account: String): SellViewState()
     data class NotEnoughCredit(val saldo: Double, val isMatriz: Boolean): SellViewState()
     data class ShowScheduler(val clientId: String, val recordatorio: String): SellViewState()
     object FinishPreSell: SellViewState()

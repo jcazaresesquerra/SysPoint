@@ -53,6 +53,9 @@ interface PointApi {
     @POST("saveClienteV2")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
 
+    @POST("findClient")
+    fun findClient(@Body clientName: String?): Call<ClientJson>
+
     // ROLES
     @GET("getAllRols")
     fun getAllRols(): Call<RolJson>
