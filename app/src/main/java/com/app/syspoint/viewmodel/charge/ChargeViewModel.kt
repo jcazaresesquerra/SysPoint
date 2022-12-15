@@ -310,22 +310,10 @@ class ChargeViewModel: ViewModel() {
             cliente.ciudad = item.ciudad
             cliente.codigoPostal = item.codigo_postal
             cliente.fechaRegistro = item.fecha_registro
-            cliente.fechaBaja = item.fecha_baja
             cliente.cuenta = item.cuenta
-            cliente.grupo = item.grupo
-            cliente.categoria = item.categoria
-            if (item.status) {
-                cliente.status = 1
-            } else {
-                cliente.status = 0
-            }
+            cliente.status = if (item.status) 1 else 0
             cliente.consec = item.consec
-            cliente.region = item.region
-            cliente.sector = item.sector
             cliente.rango = item.rango
-            cliente.secuencia = item.secuencia
-            cliente.periodo = item.periodo
-            cliente.ruta = item.ruta
             cliente.lun = item.lun
             cliente.mar = item.mar
             cliente.mie = item.mie
@@ -338,11 +326,7 @@ class ChargeViewModel: ViewModel() {
             cliente.phone_contacto = "" + item.contacto_phone
             cliente.recordatorio = "" + item.recordatorio
             cliente.visitas = item.visitasNoefectivas
-            if (item.is_credito) {
-                cliente.isCredito = 1
-            } else {
-                cliente.isCredito = 0
-            }
+            cliente.isCredito = if (item.is_credito) 1 else 0
             cliente.saldo_credito = item.saldo_credito
             cliente.limite_credito = item.limite_credito
             if (item.matriz === "null" && item.matriz == null) {

@@ -29,8 +29,6 @@ import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.interactor.data.GetAllDataInteractor;
-import com.app.syspoint.interactor.data.GetAllDataInteractorImp;
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
 import com.app.syspoint.interactor.prices.PriceInteractor;
@@ -68,7 +66,6 @@ import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
 import com.app.syspoint.models.Price;
 import com.app.syspoint.models.Visit;
-import com.app.syspoint.ui.MainActivity;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.home.activities.MapsRuteoActivity;
 import com.app.syspoint.ui.home.adapter.AdapterRutaClientes;
@@ -121,7 +118,6 @@ public class HomeFragment extends Fragment {
         final List<ClienteBean> listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual());
         final PaymentDao paymentDao = new PaymentDao();
         for (ClienteBean item : listaClientesCredito) {
-
             try {
                 final ClientDao dao = new ClientDao();
                 item.setSaldo_credito(paymentDao.getTotalSaldoDocumentosCliente(item.getCuenta()));
@@ -130,7 +126,6 @@ public class HomeFragment extends Fragment {
                 e.printStackTrace();
             }
         }
-
 
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             if (connected) {
@@ -150,10 +145,9 @@ public class HomeFragment extends Fragment {
     private void saveAbonos() {
 
         final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
-
+        List<CobranzaBean> cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
         List<Payment> listaCobranza = new ArrayList<>();
+
         for (CobranzaBean item : cobranzaBeanList) {
             Payment cobranza = new Payment();
             cobranza.setCobranza(item.getCobranza());
@@ -182,15 +176,12 @@ public class HomeFragment extends Fragment {
         });
     }
 
-
-
     private void creaRutaSeleccionada() {
         RoutingDao dao = new RoutingDao();
         RuteoBean bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
 
         if (bean != null) {
-
-            final PrettyDialog dialog = new PrettyDialog(getContext());
+            PrettyDialog dialog = new PrettyDialog(getContext());
             dialog.setTitle("Establecer")
                     .setTitleColor(R.color.red_500)
                     .setMessage("¡Ya existe una configuración inicial!" + "\n ¿Desea actualizar la ruta?")
@@ -251,81 +242,70 @@ public class HomeFragment extends Fragment {
                             .setMessage("Desea establecer la ruta inicial")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    if (getActivity() != null) {
-                                        //((MainActivity) getActivity()).goHome();
-                                    }
-                                    dialog.dismiss();
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> {
+                                if (getActivity() != null) {
+                                    //((MainActivity) getActivity()).goHome();
                                 }
+                                dialog.dismiss();
                             })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
 
-                                    //Clientes normales
-                                    ClientDao clientDao = new ClientDao();
-                                    clientDao.updateVisited();
+                                //Clientes normales
+                                ClientDao clientDao = new ClientDao();
+                                clientDao.updateVisited();
 
-                                    RoutingDao routingDao = new RoutingDao();
-                                    routingDao.clear();
+                                RoutingDao routingDao = new RoutingDao();
+                                routingDao.clear();
 
-                                    RuteoBean ruteoBean = new RuteoBean();
+                                RuteoBean ruteoBean = new RuteoBean();
 
-                                    if (dia.compareToIgnoreCase("Lunes") == 0) {
-                                        ruteoBean.setDia(1);
-                                    } else if (dia.compareToIgnoreCase("Martes") == 0) {
-                                        ruteoBean.setDia(2);
-                                    } else if (dia.compareToIgnoreCase("Miercoles") == 0) {
-                                        ruteoBean.setDia(3);
-                                    } else if (dia.compareToIgnoreCase("Jueves") == 0) {
-                                        ruteoBean.setDia(4);
-                                    } else if (dia.compareToIgnoreCase("Viernes") == 0) {
-                                        ruteoBean.setDia(5);
-                                    } else if (dia.compareToIgnoreCase("Sabado") == 0) {
-                                        ruteoBean.setDia(6);
-                                    } else if (dia.compareToIgnoreCase("Domingo") == 0) {
-                                        ruteoBean.setDia(7);
-                                    }
-                                    ruteoBean.setId(1L);
-                                    ruteoBean.setFecha(Utils.fechaActual());
-
-                                    EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-                                    String ruta_ = ruta != null && !ruta.isEmpty() ? ruta : vendedoresBean.getRute();
-
-                                    ruteoBean.setRuta(ruta_);
-
-                                    try {
-                                        routingDao.insert(ruteoBean);
-                                    } catch (Exception e) {
-                                        routingDao.save(ruteoBean);
-                                    }
-
-                                    estableceRuta();
-
-                                    vendedoresBean.setDay(ruteoBean.getDia());
-                                    vendedoresBean.setRute(ruta_);
-
-                                    new EmployeeDao().save(vendedoresBean);
-                                    String idEmpleado = String.valueOf(vendedoresBean.getId());
-                                    testLoadEmpleado(idEmpleado);
-
-
-                                    if (getActivity() != null) {
-                                        //((MainActivity) getActivity()).goHome();
-                                    }
-                                    dialog.dismiss();
+                                if (dia.compareToIgnoreCase("Lunes") == 0) {
+                                    ruteoBean.setDia(1);
+                                } else if (dia.compareToIgnoreCase("Martes") == 0) {
+                                    ruteoBean.setDia(2);
+                                } else if (dia.compareToIgnoreCase("Miercoles") == 0) {
+                                    ruteoBean.setDia(3);
+                                } else if (dia.compareToIgnoreCase("Jueves") == 0) {
+                                    ruteoBean.setDia(4);
+                                } else if (dia.compareToIgnoreCase("Viernes") == 0) {
+                                    ruteoBean.setDia(5);
+                                } else if (dia.compareToIgnoreCase("Sabado") == 0) {
+                                    ruteoBean.setDia(6);
+                                } else if (dia.compareToIgnoreCase("Domingo") == 0) {
+                                    ruteoBean.setDia(7);
                                 }
+                                ruteoBean.setId(1L);
+                                ruteoBean.setFecha(Utils.fechaActual());
+
+                                EmpleadoBean vendedoresBean1 = AppBundle.getUserBean();
+                                String ruta_ = ruta != null && !ruta.isEmpty() ? ruta : vendedoresBean1.getRute();
+
+                                ruteoBean.setRuta(ruta_);
+
+                                try {
+                                    routingDao.insert(ruteoBean);
+                                } catch (Exception e) {
+                                    routingDao.save(ruteoBean);
+                                }
+
+                                estableceRuta();
+                                vendedoresBean1.setRute(ruta_);
+
+                                new EmployeeDao().save(vendedoresBean1);
+                                String idEmpleado = String.valueOf(vendedoresBean1.getId());
+                                testLoadEmpleado(idEmpleado);
+
+
+                                if (getActivity() != null) {
+                                    //((MainActivity) getActivity()).goHome();
+                                }
+                                dialog.dismiss();
                             })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    if (getActivity() != null) {
-                                        //((MainActivity) getActivity()).goHome();
-                                    }
-                                    dialog.dismiss();
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, () -> {
+                                if (getActivity() != null) {
+                                    //((MainActivity) getActivity()).goHome();
                                 }
+                                dialog.dismiss();
                             });
                     dialog.setCancelable(false);
                     dialog.show();
@@ -333,9 +313,7 @@ public class HomeFragment extends Fragment {
                 }
 
                 @Override
-                public void cancelled() {
-
-                }
+                public void cancelled() {}
             });
 
 
@@ -543,9 +521,7 @@ public class HomeFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
-
 
     private void closeBox() {
         final PrettyDialog dialog = new PrettyDialog(requireActivity());
@@ -559,12 +535,10 @@ public class HomeFragment extends Fragment {
                 .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
         dialog.setCancelable(false);
         dialog.show();
-
     }
 
     private void showDialogNotConnectionInternet() {
-
-        final Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
         dialog.setContentView(R.layout.dialog_warning);
         dialog.setCancelable(true);
@@ -584,7 +558,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void getData() {
-
         progressshow();
         new ChargeInteractorImp().executeGetCharge(new ChargeInteractor.OnGetChargeListener() {
             @Override
@@ -887,22 +860,10 @@ public class HomeFragment extends Fragment {
             client.setCiudad(item.getCiudad());
             client.setCodigoPostal(item.getCodigo_postal());
             client.setFechaRegistro(item.getFecha_registro());
-            client.setFechaBaja(item.getFecha_baja());
             client.setCuenta(item.getCuenta());
-            client.setGrupo(item.getGrupo());
-            client.setCategoria(item.getCategoria());
-            if (item.getStatus()) {
-                client.setStatus(1);
-            } else {
-                client.setStatus(0);
-            }
+            client.setStatus(item.getStatus()? 1 : 0);
             client.setConsec(item.getConsec());
-            client.setRegion(item.getRegion());
-            client.setSector(item.getSector());
             client.setRango(item.getRango());
-            client.setSecuencia(item.getSecuencia());
-            client.setPeriodo(item.getPeriodo());
-            client.setRuta(item.getRuta());
             client.setLun(item.getLun());
             client.setMar(item.getMar());
             client.setMie(item.getMie());
@@ -979,77 +940,9 @@ public class HomeFragment extends Fragment {
                 empleado.setFechaIngreso(item.getFecha_ingreso());
             }
 
-            if (item.getFecha_egreso().isEmpty()){
-                empleado.setFechaEgreso("-");
-            }else{
-                empleado.setFechaEgreso(item.getFecha_egreso());
-            }
-
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            if (item.getNss().isEmpty()){
-                empleado.setNss("-");
-            }else{
-                empleado.setNss(item.getNss());
-            }
-
-            if (item.getRfc().isEmpty()){
-                empleado.setRfc("-");
-            }else{
-                empleado.setRfc(item.getRfc());
-            }
-
-            if (item.getCurp().isEmpty()){
-                empleado.setCurp("-");
-            }else{
-                empleado.setCurp(item.getCurp());
-            }
-
-            if (item.getPuesto().isEmpty()){
-                empleado.setPuesto("-");
-            }else{
-                empleado.setPuesto(item.getPuesto());
-            }
-
-            if (item.getArea_depto().isEmpty()){
-                empleado.setAreaDepto("--");
-            }else{
-                empleado.setAreaDepto(item.getArea_depto());
-            }
-
-            empleado.setTipoContrato(item.getTipo_contrato());
-            empleado.setRegion(item.getRegion());
-
-            if (item.getHora_entrada().isEmpty()){
-                empleado.setHoraEntrada("");
-            }else{
-                empleado.setHoraEntrada(item.getHora_entrada());
-            }
-
-            if (item.getHora_salida().isEmpty()){
-                empleado.setHoraSalida("");
-            }else{
-                empleado.setHoraSalida(item.getHora_salida());
-            }
-
-            if (item.getSalida_comer().isEmpty()){
-                empleado.setSalidaComer("");
-            }else{
-                empleado.setSalidaComer(item.getSalida_comer());
-            }
-
-            if (item.getEntrada_comer().isEmpty()){
-                empleado.setEntradaComer("");
-            }else{
-                empleado.setEntradaComer(item.getEntrada_comer());
-            }
-
-            empleado.setSueldoDiario(0);
-            if (item.getStatus() == false){
-                empleado.setStatus(0);
-            }else {
-                empleado.setStatus(1);
-            }
+            empleado.setStatus(item.getStatus()? 1 : 0);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -1057,22 +950,10 @@ public class HomeFragment extends Fragment {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (item.getTurno().isEmpty()){
-                empleado.setTurno("--");
-            }else{
-                empleado.setTurno(item.getEntrada_comer());
-            }
-
             if (!item.rute.isEmpty()) {
                 empleado.setRute(item.rute);
             } else  {
                 empleado.setRute("");
-            }
-
-            if (item.day > 0 && item.day <=7) {
-                empleado.setDay(item.getDay());
-            } else {
-                empleado.setDay(0);
             }
 
             listEmpleados.add(empleado);
@@ -1083,7 +964,6 @@ public class HomeFragment extends Fragment {
             public void onSaveEmployeeSuccess() {
                 progresshide();
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
-
             }
 
             @Override
@@ -1093,5 +973,4 @@ public class HomeFragment extends Fragment {
             }
         });
     }
-
 }

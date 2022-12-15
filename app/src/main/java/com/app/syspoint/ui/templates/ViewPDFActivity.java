@@ -54,6 +54,7 @@ import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
+import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -65,6 +66,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,6 +94,7 @@ public class ViewPDFActivity extends AppCompatActivity {
     private TextView textViewStatus;
     int venta;
     String clienteID;
+    String account;
     public String templateTicket;
     private boolean isConnectada = false;
     @Override
@@ -110,6 +113,7 @@ public class ViewPDFActivity extends AppCompatActivity {
             templateTicket = bundle.getString("ticket");
             venta = Integer.parseInt( bundle.getString("venta"));
             clienteID = bundle.getString("clienteID");
+            account = bundle.getString("account");
         }
 
         addProductosInventori();
@@ -117,7 +121,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
 
         ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClient(String.valueOf(clienteID));
+        ClienteBean clienteBean = clientDao.getClientByAccount(String.valueOf(account));
 
         if (clienteBean != null){
             clienteBean.setVisitado(1);
@@ -128,6 +132,42 @@ public class ViewPDFActivity extends AppCompatActivity {
             PaymentDao paymentDao = new PaymentDao();
             try {
                 double saldoCliente = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+
+                float saldoClient = (float) saldoCliente;
+
+                if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
+                    saldoClient = (float) clienteBean.getSaldo_credito();
+                } else {
+                    ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                    if (clientMatriz != null) {
+                        saldoClient = (float) clientMatriz.getSaldo_credito();
+                    }
+                }
+
+                Button buttonDoCharge = findViewById(R.id.btnCobranza);
+                if (saldoClient > 0) {
+                    buttonDoCharge.setVisibility(View.VISIBLE);
+                    buttonDoCharge.setText(getString(R.string.do_charge_text_button, saldoClient));
+
+                    buttonDoCharge.setOnClickListener(v -> {
+                        Utils.finishActivitiesFromStack();
+                        finish();
+                        HashMap<String, String> parametros = new HashMap<>();
+                        if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
+                            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        } else {
+                            ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                            if (clientMatriz != null) {
+                                parametros.put(Actividades.PARAM_1, clientMatriz.getCuenta());
+                            } else {
+                                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                            }
+                        }
+                        Actividades.getSingleton(this, CobranzaActivity.class).muestraActividad(parametros);
+                    });
+                }
+                else buttonDoCharge.setVisibility(View.GONE);
+
                 clienteBean.setSaldo_credito(saldoCliente);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -241,10 +281,8 @@ public class ViewPDFActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
 
     }
 
@@ -301,22 +339,10 @@ public class ViewPDFActivity extends AppCompatActivity {
             client.setCiudad(item.getCiudad());
             client.setCodigoPostal(item.getCodigo_postal());
             client.setFechaRegistro(item.getFecha_registro());
-            client.setFechaBaja(item.getFecha_baja());
             client.setCuenta(item.getCuenta());
-            client.setGrupo(item.getGrupo());
-            client.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                client.setStatus(0);
-            } else {
-                client.setStatus(1);
-            }
+            client.setStatus(item.getStatus()? 1 : 0);
             client.setConsec(item.getConsec());
-            client.setRegion(item.getRegion());
-            client.setSector(item.getSector());
             client.setRango(item.getRango());
-            client.setSecuencia(item.getSecuencia());
-            client.setPeriodo(item.getPeriodo());
-            client.setRuta(item.getRuta());
             client.setLun(item.getLun());
             client.setMar(item.getMar());
             client.setMie(item.getMie());
@@ -432,11 +458,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         PrinterDao existeImpresora = new PrinterDao();
         int existe = existeImpresora.existeConfiguracionImpresora();
 
-        if (existe > 0) {
-            return true;
-        }
-
-        return false;
+        return existe > 0;
     }
 
     public boolean isBluetoothEnabled() {

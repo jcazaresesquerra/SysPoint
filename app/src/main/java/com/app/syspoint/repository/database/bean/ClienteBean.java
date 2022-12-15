@@ -21,18 +21,10 @@ public class ClienteBean extends Bean {
     private String ciudad;
     private int codigo_postal;
     private String fecha_registro;
-    private String fecha_baja;
     private String cuenta;
-    private String grupo;
-    private String categoria;
     private boolean status;
     private int consec;
-    private String region;
-    private String sector;
     private String rango;
-    private String ruta;
-    private int secuencia;
-    private int periodo;
     private int lun;
     private int mar;
     private int mie;
@@ -61,15 +53,14 @@ public class ClienteBean extends Bean {
     private String matriz;
     private String date_sync;
 
-@Generated(hash = 1760396240)
+@Generated(hash = 1274947820)
 public ClienteBean(Long id, String nombre_comercial, String calle, String numero, String colonia,
-        String ciudad, int codigo_postal, String fecha_registro, String fecha_baja, String cuenta,
-        String grupo, String categoria, boolean status, int consec, String region, String sector,
-        String rango, String ruta, int secuencia, int periodo, int lun, int mar, int mie, int jue, int vie,
-        int sab, int dom, int lunOrder, int marOrder, int mieOrder, int jueOrder, int vieOrder, int sabOrder,
-        int domOrder, int visitado, String latitud, String longitud, String contacto_phone,
-        String recordatorio, boolean is_recordatorio, int visitasNoefectivas, boolean is_credito,
-        double limite_credito, double saldo_credito, String matriz, String date_sync) {
+        String ciudad, int codigo_postal, String fecha_registro, String cuenta, boolean status, int consec,
+        String rango, int lun, int mar, int mie, int jue, int vie, int sab, int dom, int lunOrder,
+        int marOrder, int mieOrder, int jueOrder, int vieOrder, int sabOrder, int domOrder, int visitado,
+        String latitud, String longitud, String contacto_phone, String recordatorio, boolean is_recordatorio,
+        int visitasNoefectivas, boolean is_credito, double limite_credito, double saldo_credito,
+        String matriz, String date_sync) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -78,18 +69,10 @@ public ClienteBean(Long id, String nombre_comercial, String calle, String numero
     this.ciudad = ciudad;
     this.codigo_postal = codigo_postal;
     this.fecha_registro = fecha_registro;
-    this.fecha_baja = fecha_baja;
     this.cuenta = cuenta;
-    this.grupo = grupo;
-    this.categoria = categoria;
     this.status = status;
     this.consec = consec;
-    this.region = region;
-    this.sector = sector;
     this.rango = rango;
-    this.ruta = ruta;
-    this.secuencia = secuencia;
-    this.periodo = periodo;
     this.lun = lun;
     this.mar = mar;
     this.mie = mie;
@@ -168,29 +151,11 @@ public String getFecha_registro() {
 public void setFecha_registro(String fecha_registro) {
     this.fecha_registro = fecha_registro;
 }
-public String getFecha_baja() {
-    return this.fecha_baja;
-}
-public void setFecha_baja(String fecha_baja) {
-    this.fecha_baja = fecha_baja;
-}
 public String getCuenta() {
     return this.cuenta;
 }
 public void setCuenta(String cuenta) {
     this.cuenta = cuenta;
-}
-public String getGrupo() {
-    return this.grupo;
-}
-public void setGrupo(String grupo) {
-    this.grupo = grupo;
-}
-public String getCategoria() {
-    return this.categoria;
-}
-public void setCategoria(String categoria) {
-    this.categoria = categoria;
 }
 public boolean getStatus() {
     return this.status;
@@ -204,41 +169,11 @@ public int getConsec() {
 public void setConsec(int consec) {
     this.consec = consec;
 }
-public String getRegion() {
-    return this.region;
-}
-public void setRegion(String region) {
-    this.region = region;
-}
-public String getSector() {
-    return this.sector;
-}
-public void setSector(String sector) {
-    this.sector = sector;
-}
 public String getRango() {
     return this.rango;
 }
 public void setRango(String rango) {
     this.rango = rango;
-}
-public String getRuta() {
-    return this.ruta;
-}
-public void setRuta(String ruta) {
-    this.ruta = ruta;
-}
-public int getSecuencia() {
-    return this.secuencia;
-}
-public void setSecuencia(int secuencia) {
-    this.secuencia = secuencia;
-}
-public int getPeriodo() {
-    return this.periodo;
-}
-public void setPeriodo(int periodo) {
-    this.periodo = periodo;
 }
 public int getLun() {
     return this.lun;
@@ -396,8 +331,5 @@ public String getDate_sync() {
 public void setDate_sync(String date_sync) {
     this.date_sync = date_sync;
 }
-
-
-
     
 }

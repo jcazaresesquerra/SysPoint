@@ -7,7 +7,6 @@ import com.app.syspoint.models.RequestClientsByRute
 import com.app.syspoint.models.json.ClientJson
 import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.bean.ClientesRutaBean
-import com.app.syspoint.repository.database.bean.RuteoBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.repository.database.dao.RuteClientDao
 import com.app.syspoint.repository.request.http.ApiServices
@@ -16,6 +15,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.nio.CharBuffer
 
 class RequestClient {
     companion object {
@@ -43,19 +43,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -70,9 +62,12 @@ class RequestClient {
                                 clienteBean.vieOrder = item.vieOrder
                                 clienteBean.sabOrder = item.sabOrder
                                 clienteBean.domOrder = item.domOrder
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -83,23 +78,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
-                                if (bean.visitado == 0) {
-                                    bean.visitado = 0
-                                } else if (bean.visitado == 1) {
-                                    bean.visitado = 1
-                                }
-                                bean.region = item.region
-                                bean.sector = item.sector
+                                bean.consec = item.consec ?: 0
+                                bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -167,19 +150,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -194,9 +169,13 @@ class RequestClient {
                                 clienteBean.vieOrder = item.vieOrder
                                 clienteBean.sabOrder = item.sabOrder
                                 clienteBean.domOrder = item.domOrder
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.matriz = item.matriz
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -207,19 +186,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
+                                bean.consec = item.consec ?: 0
                                 bean.visitado = if (bean.visitado == 0) 0 else 1
-                                bean.region = item.region
-                                bean.sector = item.sector
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -259,7 +230,6 @@ class RequestClient {
                                 clienteBeanRute.cuenta = item.cuenta
                                 clienteBeanRute.visitado = 0
                                 clienteBeanRute.rango = item.rango
-                                clienteBeanRute.categoria = item.categoria
                                 clienteBeanRute.status = item.status == 1
                                 clienteBeanRute.lun = item.lun
                                 clienteBeanRute.mar = item.mar
@@ -275,8 +245,11 @@ class RequestClient {
                                 clienteBeanRute.vieOrder = item.vieOrder
                                 clienteBeanRute.sabOrder = item.sabOrder
                                 clienteBeanRute.domOrder = item.domOrder
+                                clienteBeanRute.latitud = item.latitud
+                                clienteBeanRute.longitud = item.longitud
                                 clienteBeanRute.is_credito = item.isCredito == 1
                                 clienteBeanRute.recordatorio = item.recordatorio
+                                clienteBeanRute.phone_contact = item.phone_contacto
                                 clientDaoRute.insert(clienteBeanRute)
                             } else {
                                 beanRute.nombre_comercial = item.nombreComercial
@@ -286,7 +259,6 @@ class RequestClient {
                                 beanRute.cuenta = item.cuenta
                                 beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
                                 beanRute.rango = item.rango
-                                beanRute.categoria = item.categoria
                                 beanRute.status = item.status == 1
                                 beanRute.lun = item.lun
                                 beanRute.mar = item.mar
@@ -306,6 +278,7 @@ class RequestClient {
                                 beanRute.longitud = item.longitud
                                 beanRute.is_credito = item.isCredito == 1
                                 beanRute.recordatorio = item.recordatorio
+                                beanRute.phone_contact = item.phone_contacto
                                 daoRute.save(beanRute)
                             }
                         }
@@ -351,19 +324,11 @@ class RequestClient {
                                 clienteBean.ciudad = item.ciudad
                                 clienteBean.codigo_postal = item.codigoPostal
                                 clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.fecha_baja = item.fechaBaja
                                 clienteBean.cuenta = item.cuenta
-                                clienteBean.grupo = item.grupo
-                                clienteBean.categoria = item.categoria
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec
+                                clienteBean.consec = item.consec ?: 0
                                 clienteBean.visitado = 0
-                                clienteBean.region = item.region
-                                clienteBean.sector = item.sector
                                 clienteBean.rango = item.rango
-                                clienteBean.secuencia = item.secuencia
-                                clienteBean.periodo = item.periodo
-                                clienteBean.ruta = item.ruta
                                 clienteBean.lun = item.lun
                                 clienteBean.mar = item.mar
                                 clienteBean.mie = item.mie
@@ -371,9 +336,14 @@ class RequestClient {
                                 clienteBean.vie = item.vie
                                 clienteBean.sab = item.sab
                                 clienteBean.dom = item.dom
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
                                 clienteBean.is_credito = item.isCredito == 1
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.matriz = item.matriz
+
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
@@ -384,23 +354,11 @@ class RequestClient {
                                 bean.ciudad = item.ciudad
                                 bean.codigo_postal = item.codigoPostal
                                 bean.fecha_registro = item.fechaRegistro
-                                bean.fecha_baja = item.fechaBaja
                                 bean.cuenta = item.cuenta
-                                bean.grupo = item.grupo
-                                bean.categoria = item.categoria
                                 bean.status = item.status == 1
-                                bean.consec = item.consec
-                                if (bean.visitado == 0) {
-                                    bean.visitado = 0
-                                } else if (bean.visitado == 1) {
-                                    bean.visitado = 1
-                                }
-                                bean.region = item.region
-                                bean.sector = item.sector
+                                bean.consec = item.consec ?: 0
+                                bean.visitado = if (bean.visitado == 1) 1 else  0
                                 bean.rango = item.rango
-                                bean.secuencia = item.secuencia
-                                bean.periodo = item.periodo
-                                bean.ruta = item.ruta
                                 bean.lun = item.lun
                                 bean.mar = item.mar
                                 bean.mie = item.mie
@@ -449,6 +407,7 @@ class RequestClient {
                     if (response.isSuccessful) {
                         onSaveClientListener.onSaveClientSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onSaveClientListener.onSaveClientError()
                     }
                 }
@@ -457,7 +416,27 @@ class RequestClient {
                     onSaveClientListener.onSaveClientError()
                 }
             })
+        }
 
+        fun findClient(clientName: String, onFindClientListener: ClientInteractor.FindClientListener) {
+            val saveClients = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).findClient(clientName)
+
+            saveClients.enqueue(object: Callback<ClientJson> {
+                override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
+                    if (response.isSuccessful) {
+                        onFindClientListener.onFindClientSuccess()
+                    } else {
+                        val error = response.errorBody()!!.string()
+                        onFindClientListener.onFindClientError()
+                    }
+                }
+
+                override fun onFailure(call: Call<ClientJson>, t: Throwable) {
+                    onFindClientListener.onFindClientError()
+                }
+            })
         }
     }
 }

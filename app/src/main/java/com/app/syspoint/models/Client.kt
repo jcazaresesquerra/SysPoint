@@ -40,21 +40,9 @@ data class Client (
     @Expose
     var fechaRegistro: String? = null,
 
-    @SerializedName("fecha_baja")
-    @Expose
-    var fechaBaja: String? = null,
-
     @SerializedName("cuenta")
     @Expose
     var cuenta: String? = null,
-
-    @SerializedName("grupo")
-    @Expose
-    var grupo: String? = null,
-
-    @SerializedName("categoria")
-    @Expose
-    var categoria: String? = null,
 
     @SerializedName("status")
     @Expose
@@ -62,31 +50,11 @@ data class Client (
 
     @SerializedName("consec")
     @Expose
-    var consec: Int = 0,
-
-    @SerializedName("region")
-    @Expose
-    var region: String? = null,
-
-    @SerializedName("sector")
-    @Expose
-    var sector: String? = null,
+    var consec: Int? = 0,
 
     @SerializedName("rango")
     @Expose
     var rango: String? = null,
-
-    @SerializedName("ruta")
-    @Expose
-    var ruta: String? = null,
-
-    @SerializedName("secuencia")
-    @Expose
-    var secuencia: Int = 0,
-
-    @SerializedName("periodo")
-    @Expose
-    var periodo: Int = 0,
 
     @SerializedName("lun")
     @Expose
@@ -139,7 +107,7 @@ data class Client (
 
     @SerializedName("comentarios")
     @Expose
-    var recordatorio: String? = null,
+    var recordatorio: String? = "null",
 
     @SerializedName("saldo_credito")
     @Expose

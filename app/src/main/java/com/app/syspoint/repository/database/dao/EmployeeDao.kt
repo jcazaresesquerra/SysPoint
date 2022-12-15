@@ -1,5 +1,7 @@
 package com.app.syspoint.repository.database.dao
 
+import com.app.syspoint.repository.database.bean.ClienteBean
+import com.app.syspoint.repository.database.bean.ClienteBeanDao
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.repository.database.bean.EmpleadoBeanDao
 
@@ -11,6 +13,13 @@ class EmployeeDao: Dao("EmpleadoBean") {
             .where(EmpleadoBeanDao.Properties.Identificador.eq(identifier))
             .list()
         return if (employeeBean.isNotEmpty()) employeeBean[0] as EmpleadoBean? else null
+    }
+
+    fun getActiveEmployees(): List<EmpleadoBean> {
+        return dao.queryBuilder()
+            .where(EmpleadoBeanDao.Properties.Status.eq(1))
+            .orderAsc(EmpleadoBeanDao.Properties.Id)
+            .list() as List<EmpleadoBean>
     }
 
     //Retorna el empleado por identificador
@@ -57,5 +66,23 @@ class EmployeeDao: Dao("EmpleadoBean") {
                 exception.printStackTrace()
                 null
             }
+    }
+
+    fun getLastConsec(): Int {
+        var folio = 0
+        val empleadoBean = getLastRegister()
+        if (empleadoBean != null) {
+            folio = empleadoBean.identificador.replace("E","").toInt()
+        }
+        ++folio
+        return folio
+    }
+
+    private fun getLastRegister(): EmpleadoBean? {
+        val empleadoBean = dao.queryBuilder()
+            .orderDesc(EmpleadoBeanDao.Properties.Id)
+            .limit(1)
+            .list()
+        return if (empleadoBean.isNotEmpty()) empleadoBean[0] as EmpleadoBean else null
     }
 }

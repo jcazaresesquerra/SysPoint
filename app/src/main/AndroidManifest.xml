@@ -126,7 +126,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.clientes.ActualizaClienteActivity"
+            android:name=".ui.clientes.UpdateClientActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity

@@ -13,9 +13,6 @@ import retrofit2.http.*
 interface PointApi {
 
     // GET AL DATA RESONSE
-    @GET("getAllData")
-    fun getAllData(): Call<Data>
-
     @GET("getAllDataV2")
     fun getAllDataV2(): Call<Data>
 
@@ -29,17 +26,17 @@ interface PointApi {
     @GET("getEmpleadoByID")
     fun getEmpleadoByID(@Query("identificador") identificador: String?): Call<EmployeeJson>
 
-    @POST("saveEmpleado")
+    @POST("saveEmpleadoV2")
     fun sendEmpleado(@Body param: EmployeeJson?): Call<EmployeeJson>
 
     // PRODUCTOS
-    @GET("getAllProductos")
+    @GET("getAllProductosV2")
     fun getAllProductos(): Call<ProductJson>
 
     @POST("getProductoByID")
     fun getProductoByID(@Query("articulo") articulo: String?): Call<EmployeeJson>
 
-    @POST("saveProducto")
+    @POST("saveProductoV2")
     fun sendProducto(@Body param: ProductJson?): Call<ProductJson>
 
     // CLIENTES
@@ -53,8 +50,11 @@ interface PointApi {
     @POST("getClienteByID")
     fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
 
-    @POST("saveCliente")
+    @POST("saveClienteV2")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
+
+    @POST("findClient")
+    fun findClient(@Body clientName: String?): Call<ClientJson>
 
     // ROLES
     @GET("getAllRols")

@@ -269,7 +269,7 @@ class SellViewModel: ViewModel() {
         }
     }
 
-    fun addItem(articulo: String, descripcion: String, precio: Double, costo: Double,
+    fun addItem(articulo: String, descripcion: String, precio: Double,
                 impuesto: Int, cantidad: Int): ArrayList<VentasModelBean?> {
 
         val item = VentasModelBean()
@@ -278,7 +278,6 @@ class SellViewModel: ViewModel() {
         item.descripcion = descripcion
         item.cantidad = cantidad
         item.precio = precio
-        item.costo = costo
         item.impuesto = impuesto.toDouble()
         item.observ = descripcion
         dao.insert(item)
@@ -402,7 +401,6 @@ class SellViewModel: ViewModel() {
                         partidaBean.articulo = productosBean
                         partidaBean.cantidad = partida.cantidad
                         partidaBean.precio = partida.precio
-                        partidaBean.costo = partida.costo
                         partidaBean.impuesto = partida.impuesto
                         partidaBean.observ = productosBean!!.descripcion
                         partidaBean.fecha = Date()
@@ -418,6 +416,7 @@ class SellViewModel: ViewModel() {
             val clientDao1 = ClientDao()
             val clienteBean1 = clientDao1.getClientByAccount(clientId)
             var clienteID = clienteBean1!!.id.toString()
+            var account = clienteBean1.cuenta.toString()
 
             clienteBean1.visitado = 1
             clienteBean1.visitasNoefectivas = 0
@@ -554,7 +553,7 @@ class SellViewModel: ViewModel() {
             val ticket = sellTicket.document
 
             sellViewState.postValue(SellViewState.LoadingFinish)
-            sellViewState.postValue(SellViewState.PrecatureFinished(ticket, ventaID, clienteID))
+            sellViewState.postValue(SellViewState.PrecatureFinished(ticket, ventaID, clienteID, account))
         }
     }
 
@@ -574,18 +573,10 @@ class SellViewModel: ViewModel() {
                 client.ciudad = item.ciudad
                 client.codigoPostal = item.codigo_postal
                 client.fechaRegistro = item.fecha_registro
-                client.fechaBaja = item.fecha_baja
                 client.cuenta = item.cuenta
-                client.grupo = item.grupo
-                client.categoria = item.categoria
                 client.status = if (item.status) 1 else 0
                 client.consec = item.consec
-                client.region = item.region
-                client.sector = item.sector
                 client.rango = item.rango
-                client.secuencia = item.secuencia
-                client.periodo = item.periodo
-                client.ruta = item.ruta
                 client.lun = item.lun
                 client.mar = item.mar
                 client.mie = item.mie

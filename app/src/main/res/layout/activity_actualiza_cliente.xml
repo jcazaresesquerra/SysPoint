@@ -4,7 +4,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context=".ui.clientes.ActualizaClienteActivity">
+tools:context=".ui.clientes.UpdateClientActivity">
 
 <com.google.android.material.appbar.AppBarLayout
     android:id="@+id/appbar"
@@ -44,7 +44,7 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:layout_height="wrap_content">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_nombre_actualiza_cliente"
+                    android:id="@+id/et_nombre_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Nmbre comercial *"
@@ -73,7 +73,7 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:hint="Calle o vialidad">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_calle_actualiza_cliente"
+                    android:id="@+id/et_calle_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
@@ -92,7 +92,7 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:hint="Numero *">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_numero_actualiza_cliente"
+                    android:id="@+id/et_numero_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
@@ -116,7 +116,7 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:layout_height="wrap_content">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_colonia_actualiza_cliente"
+                    android:id="@+id/et_colonia_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Colonia *"
@@ -145,7 +145,7 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:hint="Ciudad * ">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_ciudad_actualiza_cliente"
+                    android:id="@+id/et_ciudad_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
@@ -164,14 +164,12 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:hint="Codigo Postal *">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_cp_actualiza_cliente"
+                    android:id="@+id/et_cp_update_client"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:maxLength="5"
-                    android:maxLines="1">
-
-                </com.google.android.material.textfield.TextInputEditText>
+                    android:maxLines="1"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -249,51 +247,19 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"
-                android:hint="Fecha Baja">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_fecha_baja_actualiza_cliente"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <ImageButton
-                android:id="@+id/img_fecha_baja_actualiza_cliente"
-                android:layout_width="130dp"
-                android:layout_height="60dp"
-                android:layout_marginStart="5dp"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_calendar_black" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
                 android:hint="No Cuenta">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inp_no_cuenta_actualiza_cliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:maxLines="1">
+                    android:inputType="none"
+                    android:maxLines="1"
+                    android:clickable="false"
+                    android:editable="false"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false">>
 
                 </com.google.android.material.textfield.TextInputEditText>
 
@@ -310,34 +276,6 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
             </Spinner>
 
         </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <Spinner
-                android:id="@+id/spinner_grupo_actualiza_cliente"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"></Spinner>
-
-            <Spinner
-                android:id="@+id/spinner_categoria_actualiza_cliente"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"></Spinner>
-        </LinearLayout>
-
-
-        <!--Latitud-->
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -394,85 +332,10 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
 
         </LinearLayout>
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="5dp"
-                app:cardElevation="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="Región"
-                        android:textAlignment="center"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="Sector"
-                        android:textAlignment="center"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/spinner_region_actualiza_cliente"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"></Spinner>
-
-            <Spinner
-                android:id="@+id/spinner_sector_actualiza_cliente"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"></Spinner>
-        </LinearLayout>
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/black">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Rango de rutas"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="16dp"
-                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -483,72 +346,15 @@ tools:context=".ui.clientes.ActualizaClienteActivity">
                 android:textColor="@color/white"
                 android:textSize="16dp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Secuencia"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="16dp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Periodo (días)"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="16dp"
-                android:textStyle="bold" />
-
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Spinner
-                android:id="@+id/spinner_rango_actualiza_cliente"
-                android:layout_width="110dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1" />
-
-            <EditText
-                android:id="@+id/inp_ruta_actualiza_cliente"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:enabled="true"
-                android:text="1"
-                android:textAlignment="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/inp_secuencia_actualiza_cliente"
-                android:layout_width="80dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="1"
-                android:textAlignment="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/spinner_periodo_actualiza_cliente"
-                android:layout_width="110dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1" />
-
-        </LinearLayout>
-
+        <Spinner
+            android:id="@+id/spinner_rango_actualiza_cliente"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_gravity="center_horizontal" />
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -86,13 +86,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     clienteBean.recordatorio
                 )
             }
-            val saldoCLient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
+            val saldoClient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
                 Utils.FDinero(clienteBean.saldo_credito)
             } else {
                 val clientMatriz = clientDao.getClientByAccount(clienteBean.matriz)
                 Utils.FDinero(clientMatriz?.saldo_credito ?: 0.0)
             }
-            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoCLient)
+            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoClient)
         }
         //viewModel.loadClients(clientId)
 
@@ -138,14 +138,16 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         val preciosEspecialesBean =
             specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)
 
-        val preciosEspeciales = viewModel.partidasEspeciales.value?.filter { precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo}
+        val preciosEspeciales = viewModel.partidasEspeciales.value?.filter {
+                precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo
+                && precioEspecialBean?.active == true
+        }
         val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBean else preciosEspeciales[0]
 
         val data = viewModel.addItem(
             productoBean.articulo,
             productoBean.descripcion,
             precioEspacial?.precio ?: productoBean.precio,
-            productoBean.costo,
             productoBean.iva,
             cantidadVendida
         )
@@ -236,6 +238,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 intent1.putExtra("ticket", sellViewState.ticket)
                 intent1.putExtra("venta", sellViewState.sellId)
                 intent1.putExtra("clienteID", sellViewState.clientId)
+                intent1.putExtra("account", sellViewState.account)
+
                 intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent1)
                 binding.imgBtnFinishSale.isEnabled = true
@@ -443,7 +447,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     override fun onProviderDisabled(provider: String) {
         // Este metodo se ejecuta cuando el GPS es desactivado
-        Toast.makeText(applicationContext, "GPS Desactivado", Toast.LENGTH_SHORT).show()
+         Toast.makeText(applicationContext, "GPS Desactivado", Toast.LENGTH_SHORT).show()
     }
 
     override fun onProviderEnabled(provider: String) {
@@ -464,7 +468,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private fun showClientInfo(clientName: String, account: String, saldoCredito: String) {
         headerBinding.textViewClienteNombreVentaView.text = clientName
-        headerBinding.textViewClienteVentaView.text = "$account($saldoCredito)"
+        headerBinding.textViewClienteVentaView.text = "$account(${saldoCredito.replace(" ", "")})"
         hideLoading()
     }
 
@@ -689,10 +693,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     }
 
     private fun showLoading() {
-        progressDialog = ProgressDialog(this@VentasActivity)
-        progressDialog.setMessage("Espere un momento")
-        progressDialog.setCancelable(false)
-        progressDialog.show()
+        try {
+            progressDialog = ProgressDialog(this@VentasActivity)
+            progressDialog.setMessage("Espere un momento")
+            progressDialog.setCancelable(false)
+            progressDialog.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun hideLoading() {

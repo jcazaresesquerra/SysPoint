@@ -62,7 +62,7 @@
                 android:textColor="@color/purple_500"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView_cliente_venta" />
+                app:layout_constraintTop_toBottomOf="@+id/textView_cliente_venta_view" />
 
             <TextView
                 android:id="@+id/textView_subtotal_venta"

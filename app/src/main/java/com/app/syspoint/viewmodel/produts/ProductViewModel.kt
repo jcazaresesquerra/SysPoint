@@ -17,12 +17,12 @@ class ProductViewModel: BaseViewModel() {
     val productViewState = MutableLiveData<ProductViewState>()
 
     fun setUpProducts() {
-        val data = ProductDao().list() as List<ProductoBean?>
+        val data = ProductDao().getActiveProducts()
         productViewState.postValue(ProductViewState.SetUpProductsState(data))
     }
 
     fun refreshProducts() {
-        val data = ProductDao().list() as List<ProductoBean?>
+        val data = ProductDao().getActiveProducts()
         productViewState.postValue(ProductViewState.RefreshProductsState(data))
     }
 

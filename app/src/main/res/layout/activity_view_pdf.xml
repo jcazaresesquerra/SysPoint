@@ -73,10 +73,19 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
 <LinearLayout
     android:id="@+id/buttonContainer"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="8dp">
+
+    <Button
+        android:id="@+id/btnCobranza"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/do_charge_text_button"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/btnConfirmaVenta"

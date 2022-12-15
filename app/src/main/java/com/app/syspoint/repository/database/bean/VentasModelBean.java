@@ -13,19 +13,16 @@ public class VentasModelBean extends Bean {
     private String descripcion;
     private int cantidad;
     private double precio;
-    private double costo;
     private double impuesto;
     private String observ;
-    @Generated(hash = 195912614)
+    @Generated(hash = 1984461571)
     public VentasModelBean(Long id, String articulo, String descripcion,
-            int cantidad, double precio, double costo, double impuesto,
-            String observ) {
+            int cantidad, double precio, double impuesto, String observ) {
         this.id = id;
         this.articulo = articulo;
         this.descripcion = descripcion;
         this.cantidad = cantidad;
         this.precio = precio;
-        this.costo = costo;
         this.impuesto = impuesto;
         this.observ = observ;
     }
@@ -61,12 +58,6 @@ public class VentasModelBean extends Bean {
     }
     public void setPrecio(double precio) {
         this.precio = precio;
-    }
-    public double getCosto() {
-        return this.costo;
-    }
-    public void setCosto(double costo) {
-        this.costo = costo;
     }
     public double getImpuesto() {
         return this.impuesto;
