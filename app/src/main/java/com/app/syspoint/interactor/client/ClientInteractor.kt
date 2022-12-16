@@ -21,8 +21,13 @@ abstract class ClientInteractor {
     }
 
     interface FindClientListener {
-        fun onFindClientSuccess()
+        fun onFindClientSuccess(clientList: List<ClienteBean>)
         fun onFindClientError()
+    }
+
+    interface GetClientByAccount {
+        fun onGetClientSuccess()
+        fun onGetClientError()
     }
 
     open fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {}
@@ -30,4 +35,5 @@ abstract class ClientInteractor {
     open fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {}
     open fun executeSaveClient(clientList: List<Client>, onSaveClientListener: SaveClientListener) {}
     open fun executeFindClient(clientName: String, onFindClientListener: FindClientListener) {}
+    open fun executeGetClientByAccount(account: String, onGetClientByAccount: GetClientByAccount) {}
 }

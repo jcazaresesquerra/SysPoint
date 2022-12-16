@@ -47,4 +47,12 @@ class ClientInteractorImp: ClientInteractor() {
             RequestClient.findClient(clientName, onFindClientListener)
         }
     }
+
+    @Synchronized
+    override fun executeGetClientByAccount(account: String, onGetClientByAccount: GetClientByAccount) {
+        super.executeGetClientByAccount(account, onGetClientByAccount)
+        GlobalScope.launch {
+            RequestClient.requestGetClientByAccount(account, onGetClientByAccount)
+        }
+    }
 }

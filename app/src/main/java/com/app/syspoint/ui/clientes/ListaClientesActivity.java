@@ -2,7 +2,6 @@ package com.app.syspoint.ui.clientes;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,12 +17,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.RoutingDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.List;
@@ -69,7 +68,6 @@ public class ListaClientesActivity extends AppCompatActivity {
                 if (!hasFocus) {
                     searchMenuItem.collapseActionView();
                     searchView.setQuery("", false);
-
                 }
             }
         });
@@ -78,7 +76,19 @@ public class ListaClientesActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextSubmit(String arg0) {
-                mAdapter.getFilter().filter(arg0);
+                //mAdapter.getFilter().filter(arg0);
+                new ClientInteractorImp().executeFindClient(arg0, new ClientInteractor.FindClientListener() {
+                    @Override
+                    public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
+                        List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
+                        mAdapter.setClients(clientBeanList);
+                    }
+
+                    @Override
+                    public void onFindClientError() {
+
+                    }
+                });
                 return false;
             }
 

@@ -125,7 +125,6 @@ public class ClienteFragment extends Fragment {
                 if (!hasFocus) {
                     searchMenuItem.collapseActionView();
                     searchView.setQuery("", false);
-
                 }
             }
         });
@@ -134,8 +133,19 @@ public class ClienteFragment extends Fragment {
 
             @Override
             public boolean onQueryTextSubmit(String arg0) {
-                // TODO Auto-generated method stub
-                mAdapter.getFilter().filter(arg0);
+                //mAdapter.getFilter().filter(arg0);
+                new ClientInteractorImp().executeFindClient(arg0, new ClientInteractor.FindClientListener() {
+                    @Override
+                    public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
+                        List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
+                        mAdapter.setClients(clientBeanList);
+                    }
+
+                    @Override
+                    public void onFindClientError() {
+                        mAdapter.getFilter().filter(arg0);
+                    }
+                });
                 return false;
             }
 
@@ -229,6 +239,21 @@ public class ClienteFragment extends Fragment {
         mAdapter = new AdapterListaClientes(
                 mData,
                 (view, obj, position, onDialogShownListener) -> {
+                    progressDialog = new ProgressDialog(getActivity());
+                    progressDialog.setMessage("Espere un momento");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+                    new ClientInteractorImp().executeGetClientByAccount(obj.getCuenta(), new ClientInteractor.GetClientByAccount() {
+                        @Override
+                        public void onGetClientSuccess() {
+                            progressDialog.dismiss();
+                        }
+
+                        @Override
+                        public void onGetClientError() {
+                            progressDialog.dismiss();
+                        }
+                    });
                     showDialogList(obj, onDialogShownListener);
                 },
                 position -> false
@@ -367,7 +392,6 @@ public class ClienteFragment extends Fragment {
                 final ClientesRutaBean bean = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta(), ruteoBean.getDia(), ruteoBean.getRuta());
 
                     if (bean == null) {
-
                         final ClientesRutaBean beanCliente = ruteClientDao.getClienteFirts();
                         long id = ruteClientDao.getUltimoConsec();
                         int lastOrder = ruteClientDao.getLastClientInOrder(ruteoBean.getDia(), ruteoBean.getRuta());
@@ -375,14 +399,13 @@ public class ClienteFragment extends Fragment {
                         if (beanCliente != null){
                             final ClientesRutaBean clientesRutaBean = new ClientesRutaBean();
 
-
                             clientesRutaBean.setId(id);
                             clientesRutaBean.setNombre_comercial(clienteBean.getNombre_comercial());
                             clientesRutaBean.setCalle(clienteBean.getCalle());
                             clientesRutaBean.setNumero(clienteBean.getNumero());
                             clientesRutaBean.setColonia(clienteBean.getColonia());
                             clientesRutaBean.setCuenta(clienteBean.getCuenta());
-                            clientesRutaBean.setRango(clienteBean.getRango());
+                            clientesRutaBean.setRango(ruteoBean.getRuta());
                             clientesRutaBean.setStatus(clienteBean.getStatus());
 
                             if (ruteoBean.getDia() == 1) {
