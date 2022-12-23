@@ -103,6 +103,25 @@ class RuteClientDao: Dao("ClientesRutaBean") {
         return if (clienteBeans.isNotEmpty()) clienteBeans[0] else null
     }
 
+    //Retorna el empleado por identificador y ruta
+    fun getClienteByCuentaClienteAndRute(cuenta: String?, rute: String?, day: Int): ClientesRutaBean? {
+        val clienteBeans = dao.queryBuilder()
+            .where(ClientesRutaBeanDao.Properties.Cuenta.eq(cuenta))
+            .where(ClientesRutaBeanDao.Properties.Rango.eq(rute))
+            .where(
+                when(day) {
+                    1 -> ClientesRutaBeanDao.Properties.Lun.eq(1)
+                    2 -> ClientesRutaBeanDao.Properties.Mar.eq(1)
+                    3 -> ClientesRutaBeanDao.Properties.Mie.eq(1)
+                    4 -> ClientesRutaBeanDao.Properties.Jue.eq(1)
+                    5 -> ClientesRutaBeanDao.Properties.Vie.eq(1)
+                    6 -> ClientesRutaBeanDao.Properties.Sab.eq(1)
+                    else -> ClientesRutaBeanDao.Properties.Dom.eq(1)
+                }
+            )            .list() as List<ClientesRutaBean>
+        return if (clienteBeans.isNotEmpty()) clienteBeans[0] else null
+    }
+
     fun getClienteByCuentaCliente(cuenta: String?, day: Int, rute: String): ClientesRutaBean? {
 
         val clients = dao.queryBuilder()

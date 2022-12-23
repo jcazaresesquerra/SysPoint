@@ -392,7 +392,10 @@ public class ClienteFragment extends Fragment {
                 final ClientesRutaBean bean = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta(), ruteoBean.getDia(), ruteoBean.getRuta());
 
                     if (bean == null) {
-                        final ClientesRutaBean beanCliente = ruteClientDao.getClienteFirts();
+                        ClientesRutaBean beanCliente = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta());
+
+                        if (beanCliente == null) beanCliente = ruteClientDao.getClienteFirts();
+
                         long id = ruteClientDao.getUltimoConsec();
                         int lastOrder = ruteClientDao.getLastClientInOrder(ruteoBean.getDia(), ruteoBean.getRuta());
 
@@ -408,69 +411,29 @@ public class ClienteFragment extends Fragment {
                             clientesRutaBean.setRango(ruteoBean.getRuta());
                             clientesRutaBean.setStatus(clienteBean.getStatus());
 
+                            clientesRutaBean.setLun(ruteoBean.getDia());
+                            clientesRutaBean.setMar(beanCliente.getMar());
+                            clientesRutaBean.setMie(beanCliente.getMie());
+                            clientesRutaBean.setJue(beanCliente.getJue());
+                            clientesRutaBean.setVie(beanCliente.getVie());
+                            clientesRutaBean.setSab(beanCliente.getSab());
+                            clientesRutaBean.setDom(beanCliente.getDom());
+                            clientesRutaBean.setOrder(beanCliente.getOrder());
+
                             if (ruteoBean.getDia() == 1) {
                                 clientesRutaBean.setLunOrder(lastOrder);
-                                clientesRutaBean.setLun(1);
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 2) {
                                 clientesRutaBean.setMarOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(1);
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 3) {
                                 clientesRutaBean.setMieOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(1);
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 4) {
                                 clientesRutaBean.setJueOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(1);
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 5) {
                                 clientesRutaBean.setVieOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(1);
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 6) {
                                 clientesRutaBean.setSabOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(1);
-                                clientesRutaBean.setDom(beanCliente.getDom());
                             } else if (ruteoBean.getDia() == 7) {
                                 clientesRutaBean.setDomOrder(lastOrder);
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(1);
                             } else {
                                 clientesRutaBean.setLun(beanCliente.getLun());
                                 clientesRutaBean.setMar(beanCliente.getMar());
@@ -481,7 +444,6 @@ public class ClienteFragment extends Fragment {
                                 clientesRutaBean.setDom(beanCliente.getDom());
                             }
 
-                            clientesRutaBean.setOrder(beanCliente.getOrder());
                             clientesRutaBean.setVisitado(0);
                             clientesRutaBean.setLatitud(clienteBean.getLatitud());
                             clientesRutaBean.setLongitud(clienteBean.getLongitud());
@@ -677,7 +639,7 @@ public class ClienteFragment extends Fragment {
 
         if (ruteoBean != null) {
             progressshow();
-            new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), new ClientInteractor.GetAllClientsListener() {
+            new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
                 public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
                     mData = new ClientDao().getClientsByRute(ruteoBean.getRuta());

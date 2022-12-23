@@ -423,9 +423,12 @@ class SellViewModel: ViewModel() {
             clienteBean1.date_sync = Utils.fechaActual()
             clientDao1.save(clienteBean1)
 
+            val routingDao = RoutingDao()
+            val ruteoBean = routingDao.getRutaEstablecida()
             val ruteClientDao = RuteClientDao()
             val clientesRutaBean =
-                ruteClientDao.getClienteByCuentaCliente(clientId)
+                if (ruteoBean != null) ruteClientDao.getClienteByCuentaCliente(clientId, ruteoBean.dia, ruteoBean.ruta)
+                else ruteClientDao.getClienteByCuentaCliente(clientId)
             if (clientesRutaBean != null) {
                 clientesRutaBean.visitado = 1
                 ruteClientDao.save(clientesRutaBean)

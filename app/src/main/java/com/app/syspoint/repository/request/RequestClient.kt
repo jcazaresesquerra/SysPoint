@@ -122,7 +122,7 @@ class RequestClient {
             })
         }
 
-        fun requestGetAllClientsByDate(ruteByEmployee: String, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
+        fun requestGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
             val clientsByRute = RequestClientsByRute(rute = ruteByEmployee)
             val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
@@ -217,68 +217,70 @@ class RequestClient {
                                 clientList.add(bean)
                             }
 
-                            val beanRute = daoRute.getClienteByCuentaCliente(item.cuenta)
+                            if (day == getDayFromItem(item)) {
+                                val beanRute = daoRute.getClienteByCuentaCliente(item.cuenta)
 
-                            if (beanRute == null) {
-                                val clienteBeanRute = ClientesRutaBean()
-                                val clientDaoRute = RuteClientDao()
-                                clienteBeanRute.nombre_comercial = item.nombreComercial
-                                clienteBeanRute.calle = item.calle
-                                clienteBeanRute.numero = item.numero
-                                clienteBeanRute.colonia = item.colonia
-                                clienteBeanRute.cuenta = item.cuenta
-                                clienteBeanRute.visitado = 0
-                                clienteBeanRute.rango = item.rango
-                                clienteBeanRute.status = item.status == 1
-                                clienteBeanRute.lun = item.lun
-                                clienteBeanRute.mar = item.mar
-                                clienteBeanRute.mie = item.mie
-                                clienteBeanRute.jue = item.jue
-                                clienteBeanRute.vie = item.vie
-                                clienteBeanRute.sab = item.sab
-                                clienteBeanRute.dom = item.dom
-                                clienteBeanRute.lunOrder = item.lunOrder
-                                clienteBeanRute.marOrder = item.marOrder
-                                clienteBeanRute.mieOrder = item.mieOrder
-                                clienteBeanRute.jueOrder = item.jueOrder
-                                clienteBeanRute.vieOrder = item.vieOrder
-                                clienteBeanRute.sabOrder = item.sabOrder
-                                clienteBeanRute.domOrder = item.domOrder
-                                clienteBeanRute.latitud = item.latitud
-                                clienteBeanRute.longitud = item.longitud
-                                clienteBeanRute.is_credito = item.isCredito == 1
-                                clienteBeanRute.recordatorio = item.recordatorio
-                                clienteBeanRute.phone_contact = item.phone_contacto
-                                clientDaoRute.insert(clienteBeanRute)
-                            } else {
-                                beanRute.nombre_comercial = item.nombreComercial
-                                beanRute.calle = item.calle
-                                beanRute.numero = item.numero
-                                beanRute.colonia = item.colonia
-                                beanRute.cuenta = item.cuenta
-                                beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
-                                beanRute.rango = item.rango
-                                beanRute.status = item.status == 1
-                                beanRute.lun = item.lun
-                                beanRute.mar = item.mar
-                                beanRute.mie = item.mie
-                                beanRute.jue = item.jue
-                                beanRute.vie = item.vie
-                                beanRute.sab = item.sab
-                                beanRute.dom = item.dom
-                                beanRute.lunOrder = item.lunOrder
-                                beanRute.marOrder = item.marOrder
-                                beanRute.mieOrder = item.mieOrder
-                                beanRute.jueOrder = item.jueOrder
-                                beanRute.vieOrder = item.vieOrder
-                                beanRute.sabOrder = item.sabOrder
-                                beanRute.domOrder = item.domOrder
-                                beanRute.latitud = item.latitud
-                                beanRute.longitud = item.longitud
-                                beanRute.is_credito = item.isCredito == 1
-                                beanRute.recordatorio = item.recordatorio
-                                beanRute.phone_contact = item.phone_contacto
-                                daoRute.save(beanRute)
+                                if (beanRute == null) {
+                                    val clienteBeanRute = ClientesRutaBean()
+                                    val clientDaoRute = RuteClientDao()
+                                    clienteBeanRute.nombre_comercial = item.nombreComercial
+                                    clienteBeanRute.calle = item.calle
+                                    clienteBeanRute.numero = item.numero
+                                    clienteBeanRute.colonia = item.colonia
+                                    clienteBeanRute.cuenta = item.cuenta
+                                    clienteBeanRute.visitado = 0
+                                    clienteBeanRute.rango = item.rango
+                                    clienteBeanRute.status = item.status == 1
+                                    clienteBeanRute.lun = item.lun
+                                    clienteBeanRute.mar = item.mar
+                                    clienteBeanRute.mie = item.mie
+                                    clienteBeanRute.jue = item.jue
+                                    clienteBeanRute.vie = item.vie
+                                    clienteBeanRute.sab = item.sab
+                                    clienteBeanRute.dom = item.dom
+                                    clienteBeanRute.lunOrder = item.lunOrder
+                                    clienteBeanRute.marOrder = item.marOrder
+                                    clienteBeanRute.mieOrder = item.mieOrder
+                                    clienteBeanRute.jueOrder = item.jueOrder
+                                    clienteBeanRute.vieOrder = item.vieOrder
+                                    clienteBeanRute.sabOrder = item.sabOrder
+                                    clienteBeanRute.domOrder = item.domOrder
+                                    clienteBeanRute.latitud = item.latitud
+                                    clienteBeanRute.longitud = item.longitud
+                                    clienteBeanRute.is_credito = item.isCredito == 1
+                                    clienteBeanRute.recordatorio = item.recordatorio
+                                    clienteBeanRute.phone_contact = item.phone_contacto
+                                    clientDaoRute.insert(clienteBeanRute)
+                                } else {
+                                    beanRute.nombre_comercial = item.nombreComercial
+                                    beanRute.calle = item.calle
+                                    beanRute.numero = item.numero
+                                    beanRute.colonia = item.colonia
+                                    beanRute.cuenta = item.cuenta
+                                    beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
+                                    beanRute.rango = item.rango
+                                    beanRute.status = item.status == 1
+                                    beanRute.lun = item.lun
+                                    beanRute.mar = item.mar
+                                    beanRute.mie = item.mie
+                                    beanRute.jue = item.jue
+                                    beanRute.vie = item.vie
+                                    beanRute.sab = item.sab
+                                    beanRute.dom = item.dom
+                                    beanRute.lunOrder = item.lunOrder
+                                    beanRute.marOrder = item.marOrder
+                                    beanRute.mieOrder = item.mieOrder
+                                    beanRute.jueOrder = item.jueOrder
+                                    beanRute.vieOrder = item.vieOrder
+                                    beanRute.sabOrder = item.sabOrder
+                                    beanRute.domOrder = item.domOrder
+                                    beanRute.latitud = item.latitud
+                                    beanRute.longitud = item.longitud
+                                    beanRute.is_credito = item.isCredito == 1
+                                    beanRute.recordatorio = item.recordatorio
+                                    beanRute.phone_contact = item.phone_contacto
+                                    daoRute.save(beanRute)
+                                }
                             }
                         }
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
@@ -740,5 +742,25 @@ class RequestClient {
                 }
             })
         }
+
+        fun getDayFromItem(clienteBean: Client): Int {
+            return if (clienteBean.lun == 1)
+                1
+            else if (clienteBean.mar == 1)
+                2
+            else if (clienteBean.mar == 1)
+                3
+            else if (clienteBean.mar == 1)
+                4
+            else if (clienteBean.mar == 1)
+                5
+            else if (clienteBean.mar == 1)
+                6
+            else if (clienteBean.mar == 1)
+                7
+            else 0
+        }
     }
+
+
 }

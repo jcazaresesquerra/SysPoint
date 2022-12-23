@@ -31,7 +31,7 @@ abstract class ClientInteractor {
     }
 
     open fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {}
-    open fun executeGetAllClientsByDate(ruteByEmployee: String, onGetAllClientsListener: GetAllClientsListener) {}
+    open fun executeGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: GetAllClientsListener) {}
     open fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {}
     open fun executeSaveClient(clientList: List<Client>, onSaveClientListener: SaveClientListener) {}
     open fun executeFindClient(clientName: String, onFindClientListener: FindClientListener) {}

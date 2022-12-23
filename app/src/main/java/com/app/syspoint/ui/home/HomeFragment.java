@@ -649,7 +649,7 @@ public class HomeFragment extends Fragment {
             EmpleadoBean vendedoresBean = AppBundle.getUserBean();
             String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
             progressshow();
-            new ClientInteractorImp().executeGetAllClientsByDate(ruta, new ClientInteractor.GetAllClientsListener() {
+            new ClientInteractorImp().executeGetAllClientsByDate(ruta, ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
                 public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
                     loadRuta();

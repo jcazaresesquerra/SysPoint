@@ -350,7 +350,7 @@ class ChargeViewModel: ViewModel() {
         val ruteoBean = routingDao.getRutaEstablecida()
 
         if (ruteoBean != null) {
-            ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.ruta, object : GetAllClientsListener {
+            ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.ruta, ruteoBean.dia, object : GetAllClientsListener {
                 override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {}
                 override fun onGetAllClientsError() {}
             })

@@ -2,6 +2,7 @@ package com.app.syspoint.viewmodel.precaptura
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.client.ClientInteractor
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
@@ -12,11 +13,11 @@ import com.app.syspoint.models.sealed.PrecaptureViewState
 import com.app.syspoint.repository.database.bean.AppBundle
 import com.app.syspoint.repository.database.bean.VisitasBean
 import com.app.syspoint.repository.database.dao.ClientDao
+import com.app.syspoint.repository.database.dao.RoutingDao
 import com.app.syspoint.repository.database.dao.RuteClientDao
 import com.app.syspoint.repository.database.dao.VisitsDao
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.interactor.cache.CacheInteractor
 
 class PrecaptureViewModel: ViewModel() {
 
@@ -35,8 +36,12 @@ class PrecaptureViewModel: ViewModel() {
         clienteBean.date_sync = Utils.fechaActual()
         clienteBean.visitasNoefectivas = clienteBean.visitasNoefectivas + 1
         clientDao.save(clienteBean)
+        val routingDao = RoutingDao()
+        val ruteoBean = routingDao.getRutaEstablecida()
         val ruteClientDao = RuteClientDao()
-        val clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(accountId)
+        val clientesRutaBean =
+            if (ruteoBean != null) ruteClientDao.getClienteByCuentaClienteAndRute(accountId, ruteoBean.ruta, ruteoBean.dia)
+            else ruteClientDao.getClienteByCuentaCliente(accountId)
         if (clientesRutaBean != null) {
             clientesRutaBean.visitado = 1
             ruteClientDao.save(clientesRutaBean)
@@ -89,6 +94,7 @@ class PrecaptureViewModel: ViewModel() {
             client.cuenta = item.cuenta
             client.status = if (item.status) 1 else 0
             client.consec = item.consec
+
             client.rango = item.rango
             client.lun = item.lun
             client.mar = item.mar

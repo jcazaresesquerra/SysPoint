@@ -17,10 +17,10 @@ class ClientInteractorImp: ClientInteractor() {
     }
 
     @Synchronized
-    override fun executeGetAllClientsByDate(ruteByEmployee: String, onGetAllClientsListener: GetAllClientsListener) {
-        super.executeGetAllClientsByDate(ruteByEmployee, onGetAllClientsListener)
+    override fun executeGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: GetAllClientsListener) {
+        super.executeGetAllClientsByDate(ruteByEmployee, day, onGetAllClientsListener)
         GlobalScope.launch {
-            RequestClient.requestGetAllClientsByDate(ruteByEmployee, onGetAllClientsListener)
+            RequestClient.requestGetAllClientsByDate(ruteByEmployee, day, onGetAllClientsListener)
         }
     }
 

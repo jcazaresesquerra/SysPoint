@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.*
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -20,6 +19,7 @@ import com.app.syspoint.databinding.ActivityActualizaClienteBinding
 import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.models.Client
+import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.utils.*
 import libs.mjn.prettydialog.PrettyDialog
@@ -50,6 +50,32 @@ class UpdateClientActivity: AppCompatActivity() {
         this.loadSpinnerRuta()
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_CANCELED) return
+        if (requestCode == 200) {
+            val cuenta = data!!.getStringExtra(Actividades.PARAM_1)
+            binding.inpMatrizAsignadaActualizaCliente.setText("" + cuenta)
+        } else if (requestCode == 300) {
+            val numero = data!!.getStringExtra(Actividades.PARAM_1)
+            val calle = data.getStringExtra(Actividades.PARAM_2)
+            val localidad = data.getStringExtra(Actividades.PARAM_3)
+            val colonia = data.getStringExtra(Actividades.PARAM_4)
+            val estado = data.getStringExtra(Actividades.PARAM_5)
+            val pais = data.getStringExtra(Actividades.PARAM_6)
+            val cp = data.getStringExtra(Actividades.PARAM_7)
+            val lat = data.getStringExtra(Actividades.PARAM_8)
+            val lng = data.getStringExtra(Actividades.PARAM_9)
+            binding.etCalleActualizaCliente.setText(calle)
+            binding.etCpUpdateClient.setText(cp)
+            binding.etColoniaActualizaCliente.setText("" + localidad)
+            binding.etCiudadActualizaCliente.setText("" + estado)
+            binding.etNumeroActualizaCliente.setText(numero)
+            binding.etActualizaLatitud.setText(lat)
+            binding.etActualizaLongitud.setText(lng)
+        }
+    }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1000) {
@@ -323,7 +349,7 @@ class UpdateClientActivity: AppCompatActivity() {
             if (!Utils.isNetworkAvailable(application)) {
                 //showDialogNotConnectionInternet();
             } else {
-                testLoadClientes(idCliente)
+                testLoadClientes(bean)
             }
         } else {
             Toast.makeText(
@@ -345,20 +371,22 @@ class UpdateClientActivity: AppCompatActivity() {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT
         (dialog.findViewById<View>(R.id.bt_close) as AppCompatButton).setOnClickListener { v: View? ->
-            testLoadClientes(idCliente)
+            //testLoadClientes(idCliente)
             dialog.dismiss()
         }
         dialog.show()
         dialog.window!!.attributes = lp
     }
 
-    private fun testLoadClientes(idCliente: String?) {
+    private fun testLoadClientes(client: ClienteBean) {
         if (!idCliente.isNullOrEmpty()) {
             binding.rlprogressClienteActualiza.setVisible()
-            val clientDao = ClientDao()
-            val listaClientesDB = clientDao.getByIDClient(idCliente)
+            //val clientDao = ClientDao()
+            //val listaClientesDB = clientDao.getByIDClient(idCliente)
+            //val listaClientesDB = client
             val listaClientes: MutableList<Client> = ArrayList()
-            for (item in listaClientesDB) {
+            //for (item in listaClientesDB) {
+            client.let { item ->
                 val cliente = Client()
                 cliente.nombreComercial = item.nombre_comercial
                 cliente.calle = item.calle
