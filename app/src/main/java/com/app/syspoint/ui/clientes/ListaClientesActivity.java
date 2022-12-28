@@ -8,6 +8,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,17 +26,22 @@ import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.utils.Actividades;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListaClientesActivity extends AppCompatActivity {
 
     AdapterListaClientes mAdapter;
     List<ClienteBean> mData;
+    private LinearLayout lyt_clientes;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_clientes);
+        lyt_clientes = findViewById(R.id.lyt_clientes);
+
         initToolBar();
         initRecyclerView();
     }
@@ -82,6 +88,12 @@ public class ListaClientesActivity extends AppCompatActivity {
                     public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
                         List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
                         mAdapter.setClients(clientBeanList);
+
+                        if (clientBeanList.size() > 0) {
+                            lyt_clientes.setVisibility(View.GONE);
+                        } else {
+                            lyt_clientes.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
@@ -122,7 +134,18 @@ public class ListaClientesActivity extends AppCompatActivity {
     private void initRecyclerView() {
         RoutingDao routingDao = new RoutingDao();
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
-        mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
+
+        if (ruteoBean != null) {
+            mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
+        } else {
+            mData = new ArrayList<>();
+        }
+
+        if (mData.size() > 0) {
+            lyt_clientes.setVisibility(View.GONE);
+        } else {
+            lyt_clientes.setVisibility(View.VISIBLE);
+        }
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_lista_clientes);
         recyclerView.setHasFixedSize(true);
@@ -145,7 +168,6 @@ public class ListaClientesActivity extends AppCompatActivity {
                 position -> false);
 
         recyclerView.setAdapter(mAdapter);
-
     }
 
 }

@@ -139,6 +139,12 @@ public class ClienteFragment extends Fragment {
                     public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
                         List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
                         mAdapter.setClients(clientBeanList);
+
+                        if (clientBeanList.size() > 0) {
+                            lyt_clientes.setVisibility(View.GONE);
+                        } else {
+                            lyt_clientes.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override

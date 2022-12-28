@@ -43,6 +43,36 @@
                 android:scrollbars="vertical"
                 tools:listitem="@layout/item_lista_clientes">
             </androidx.recyclerview.widget.RecyclerView>
+
+            <LinearLayout
+                android:id="@+id/lyt_clientes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+                    android:src="@drawable/no_results" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ups_no_hay_datos"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Display1"
+                    android:textColor="@color/purple_500"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="No existen clientes en la lista"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                    android:textColor="@color/purple_500" />
+            </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>
