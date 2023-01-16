@@ -79,9 +79,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import libs.mjn.prettydialog.PrettyDialog;
 import libs.mjn.prettydialog.PrettyDialogCallback;
@@ -280,6 +284,12 @@ public class HomeFragment extends Fragment {
                                 EmpleadoBean vendedoresBean1 = AppBundle.getUserBean();
                                 String ruta_ = ruta != null && !ruta.isEmpty() ? ruta : vendedoresBean1.getRute();
 
+                                if (ruta_.equals("0")) {
+                                    EmpleadoBean vendedoresBean = new CacheInteractor().getSeller();
+                                    if (vendedoresBean != null)
+                                        ruta_ = vendedoresBean.rute;
+                                }
+
                                 ruteoBean.setRuta(ruta_);
 
                                 try {
@@ -406,6 +416,42 @@ public class HomeFragment extends Fragment {
         mData = new ArrayList<>();
         RoutingDao routingDao = new RoutingDao();
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+
+        /*if (ruteoBean == null) {
+            ruteoBean = new RuteoBean();
+            routingDao.clear();
+            Calendar calendar = Calendar.getInstance();
+            Date date = calendar.getTime();
+            String dia = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+            if (dia.compareToIgnoreCase("Monday") == 0) {
+                ruteoBean.setDia(1);
+            } else if (dia.compareToIgnoreCase("Tuesday") == 0) {
+                ruteoBean.setDia(2);
+            } else if (dia.compareToIgnoreCase("Wednesday") == 0) {
+                ruteoBean.setDia(3);
+            } else if (dia.compareToIgnoreCase("Thursday") == 0) {
+                ruteoBean.setDia(4);
+            } else if (dia.compareToIgnoreCase("Friday") == 0) {
+                ruteoBean.setDia(5);
+            } else if (dia.compareToIgnoreCase("Saturday") == 0) {
+                ruteoBean.setDia(6);
+            } else if (dia.compareToIgnoreCase("Sunday") == 0) {
+                ruteoBean.setDia(7);
+            }
+            ruteoBean.setId(1L);
+            ruteoBean.setFecha(Utils.fechaActual());
+            EmpleadoBean vendedoresBean = new CacheInteractor().getSeller();
+            if (vendedoresBean != null)
+                ruteoBean.setRuta(vendedoresBean.getRute());
+            else
+                ruteoBean.setRuta("0");
+
+            try {
+                routingDao.insert(ruteoBean);
+            } catch (Exception e) {
+                routingDao.save(ruteoBean);
+            }
+        }*/
 
         if (ruteoBean != null && ruteoBean.getDia() > 0) {
             EmpleadoBean vendedoresBean = AppBundle.getUserBean();

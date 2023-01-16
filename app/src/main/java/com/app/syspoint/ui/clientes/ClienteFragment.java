@@ -56,9 +56,14 @@ import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class ClienteFragment extends Fragment {
 
@@ -394,6 +399,39 @@ public class ClienteFragment extends Fragment {
 
                 RoutingDao routingDao = new RoutingDao();
                 RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+
+                if (ruteoBean == null) {
+                    ruteoBean = new RuteoBean();
+                    routingDao.clear();
+                    Calendar calendar = Calendar.getInstance();
+                    Date date = calendar.getTime();
+                    String dia = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+                    if (dia.compareToIgnoreCase("Monday") == 0) {
+                        ruteoBean.setDia(1);
+                    } else if (dia.compareToIgnoreCase("Tuesday") == 0) {
+                        ruteoBean.setDia(2);
+                    } else if (dia.compareToIgnoreCase("Wednesday") == 0) {
+                        ruteoBean.setDia(3);
+                    } else if (dia.compareToIgnoreCase("Thursday") == 0) {
+                        ruteoBean.setDia(4);
+                    } else if (dia.compareToIgnoreCase("Friday") == 0) {
+                        ruteoBean.setDia(5);
+                    } else if (dia.compareToIgnoreCase("Saturday") == 0) {
+                        ruteoBean.setDia(6);
+                    } else if (dia.compareToIgnoreCase("Sunday") == 0) {
+                        ruteoBean.setDia(7);
+                    }
+                    ruteoBean.setId(1L);
+                    ruteoBean.setFecha(Utils.fechaActual());
+                    ruteoBean.setRuta("0");
+
+                    try {
+                        routingDao.insert(ruteoBean);
+                    } catch (Exception e) {
+                        routingDao.save(ruteoBean);
+                    }
+                }
+
                 final RuteClientDao ruteClientDao = new RuteClientDao();
                 final ClientesRutaBean bean = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta(), ruteoBean.getDia(), ruteoBean.getRuta());
 
@@ -417,13 +455,21 @@ public class ClienteFragment extends Fragment {
                             clientesRutaBean.setRango(ruteoBean.getRuta());
                             clientesRutaBean.setStatus(clienteBean.getStatus());
 
-                            clientesRutaBean.setLun(ruteoBean.getDia());
-                            clientesRutaBean.setMar(beanCliente.getMar());
-                            clientesRutaBean.setMie(beanCliente.getMie());
-                            clientesRutaBean.setJue(beanCliente.getJue());
-                            clientesRutaBean.setVie(beanCliente.getVie());
-                            clientesRutaBean.setSab(beanCliente.getSab());
-                            clientesRutaBean.setDom(beanCliente.getDom());
+                            if (ruteoBean.getDia() == 1)
+                                clientesRutaBean.setLun(1);
+                            else if (ruteoBean.getDia() == 2)
+                                clientesRutaBean.setMar(1);
+                            else if (ruteoBean.getDia() == 3)
+                                clientesRutaBean.setMie(1);
+                            else if (ruteoBean.getDia() == 4)
+                                clientesRutaBean.setJue(1);
+                            else if (ruteoBean.getDia() == 5)
+                                clientesRutaBean.setVie(1);
+                            else if (ruteoBean.getDia() == 6)
+                                clientesRutaBean.setSab(1);
+                            else if (ruteoBean.getDia() == 7)
+                                clientesRutaBean.setDom(1);
+
                             clientesRutaBean.setOrder(beanCliente.getOrder());
 
                             if (ruteoBean.getDia() == 1) {

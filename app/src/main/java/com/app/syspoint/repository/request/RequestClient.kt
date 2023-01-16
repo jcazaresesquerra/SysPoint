@@ -217,7 +217,7 @@ class RequestClient {
                                 clientList.add(bean)
                             }
 
-                            if (day == getDayFromItem(item)) {
+                            if (saveClientWithDay(item, day)) {
                                 val beanRute = daoRute.getClienteByCuentaCliente(item.cuenta)
 
                                 if (beanRute == null) {
@@ -743,22 +743,22 @@ class RequestClient {
             })
         }
 
-        fun getDayFromItem(clienteBean: Client): Int {
-            return if (clienteBean.lun == 1)
-                1
-            else if (clienteBean.mar == 1)
-                2
-            else if (clienteBean.mar == 1)
-                3
-            else if (clienteBean.mar == 1)
-                4
-            else if (clienteBean.mar == 1)
-                5
-            else if (clienteBean.mar == 1)
-                6
-            else if (clienteBean.mar == 1)
-                7
-            else 0
+        fun saveClientWithDay(clienteBean: Client, day: Int): Boolean {
+            return if (day == 1 && clienteBean.lun == 1)
+                true
+            else if (day == 2 && clienteBean.mar == 1)
+                true
+            else if (day == 3 && clienteBean.mie == 1)
+                true
+            else if (day == 4 && clienteBean.jue == 1)
+                true
+            else if (day == 5 && clienteBean.vie == 1)
+                true
+            else if (day == 6 && clienteBean.sab == 1)
+                true
+            else if (day == 7 && clienteBean.dom == 1)
+                true
+            else false
         }
     }
 
