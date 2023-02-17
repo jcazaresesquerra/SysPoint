@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 
 class RequestProducts {
     companion object {
@@ -41,17 +42,28 @@ class RequestProducts {
                                 producto.iva = items.iva
                                 producto.codigo_barras = items.codigoBarras
                                 producto.path_img = items.pathImage
+                                producto.updatedAt = items.updatedAt
                                 dao.insert(producto)
                                 products.add(producto)
                             } else {
-                                productBean.articulo = items.articulo
-                                productBean.descripcion = items.descripcion
-                                productBean.status = items.status
-                                productBean.precio = items.precio
-                                productBean.iva = items.iva
-                                productBean.codigo_barras = items.codigoBarras
-                                productBean.path_img = items.pathImage
-                                productDao.save(productBean)
+                                val update = if (!productBean.updatedAt.isNullOrEmpty() && !items.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(items.updatedAt)
+                                    val dateBean = formatter.parse(productBean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    productBean.articulo = items.articulo
+                                    productBean.descripcion = items.descripcion
+                                    productBean.status = items.status
+                                    productBean.precio = items.precio
+                                    productBean.iva = items.iva
+                                    productBean.codigo_barras = items.codigoBarras
+                                    productBean.path_img = items.pathImage
+                                    productBean.updatedAt = items.updatedAt
+                                    productDao.save(productBean)
+                                }
                                 products.add(productBean)
                             }
                         }

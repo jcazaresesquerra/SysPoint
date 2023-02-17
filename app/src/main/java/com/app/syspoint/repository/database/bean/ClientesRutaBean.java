@@ -43,13 +43,14 @@ public class ClientesRutaBean extends Bean {
     private String recordatorio;
     private boolean is_recordatorio;
     private String date_sync;
-@Generated(hash = 1500931696)
+    private String updatedAt;
+@Generated(hash = 654095349)
 public ClientesRutaBean(Long id, String nombre_comercial, String calle, String numero,
         String colonia, String cuenta, String rango, int lun, int mar, int mie, int jue, int vie,
         int sab, int dom, int lunOrder, int marOrder, int mieOrder, int jueOrder, int vieOrder,
         int sabOrder, int domOrder, int order, int visitado, String latitud, String longitud,
         String phone_contact, boolean status, boolean is_credito, String recordatorio,
-        boolean is_recordatorio, String date_sync) {
+        boolean is_recordatorio, String date_sync, String updatedAt) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -81,6 +82,7 @@ public ClientesRutaBean(Long id, String nombre_comercial, String calle, String n
     this.recordatorio = recordatorio;
     this.is_recordatorio = is_recordatorio;
     this.date_sync = date_sync;
+    this.updatedAt = updatedAt;
 }
 @Generated(hash = 2130296790)
 public ClientesRutaBean() {
@@ -274,5 +276,11 @@ public void setDomOrder(int domOrder) {
     this.domOrder = domOrder;
 }
 
- 
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

@@ -90,12 +90,12 @@ public class ClienteFragment extends Fragment {
                 client = new ClienteBean(1L, "Publico General",
                         "Industrias del Valle", "1", "Parque Canacintra",
                         "Culiacán Rosales", 80150, "22-08-2021",
-                        "0001", true, 0, "01", 0,0,0,0,
+                        "000000", true, "000001", "01", 0,0,0,0,
                         0,0,0, 0,0,0,0,0,
                         0,0, 0, "24.777435983809422",
                         "-107.437107128804", null, null,
                         false, 0, false, 0.0,
-                        0.0, null, "2022-11-08");
+                        0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS());
                 try {
                     clientDao.insert(client);
                 } catch (Exception e) {
@@ -246,6 +246,7 @@ public class ClienteFragment extends Fragment {
 
         // remove inactive users
         mData.removeIf(item -> !item.getStatus());
+        mData.removeIf(item -> item.getCuenta().equals("000000"));
 
         mAdapter = new AdapterListaClientes(
                 mData,
@@ -698,6 +699,7 @@ public class ClienteFragment extends Fragment {
 
                     // remove inactive users
                     mData.removeIf(item -> !item.getStatus());
+                    mData.removeIf(item -> item.getCuenta().equals("000000"));
 
                     mAdapter.setClients(mData);
 
@@ -739,6 +741,7 @@ public class ClienteFragment extends Fragment {
         }
         // remove inactive users
         mData.removeIf(item -> !item.getStatus());
+        mData.removeIf(item -> item.getCuenta().equals("000000"));
         mAdapter.setClients(mData);
 
         if (mData.size() > 0) {

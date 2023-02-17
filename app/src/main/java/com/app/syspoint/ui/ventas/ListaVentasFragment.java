@@ -65,6 +65,8 @@ import com.app.syspoint.models.Payment;
 import com.app.syspoint.ui.ventas.adapter.AdapterListaVentas;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import org.json.JSONArray;
@@ -78,9 +80,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ListaVentasFragment extends Fragment {
 

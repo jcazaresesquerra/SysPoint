@@ -188,6 +188,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             cobranza.setFecha(item.getFecha());
             cobranza.setHora(item.getHora());
             cobranza.setIdentificador(item.getEmpleado());
+            cobranza.setUpdatedAt(item.getUpdatedAt());
             listaCobranza.add(cobranza);
         }
 

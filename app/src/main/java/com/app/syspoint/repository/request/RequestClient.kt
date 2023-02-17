@@ -15,6 +15,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.nio.CharBuffer
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class RequestClient {
     companion object {
@@ -44,7 +47,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: 0
+                                clienteBean.consec = item.consec ?: "0"
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -67,44 +70,55 @@ class RequestClient {
                                 clienteBean.limite_credito = item.limite_credito
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.updatedAt = item.updatedAt
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
-                                bean.nombre_comercial = item.nombreComercial
-                                bean.calle = item.calle
-                                bean.numero = item.numero
-                                bean.colonia = item.colonia
-                                bean.ciudad = item.ciudad
-                                bean.codigo_postal = item.codigoPostal
-                                bean.fecha_registro = item.fechaRegistro
-                                bean.cuenta = item.cuenta
-                                bean.status = item.status == 1
-                                bean.consec = item.consec ?: 0
-                                bean.visitado = if (bean.visitado == 1) 1 else  0
-                                bean.rango = item.rango
-                                bean.lun = item.lun
-                                bean.mar = item.mar
-                                bean.mie = item.mie
-                                bean.jue = item.jue
-                                bean.vie = item.vie
-                                bean.sab = item.sab
-                                bean.dom = item.dom
-                                bean.lunOrder = item.lunOrder
-                                bean.marOrder = item.marOrder
-                                bean.mieOrder = item.mieOrder
-                                bean.jueOrder = item.jueOrder
-                                bean.vieOrder = item.vieOrder
-                                bean.sabOrder = item.sabOrder
-                                bean.domOrder = item.domOrder
-                                bean.latitud = item.latitud
-                                bean.longitud = item.longitud
-                                bean.contacto_phone = item.phone_contacto
-                                bean.recordatorio = item.recordatorio
-                                bean.visitasNoefectivas = item.visitas
-                                bean.is_credito = item.isCredito == 1
-                                bean.limite_credito = item.limite_credito
-                                bean.saldo_credito = item.saldo_credito
-                                bean.matriz = item.matriz
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt)
+                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 1) 1 else 0
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.lunOrder = item.lunOrder
+                                    bean.marOrder = item.marOrder
+                                    bean.mieOrder = item.mieOrder
+                                    bean.jueOrder = item.jueOrder
+                                    bean.vieOrder = item.vieOrder
+                                    bean.sabOrder = item.sabOrder
+                                    bean.domOrder = item.domOrder
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.is_credito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+                                }
                                 dao.save(bean)
                                 clientList.add(bean)
                             }
@@ -151,7 +165,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: 0
+                                clienteBean.consec = item.consec ?: "0"
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -175,45 +189,66 @@ class RequestClient {
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
                                 clienteBean.matriz = item.matriz
+                                clienteBean.updatedAt = item.updatedAt
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
-                                bean.nombre_comercial = item.nombreComercial
-                                bean.calle = item.calle
-                                bean.numero = item.numero
-                                bean.colonia = item.colonia
-                                bean.ciudad = item.ciudad
-                                bean.codigo_postal = item.codigoPostal
-                                bean.fecha_registro = item.fechaRegistro
-                                bean.cuenta = item.cuenta
-                                bean.status = item.status == 1
-                                bean.consec = item.consec ?: 0
-                                bean.visitado = if (bean.visitado == 0) 0 else 1
-                                bean.rango = item.rango
-                                bean.lun = item.lun
-                                bean.mar = item.mar
-                                bean.mie = item.mie
-                                bean.jue = item.jue
-                                bean.vie = item.vie
-                                bean.sab = item.sab
-                                bean.dom = item.dom
-                                bean.lunOrder = item.lunOrder
-                                bean.marOrder = item.marOrder
-                                bean.mieOrder = item.mieOrder
-                                bean.jueOrder = item.jueOrder
-                                bean.vieOrder = item.vieOrder
-                                bean.sabOrder = item.sabOrder
-                                bean.domOrder = item.domOrder
-                                bean.latitud = item.latitud
-                                bean.longitud = item.longitud
-                                bean.contacto_phone = item.phone_contacto
-                                bean.recordatorio = item.recordatorio
-                                bean.visitasNoefectivas = item.visitas
-                                bean.is_credito = item.isCredito == 1
-                                bean.limite_credito = item.limite_credito
-                                bean.saldo_credito = item.saldo_credito
-                                bean.matriz = item.matriz
-                                dao.save(bean)
+
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e:Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(bean.updatedAt)
+                                    } catch (e:Exception) {
+                                        formatter.parse(bean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 0) 0 else 1
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.lunOrder = item.lunOrder
+                                    bean.marOrder = item.marOrder
+                                    bean.mieOrder = item.mieOrder
+                                    bean.jueOrder = item.jueOrder
+                                    bean.vieOrder = item.vieOrder
+                                    bean.sabOrder = item.sabOrder
+                                    bean.domOrder = item.domOrder
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.is_credito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+                                    dao.save(bean)
+                                }
+
                                 clientList.add(bean)
                             }
 
@@ -250,35 +285,46 @@ class RequestClient {
                                     clienteBeanRute.is_credito = item.isCredito == 1
                                     clienteBeanRute.recordatorio = item.recordatorio
                                     clienteBeanRute.phone_contact = item.phone_contacto
+                                    clienteBeanRute.updatedAt = item.updatedAt
                                     clientDaoRute.insert(clienteBeanRute)
                                 } else {
-                                    beanRute.nombre_comercial = item.nombreComercial
-                                    beanRute.calle = item.calle
-                                    beanRute.numero = item.numero
-                                    beanRute.colonia = item.colonia
-                                    beanRute.cuenta = item.cuenta
-                                    beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
-                                    beanRute.rango = item.rango
-                                    beanRute.status = item.status == 1
-                                    beanRute.lun = item.lun
-                                    beanRute.mar = item.mar
-                                    beanRute.mie = item.mie
-                                    beanRute.jue = item.jue
-                                    beanRute.vie = item.vie
-                                    beanRute.sab = item.sab
-                                    beanRute.dom = item.dom
-                                    beanRute.lunOrder = item.lunOrder
-                                    beanRute.marOrder = item.marOrder
-                                    beanRute.mieOrder = item.mieOrder
-                                    beanRute.jueOrder = item.jueOrder
-                                    beanRute.vieOrder = item.vieOrder
-                                    beanRute.sabOrder = item.sabOrder
-                                    beanRute.domOrder = item.domOrder
-                                    beanRute.latitud = item.latitud
-                                    beanRute.longitud = item.longitud
-                                    beanRute.is_credito = item.isCredito == 1
-                                    beanRute.recordatorio = item.recordatorio
-                                    beanRute.phone_contact = item.phone_contacto
+                                    val update = if (!beanRute.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                        val dateItem = formatter.parse(item.updatedAt)
+                                        val dateBean = formatter.parse(beanRute.updatedAt)
+                                        dateItem?.compareTo(dateBean) ?: 1
+                                    } else 1
+
+                                    if (update > 0) {
+                                        beanRute.nombre_comercial = item.nombreComercial
+                                        beanRute.calle = item.calle
+                                        beanRute.numero = item.numero
+                                        beanRute.colonia = item.colonia
+                                        beanRute.cuenta = item.cuenta
+                                        beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
+                                        beanRute.rango = item.rango
+                                        beanRute.status = item.status == 1
+                                        beanRute.lun = item.lun
+                                        beanRute.mar = item.mar
+                                        beanRute.mie = item.mie
+                                        beanRute.jue = item.jue
+                                        beanRute.vie = item.vie
+                                        beanRute.sab = item.sab
+                                        beanRute.dom = item.dom
+                                        beanRute.lunOrder = item.lunOrder
+                                        beanRute.marOrder = item.marOrder
+                                        beanRute.mieOrder = item.mieOrder
+                                        beanRute.jueOrder = item.jueOrder
+                                        beanRute.vieOrder = item.vieOrder
+                                        beanRute.sabOrder = item.sabOrder
+                                        beanRute.domOrder = item.domOrder
+                                        beanRute.latitud = item.latitud
+                                        beanRute.longitud = item.longitud
+                                        beanRute.is_credito = item.isCredito == 1
+                                        beanRute.recordatorio = item.recordatorio
+                                        beanRute.phone_contact = item.phone_contacto
+                                        beanRute.updatedAt = item.updatedAt
+                                    }
                                     daoRute.save(beanRute)
                                 }
                             }
@@ -327,7 +373,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: 0
+                                clienteBean.consec = item.consec ?: "0"
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -344,38 +390,49 @@ class RequestClient {
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
                                 clienteBean.matriz = item.matriz
+                                clienteBean.updatedAt = item.updatedAt
 
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
-                                bean.nombre_comercial = item.nombreComercial
-                                bean.calle = item.calle
-                                bean.numero = item.numero
-                                bean.colonia = item.colonia
-                                bean.ciudad = item.ciudad
-                                bean.codigo_postal = item.codigoPostal
-                                bean.fecha_registro = item.fechaRegistro
-                                bean.cuenta = item.cuenta
-                                bean.status = item.status == 1
-                                bean.consec = item.consec ?: 0
-                                bean.visitado = if (bean.visitado == 1) 1 else  0
-                                bean.rango = item.rango
-                                bean.lun = item.lun
-                                bean.mar = item.mar
-                                bean.mie = item.mie
-                                bean.jue = item.jue
-                                bean.vie = item.vie
-                                bean.sab = item.sab
-                                bean.dom = item.dom
-                                bean.latitud = item.latitud
-                                bean.longitud = item.longitud
-                                bean.contacto_phone = item.phone_contacto
-                                bean.recordatorio = item.recordatorio
-                                bean.visitasNoefectivas = item.visitas
-                                bean.is_credito = item.isCredito == 1
-                                bean.limite_credito = item.limite_credito
-                                bean.saldo_credito = item.saldo_credito
-                                bean.matriz = item.matriz
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt)
+                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 1) 1 else 0
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.is_credito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+                                }
                                 dao.save(bean)
                                 clientList.add(bean)
                             }
@@ -445,7 +502,7 @@ class RequestClient {
                                 clienteBean.fecha_registro = item.fechaRegistro
                                 clienteBean.cuenta = item.cuenta
                                 clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: 0
+                                clienteBean.consec = item.consec ?: "0"
                                 clienteBean.visitado = 0
                                 clienteBean.rango = item.rango
                                 clienteBean.lun = item.lun
@@ -462,38 +519,50 @@ class RequestClient {
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
                                 clienteBean.matriz = item.matriz
+                                clienteBean.updatedAt = item.updatedAt
 
                                 clientDao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
-                                bean.nombre_comercial = item.nombreComercial
-                                bean.calle = item.calle
-                                bean.numero = item.numero
-                                bean.colonia = item.colonia
-                                bean.ciudad = item.ciudad
-                                bean.codigo_postal = item.codigoPostal
-                                bean.fecha_registro = item.fechaRegistro
-                                bean.cuenta = item.cuenta
-                                bean.status = item.status == 1
-                                bean.consec = item.consec ?: 0
-                                bean.visitado = if (bean.visitado == 1) 1 else  0
-                                bean.rango = item.rango
-                                bean.lun = item.lun
-                                bean.mar = item.mar
-                                bean.mie = item.mie
-                                bean.jue = item.jue
-                                bean.vie = item.vie
-                                bean.sab = item.sab
-                                bean.dom = item.dom
-                                bean.latitud = item.latitud
-                                bean.longitud = item.longitud
-                                bean.contacto_phone = item.phone_contacto
-                                bean.recordatorio = item.recordatorio
-                                bean.visitasNoefectivas = item.visitas
-                                bean.is_credito = item.isCredito == 1
-                                bean.limite_credito = item.limite_credito
-                                bean.saldo_credito = item.saldo_credito
-                                bean.matriz = item.matriz
+
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt)
+                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 1) 1 else 0
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.is_credito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+                                }
                                 dao.save(bean)
                                 clientList.add(bean)
                             }
@@ -540,7 +609,7 @@ class RequestClient {
                                     clienteBean.fecha_registro = it.fechaRegistro
                                     clienteBean.cuenta = it.cuenta
                                     clienteBean.status = it.status == 1
-                                    clienteBean.consec = it.consec ?: 0
+                                    clienteBean.consec = it.consec ?: "0"
                                     clienteBean.visitado = 0
                                     clienteBean.rango = it.rango
                                     clienteBean.lun = it.lun
@@ -566,43 +635,54 @@ class RequestClient {
                                     clienteBean.limite_credito = it.limite_credito
                                     clienteBean.saldo_credito = it.saldo_credito
                                     clienteBean.matriz = it.matriz
+                                    clienteBean.updatedAt = it.updatedAt
                                     clientDao.insert(clienteBean)
                                 } else {
-                                    bean.nombre_comercial = it.nombreComercial
-                                    bean.calle = it.calle
-                                    bean.numero = it.numero
-                                    bean.colonia = it.colonia
-                                    bean.ciudad = it.ciudad
-                                    bean.codigo_postal = it.codigoPostal
-                                    bean.fecha_registro = it.fechaRegistro
-                                    bean.cuenta = it.cuenta
-                                    bean.status = it.status == 1
-                                    bean.consec = it.consec ?: 0
-                                    bean.visitado = if (bean.visitado == 1) 1 else  0
-                                    bean.rango = it.rango
-                                    bean.lun = it.lun
-                                    bean.mar = it.mar
-                                    bean.mie = it.mie
-                                    bean.jue = it.jue
-                                    bean.vie = it.vie
-                                    bean.sab = it.sab
-                                    bean.dom = it.dom
-                                    bean.lunOrder = it.lunOrder
-                                    bean.marOrder = it.marOrder
-                                    bean.mieOrder = it.mieOrder
-                                    bean.jueOrder = it.jueOrder
-                                    bean.vieOrder = it.vieOrder
-                                    bean.sabOrder = it.sabOrder
-                                    bean.domOrder = it.domOrder
-                                    bean.latitud = it.latitud
-                                    bean.longitud = it.longitud
-                                    bean.contacto_phone = it.phone_contacto
-                                    bean.recordatorio = it.recordatorio
-                                    bean.visitasNoefectivas = it.visitas
-                                    bean.is_credito = it.isCredito == 1
-                                    bean.limite_credito = it.limite_credito
-                                    bean.saldo_credito = it.saldo_credito
-                                    bean.matriz = it.matriz
+                                    val update = if (!bean.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                        val dateItem = formatter.parse(it.updatedAt)
+                                        val dateBean = formatter.parse(bean.updatedAt)
+                                        dateItem?.compareTo(dateBean) ?: 1
+                                    } else 1
+
+                                    if (update > 0) {
+                                        bean.nombre_comercial = it.nombreComercial
+                                        bean.calle = it.calle
+                                        bean.numero = it.numero
+                                        bean.colonia = it.colonia
+                                        bean.ciudad = it.ciudad
+                                        bean.codigo_postal = it.codigoPostal
+                                        bean.fecha_registro = it.fechaRegistro
+                                        bean.cuenta = it.cuenta
+                                        bean.status = it.status == 1
+                                        bean.consec = it.consec ?: "0"
+                                        bean.visitado = if (bean.visitado == 1) 1 else 0
+                                        bean.rango = it.rango
+                                        bean.lun = it.lun
+                                        bean.mar = it.mar
+                                        bean.mie = it.mie
+                                        bean.jue = it.jue
+                                        bean.vie = it.vie
+                                        bean.sab = it.sab
+                                        bean.dom = it.dom
+                                        bean.lunOrder = it.lunOrder
+                                        bean.marOrder = it.marOrder
+                                        bean.mieOrder = it.mieOrder
+                                        bean.jueOrder = it.jueOrder
+                                        bean.vieOrder = it.vieOrder
+                                        bean.sabOrder = it.sabOrder
+                                        bean.domOrder = it.domOrder
+                                        bean.latitud = it.latitud
+                                        bean.longitud = it.longitud
+                                        bean.contacto_phone = it.phone_contacto
+                                        bean.recordatorio = it.recordatorio
+                                        bean.visitasNoefectivas = it.visitas
+                                        bean.is_credito = it.isCredito == 1
+                                        bean.limite_credito = it.limite_credito
+                                        bean.saldo_credito = it.saldo_credito
+                                        bean.matriz = it.matriz
+                                        bean.updatedAt = it.updatedAt
+                                    }
                                     clientDao.save(bean)
                                 }
 
@@ -637,35 +717,47 @@ class RequestClient {
                                     clienteBeanRute.is_credito = it.isCredito == 1
                                     clienteBeanRute.recordatorio = it.recordatorio
                                     clienteBeanRute.phone_contact = it.phone_contacto
+                                    clienteBeanRute.updatedAt = it.updatedAt
                                     clientDaoRute.insert(clienteBeanRute)
                                 } else {
-                                    beanRute.nombre_comercial = it.nombreComercial
-                                    beanRute.calle = it.calle
-                                    beanRute.numero = it.numero
-                                    beanRute.colonia = it.colonia
-                                    beanRute.cuenta = it.cuenta
-                                    beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
-                                    beanRute.rango = it.rango
-                                    beanRute.status = it.status == 1
-                                    beanRute.lun = it.lun
-                                    beanRute.mar = it.mar
-                                    beanRute.mie = it.mie
-                                    beanRute.jue = it.jue
-                                    beanRute.vie = it.vie
-                                    beanRute.sab = it.sab
-                                    beanRute.dom = it.dom
-                                    beanRute.lunOrder = it.lunOrder
-                                    beanRute.marOrder = it.marOrder
-                                    beanRute.mieOrder = it.mieOrder
-                                    beanRute.jueOrder = it.jueOrder
-                                    beanRute.vieOrder = it.vieOrder
-                                    beanRute.sabOrder = it.sabOrder
-                                    beanRute.domOrder = it.domOrder
-                                    beanRute.latitud = it.latitud
-                                    beanRute.longitud = it.longitud
-                                    beanRute.is_credito = it.isCredito == 1
-                                    beanRute.recordatorio = it.recordatorio
-                                    beanRute.phone_contact = it.phone_contacto
+
+                                    val update = if (!beanRute.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                        val dateItem = formatter.parse(it.updatedAt)
+                                        val dateBean = formatter.parse(beanRute.updatedAt)
+                                        dateItem?.compareTo(dateBean) ?: 1
+                                    } else 1
+
+                                    if (update > 0) {
+                                        beanRute.nombre_comercial = it.nombreComercial
+                                        beanRute.calle = it.calle
+                                        beanRute.numero = it.numero
+                                        beanRute.colonia = it.colonia
+                                        beanRute.cuenta = it.cuenta
+                                        beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
+                                        beanRute.rango = it.rango
+                                        beanRute.status = it.status == 1
+                                        beanRute.lun = it.lun
+                                        beanRute.mar = it.mar
+                                        beanRute.mie = it.mie
+                                        beanRute.jue = it.jue
+                                        beanRute.vie = it.vie
+                                        beanRute.sab = it.sab
+                                        beanRute.dom = it.dom
+                                        beanRute.lunOrder = it.lunOrder
+                                        beanRute.marOrder = it.marOrder
+                                        beanRute.mieOrder = it.mieOrder
+                                        beanRute.jueOrder = it.jueOrder
+                                        beanRute.vieOrder = it.vieOrder
+                                        beanRute.sabOrder = it.sabOrder
+                                        beanRute.domOrder = it.domOrder
+                                        beanRute.latitud = it.latitud
+                                        beanRute.longitud = it.longitud
+                                        beanRute.is_credito = it.isCredito == 1
+                                        beanRute.recordatorio = it.recordatorio
+                                        beanRute.phone_contact = it.phone_contacto
+                                        beanRute.updatedAt = it.updatedAt
+                                    }
                                     daoRute.save(beanRute)
                                 }
                             }
@@ -740,6 +832,125 @@ class RequestClient {
                 override fun onFailure(call: Call<Data>, t: Throwable) {
                     onGetClientByAccount.onGetClientError()
                 }
+            })
+        }
+
+        fun getLastCLient(onGetLastClient: ClientInteractor.GetLastClient) {
+            val getClients = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getLastClient()
+
+            getClients.enqueue(object: Callback<ClientJson> {
+                override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
+                    if (response.isSuccessful) {
+
+                        if (!response.body()!!.clients.isNullOrEmpty()) {
+                            val client: ClienteBean
+                            val item = response.body()!!.clients!![0]
+                            //Validamos si existe el cliente
+                            val dao = ClientDao()
+                            val bean = dao.getClientByAccount(item!!.cuenta)
+
+                            if (bean == null) {
+                                val clienteBean = ClienteBean()
+                                val clientDao = ClientDao()
+                                clienteBean.nombre_comercial = item.nombreComercial
+                                clienteBean.calle = item.calle
+                                clienteBean.numero = item.numero
+                                clienteBean.colonia = item.colonia
+                                clienteBean.ciudad = item.ciudad
+                                clienteBean.codigo_postal = item.codigoPostal
+                                clienteBean.fecha_registro = item.fechaRegistro
+                                clienteBean.cuenta = item.cuenta
+                                clienteBean.status = item.status == 1
+                                clienteBean.consec = item.consec ?: "0"
+                                clienteBean.visitado = 0
+                                clienteBean.rango = item.rango
+                                clienteBean.lun = item.lun
+                                clienteBean.mar = item.mar
+                                clienteBean.mie = item.mie
+                                clienteBean.jue = item.jue
+                                clienteBean.vie = item.vie
+                                clienteBean.sab = item.sab
+                                clienteBean.dom = item.dom
+                                clienteBean.lunOrder = item.lunOrder
+                                clienteBean.marOrder = item.marOrder
+                                clienteBean.mieOrder = item.mieOrder
+                                clienteBean.jueOrder = item.jueOrder
+                                clienteBean.vieOrder = item.vieOrder
+                                clienteBean.sabOrder = item.sabOrder
+                                clienteBean.domOrder = item.domOrder
+                                clienteBean.latitud = item.latitud
+                                clienteBean.longitud = item.longitud
+                                clienteBean.is_credito = item.isCredito == 1
+                                clienteBean.limite_credito = item.limite_credito
+                                clienteBean.saldo_credito = item.saldo_credito
+                                clienteBean.contacto_phone = item.phone_contacto
+                                clienteBean.updatedAt = item.updatedAt
+                                clientDao.insert(clienteBean)
+                                client = clienteBean
+                            } else {
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt)
+                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 1) 1 else 0
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.lunOrder = item.lunOrder
+                                    bean.marOrder = item.marOrder
+                                    bean.mieOrder = item.mieOrder
+                                    bean.jueOrder = item.jueOrder
+                                    bean.vieOrder = item.vieOrder
+                                    bean.sabOrder = item.sabOrder
+                                    bean.domOrder = item.domOrder
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.is_credito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+                                }
+                                dao.save(bean)
+                                client = bean
+                            }
+                            onGetLastClient.onGetLastClientSuccess(client)
+                        } else {
+                            onGetLastClient.onGetLastClientError()
+                        }
+                    } else {
+                        onGetLastClient.onGetLastClientError()
+                    }
+                }
+
+                override fun onFailure(call: Call<ClientJson>, t: Throwable) {
+                    onGetLastClient.onGetLastClientError()
+                }
+
             })
         }
 

@@ -27,12 +27,31 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.androidnetworking.error.ANError;
+import com.app.syspoint.interactor.charge.ChargeInteractor;
+import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
+import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
+import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
+import com.app.syspoint.interactor.prices.PriceInteractor;
+import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.interactor.visit.VisitInteractor;
 import com.app.syspoint.interactor.visit.VisitInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
+import com.app.syspoint.models.Employee;
+import com.app.syspoint.models.Payment;
+import com.app.syspoint.models.Price;
+import com.app.syspoint.repository.database.bean.CobranzaBean;
+import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
+import com.app.syspoint.repository.database.dao.EmployeeDao;
+import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.request.http.Servicio;
+import com.app.syspoint.repository.request.http.SincVentas;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.database.bean.AppBundle;
@@ -46,7 +65,12 @@ import com.app.syspoint.repository.database.dao.VisitsDao;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Visit;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -113,6 +137,18 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                    if (connected) {
+                        getClientsByRute();
+
+                        saveVentas();
+                        saveCobranza();
+                        saveAbonos();
+                        saveVisitas();
+                        //saveClientes();
+                        savePreciosEspeciales();
+                    }
+                }).execute(), 100);
 
                 Utils.finishActivitiesFromStack();
                 finish();
@@ -423,6 +459,367 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             @Override
             public void onSaveVisitError() {
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void updateCobranzas() {
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean != null) {
+            new ChargeInteractorImp().executeGetChargeByEmployee(vendedoresBean.identificador, new ChargeInteractor.OnGetChargeByEmployeeListener() {
+                @Override
+                public void onGetChargeByEmployeeSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                    Log.d("SysPoint", "charge updated");
+                }
+                @Override
+                public void onGetChargeByEmployeeError() {
+                    Log.d("SysPoint", "error when charge update");
+                }
+            });
+        }
+    }
+
+    private void getClientsByRute() {
+
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+
+        if (ruteoBean != null) {
+            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+            String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
+            new ClientInteractorImp().executeGetAllClientsByDate(ruta, ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
+                @Override
+                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                    saveClientes();
+                }
+
+                @Override
+                public void onGetAllClientsError() {
+                    saveClientes();
+                    //loadRuta();
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error. Conectate a internet para cambiar de ruta u obtener los clientes", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void saveVentas() {
+        try {
+            final SincVentas sincVentas = new SincVentas();
+
+            sincVentas.setOnSuccess(new Servicio.ResponseOnSuccess() {
+                @Override
+                public void onSuccess(JSONArray response) throws JSONException {
+                }
+
+                @Override
+                public void onSuccessObject(JSONObject response) throws Exception {
+
+                }
+            });
+
+            sincVentas.setOnError(new Servicio.ResponseOnError() {
+                @Override
+                public void onError(ANError error) {
+
+                }
+
+                @Override
+                public void onError(String error) {
+
+                }
+            });
+
+            sincVentas.postObject();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveVisitas() {
+
+        final VisitsDao visitsDao = new VisitsDao();
+        List<VisitasBean> visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        final ClientDao clientDao = new ClientDao();
+        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+
+        if (vendedoresBean == null) {
+            vendedoresBean = new CacheInteractor().getSeller();
+        }
+
+        List<Visit> visitList = new ArrayList<>();
+        for (VisitasBean item : visitasBeanListBean) {
+            Visit visita = new Visit();
+            visita.setFecha(item.getFecha());
+            visita.setHora(item.getHora());
+            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
+            visita.setCuenta(clienteBean.getCuenta());
+            visita.setLatidud(item.getLatidud());
+            visita.setLongitud(item.getLongitud());
+            visita.setMotivo_visita(item.getMotivo_visita());
+            if (vendedoresBean != null) {
+                visita.setIdentificador(vendedoresBean.getIdentificador());
+            } else {
+                Log.e(TAG, "vendedoresBean is null");
+            }
+
+            visitList.add(visita);
+        }
+
+        new VisitInteractorImp().executeSaveVisit(visitList, new VisitInteractor.OnSaveVisitListener() {
+            @Override
+            public void onSaveVisitSuccess() {
+                //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveVisitError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void saveCobranza() {
+
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
+
+        List<Payment> listaCobranza = new ArrayList<>();
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            listaCobranza.add(cobranza);
+        }
+
+        new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
+            @Override
+            public void onSaveChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void saveAbonos() {
+
+        final PaymentDao paymentDao = new PaymentDao();
+        List<CobranzaBean> cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
+        List<Payment> listaCobranza = new ArrayList<>();
+
+        for (CobranzaBean item : cobranzaBeanList) {
+            Payment cobranza = new Payment();
+            cobranza.setCobranza(item.getCobranza());
+            cobranza.setCuenta(item.getCliente());
+            cobranza.setImporte(item.getImporte());
+            cobranza.setSaldo(item.getSaldo());
+            cobranza.setVenta(item.getVenta());
+            cobranza.setEstado(item.getEstado());
+            cobranza.setObservaciones(item.getObservaciones());
+            cobranza.setFecha(item.getFecha());
+            cobranza.setHora(item.getHora());
+            cobranza.setIdentificador(item.getEmpleado());
+            cobranza.setUpdatedAt(item.getUpdatedAt());
+            listaCobranza.add(cobranza);
+        }
+
+        new ChargeInteractorImp().executeUpdateCharge(listaCobranza, new ChargeInteractor.OnUpdateChargeListener() {
+            @Override
+            public void onUpdateChargeSuccess() {
+                //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onUpdateChargeError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void savePreciosEspeciales() {
+
+        //Instancia la base de datos
+        final SpecialPricesDao dao = new SpecialPricesDao();
+
+        //Contiene la lista de precios de la db local
+        List<PreciosEspecialesBean> listaDB = new ArrayList<>();
+
+        //Obtenemos la lista por id cliente
+        listaDB = dao.getPreciosBydate(Utils.fechaActual());
+
+
+        //Contiene la lista de lo que se envia al servidor
+        final List<Price> listaPreciosServidor = new ArrayList<>();
+
+        //Contien la lista de precios especiales locales
+        for (PreciosEspecialesBean items : listaDB) {
+
+            final Price precio = new Price();
+            if (items.getActive()) {
+                precio.setActive(1);
+            } else {
+                precio.setActive(0);
+            }
+
+            precio.setArticulo(items.getArticulo());
+            precio.setCliente(items.getCliente());
+            precio.setPrecio(items.getPrecio());
+            listaPreciosServidor.add(precio);
+
+        }
+
+        new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
+            @Override
+            public void onSendPricesSuccess() {
+                //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSendPricesError() {
+                //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void saveClientes() {
+
+        final ClientDao clientDao = new ClientDao();
+        List<ClienteBean> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
+
+        List<Client> clientList = new ArrayList<>();
+
+        for (ClienteBean item : clientListDB) {
+            Client client = new Client();
+            client.setNombreComercial(item.getNombre_comercial());
+            client.setCalle(item.getCalle());
+            client.setNumero(item.getNumero());
+            client.setColonia(item.getColonia());
+            client.setCiudad(item.getCiudad());
+            client.setCodigoPostal(item.getCodigo_postal());
+            client.setFechaRegistro(item.getFecha_registro());
+            client.setCuenta(item.getCuenta());
+            client.setStatus(item.getStatus()? 1 : 0);
+            client.setConsec(item.getConsec());
+            client.setRango(item.getRango());
+            client.setLun(item.getLun());
+            client.setMar(item.getMar());
+            client.setMie(item.getMie());
+            client.setJue(item.getJue());
+            client.setVie(item.getVie());
+            client.setSab(item.getSab());
+            client.setDom(item.getDom());
+            client.setLatitud(item.getLatitud());
+            client.setLongitud(item.getLongitud());
+            client.setPhone_contacto("" + item.getContacto_phone());
+            client.setRecordatorio("" + item.getRecordatorio());
+            client.setVisitas(item.getVisitasNoefectivas());
+            if (item.getIs_credito()) {
+                client.setCredito(1);
+            } else {
+                client.setCredito(0);
+            }
+            client.setSaldo_credito(item.getSaldo_credito());
+            client.setLimite_credito(item.getLimite_credito());
+            if (item.getMatriz() == null || (item.getMatriz() != null && item.getMatriz().equals("null"))) {
+                client.setMatriz("null");
+            } else {
+                client.setMatriz(item.getMatriz());
+            }
+            client.setUpdatedAt(item.getUpdatedAt());
+
+            clientList.add(client);
+        }
+
+        new ClientInteractorImp().executeSaveClient(clientList, new ClientInteractor.SaveClientListener() {
+            @Override
+            public void onSaveClientSuccess() {
+                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveClientError() {
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void testLoadEmpleado(String id){
+        final EmployeeDao employeeDao = new EmployeeDao();
+        List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
+        listaEmpleadosDB =  employeeDao.getEmployeeById(id);
+
+        List<Employee> listEmpleados = new ArrayList<>();
+        for (EmpleadoBean item : listaEmpleadosDB){
+            Employee empleado = new Employee();
+            empleado.setNombre(item.getNombre());
+            if (item.getDireccion().isEmpty()){
+                empleado.setDireccion("-");
+            }else{
+                empleado.setDireccion(item.getDireccion());
+            }
+            empleado.setEmail(item.getEmail());
+            if (item.getTelefono().isEmpty()){
+                empleado.setTelefono("-");
+            }else{
+                empleado.setTelefono(item.getTelefono());
+            }
+
+            if (item.getFecha_nacimiento().isEmpty()){
+                empleado.setFechaNacimiento("-");
+            }else{
+                empleado.setFechaNacimiento(item.getFecha_nacimiento());
+            }
+
+            if (item.getFecha_ingreso().isEmpty()){
+                empleado.setFechaIngreso("-");
+            }else{
+                empleado.setFechaIngreso(item.getFecha_ingreso());
+            }
+
+            empleado.setContrasenia(item.getContrasenia());
+            empleado.setIdentificador(item.getIdentificador());
+            empleado.setStatus(item.getStatus()? 1 : 0);
+
+            if (item.getPath_image() == null || item.getPath_image().isEmpty()){
+                empleado.setPathImage("");
+            }else {
+                empleado.setPathImage(item.getPath_image());
+            }
+
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
+            }
+
+            listEmpleados.add(empleado);
+        }
+
+        new GetEmployeesInteractorImp().executeSaveEmployees(listEmpleados, new GetEmployeeInteractor.SaveEmployeeListener() {
+            @Override
+            public void onSaveEmployeeSuccess() {
+                //progresshide();
+                //Toast.makeText(ActualizarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSaveEmployeeError() {
+                //progresshide();
+                //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
             }
         });
     }

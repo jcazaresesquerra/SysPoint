@@ -30,10 +30,15 @@ abstract class ClientInteractor {
         fun onGetClientError()
     }
 
+    interface GetLastClient {
+        fun onGetLastClientSuccess(client: ClienteBean)
+        fun onGetLastClientError()
+    }
     open fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {}
     open fun executeGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: GetAllClientsListener) {}
     open fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {}
     open fun executeSaveClient(clientList: List<Client>, onSaveClientListener: SaveClientListener) {}
     open fun executeFindClient(clientName: String, onFindClientListener: FindClientListener) {}
     open fun executeGetClientByAccount(account: String, onGetClientByAccount: GetClientByAccount) {}
+    open fun executeGetLasClient(onGetLasClient: GetLastClient) {}
 }

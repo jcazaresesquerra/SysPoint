@@ -26,13 +26,12 @@ import com.app.syspoint.repository.database.bean.ProductoBean;
 import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class CantidadInventarioActivity extends AppCompatActivity {
 

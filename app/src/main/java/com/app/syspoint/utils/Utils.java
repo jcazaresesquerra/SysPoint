@@ -94,6 +94,13 @@ public class Utils {
         return  fecha;
     }
 
+    public static String fechaActualHMS(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        return  fecha;
+    }
+
     public static String fechaActualPicker(){
         final Calendar calendarFechaFin = Calendar.getInstance();
         final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");

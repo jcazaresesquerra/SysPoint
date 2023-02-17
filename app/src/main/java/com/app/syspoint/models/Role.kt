@@ -26,5 +26,5 @@ data class Role(
     
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: Any? = null
+    var updatedAt: String? = null
 ): Serializable

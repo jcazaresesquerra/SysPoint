@@ -3,13 +3,11 @@ package com.app.syspoint.ui.precaptura
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +19,7 @@ import com.app.syspoint.models.sealed.PrecaptureViewState
 import com.app.syspoint.ui.ventas.FinalizaPrecapturaActivity
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Constants
+import com.app.syspoint.utils.PrettyDialog
 import com.app.syspoint.viewmodel.precaptura.PrecaptureViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -31,7 +30,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import libs.mjn.prettydialog.PrettyDialog
 
 class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks,

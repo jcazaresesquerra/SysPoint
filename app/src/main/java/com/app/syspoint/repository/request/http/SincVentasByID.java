@@ -15,7 +15,7 @@ public class SincVentasByID extends Servicio {
     private  Response responseVentas;
 
     public SincVentasByID (Long id) throws Exception {
-        super("saveSaleV2");
+        super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
         final List<VentasBean> listaVentas = sellsDao.getSincVentaByID(id);

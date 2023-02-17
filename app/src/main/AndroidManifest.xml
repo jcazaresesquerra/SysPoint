@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
 
     <uses-feature android:name="android.hardware.camera" />
@@ -40,6 +41,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SisVentasPoint"
         android:usesCleartextTraffic="true">
+
+        <service android:name=".repository.service.UpdateDataService"
+            android:exported="false"/>
 
         <receiver android:name="com.app.syspoint.ui.login.LoginActivity$NetworkChangeReceiver"
             android:exported="true">

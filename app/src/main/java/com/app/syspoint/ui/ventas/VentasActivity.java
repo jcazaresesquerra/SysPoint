@@ -87,9 +87,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-
 /*TODO refactor this class*/
 /*public class VentasActivity extends AppCompatActivity {
 

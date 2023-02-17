@@ -28,11 +28,10 @@ import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.PaymentModelDao;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaDocumentosCobranza;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 

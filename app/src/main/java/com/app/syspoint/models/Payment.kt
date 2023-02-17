@@ -43,5 +43,10 @@ data class Payment(
     
     @SerializedName("identificador")
     @Expose
-    var identificador: String? = null
+    var identificador: String? = null,
+
+    @SerializedName("updated_at")
+    @Expose
+    var updatedAt: String? = null,
+
 ): Serializable

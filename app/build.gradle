@@ -89,7 +89,7 @@ ext {
 
 
 greendao {
-    schemaVersion 7
+    schemaVersion 10
 }
 
 dependencies {
@@ -125,9 +125,6 @@ dependencies {
 
     //Lector de codigo de barrar
     implementation 'me.dm7.barcodescanner:zxing:1.9'
-
-    //Dialogos
-    implementation 'com.github.mjn1369:prettydialog:1.0.4'
 
     //Location
     implementation 'com.google.android.gms:play-services-maps:18.1.0'

@@ -47,6 +47,7 @@ import com.app.syspoint.repository.database.bean.ClienteBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
 
 import java.io.IOException;
@@ -54,9 +55,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class RegistroClienteActivity extends AppCompatActivity {
 
@@ -93,7 +91,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private String status_seleccionado;
     private String ruta_seleccionado;
     private String idCliente;
-    private int no_cuenta = 0;
+    private String no_cuenta = "0";
     private boolean latitudeSet = false;
     private boolean longitudeSet = false;
 
@@ -234,24 +232,52 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     private void loadConsecCuenta() {
 
-        final ClientDao clientDao = new ClientDao();
-        no_cuenta = clientDao.getLastConsec();
-        String consectivo = "";
-        if (no_cuenta < 10) {
-            consectivo = "00000" + no_cuenta;
-        } else if (no_cuenta >= 10 && no_cuenta <= 99) {
-            consectivo = "0000" + no_cuenta;
-        } else if (no_cuenta >= 100 && no_cuenta <= 999) {
-            consectivo = "000" + no_cuenta;
-        } else if (no_cuenta >= 1000 && no_cuenta <= 9999) {
-            consectivo = "00" + no_cuenta;
-        } else if (no_cuenta >= 10000 && no_cuenta <= 99999) {
-            consectivo = "0" + no_cuenta;
-        } else {
-            consectivo = "" + no_cuenta;
-        }
+        new ClientInteractorImp().executeGetLasClient(new ClientInteractor.GetLastClient() {
+            @Override
+            public void onGetLastClientSuccess(@NonNull ClienteBean client) {
 
-        editText_no_cuenta_registro_cliente.setText(consectivo);
+                int nCuenta = Integer.valueOf(client.getCuenta()) + 1;
+                String consectivo = "";
+                if (nCuenta < 10) {
+                    consectivo = "00000" + nCuenta;
+                } else if (nCuenta >= 10 && nCuenta <= 99) {
+                    consectivo = "0000" + nCuenta;
+                } else if (nCuenta >= 100 && nCuenta <= 999) {
+                    consectivo = "000" + nCuenta;
+                } else if (nCuenta >= 1000 && nCuenta <= 9999) {
+                    consectivo = "00" + nCuenta;
+                } else if (nCuenta >= 10000 && nCuenta <= 99999) {
+                    consectivo = "0" + nCuenta;
+                } else {
+                    consectivo = "" + nCuenta;
+                }
+                no_cuenta = consectivo;
+                editText_no_cuenta_registro_cliente.setText(consectivo);
+            }
+
+            @Override
+            public void onGetLastClientError() {
+                final ClientDao clientDao = new ClientDao();
+                int nCuenta = clientDao.getLastConsec();
+                String consectivo = "";
+                if (nCuenta < 10) {
+                    consectivo = "00000" + nCuenta;
+                } else if (nCuenta >= 10 && nCuenta <= 99) {
+                    consectivo = "0000" + nCuenta;
+                } else if (nCuenta >= 100 && nCuenta <= 999) {
+                    consectivo = "000" + nCuenta;
+                } else if (nCuenta >= 1000 && nCuenta <= 9999) {
+                    consectivo = "00" + nCuenta;
+                } else if (nCuenta >= 10000 && nCuenta <= 99999) {
+                    consectivo = "0" + nCuenta;
+                } else {
+                    consectivo = "" + nCuenta;
+                }
+                no_cuenta = consectivo;
+
+                editText_no_cuenta_registro_cliente.setText(consectivo);
+            }
+        });
     }
 
     private void initControls() {
@@ -588,6 +614,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
                 clienteBean.setSaldo_credito(0.00);
                 clienteBean.setDate_sync(Utils.fechaActual());
+                clienteBean.setUpdatedAt(Utils.fechaActualHMS());
 
                 clientDao.insert(clienteBean);
 
@@ -661,6 +688,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());
+            cliente.setUpdatedAt(item.getUpdatedAt());
             if (item.getMatriz().equals("null") || item.getMatriz() == null) {
                 cliente.setMatriz("null");
             } else{

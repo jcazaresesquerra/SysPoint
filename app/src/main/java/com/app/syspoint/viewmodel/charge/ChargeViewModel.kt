@@ -161,7 +161,7 @@ class ChargeViewModel: ViewModel() {
                     paymentDao.save(cobranzaBean)
                 }
                 val cobdetBean = CobdetBean()
-                cobdetBean.cobranza = charge.getCobranza()
+                cobdetBean.cobranza = charge.cobranza
                 cobdetBean.cliente = clienteBean
                 cobdetBean.fecha = Utils.fechaActual()
                 cobdetBean.importe = charge.acuenta
@@ -373,6 +373,7 @@ class ChargeViewModel: ViewModel() {
             cobranza.fecha = item.fecha
             cobranza.hora = item.hora
             cobranza.identificador = item.empleado
+            cobranza.updatedAt = item.updatedAt
             listaCobranza.add(cobranza)
         }
         ChargeInteractorImp().executeUpdateCharge(listaCobranza, object : OnUpdateChargeListener {

@@ -6,6 +6,11 @@ abstract class GetAllDataInteractor {
         fun onGetAllDataError()
     }
 
+    interface OnGetAllDataInServiceListener {
+        fun onGetAllDataSuccess()
+        fun onGetAllDataError()
+    }
+
     interface OnGetAllDataByDateListener {
         fun onGetAllDataByDateSuccess()
         fun onGetAllDataByDateError()

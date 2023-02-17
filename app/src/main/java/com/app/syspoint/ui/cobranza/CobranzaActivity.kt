@@ -21,7 +21,6 @@ import com.app.syspoint.repository.database.dao.PaymentModelDao
 import com.app.syspoint.ui.cobranza.adapter.AdapterCobranza
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.charge.ChargeViewModel
-import libs.mjn.prettydialog.PrettyDialog
 
 class CobranzaActivity: AppCompatActivity() {
 

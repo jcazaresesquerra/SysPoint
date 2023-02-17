@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 
 class RequestEmployees {
     companion object {
@@ -47,21 +48,34 @@ class RequestEmployees {
                                 employee.setPath_image(item.pathImage)
                                 employee.setRute(item.rute)
                                 employee.setStatus(item.status == 1)
+                                employee.setUpdatedAt(item.updatedAt)
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
-                                employeeBean.setNombre(item.nombre)
-                                employeeBean.setDireccion(item.direccion)
-                                employeeBean.setEmail(item.email)
-                                employeeBean.setTelefono(item.telefono)
-                                employeeBean.setFecha_nacimiento(item.fechaNacimiento)
-                                employeeBean.setFecha_ingreso(item.fechaIngreso)
-                                employeeBean.setContrasenia(item.contrasenia)
-                                employeeBean.setIdentificador(item.identificador)
-                                employeeBean.setPath_image(item.pathImage)
-                                employeeBean.setRute(item.rute)
-                                employeeBean.setStatus(item.status == 1)
-                                dao.save(employeeBean)
+
+                                val update = if (!employeeBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    Log.d("SysPoint", item.updatedAt!! + "  --  " + item.id)
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt)
+                                    val dateBean = formatter.parse(employeeBean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    employeeBean.setNombre(item.nombre)
+                                    employeeBean.setDireccion(item.direccion)
+                                    employeeBean.setEmail(item.email)
+                                    employeeBean.setTelefono(item.telefono)
+                                    employeeBean.setFecha_nacimiento(item.fechaNacimiento)
+                                    employeeBean.setFecha_ingreso(item.fechaIngreso)
+                                    employeeBean.setContrasenia(item.contrasenia)
+                                    employeeBean.setIdentificador(item.identificador)
+                                    employeeBean.setPath_image(item.pathImage)
+                                    employeeBean.setRute(item.rute)
+                                    employeeBean.setStatus(item.status == 1)
+                                    employeeBean.setUpdatedAt(item.updatedAt)
+                                    dao.save(employeeBean)
+                                }
                                 employees.add(employeeBean)
                             }
                         }
@@ -94,7 +108,7 @@ class RequestEmployees {
                     if(response.isSuccessful){
                         onSaveEmployeeListener.onSaveEmployeeSuccess()
                     } else {
-                        //val error = response.errorBody()!!.string()
+                        val error = response.errorBody()!!.string()
                         onSaveEmployeeListener.onSaveEmployeeError()
                     }
                 }

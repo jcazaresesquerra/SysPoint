@@ -48,6 +48,8 @@ import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.utils.Constants;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -61,8 +63,6 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class RegistarEmpleadoActivity extends AppCompatActivity {
 
@@ -495,6 +495,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         employee.setIdentificador(ip_registro_empleado_id.getText().toString());
         employee.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
         employee.setRute(ruta_seleccionado);
+        employee.setUpdatedAt(Utils.fechaActualHMS());
         if (decoded != null) employee.setPath_image(getStringImage(decoded));
 
         employeeDao.insert(employee);
@@ -643,6 +644,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
             empleado.setStatus(item.getStatus()? 1 : 0);
+            empleado.setUpdatedAt(item.updatedAt);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");

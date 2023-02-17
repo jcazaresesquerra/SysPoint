@@ -23,7 +23,7 @@ public class ClienteBean extends Bean {
     private String fecha_registro;
     private String cuenta;
     private boolean status;
-    private int consec;
+    private String consec;
     private String rango;
     private int lun;
     private int mar;
@@ -52,15 +52,16 @@ public class ClienteBean extends Bean {
     private double saldo_credito = 0.00;
     private String matriz;
     private String date_sync;
+    private String updatedAt;
 
-@Generated(hash = 1274947820)
+@Generated(hash = 94399585)
 public ClienteBean(Long id, String nombre_comercial, String calle, String numero, String colonia,
-        String ciudad, int codigo_postal, String fecha_registro, String cuenta, boolean status, int consec,
+        String ciudad, int codigo_postal, String fecha_registro, String cuenta, boolean status, String consec,
         String rango, int lun, int mar, int mie, int jue, int vie, int sab, int dom, int lunOrder,
         int marOrder, int mieOrder, int jueOrder, int vieOrder, int sabOrder, int domOrder, int visitado,
         String latitud, String longitud, String contacto_phone, String recordatorio, boolean is_recordatorio,
         int visitasNoefectivas, boolean is_credito, double limite_credito, double saldo_credito,
-        String matriz, String date_sync) {
+        String matriz, String date_sync, String updatedAt) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -99,6 +100,7 @@ public ClienteBean(Long id, String nombre_comercial, String calle, String numero
     this.saldo_credito = saldo_credito;
     this.matriz = matriz;
     this.date_sync = date_sync;
+    this.updatedAt = updatedAt;
 }
 @Generated(hash = 1475481445)
 public ClienteBean() {
@@ -163,10 +165,10 @@ public boolean getStatus() {
 public void setStatus(boolean status) {
     this.status = status;
 }
-public int getConsec() {
+public String getConsec() {
     return this.consec;
 }
-public void setConsec(int consec) {
+public void setConsec(String consec) {
     this.consec = consec;
 }
 public String getRango() {
@@ -331,5 +333,12 @@ public String getDate_sync() {
 public void setDate_sync(String date_sync) {
     this.date_sync = date_sync;
 }
-    
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

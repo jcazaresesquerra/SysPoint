@@ -18,9 +18,10 @@ public class ProductoBean extends Bean{
     private String codigo_barras;
     private String path_img;
     private int existencia = 0;
-    @Generated(hash = 696399829)
+    private String updatedAt;
+    @Generated(hash = 393182832)
     public ProductoBean(Long id, String articulo, String descripcion, String status, double precio,
-            int iva, String codigo_barras, String path_img, int existencia) {
+            int iva, String codigo_barras, String path_img, int existencia, String updatedAt) {
         this.id = id;
         this.articulo = articulo;
         this.descripcion = descripcion;
@@ -30,6 +31,7 @@ public class ProductoBean extends Bean{
         this.codigo_barras = codigo_barras;
         this.path_img = path_img;
         this.existencia = existencia;
+        this.updatedAt = updatedAt;
     }
     @Generated(hash = 2064312976)
     public ProductoBean() {
@@ -87,5 +89,13 @@ public class ProductoBean extends Bean{
     }
     public void setExistencia(int existencia) {
         this.existencia = existencia;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

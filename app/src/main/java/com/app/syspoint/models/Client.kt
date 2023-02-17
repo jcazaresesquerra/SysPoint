@@ -50,7 +50,7 @@ data class Client (
 
     @SerializedName("consec")
     @Expose
-    var consec: Int? = 0,
+    var consec: String? = null,
 
     @SerializedName("rango")
     @Expose
@@ -90,7 +90,7 @@ data class Client (
 
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: Any? = null,
+    var updatedAt: String? = null,
 
 
     @SerializedName("latitud")

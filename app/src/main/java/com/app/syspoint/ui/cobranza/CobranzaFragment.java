@@ -42,6 +42,8 @@ import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaCobranzas;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -50,9 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class CobranzaFragment extends Fragment {
 

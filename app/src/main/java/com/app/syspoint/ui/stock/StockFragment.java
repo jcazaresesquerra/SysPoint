@@ -43,6 +43,8 @@ import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,9 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class StockFragment extends Fragment {
 

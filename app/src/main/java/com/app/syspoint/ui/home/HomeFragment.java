@@ -37,6 +37,8 @@ import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
+import com.app.syspoint.interactor.token.TokenInteractor;
+import com.app.syspoint.interactor.token.TokenInteractorImpl;
 import com.app.syspoint.interactor.visit.VisitInteractor;
 import com.app.syspoint.interactor.visit.VisitInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
@@ -73,6 +75,8 @@ import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import org.json.JSONArray;
@@ -86,9 +90,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class HomeFragment extends Fragment {
 
@@ -112,7 +113,8 @@ public class HomeFragment extends Fragment {
         rlprogress = root.findViewById(R.id.rlprogress_cliente);
 
         initRecyclerView(root);
-        getUpdates();
+        validateToken(true);
+
         return root;
     }
 
@@ -135,12 +137,12 @@ public class HomeFragment extends Fragment {
             if (connected) {
                 getClientsByRute();
                 getCobranzasByRute();
+                getRoles();
 
                 saveVentas();
-                saveCobranza();
-                saveAbonos();
+                //saveCobranza();
                 saveVisitas();
-                saveClientes();
+                //saveClientes();
                 savePreciosEspeciales();
             }
         }).execute(), 100);
@@ -164,6 +166,7 @@ public class HomeFragment extends Fragment {
             cobranza.setFecha(item.getFecha());
             cobranza.setHora(item.getHora());
             cobranza.setIdentificador(item.getEmpleado());
+            cobranza.setUpdatedAt(item.getUpdatedAt());
             listaCobranza.add(cobranza);
         }
 
@@ -300,6 +303,7 @@ public class HomeFragment extends Fragment {
 
                                 estableceRuta();
                                 vendedoresBean1.setRute(ruta_);
+                                vendedoresBean1.setUpdatedAt(Utils.fechaActualHMS());
 
                                 new EmployeeDao().save(vendedoresBean1);
                                 String idEmpleado = String.valueOf(vendedoresBean1.getId());
@@ -505,10 +509,12 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(manager);
 
         mAdapter = new AdapterRutaClientes(mData, position -> {
-            ClientesRutaBean clienteBean = mData.get(position);
-            HashMap<String, String> parametros = new HashMap<>();
-            parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-            Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+            if (position >= 0) {
+                ClientesRutaBean clienteBean = mData.get(position);
+                HashMap<String, String> parametros = new HashMap<>();
+                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+            }
         }, position -> {
             // ClientesRutaBean clienteBean = mData.get(position);
             // HashMap<String, String> parametros = new HashMap<>();
@@ -551,7 +557,7 @@ public class HomeFragment extends Fragment {
                     if (!connected) {
                         //showDialogNotConnectionInternet();
                     } else {
-                        getData();
+                        validateToken(false);
                     }
                 }).execute(), 100);
 
@@ -567,6 +573,24 @@ public class HomeFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void validateToken(Boolean isUpdate) {
+        new TokenInteractorImpl().executeGetToken(new TokenInteractor.OnGetTokenListener() {
+            @Override
+            public void onGetTokenSuccess(@Nullable String token) {
+                if (isUpdate){
+                    getUpdates();
+                } else {
+                    getData();
+                }
+            }
+
+            @Override
+            public void onGetTokenError() {
+                showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación");
+            }
+        });
     }
 
     private void closeBox() {
@@ -699,6 +723,7 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
                     loadRuta();
+                    saveClientes();
                     progresshide();
                 }
 
@@ -706,6 +731,7 @@ public class HomeFragment extends Fragment {
                 public void onGetAllClientsError() {
                     //loadRuta();
                     progresshide();
+                    saveClientes();
                     showDialogNotConnectionInternet();
                     //Toast.makeText(requireActivity(), "Ha ocurrido un error. Conectate a internet para cambiar de ruta u obtener los clientes", Toast.LENGTH_SHORT).show();
                 }
@@ -718,16 +744,35 @@ public class HomeFragment extends Fragment {
 
         if (vendedoresBean != null) {
             progressshow();
-            new ChargeInteractorImp().executeGetChargeByEmployee(vendedoresBean.identificador, new ChargeInteractor.OnGetChargeByEmployeeListener() {
+            new ChargeInteractorImp().executeGetCharge(new ChargeInteractor.OnGetChargeListener() {
+                @Override
+                public void onGetChargeSuccess(@NonNull List<? extends CobranzaBean> chargeList) {
+                    saveCobranza();
+                    saveAbonos();
+                    progresshide();
+                }
+
+                @Override
+                public void onGetChargeError() {
+                    saveCobranza();
+                    saveAbonos();
+                    progresshide();
+                }
+            });
+            /*new ChargeInteractorImp().executeGetChargeByEmployee(vendedoresBean.identificador, new ChargeInteractor.OnGetChargeByEmployeeListener() {
                 @Override
                 public void onGetChargeByEmployeeSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+                    saveCobranza();
+                    saveAbonos();
                     progresshide();
                 }
                 @Override
                 public void onGetChargeByEmployeeError() {
-
+                    saveCobranza();
+                    saveAbonos();
+                    progresshide();
                 }
-            });
+            });*/
         }
     }
 
@@ -934,6 +979,7 @@ public class HomeFragment extends Fragment {
             } else {
                 client.setMatriz(item.getMatriz());
             }
+            client.setUpdatedAt(item.getUpdatedAt());
 
             clientList.add(client);
         }
@@ -989,6 +1035,7 @@ public class HomeFragment extends Fragment {
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
             empleado.setStatus(item.getStatus()? 1 : 0);
+            empleado.setUpdatedAt(item.getUpdatedAt());
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -1018,5 +1065,33 @@ public class HomeFragment extends Fragment {
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void getRoles() {
+        new RolInteractorImp().executeGetAllRoles(new RolInteractor.OnGetAllRolesListener() {
+            @Override
+            public void onGetAllRolesSuccess(@NonNull List<? extends RolesBean> roles) {
+                //progresshide();
+            }
+
+            @Override
+            public void onGetAllRolesError() {
+                //progresshide();
+                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showVersionErrorDialog(String message) {
+        PrettyDialog dialog = new PrettyDialog(getContext());
+        dialog.setTitle("Error")
+                .setTitleColor(R.color.purple_500)
+                .setMessage(message)
+                .setMessageColor(R.color.purple_700)
+                .setAnimationEnabled(false)
+                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> {});
+
+        dialog.setCancelable(false);
+        dialog.show();
     }
 }

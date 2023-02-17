@@ -21,7 +21,6 @@ import com.app.syspoint.ui.home.adapter.AdapterRutaClientes
 import com.app.syspoint.ui.ventas.VentasActivity
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.home.HomeViewModel
-import libs.mjn.prettydialog.PrettyDialog
 
 /*class HomeFragment: Fragment() {
 

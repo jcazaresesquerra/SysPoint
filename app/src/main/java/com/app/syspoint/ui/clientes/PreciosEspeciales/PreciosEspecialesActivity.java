@@ -22,6 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.models.json.SpecialPriceJson;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -41,12 +43,6 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class PreciosEspecialesActivity extends AppCompatActivity {
 

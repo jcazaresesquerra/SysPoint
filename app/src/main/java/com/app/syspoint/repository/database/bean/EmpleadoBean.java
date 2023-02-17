@@ -23,11 +23,12 @@ public class EmpleadoBean extends Bean{
     public boolean status;
     public String path_image;
     public String rute;
+    public String updatedAt;
 
-@Generated(hash = 328668531)
+@Generated(hash = 138054522)
 public EmpleadoBean(Long id, String nombre, String direccion, String email, String telefono,
         String fecha_nacimiento, String fecha_ingreso, String contrasenia, String identificador,
-        boolean status, String path_image, String rute) {
+        boolean status, String path_image, String rute, String updatedAt) {
     this.id = id;
     this.nombre = nombre;
     this.direccion = direccion;
@@ -40,6 +41,7 @@ public EmpleadoBean(Long id, String nombre, String direccion, String email, Stri
     this.status = status;
     this.path_image = path_image;
     this.rute = rute;
+    this.updatedAt = updatedAt;
 }
 @Generated(hash = 1983182120)
 public EmpleadoBean() {
@@ -119,5 +121,13 @@ public void setPath_image(String path_image) {
 
     public void setRute(String rute) {
         this.rute = rute;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

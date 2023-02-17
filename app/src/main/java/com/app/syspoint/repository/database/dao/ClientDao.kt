@@ -100,7 +100,7 @@ class ClientDao: Dao("ClienteBean") {
         var folio = 0
         val clientBean = getLastRegister()
         if (clientBean != null) {
-            folio = clientBean.consec
+            folio = Integer.valueOf(clientBean.consec)
         }
         ++folio
         return folio

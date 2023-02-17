@@ -39,7 +39,7 @@ data class Product(
     
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: Any? = null,
+    var updatedAt: String? = null,
     
     @SerializedName("path_image")
     @Expose

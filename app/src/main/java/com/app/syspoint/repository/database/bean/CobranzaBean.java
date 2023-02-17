@@ -26,11 +26,12 @@ public class CobranzaBean extends Bean {
     private String empleado;
     private boolean isCheck;
     private boolean abono;
-@Generated(hash = 2034958666)
+    private String updatedAt;
+@Generated(hash = 21616485)
 public CobranzaBean(Long id, String cobranza, String cliente, double importe,
         double saldo, Long venta, String estado, String observaciones,
         String fecha, String hora, String empleado, boolean isCheck,
-        boolean abono) {
+        boolean abono, String updatedAt) {
     this.id = id;
     this.cobranza = cobranza;
     this.cliente = cliente;
@@ -44,6 +45,7 @@ public CobranzaBean(Long id, String cobranza, String cliente, double importe,
     this.empleado = empleado;
     this.isCheck = isCheck;
     this.abono = abono;
+    this.updatedAt = updatedAt;
 }
 @Generated(hash = 258214784)
 public CobranzaBean() {
@@ -127,5 +129,11 @@ public void setAbono(boolean abono) {
     this.abono = abono;
 }
 
-  
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

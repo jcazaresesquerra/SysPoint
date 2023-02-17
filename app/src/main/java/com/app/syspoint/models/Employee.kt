@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Employee (
-    @SerializedName("id") @Expose
+    @SerializedName("id")
+    @Expose
     var id: Int? = null,
     
     @SerializedName("nombre")

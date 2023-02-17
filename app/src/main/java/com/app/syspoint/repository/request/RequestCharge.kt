@@ -1,11 +1,13 @@
 package com.app.syspoint.repository.request
 
 import android.util.Log
+import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.charge.ChargeInteractor
 import com.app.syspoint.models.Payment
 import com.app.syspoint.models.RequestChargeByRute
 import com.app.syspoint.models.json.PaymentJson
 import com.app.syspoint.models.json.RequestCobranza
+import com.app.syspoint.models.json.RequestTokenBody
 import com.app.syspoint.repository.database.bean.CobranzaBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.repository.database.dao.PaymentDao
@@ -15,10 +17,16 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 
 class RequestCharge {
     companion object {
         fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener) {
+            val appVersion = BuildConfig.VERSION_NAME.split(".")
+            val version = appVersion[0]
+            val subversion = appVersion[1] + "." + appVersion[2]
+            val requestTokenBody = RequestTokenBody(version, subversion)
+
             val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getCobranza()
@@ -43,20 +51,39 @@ class RequestCharge {
                                 chargeBean.fecha = item.fecha
                                 chargeBean.hora = item.hora
                                 chargeBean.empleado = item.identificador
+                                chargeBean.updatedAt = item.updatedAt
                                 paymentDao1.insert(chargeBean)
                                 chargeList.add(chargeBean)
                             } else {
-                                cobranzaBean.cobranza = item.cobranza
-                                cobranzaBean.cliente = item.cuenta
-                                cobranzaBean.importe = item.importe
-                                cobranzaBean.saldo = item.saldo
-                                cobranzaBean.venta = item.venta
-                                cobranzaBean.estado = item.estado
-                                cobranzaBean.observaciones = item.observaciones
-                                cobranzaBean.fecha = item.fecha
-                                cobranzaBean.hora = item.hora
-                                cobranzaBean.empleado = item.identificador
-                                paymentDao.save(cobranzaBean)
+                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(cobranzaBean.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    cobranzaBean.cobranza = item.cobranza
+                                    cobranzaBean.cliente = item.cuenta
+                                    cobranzaBean.importe = item.importe
+                                    cobranzaBean.saldo = item.saldo
+                                    cobranzaBean.venta = item.venta
+                                    cobranzaBean.estado = item.estado
+                                    cobranzaBean.observaciones = item.observaciones
+                                    cobranzaBean.fecha = item.fecha
+                                    cobranzaBean.hora = item.hora
+                                    cobranzaBean.empleado = item.identificador
+                                    cobranzaBean.updatedAt = item.updatedAt
+                                    paymentDao.save(cobranzaBean)
+                                }
                                 chargeList.add(cobranzaBean)
                             }
                         }
@@ -100,20 +127,39 @@ class RequestCharge {
                                 chargeBean.fecha = item.fecha
                                 chargeBean.hora = item.hora
                                 chargeBean.empleado = item.identificador
+                                chargeBean.updatedAt = item.updatedAt
                                 paymentDao1.insert(chargeBean)
                                 chargeList.add(chargeBean)
                             } else {
-                                cobranzaBean.cobranza = item.cobranza
-                                cobranzaBean.cliente = item.cuenta
-                                cobranzaBean.importe = item.importe
-                                cobranzaBean.saldo = item.saldo
-                                cobranzaBean.venta = item.venta
-                                cobranzaBean.estado = item.estado
-                                cobranzaBean.observaciones = item.observaciones
-                                cobranzaBean.fecha = item.fecha
-                                cobranzaBean.hora = item.hora
-                                cobranzaBean.empleado = item.identificador
-                                paymentDao.save(cobranzaBean)
+                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(cobranzaBean.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    cobranzaBean.cobranza = item.cobranza
+                                    cobranzaBean.cliente = item.cuenta
+                                    cobranzaBean.importe = item.importe
+                                    cobranzaBean.saldo = item.saldo
+                                    cobranzaBean.venta = item.venta
+                                    cobranzaBean.estado = item.estado
+                                    cobranzaBean.observaciones = item.observaciones
+                                    cobranzaBean.fecha = item.fecha
+                                    cobranzaBean.hora = item.hora
+                                    cobranzaBean.empleado = item.identificador
+                                    cobranzaBean.updatedAt = item.updatedAt
+                                    paymentDao.save(cobranzaBean)
+                                }
                                 chargeList.add(cobranzaBean)
                             }
                         }
@@ -162,21 +208,40 @@ class RequestCharge {
                                 cobranzaBean1.hora = item.hora
                                 cobranzaBean1.empleado = item.identificador
                                 cobranzaBean1.isCheck = false
+                                cobranzaBean1.updatedAt = item.updatedAt
                                 paymentDao.insert(cobranzaBean1)
                                 chargeByClientList.add(cobranzaBean1)
                             } else {
-                                cobranzaBean.cobranza = item.cobranza
-                                cobranzaBean.cliente = item.cuenta
-                                cobranzaBean.importe = item.importe
-                                cobranzaBean.saldo = item.saldo
-                                cobranzaBean.venta = item.venta
-                                cobranzaBean.estado = item.estado
-                                cobranzaBean.observaciones = item.observaciones
-                                cobranzaBean.fecha = item.fecha
-                                cobranzaBean.hora = item.hora
-                                cobranzaBean.empleado = item.identificador
-                                cobranzaBean.isCheck = false
-                                paymentDao.save(cobranzaBean)
+                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(cobranzaBean.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    cobranzaBean.cobranza = item.cobranza
+                                    cobranzaBean.cliente = item.cuenta
+                                    cobranzaBean.importe = item.importe
+                                    cobranzaBean.saldo = item.saldo
+                                    cobranzaBean.venta = item.venta
+                                    cobranzaBean.estado = item.estado
+                                    cobranzaBean.observaciones = item.observaciones
+                                    cobranzaBean.fecha = item.fecha
+                                    cobranzaBean.hora = item.hora
+                                    cobranzaBean.empleado = item.identificador
+                                    cobranzaBean.isCheck = false
+                                    cobranzaBean.updatedAt = item.updatedAt
+                                    paymentDao.save(cobranzaBean)
+                                }
                                 chargeByClientList.add(cobranzaBean)
                             }
                         }

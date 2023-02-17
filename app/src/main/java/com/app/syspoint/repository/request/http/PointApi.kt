@@ -13,7 +13,7 @@ import retrofit2.http.*
 interface PointApi {
 
     // GET AL DATA RESONSE
-    @GET("getAllDataV2")
+    @GET("getAllData")
     fun getAllDataV2(): Call<Data>
 
     @GET("getAllDataByDate")
@@ -26,22 +26,26 @@ interface PointApi {
     @GET("getEmpleadoByID")
     fun getEmpleadoByID(@Query("identificador") identificador: String?): Call<EmployeeJson>
 
-    @POST("saveEmpleadoV2")
+    @POST("saveEmpleado")
     fun sendEmpleado(@Body param: EmployeeJson?): Call<EmployeeJson>
 
     // PRODUCTOS
-    @GET("getAllProductosV2")
+    @GET("getAllProductos")
     fun getAllProductos(): Call<ProductJson>
 
     @POST("getProductoByID")
     fun getProductoByID(@Query("articulo") articulo: String?): Call<EmployeeJson>
 
-    @POST("saveProductoV2")
+    @POST("saveProducto")
     fun sendProducto(@Body param: ProductJson?): Call<ProductJson>
 
     // CLIENTES
     @GET("getAllClientes")
     fun getAllClientes(): Call<ClientJson>
+
+    // CLIENTES
+    @GET("getLasClientAccount")
+    fun getLastClient(): Call<ClientJson>
 
     // CLIENTES
     @POST("getAllClientesByRute")
@@ -50,7 +54,7 @@ interface PointApi {
     @POST("getClienteByID")
     fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
 
-    @POST("saveClienteV2")
+    @POST("saveCliente")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
 
     @POST("findClient")
@@ -106,4 +110,8 @@ interface PointApi {
         @Part("cobranza") cobranza: RequestBody?,
         @Part imagen: MultipartBody.Part?
     ): Call<ResponseVenta>
+
+    @POST("getToken")
+    fun getToken(@Body param: RequestTokenBody?): Call<TokenJson>
+
 }

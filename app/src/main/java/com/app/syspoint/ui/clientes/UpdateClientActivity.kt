@@ -22,7 +22,6 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.utils.*
-import libs.mjn.prettydialog.PrettyDialog
 import java.io.IOException
 import java.util.*
 
@@ -327,7 +326,7 @@ class UpdateClientActivity: AppCompatActivity() {
             bean.fecha_registro = binding.inpFechaAltaActualizaCliente.text.toString()
             bean.cuenta = binding.inpNoCuentaActualizaCliente.text.toString()
             bean.status = status_seleccionado!!.compareTo("Activo", ignoreCase = true) == 0
-            bean.consec = if (bean.consec != 0) bean.consec else clienteBean?.consec ?: 0
+            bean.consec = if (!bean.consec.isNullOrEmpty()) bean.consec else clienteBean?.consec ?: "0"
             bean.rango = ruta_seleccionado
             bean.lun = if (binding.checkborLunesActualizaCliente.isChecked) 1 else 0
             bean.mar = if (binding.checkborMartesActualizaCliente.isChecked) 1 else 0
@@ -344,6 +343,7 @@ class UpdateClientActivity: AppCompatActivity() {
             bean.saldo_credito = binding.etRegistroActualizaCredito.text.toString().replace("$", "").replace(" ", "").toDouble()
             bean.matriz = binding.inpMatrizAsignadaActualizaCliente.text.toString()
             bean.date_sync = Utils.fechaActual()
+            bean.updatedAt = Utils.fechaActualHMS()
             dao.save(bean)
             idCliente = bean.id.toString()
             if (!Utils.isNetworkAvailable(application)) {
@@ -409,7 +409,7 @@ class UpdateClientActivity: AppCompatActivity() {
                 cliente.latitud = item.latitud
                 cliente.longitud = item.longitud
                 cliente.phone_contacto = item.contacto_phone
-                cliente.recordatorio = item.recordatorio
+                cliente.recordatorio = item.recordatorio ?: "null"
                 cliente.visitas = item.visitasNoefectivas
                 cliente.isCredito = if (item.is_credito) 1 else 0
                 cliente.saldo_credito = item.saldo_credito
@@ -419,6 +419,7 @@ class UpdateClientActivity: AppCompatActivity() {
                 } else {
                     cliente.matriz = item.matriz
                 }
+                cliente.updatedAt = item.updatedAt
                 listaClientes.add(cliente)
             }
             ClientInteractorImp().executeSaveClient(listaClientes, object : SaveClientListener {

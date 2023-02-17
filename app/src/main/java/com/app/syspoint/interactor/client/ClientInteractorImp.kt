@@ -1,6 +1,7 @@
 package com.app.syspoint.interactor.client
 
 import com.app.syspoint.models.Client
+import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.request.RequestClient
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -53,6 +54,14 @@ class ClientInteractorImp: ClientInteractor() {
         super.executeGetClientByAccount(account, onGetClientByAccount)
         GlobalScope.launch {
             RequestClient.requestGetClientByAccount(account, onGetClientByAccount)
+        }
+    }
+
+    @Synchronized
+    override fun executeGetLasClient(onGetLasCliente: GetLastClient) {
+        super.executeGetLasClient(onGetLasCliente)
+        GlobalScope.launch {
+            RequestClient.getLastCLient(onGetLasCliente)
         }
     }
 }

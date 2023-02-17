@@ -37,13 +37,11 @@ import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.models.Price;
 import com.app.syspoint.ui.products.adapters.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ListadoProductosActivity extends AppCompatActivity {
 

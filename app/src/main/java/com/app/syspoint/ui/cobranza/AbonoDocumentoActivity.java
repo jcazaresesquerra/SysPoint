@@ -15,10 +15,9 @@ import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.CobranzaBean;
 import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class AbonoDocumentoActivity extends AppCompatActivity {
     private EditText editTextCantidad;

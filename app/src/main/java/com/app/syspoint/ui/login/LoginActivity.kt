@@ -23,7 +23,6 @@ import com.app.syspoint.models.sealed.LoginViewState.*
 import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
-import libs.mjn.prettydialog.PrettyDialog
 import java.lang.Exception
 
 class LoginActivity: AppCompatActivity() {
@@ -64,6 +63,7 @@ class LoginActivity: AppCompatActivity() {
         when(viewState) {
             is LoggedIn -> showMainActivity()
             is LoginError -> showErrorDialog(viewState.error)
+            is LoginVersionError -> showVersionErrorDialog(viewState.error)
             is LoadingDataStart -> binding.rlprogressLogin.setVisible()
             is LoadingDataFinish -> {
                 binding.rlprogressLogin.setInvisible()
@@ -155,6 +155,22 @@ class LoginActivity: AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showVersionErrorDialog(message: String) {
+        binding.btnSignIn.isEnabled = true
+        val dialog = PrettyDialog(this)
+        dialog.setTitle("Error")
+            .setTitleColor(R.color.purple_500)
+            .setMessage(message)
+            .setMessageColor(R.color.purple_700)
+            .setAnimationEnabled(false)
+            .setIcon(
+                R.drawable.pdlg_icon_info, R.color.purple_500
+            ) {  }
+
+        dialog.setCancelable(false)
+        dialog.show()
+    }
+
     private fun setUpLogo() {
         when (BuildConfig.FLAVOR) {
             "donaqui" -> {
@@ -195,7 +211,7 @@ class LoginActivity: AppCompatActivity() {
             override fun onConnected() {
                 isConnected = true
                 hideNotInternetConnectionError()
-                viewModel.sync()
+                viewModel.validateToken()
             }
             override fun onDisconnected() {
                 isConnected = false

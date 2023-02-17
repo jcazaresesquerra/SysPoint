@@ -31,8 +31,6 @@ import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.sell.SellViewModel
-import libs.mjn.prettydialog.PrettyDialog
-import java.io.IOException
 import java.util.*
 
 class VentasActivity: AppCompatActivity(), LocationListener {
@@ -284,7 +282,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         val subtotal = headerBinding.textViewSubtotalVentaView.text.toString()
                         val import = headerBinding.textViewImpuestoVentaView.text.toString()
                         viewModel.checkUserCredit(clientId, sellType, subtotal, import)
-                        binding.imgBtnFinishSale.isEnabled = true
+                        //binding.imgBtnFinishSale.isEnabled = true
                     } else if (sellType == SellType.CONTADO) {
                         showFinishPreSell()
                     }
@@ -568,6 +566,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 dialog.dismiss()
                 binding.imgBtnFinishSale.isEnabled = true
             }
+
         dialog.setCancelable(false)
         dialog.show()
     }

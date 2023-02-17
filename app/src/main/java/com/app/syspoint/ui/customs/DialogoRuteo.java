@@ -18,7 +18,11 @@ import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Utils;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DialogoRuteo extends Dialog {
 
@@ -41,7 +45,7 @@ public class DialogoRuteo extends Dialog {
             rutaSeleccionada = ruteoBean.getRuta();
 
             if (ruteoBean.getDia() == 1){
-                diaSeleccionado = "Luneas";
+                diaSeleccionado = "Lunes";
             }else if(ruteoBean.getDia() == 2){
                 diaSeleccionado = "Martes";
             }if(ruteoBean.getDia() == 3){
@@ -72,22 +76,40 @@ public class DialogoRuteo extends Dialog {
     }
 
     private void loadDias(){
-
         //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.dias);
 
         //Obtiene la lista de Strings
         List<String> arrayList = Utils.convertArrayStringListString(array);
 
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+
+
         //Creamos el adaptador
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.item_status_producto, arrayList);
         spinnerDias = findViewById(R.id.spinner_dias_ruteo);
         spinnerDias.setAdapter(adapter);
+        String dia = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+        if (dia.compareToIgnoreCase("Monday") == 0) {
+            diaSeleccionado = "Lunes";
+        } else if (dia.compareToIgnoreCase("Tuesday") == 0) {
+            diaSeleccionado = "Martes";
+        } else if (dia.compareToIgnoreCase("Wednesday") == 0) {
+            diaSeleccionado = "Miercoles";
+        } else if (dia.compareToIgnoreCase("Thursday") == 0) {
+            diaSeleccionado = "Jueves";
+        } else if (dia.compareToIgnoreCase("Friday") == 0) {
+            diaSeleccionado = "Viernes";
+        } else if (dia.compareToIgnoreCase("Saturday") == 0) {
+            diaSeleccionado = "Sabado";
+        } else if (dia.compareToIgnoreCase("Sunday") == 0) {
+            diaSeleccionado = "Domingo";
+        }
         spinnerDias.setSelection(arrayList.indexOf(diaSeleccionado));
         spinnerDias.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 diaSeleccionado = spinnerDias.getSelectedItem().toString();
             }
 

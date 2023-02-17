@@ -20,13 +20,12 @@ import com.app.syspoint.repository.database.bean.InventarioBean;
 import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.documents.StockTicket;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ConfirmaInventarioActivity extends AppCompatActivity {
 

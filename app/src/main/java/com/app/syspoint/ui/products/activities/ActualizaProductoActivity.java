@@ -46,6 +46,7 @@ import com.app.syspoint.models.Product;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
+import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,8 +56,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import libs.mjn.prettydialog.PrettyDialog;
 
 public class ActualizaProductoActivity extends AppCompatActivity {
 
@@ -337,6 +336,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             producto.setPrecio(Double.parseDouble(editTextPrecio.getText().toString()));
             producto.setIva(Integer.parseInt(editTextIVA.getText().toString()));
             producto.setCodigo_barras(editTextCodigoDeBarras.getText().toString());
+            producto.setUpdatedAt(Utils.fechaActualHMS());
             if (decoded != null) {
                 producto.setPath_img(getStringImage(decoded));
             }
@@ -397,6 +397,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             producto.setStatus(item.getStatus());
             producto.setPrecio(item.getPrecio());
             producto.setIva(item.getIva());
+            producto.setUpdatedAt(item.getUpdatedAt());
 
             if (item.getCodigo_barras().isEmpty()){
                 producto.setCodigoBarras("");

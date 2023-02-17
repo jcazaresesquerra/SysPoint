@@ -19,10 +19,9 @@ import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.ui.customs.DialogoRuteo;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 
 public class RutaFragment extends Fragment {

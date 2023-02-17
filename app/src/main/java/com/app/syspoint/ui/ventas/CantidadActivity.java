@@ -14,9 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
 import com.app.syspoint.utils.Actividades;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 
 public class CantidadActivity extends AppCompatActivity {
 

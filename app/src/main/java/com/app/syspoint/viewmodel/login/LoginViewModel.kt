@@ -7,6 +7,8 @@ import com.app.syspoint.App
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
+import com.app.syspoint.interactor.token.TokenInteractor
+import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.cache.SharedPreferencesManager
@@ -27,7 +29,8 @@ class LoginViewModel: BaseViewModel() {
     init {
         //createUser()
         validatePersistence()
-        sync()
+        validateToken()
+        //sync()
     }
 
     fun login(email: String, password: String) {
@@ -260,6 +263,20 @@ class LoginViewModel: BaseViewModel() {
             persistencePriceBean.valor = java.lang.Long.valueOf(1)
             persistencePriceDao.insert(persistencePriceBean)
         }
+    }
+
+    fun validateToken() {
+        TokenInteractorImpl().executeGetToken(object: TokenInteractor.OnGetTokenListener {
+            override fun onGetTokenSuccess(token: String?) {
+                sync()
+            }
+
+            override fun onGetTokenError() {
+                loginViewState.postValue(
+                    LoginViewState.LoginVersionError("Su versión no esta soportada, por favor, actualice su aplicación")
+                )
+            }
+        })
     }
 
     fun sync() {
