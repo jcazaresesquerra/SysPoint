@@ -56,6 +56,7 @@ import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.PrettyDialog
 import com.app.syspoint.utils.Utils
+import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -150,6 +151,7 @@ class MainActivity: BaseActivity() {
 
             override fun onGetTokenError() {
                 showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación")
+                checkAppVersionInStore()
             }
         })
     }
@@ -680,5 +682,15 @@ class MainActivity: BaseActivity() {
 
         dialog.setCancelable(false)
         dialog.show()
+    }
+
+    private fun checkAppVersionInStore() {
+        val storage = FirebaseStorage.getInstance()        // From our app
+        val storageRef = storage.reference
+        // With an initial file path and name
+        val pathReference = storageRef.child("images/javasampleapproach.jpg")
+        // To a file from a Google Cloud Storage URI
+        val gsReference = storage.getReferenceFromUrl("gs://javasampleapproach-storage.appspot.com/images/javasampleapproach.jpg")
+        // From an HTTPS URL val httpsReference = storage.getReferenceFromUrl(“https://firebasestorage.googleapis.com/v0/b/javasampleapproach-storage.appspot.com/o/images%2Fjavasampleapproach.jpg”)
     }
 }
