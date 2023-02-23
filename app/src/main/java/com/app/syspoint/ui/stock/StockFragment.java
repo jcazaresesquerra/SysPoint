@@ -39,6 +39,7 @@ import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.documents.CloseTicket;
+import com.app.syspoint.ui.stock.activities.CashCloseActivity;
 import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
@@ -79,8 +80,7 @@ public class StockFragment extends Fragment {
     private BluetoothSocket mBTSocket = null; // bi-directional client-to-client data path
     private boolean isConnectada = false;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         root = inflater.inflate(R.layout.fragment_stock, container, false);
         setHasOptionsMenu(true);
@@ -133,99 +133,10 @@ public class StockFragment extends Fragment {
         return root;
     }
 
-
-
-    private void initPrinter() {
-
-        PrinterDao existeImpresora = new PrinterDao();
-
-        int existe = existeImpresora.existeConfiguracionImpresora();
-
-        if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
-
-            if (establecida != null) {
-                isConnectada = true;
-
-                if (establecida != null) {
-
-                    if(!mBTAdapter.isEnabled()) {
-                        Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    //textViewStatus.setText("Conectado....");
-
-                    // Spawn a new thread to avoid blocking the GUI one
-                    new Thread()
-                    {
-                        @Override
-                        public void run() {
-                            boolean fail = false;
-
-                            BluetoothDevice device = mBTAdapter.getRemoteDevice(establecida.getAddress());
-
-                            try {
-                                mBTSocket = createBluetoothSocket(device);
-                            } catch (IOException e) {
-                                fail = true;
-                                Toast.makeText(getActivity(), "Falló la creación de socket", Toast.LENGTH_SHORT).show();
-                            }
-                            // Establish the Bluetooth socket connection.
-                            try {
-                                mBTSocket.connect();
-                            } catch (IOException e) {
-                                try {
-                                    fail = true;
-                                    mBTSocket.close();
-                                    mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
-                                            .sendToTarget();
-                                } catch (IOException e2) {
-                                    //insert code to deal with this
-                                    Toast.makeText(getActivity(), "Falló la creación de socket", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                            if(!fail) {
-                                mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
-                                mConnectedThread.start();
-
-                                mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, establecida.getName())
-                                        .sendToTarget();
-                            }
-                        }
-                    }.start();
-                }
-
-            }
-        }else {
-            Actividades.getSingleton(getActivity(), BluetoothActivity.class).muestraActividad();
-        }
-    }
-
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        try {
-            final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
-            return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
-        } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
-        }
-        return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
-    }
-
-    private boolean isConfigPrinter() {
-
-        PrinterDao existeImpresora = new PrinterDao();
-        int existe = existeImpresora.existeConfiguracionImpresora();
-
-        if (existe > 0) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isBluetoothEnabled() {
-        return mBTAdapter != null && mBTAdapter.isEnabled();
+    @Override
+    public void onResume() {
+        super.onResume();
+        setDataInventory();
     }
 
     @Override
@@ -241,10 +152,8 @@ public class StockFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch (item.getItemId()) {
 
             case R.id.item_menu_inventario_add:
@@ -282,7 +191,6 @@ public class StockFragment extends Fragment {
                 return true;
 
             case R.id.close_caja:
-
                 if (mData.size() == 0){
                      final PrettyDialog dialogo = new PrettyDialog(getContext());
                     dialogo.setTitle("Sin inventario")
@@ -308,59 +216,67 @@ public class StockFragment extends Fragment {
                 }
 
 
-                final PrettyDialog dialogo = new PrettyDialog(getContext());
-                dialogo.setTitle("Cierre")
-                        .setTitleColor(R.color.purple_500)
-                        .setMessage("¿Desea cerrar la caja?")
-                        .setMessageColor(R.color.purple_700)
-                        .setAnimationEnabled(false)
-                        .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialogo.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-
-                               // final InventarioBean inventarioBean = new InventarioBean();
-                               // TicketCierre ticketInventario = new TicketCierre(getActivity());
-                               // ticketInventario.setInventarioBean(inventarioBean);
-                               // ticketInventario.template();
-                               // String ticket = ticketInventario.getDocumento();
-
-                                if (isConfigPrinter()) {
-                                    if (!isBluetoothEnabled()) {
-                                        Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                        startActivityForResult(enableBluetooth, 0);
-                                    }
-                                    initPrinter();
+                if (isConnectada) {
+                    final PrettyDialog dialogo = new PrettyDialog(getContext());
+                    dialogo.setTitle("Cierre")
+                            .setTitleColor(R.color.purple_500)
+                            .setMessage("¿Desea cerrar la caja?")
+                            .setMessageColor(R.color.purple_700)
+                            .setAnimationEnabled(false)
+                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
                                 }
+                            })
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    Intent intent = new Intent(getActivity(), CashCloseActivity.class);
+                                    startActivity(intent);
 
-                                final InventarioBean inventarioBean = new InventarioBean();
-                                CloseTicket ticketInventario = new CloseTicket(getActivity());
-                                ticketInventario.setBean(inventarioBean);
-                                ticketInventario.template();
-                                String ticket = ticketInventario.getDocument();
+                                    final InventarioBean inventarioBean = new InventarioBean();
+                                    CloseTicket ticketInventario = new CloseTicket(getActivity());
+                                    ticketInventario.setBean(inventarioBean);
+                                    ticketInventario.template();
+                                    String ticket = ticketInventario.getDocument();
 
-                                if(mConnectedThread != null) //First check to make sure thread created
-                                    // mConnectedThread.printTicketVisita("Hola");
-                                    mConnectedThread.write(ticket);
+                                    if (mConnectedThread != null) //First check to make sure thread created
+                                        mConnectedThread.write(ticket);
 
-                                closeInventory();
-                                dialogo.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialogo.dismiss();
+                                    closeInventory();
+                                    dialogo.dismiss();
+                                }
+                            })
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    dialogo.dismiss();
+                                }
+                            });
+                    dialogo.setCancelable(false);
+                    dialogo.show();
+                } else {
+                    Toast.makeText(getActivity(),
+                            "Necesitas conectar la impresora para realizar esta operación",
+                            Toast.LENGTH_LONG
+                    ).show();
+                    if (isConfigPrinter()) {
+                        if (!isBluetoothEnabled()) {
+                            //Pregunta si queremos activar el bluetooth
+                            Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                            startActivityForResult(enableBluetooth, 0);
+                        }else {
+                            initPrinter();
+                        }
+                    }else {
+                        Actividades.getSingleton(getActivity(), BluetoothActivity.class).muestraActividad();
+                    }
 
-                            }
-                        });
-                dialogo.setCancelable(false);
-                dialogo.show();
+                    // Ask for location permission if not already allowed
+                    if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                }
                 return true;
 
             default:
@@ -370,9 +286,7 @@ public class StockFragment extends Fragment {
     }
 
     private void closeInventory(){
-
-        List<InventarioBean> mList = new ArrayList<>();
-        mList = (List<InventarioBean>) (List<?>) new StockDao().list();
+        List<InventarioBean> mList = (List<InventarioBean>) (List<?>) new StockDao().list();
 
         for (InventarioBean item : mList){
             final ProductDao productDao = new ProductDao();
@@ -394,7 +308,6 @@ public class StockFragment extends Fragment {
         mAdapter.setData(mData);
 
         ocultaLinearLayouth();
-
     }
 
     private void initRecyclerView(){
@@ -449,12 +362,7 @@ public class StockFragment extends Fragment {
     private void refreshList(){
         setDataInventory();
     }
-    @Override
-    public void onResume() {
-        super.onResume();
-        setDataInventory();
 
-    }
     private void setDataInventory(){
         mData = (List<InventarioBean>) (List<?>) new StockDao().list();
         mAdapter.setData(mData);
@@ -469,5 +377,85 @@ public class StockFragment extends Fragment {
         } else {
             linearLayout.setVisibility(View.GONE);
         }
+    }
+
+    private void initPrinter() {
+        PrinterDao existeImpresora = new PrinterDao();
+        int existe = existeImpresora.existeConfiguracionImpresora();
+
+        if (existe > 0) {
+            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+
+            if (establecida != null) {
+                isConnectada = true;
+                if (establecida != null) {
+                    if(!mBTAdapter.isEnabled()) {
+                        Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Spawn a new thread to avoid blocking the GUI one
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            boolean fail = false;
+
+                            BluetoothDevice device = mBTAdapter.getRemoteDevice(establecida.getAddress());
+
+                            try {
+                                mBTSocket = createBluetoothSocket(device);
+                            } catch (IOException e) {
+                                fail = true;
+                                Toast.makeText(getActivity(), "Falló la creación de socket", Toast.LENGTH_SHORT).show();
+                            }
+                            // Establish the Bluetooth socket connection.
+                            try {
+                                mBTSocket.connect();
+                            } catch (IOException e) {
+                                try {
+                                    fail = true;
+                                    mBTSocket.close();
+                                    mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
+                                            .sendToTarget();
+                                } catch (IOException e2) {
+                                    //insert code to deal with this
+                                    Toast.makeText(getActivity(), "Falló la creación de socket", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            if(!fail) {
+                                mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
+                                mConnectedThread.start();
+
+                                mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, establecida.getName())
+                                        .sendToTarget();
+                            }
+                        }
+                    }.start();
+                }
+            }
+        }else {
+            Actividades.getSingleton(getActivity(), BluetoothActivity.class).muestraActividad();
+        }
+    }
+
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        try {
+            final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
+            return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
+        } catch (Exception e) {
+            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+        }
+        return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+    }
+
+    private boolean isConfigPrinter() {
+        PrinterDao existeImpresora = new PrinterDao();
+        int existe = existeImpresora.existeConfiguracionImpresora();
+
+        return existe > 0;
+    }
+
+    public boolean isBluetoothEnabled() {
+        return mBTAdapter != null && mBTAdapter.isEnabled();
     }
 }

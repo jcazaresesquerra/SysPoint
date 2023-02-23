@@ -649,11 +649,7 @@ public class ListaVentasFragment extends Fragment {
         PrinterDao existeImpresora = new PrinterDao();
         int existe = existeImpresora.existeConfiguracionImpresora();
 
-        if (existe > 0) {
-            return true;
-        }
-
-        return false;
+        return existe > 0;
     }
 
     public boolean isBluetoothEnabled() {
