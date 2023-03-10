@@ -139,18 +139,8 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                             .setMessage("Debe indicar la cantidad a ingresar")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
+                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialogo.dismiss())
+                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, () -> dialogo.dismiss());
                     dialogo.setCancelable(false);
                     dialogo.show();
                     return;
@@ -158,15 +148,10 @@ public class CantidadInventarioActivity extends AppCompatActivity {
 
                 //Validamos si el inventario esta pendiente de lo contrario no ingresamos nada
 
-                List<InventarioBean> mData;
-                mData = new ArrayList<>();
-                mData = (List<InventarioBean>) (List<?>) new StockDao().getInventarioPendiente();
+                List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().getInventarioPendiente();
 
-                int count = 0;
-                for (int i = 0; i < mData.size(); i++) {
-                    count++;
-                }
-                //Cound
+                /*int count = mData.size();
+
                 if (count > 0){
                     final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
                     dialogo.setTitle("Inventario")
@@ -190,11 +175,15 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                     dialogo.show();
                     return;
                 }else {
-
+*/
                     StockDao stockDao = new StockDao();
                     InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
                     if (inventarioBean != null){
-                        inventarioBean.setCantidad(qty);
+                        int total = inventarioBean.getTotalCantidad() + qty;
+                        int cantidad = inventarioBean.getCantidad() + qty;
+                        inventarioBean.setCantidad(cantidad);
+                        inventarioBean.setLastCantidad(qty);
+                        inventarioBean.setTotalCantidad(total);
                         stockDao.save(inventarioBean);
 
                         Intent intent = new Intent();
@@ -208,6 +197,8 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                         StockDao dao = new StockDao();
                         bean.setArticulo(productoBean);
                         bean.setCantidad(qty);
+                        bean.setLastCantidad(qty);
+                        bean.setTotalCantidad(qty);
                         bean.setEstado("PE");
                         bean.setPrecio(productoBean.getPrecio());
                         bean.setFecha(Utils.fechaActual());
@@ -222,10 +213,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                         finish();
                         return;
                     }
-
-
                 }
-            }
         });
 
     }

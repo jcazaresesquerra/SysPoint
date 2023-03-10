@@ -62,7 +62,6 @@ class PrettyDialogButton extends LinearLayout {
         this.setBackground();
         this.setOnClickListener(v -> {
             this.setEnabled(false);
-            this.setOnClickListener(null);
             if (PrettyDialogButton.this.callback != null) {
                 v.postDelayed(() -> PrettyDialogButton.this.callback.onClick(), 150L);
             }

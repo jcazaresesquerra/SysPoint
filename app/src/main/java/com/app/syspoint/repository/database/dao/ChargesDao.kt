@@ -4,6 +4,7 @@ import com.app.syspoint.repository.database.bean.CobdetBean
 import com.app.syspoint.repository.database.bean.CobdetBeanDao
 import com.app.syspoint.repository.database.bean.CobrosBean
 import com.app.syspoint.repository.database.bean.CobrosBeanDao
+import com.app.syspoint.utils.Utils
 import org.greenrobot.greendao.query.CountQuery
 import org.greenrobot.greendao.query.QueryBuilder
 import org.greenrobot.greendao.query.WhereCondition.StringCondition
@@ -142,6 +143,15 @@ class ChargesDao: Dao("CobrosBean") {
     fun GetAllListaCobrosConfirmadas(): List<CobrosBean> {
         return dao.queryBuilder()
             .where(CobrosBeanDao.Properties.Estado.eq("CO"))
+            .orderDesc(CobrosBeanDao.Properties.Id)
+            .list() as List<CobrosBean>
+    }
+
+    fun getAllConfirmedChargesToday(): List<CobrosBean> {
+        return dao.queryBuilder()
+            .where(CobrosBeanDao.Properties.Estado.eq("CO"))
+            .where(CobrosBeanDao.Properties.Fecha.ge(Utils.fechaActualHMSStartDay()))
+            .where(CobrosBeanDao.Properties.Fecha.le(Utils.fechaActualHMSEndDay()))
             .orderDesc(CobrosBeanDao.Properties.Id)
             .list() as List<CobrosBean>
     }

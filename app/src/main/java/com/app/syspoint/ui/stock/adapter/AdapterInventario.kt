@@ -47,7 +47,7 @@ class AdapterInventario(
                     stockHistoryDao.getInvatarioPorArticulo(item.articulo.articulo)
 
                 val vendido = inventarioHistorialBean?.cantidad ?: 0
-                val inicial = item.cantidad
+                val inicial = item.totalCantidad
 
                 binding.tvInventarioTotal.text = Utils.FDinero(item.cantidad * item.precio)
                 binding.tvInventarioCantidad.text = inicial.toString()

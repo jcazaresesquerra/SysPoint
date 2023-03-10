@@ -18,6 +18,7 @@ public class CobranzaBean extends Bean {
     private String cliente;
     private double importe;
     private double saldo;
+    private double acuenta;
     private Long venta;
     private String estado;
     private String observaciones;
@@ -27,16 +28,18 @@ public class CobranzaBean extends Bean {
     private boolean isCheck;
     private boolean abono;
     private String updatedAt;
-@Generated(hash = 21616485)
+    private int stockId;
+@Generated(hash = 2134479233)
 public CobranzaBean(Long id, String cobranza, String cliente, double importe,
-        double saldo, Long venta, String estado, String observaciones,
-        String fecha, String hora, String empleado, boolean isCheck,
-        boolean abono, String updatedAt) {
+        double saldo, double acuenta, Long venta, String estado, String observaciones,
+        String fecha, String hora, String empleado, boolean isCheck, boolean abono,
+        String updatedAt, int stockId) {
     this.id = id;
     this.cobranza = cobranza;
     this.cliente = cliente;
     this.importe = importe;
     this.saldo = saldo;
+    this.acuenta = acuenta;
     this.venta = venta;
     this.estado = estado;
     this.observaciones = observaciones;
@@ -46,6 +49,7 @@ public CobranzaBean(Long id, String cobranza, String cliente, double importe,
     this.isCheck = isCheck;
     this.abono = abono;
     this.updatedAt = updatedAt;
+    this.stockId = stockId;
 }
 @Generated(hash = 258214784)
 public CobranzaBean() {
@@ -128,12 +132,22 @@ public boolean getAbono() {
 public void setAbono(boolean abono) {
     this.abono = abono;
 }
-
-    public String getUpdatedAt() {
-        return updatedAt;
+public void setAcuenta(double acuenta) {
+        this.acuenta = acuenta;
     }
-
-    public void setUpdatedAt(String updatedAt) {
+public double getAcuenta() {
+    return acuenta;
+}
+public String getUpdatedAt() {
+    return updatedAt;
+}
+public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+public void setStockId(int stockId) {
+    this.stockId = stockId;
+}
+public int getStockId() {
+        return stockId;
     }
 }

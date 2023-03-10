@@ -1,12 +1,16 @@
 package com.app.syspoint.ui
 
+import android.Manifest
 import android.app.Dialog
+import android.app.DownloadManager
 import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -37,6 +41,7 @@ import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor.SaveEmployeeListener
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
+import com.app.syspoint.interactor.installer.ApkInstaller
 import com.app.syspoint.interactor.prices.PriceInteractor.SendPricesListener
 import com.app.syspoint.interactor.prices.PriceInteractorImp
 import com.app.syspoint.interactor.roles.RolInteractor.OnGetAllRolesListener
@@ -52,11 +57,11 @@ import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
-import com.app.syspoint.utils.Constants
-import com.app.syspoint.utils.NetworkStateTask
-import com.app.syspoint.utils.PrettyDialog
-import com.app.syspoint.utils.Utils
+import com.app.syspoint.ui.login.LoginActivity
+import com.app.syspoint.utils.*
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -77,6 +82,7 @@ class MainActivity: BaseActivity() {
     private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
 
     private var isConnected = false
+    private var isOldApkVersionDialogShowing = false
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,16 +150,23 @@ class MainActivity: BaseActivity() {
     }
 
     private fun validateToken() {
-        TokenInteractorImpl().executeGetToken(object: TokenInteractor.OnGetTokenListener {
-            override fun onGetTokenSuccess(token: String?) {
-                getUpdates()
-            }
+        Handler().postDelayed({
+            NetworkStateTask { connected ->
+                if (connected) {
+                    TokenInteractorImpl().executeGetToken(object :
+                        TokenInteractor.OnGetTokenListener {
+                        override fun onGetTokenSuccess(token: String?, currentVersion: String) {
+                            getUpdates()
+                        }
 
-            override fun onGetTokenError() {
-                showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación")
-                checkAppVersionInStore()
-            }
-        })
+                        override fun onGetTokenError(currentVersion: String) {
+                            showErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación")
+                            showAppOldVersion(currentVersion)
+                        }
+                    })
+                }
+            }.execute()
+        }, 100)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -669,7 +682,7 @@ class MainActivity: BaseActivity() {
         })
     }
 
-    private fun showVersionErrorDialog(message: String) {
+    private fun showErrorDialog(message: String) {
         val dialog = PrettyDialog(this)
         dialog.setTitle("Error")
             .setTitleColor(R.color.purple_500)
@@ -684,13 +697,124 @@ class MainActivity: BaseActivity() {
         dialog.show()
     }
 
-    private fun checkAppVersionInStore() {
-        val storage = FirebaseStorage.getInstance()        // From our app
-        val storageRef = storage.reference
-        // With an initial file path and name
-        val pathReference = storageRef.child("images/javasampleapproach.jpg")
-        // To a file from a Google Cloud Storage URI
-        val gsReference = storage.getReferenceFromUrl("gs://javasampleapproach-storage.appspot.com/images/javasampleapproach.jpg")
-        // From an HTTPS URL val httpsReference = storage.getReferenceFromUrl(“https://firebasestorage.googleapis.com/v0/b/javasampleapproach-storage.appspot.com/o/images%2Fjavasampleapproach.jpg”)
+    /**
+     * Connection Listener
+     */
+    interface DownloadListener {
+        fun onDownloadSuccess(uri: Uri)
+        fun onDownloadError(error: String)
+    }
+
+    class DownloadReceiver(): BroadcastReceiver() {
+        private var id: Long = 0
+        private lateinit var downloadListener: DownloadListener
+
+        constructor(id: Long, downloadListener: DownloadListener): this() {
+            this.downloadListener = downloadListener
+            this.id = id
+        }
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null && intent.action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE)) {
+                val downloadManager = context!!.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(id))
+                try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            downloadListener.onDownloadSuccess(downloadManager.getUriForDownloadedFile(id))
+                        } else {
+                            downloadListener.onDownloadError("Error al descargar la aplicación")
+                        }
+                    }
+                } catch (e: Exception) {
+                    downloadListener.onDownloadError("Error al descargar la aplicación")
+                    e.printStackTrace()
+                } finally {
+                    cursor?.close()
+                }
+            }
+        }
+    }
+
+    private fun showAppOldVersion(versionToDownload: String) {
+        if (!isOldApkVersionDialogShowing) {
+            isOldApkVersionDialogShowing = true
+            val oldApkVersionDialog = PrettyDialog(this)
+            oldApkVersionDialog.setTitle("Error")
+                .setTitleColor(R.color.purple_500)
+                .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
+                .setMessageColor(R.color.purple_700)
+                .setAnimationEnabled(false)
+                .addButton(
+                    getString(R.string.download_dialog),
+                    R.color.pdlg_color_white,
+                    R.color.green_800
+                ) {
+                    val MY_READ_EXTERNAL_REQUEST: Int = 1
+                    if (checkSelfPermission(
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        requestPermissions(
+                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                            MY_READ_EXTERNAL_REQUEST
+                        )
+                    } else {
+                        if (versionToDownload.isNullOrEmpty()) {
+                            showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
+                        } else {
+                            isOldApkVersionDialogShowing = false
+                            oldApkVersionDialog.dismiss()
+
+                            val downloadManager =
+                                getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                            val request = DownloadManager.Request(
+                                Uri.parse(
+                                    Utils.getUpdateURL(versionToDownload)
+                                )
+                            )
+
+                            val progressDialog = ProgressDialog(this@MainActivity)
+                            progressDialog.setMessage("Espere un momento")
+                            progressDialog.setCancelable(false)
+                            progressDialog.show()
+
+                            val id = downloadManager.enqueue(request)
+
+                            val downloadReceiver = LoginActivity.DownloadReceiver(
+                                id,
+                                object : LoginActivity.DownloadListener {
+                                    override fun onDownloadSuccess(uri: Uri) {
+                                        progressDialog.dismiss()
+                                        showAppOldVersion(versionToDownload)
+                                        ApkInstaller().installApplicationFromCpanel(
+                                            applicationContext,
+                                            uri
+                                        )
+                                    }
+
+                                    override fun onDownloadError(error: String) {
+                                        progressDialog.dismiss()
+                                        showAppOldVersion(versionToDownload)
+                                        showErrorDialog(error)
+                                    }
+
+                                })
+                            registerReceiver(
+                                downloadReceiver,
+                                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                            )
+                        }
+                    }
+                }
+                .setIcon(
+                    R.drawable.pdlg_icon_info, R.color.purple_500
+                ) { }
+
+            oldApkVersionDialog.setCancelable(false)
+            oldApkVersionDialog.show()
+        }
+
     }
 }

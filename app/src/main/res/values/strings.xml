@@ -23,6 +23,7 @@
     <string name="cancelar_dialog">Cancelar</string>
     <string name="confirmar_dialog">Confirmar</string>
     <string name="ok_dialog">OK</string>
+    <string name="download_dialog">Descargar</string>
     <string name="sincronizar_productos">Sincronizar productos</string>
     <string name="registrar_producto">Registrar producto</string>
     <string name="registrar_cliente">Registrar cliente</string>

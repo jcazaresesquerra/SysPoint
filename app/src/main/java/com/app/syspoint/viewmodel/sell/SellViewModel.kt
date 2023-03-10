@@ -478,19 +478,23 @@ class SellViewModel: ViewModel() {
                         && clienteBean1.matriz != null
                         && clienteBean1.matriz.isNotEmpty()
                         && clienteMatriz != null
+                val stockId = StockDao().getCurrentStockId()
 
                 if (isCreditMatriz) {
                     val cobranzaBean = CobranzaBean()
                     val paymentDao = PaymentDao()
+
                     cobranzaBean.cobranza = ticketRamdom
                     cobranzaBean.cliente = clienteMatriz?.cuenta ?: clienteID
                     cobranzaBean.importe = totalVenta
                     cobranzaBean.saldo = totalVenta
+                    cobranzaBean.acuenta = 0.0
                     cobranzaBean.venta = ventasBean.ticket.toLong()
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Se realiza la venta a crédito para sucursal ${clienteBean1.cuenta} ${clienteBean1.nombre_comercial} con cargo a Matriz ${clienteMatriz?.cuenta} ${clienteMatriz?.nombre_comercial} ${ventasBean.fecha} hora ${ventasBean.hora}"
                     cobranzaBean.fecha = ventasBean.fecha
                     cobranzaBean.hora = ventasBean.hora
+                    cobranzaBean.stockId = stockId
                     if (vendedoresBean != null) {
                         cobranzaBean.empleado =
                             vendedoresBean.getIdentificador()
@@ -515,11 +519,14 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.cliente = clienteBean1.cuenta
                     cobranzaBean.importe = totalVenta
                     cobranzaBean.saldo = totalVenta
+                    cobranzaBean.acuenta = 0.0
                     cobranzaBean.venta = ventasBean.ticket.toLong()
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Venta a crédito " + ventasBean.fecha + " hora " + ventasBean.hora
                     cobranzaBean.fecha = ventasBean.fecha
                     cobranzaBean.hora = ventasBean.hora
+                    cobranzaBean.stockId = stockId
+
                     if (vendedoresBean != null) {
                         cobranzaBean.empleado =
                             vendedoresBean.getIdentificador()

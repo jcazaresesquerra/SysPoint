@@ -27,17 +27,19 @@ class RequestToken {
                     if (response.isSuccessful) {
                         if (!response.body()?.tokens.isNullOrEmpty()) {
                             val token = response.body()?.tokens!![0]
-                            onGetTokenListener.onGetTokenSuccess(token!!.token)
-                        } else
-                            onGetTokenListener.onGetTokenError()
+                            onGetTokenListener.onGetTokenSuccess(token!!.token, token.version + "." +token.subversion)
+                        } else {
+                            val token = response.body()?.error!![0]
+                            onGetTokenListener.onGetTokenError(token!!.version + "." + token.subversion)
+                        }
                     } else {
                         val error = response.errorBody()!!.string()
-                        onGetTokenListener.onGetTokenError()
+                        onGetTokenListener.onGetTokenError("")
                     }
                 }
 
                 override fun onFailure(call: Call<TokenJson>, t: Throwable) {
-                    onGetTokenListener.onGetTokenError()
+                    onGetTokenListener.onGetTokenError("")
                 }
             })
         }

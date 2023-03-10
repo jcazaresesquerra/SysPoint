@@ -5,6 +5,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.app.syspoint.BuildConfig;
+
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -101,6 +103,20 @@ public class Utils {
         return  fecha;
     }
 
+    public static String fechaActualHMSStartDay(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        return fecha + " 00:00:00";
+    }
+
+    public static String fechaActualHMSEndDay(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        return fecha + " 23:59:59";
+    }
+
     public static String fechaActualPicker(){
         final Calendar calendarFechaFin = Calendar.getInstance();
         final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
@@ -142,6 +158,14 @@ public class Utils {
                     + UnicodeFormatter.byteToHex(b[k]));
         }
         return b[3];
+    }
+
+    public static String getUpdateURL(String versionToDownload) {
+        String flavor = BuildConfig.FLAVOR;
+        String buildType = BuildConfig.BUILD_TYPE;
+        String fileName = flavor + "_" + buildType + "_" + versionToDownload + ".apk";
+        String url = Constants.UPDATE_BASE_URL + fileName;
+        return url;
     }
 
 }

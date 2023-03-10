@@ -48,4 +48,11 @@ class CacheInteractor() {
         }
         return null
     }
+
+    fun resetStockId() {
+        App.INSTANCE?.baseContext?.let {
+            SharedPreferencesManager(it).saveCurrentStockId(0)
+        }
+    }
+
 }

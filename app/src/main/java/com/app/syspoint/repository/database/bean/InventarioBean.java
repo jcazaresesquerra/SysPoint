@@ -17,29 +17,35 @@ public class InventarioBean extends Bean {
     @ToOne(joinProperty = "articuloId")
     private ProductoBean articulo;
     private int cantidad;
+    private int lastCantidad;
+    private int totalCantidad;
     private double precio;
     private double impuesto;
     private String fecha;
     private String hora;
     private String articulo_clave;
+    private int stockId;
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
     /** Used for active entity operations. */
     @Generated(hash = 433853614)
     private transient InventarioBeanDao myDao;
-    @Generated(hash = 1406966034)
-    public InventarioBean(Long id, String estado, long articuloId, int cantidad, double precio,
-            double impuesto, String fecha, String hora, String articulo_clave) {
+    @Generated(hash = 2020437509)
+    public InventarioBean(Long id, String estado, long articuloId, int cantidad, int lastCantidad, int totalCantidad, double precio,
+            double impuesto, String fecha, String hora, String articulo_clave, int stockId) {
         this.id = id;
         this.estado = estado;
         this.articuloId = articuloId;
         this.cantidad = cantidad;
+        this.lastCantidad = lastCantidad;
+        this.totalCantidad = totalCantidad;
         this.precio = precio;
         this.impuesto = impuesto;
         this.fecha = fecha;
         this.hora = hora;
         this.articulo_clave = articulo_clave;
+        this.stockId = stockId;
     }
     @Generated(hash = 444504338)
     public InventarioBean() {
@@ -68,6 +74,21 @@ public class InventarioBean extends Bean {
     public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
+    public int getLastCantidad() {
+        return this.cantidad;
+    }
+    public void setLastCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
+
+    public int getTotalCantidad() {
+        return totalCantidad;
+    }
+
+    public void setTotalCantidad(int totalCantidad) {
+        this.totalCantidad = totalCantidad;
+    }
+
     public double getPrecio() {
         return this.precio;
     }
@@ -92,6 +113,15 @@ public class InventarioBean extends Bean {
     public void setHora(String hora) {
         this.hora = hora;
     }
+
+    public int getStockId() {
+        return stockId;
+    }
+
+    public void setStockId(int stockId) {
+        this.stockId = stockId;
+    }
+
     @Generated(hash = 344637210)
     private transient Long articulo__resolvedKey;
     /** To-one relationship, resolved on first access. */

@@ -153,9 +153,12 @@ class ChargeViewModel: ViewModel() {
                         cobranzaBean.estado = "CO"
                         cobranzaBean.saldo = 0.0
                         cobranzaBean.abono = true
+                        cobranzaBean.acuenta = charge.acuenta
                     } else {
                         cobranzaBean.saldo = cobranzaBean.saldo - charge.acuenta
                         cobranzaBean.abono = true
+                        cobranzaBean.acuenta = charge.acuenta
+
                     }
                     cobranzaBean.fecha = Utils.fechaActual()
                     paymentDao.save(cobranzaBean)

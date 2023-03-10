@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -29,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.database.bean.InventarioBean;
@@ -38,7 +40,6 @@ import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.repository.database.dao.StockHistoryDao;
 import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.documents.CloseTicket;
 import com.app.syspoint.ui.stock.activities.CashCloseActivity;
 import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;
@@ -60,6 +61,8 @@ public class StockFragment extends Fragment {
     private List<InventarioBean> mData;
     private AdapterInventario mAdapter;
     View root;
+
+    public static final int CLOSE_INVENTORY = 1000;
 
     protected static final String TAG = "TAG";
 
@@ -163,7 +166,30 @@ public class StockFragment extends Fragment {
             case R.id.item_menu_inventario_finish:
 
                 if (mData.size() > 0){
-                    Actividades.getSingleton(getActivity(), ConfirmaInventarioActivity.class).muestraActividad();
+                    if (isConnectada) {
+                        Actividades.getSingleton(getActivity(), ConfirmaInventarioActivity.class).muestraActividad();
+                    } else {
+                        Toast.makeText(getActivity(),
+                                "Necesitas conectar la impresora para realizar esta operación",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        if (isConfigPrinter()) {
+                            if (!isBluetoothEnabled()) {
+                                //Pregunta si queremos activar el bluetooth
+                                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                startActivityForResult(enableBluetooth, 0);
+                            }else {
+                                initPrinter();
+                            }
+                        }else {
+                            Actividades.getSingleton(getActivity(), BluetoothActivity.class).muestraActividad();
+                        }
+
+                        // Ask for location permission if not already allowed
+                        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
+                    }
                 }else {
                     final PrettyDialog dialogo = new PrettyDialog(getContext());
                     dialogo.setTitle("Sin inventario")
@@ -223,37 +249,13 @@ public class StockFragment extends Fragment {
                             .setMessage("¿Desea cerrar la caja?")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
+                            .setIcon(R.drawable.ic_save_white, R.color.purple_500, () -> dialogo.dismiss())
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
+                                Intent intent = new Intent(getActivity(), CashCloseActivity.class);
+                                startActivityForResult(intent, 0);
+                                dialogo.dismiss();
                             })
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    Intent intent = new Intent(getActivity(), CashCloseActivity.class);
-                                    startActivity(intent);
-
-                                    final InventarioBean inventarioBean = new InventarioBean();
-                                    CloseTicket ticketInventario = new CloseTicket(getActivity());
-                                    ticketInventario.setBean(inventarioBean);
-                                    ticketInventario.template();
-                                    String ticket = ticketInventario.getDocument();
-
-                                    if (mConnectedThread != null) //First check to make sure thread created
-                                        mConnectedThread.write(ticket);
-
-                                    closeInventory();
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
+                            .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, () -> dialogo.dismiss());
                     dialogo.setCancelable(false);
                     dialogo.show();
                 } else {
@@ -285,6 +287,14 @@ public class StockFragment extends Fragment {
 
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == CLOSE_INVENTORY) {
+            closeInventory();
+        }
+    }
+
     private void closeInventory(){
         List<InventarioBean> mList = (List<InventarioBean>) (List<?>) new StockDao().list();
 
@@ -296,6 +306,7 @@ public class StockFragment extends Fragment {
                 productoBean.setExistencia(0);
                 productDao.save(productoBean);
             }
+            item.setTotalCantidad(0);
         }
 
         final StockDao stockDao = new StockDao();
@@ -306,6 +317,10 @@ public class StockFragment extends Fragment {
 
         mData = (List<InventarioBean>) (List<?>) new StockDao().list();
         mAdapter.setData(mData);
+
+        SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(getActivity());
+        int currentStockId = sharedPreferencesManager.getCurrentStockId() + 1;
+        sharedPreferencesManager.saveCurrentStockId(currentStockId);
 
         ocultaLinearLayouth();
     }

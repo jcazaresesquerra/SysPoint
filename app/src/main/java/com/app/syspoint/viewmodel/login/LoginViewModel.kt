@@ -1,30 +1,42 @@
 package com.app.syspoint.viewmodel.login
 
+import android.net.Uri
+import android.os.Environment
 import android.os.Handler
+import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.app.syspoint.App
+import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.interactor.token.TokenInteractor
 import com.app.syspoint.interactor.token.TokenInteractorImpl
+import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.viewmodel.BaseViewModel
-import kotlinx.coroutines.CoroutineExceptionHandler
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream as FileOutputStream1
+
 
 class LoginViewModel: BaseViewModel() {
 
     val loginViewState = MutableLiveData<LoginViewState>()
     val downloadingViewState = MutableLiveData<DownloadingViewState>()
+    val downloadApkViewState = MutableLiveData<DownloadApkViewState>()
 
     init {
         //createUser()
@@ -266,17 +278,32 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun validateToken() {
-        TokenInteractorImpl().executeGetToken(object: TokenInteractor.OnGetTokenListener {
-            override fun onGetTokenSuccess(token: String?) {
-                sync()
-            }
+        Handler().postDelayed({
+            NetworkStateTask { connected ->
+                if (connected) {
+                    TokenInteractorImpl().executeGetToken(object :
+                        TokenInteractor.OnGetTokenListener {
+                        override fun onGetTokenSuccess(token: String?, currentVersion: String) {
+                            sync()
+                        }
 
-            override fun onGetTokenError() {
-                loginViewState.postValue(
-                    LoginViewState.LoginVersionError("Su versión no esta soportada, por favor, actualice su aplicación")
-                )
-            }
-        })
+                        override fun onGetTokenError(currentVersion: String) {
+                            downloadApkViewState.postValue(
+                                DownloadApkViewState.ApkOldVersion(currentVersion)
+                            )
+                        }
+                    })
+                } else {
+                    viewModelScope.launch {
+                        removeLocalSync()
+                        delay(300)
+                        loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                        delay(300)
+                        loginViewState.postValue(LoginViewState.NotInternetConnection)
+                    }
+                }
+            }.execute()
+        }, 100)
     }
 
     fun sync() {
@@ -326,39 +353,7 @@ class LoginViewModel: BaseViewModel() {
         val isUpdated = isSessionUpdated()
 
         if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual()) || !isUpdated) {
-            val stockDao = StockDao()
-            stockDao.clear()
-            val historialDao = StockHistoryDao()
-            historialDao.clear()
-            val ventasDao = SellsDao()
-            ventasDao.clear()
-            val itemDao = ItemDao()
-            itemDao.clear()
-            val visitasDao = VisitsDao()
-            visitasDao.clear()
-            val cobranzaDao = PaymentDao()
-            cobranzaDao.clear()
-            val chargesDao = ChargesDao()
-            chargesDao.clear()
-            val routingDao = RoutingDao()
-            routingDao.clear()
-            val employeeDao = EmployeeDao()
-            employeeDao.clear()
-            val rolesDao = RolesDao()
-            rolesDao.clear()
-            val clientesRutaDao = RuteClientDao()
-            clientesRutaDao.clear()
-            val clientDao = ClientDao()
-            clientDao.clear()
-            val specialPricesDao = SpecialPricesDao()
-            specialPricesDao.clear()
-            val dao = TaskDao()
-            dao.clear()
-            val bean = TaskBean()
-            CacheInteractor().removeSellerFromCache()
-            bean.date = Utils.fechaActual()
-            bean.task = "Sincronización"
-            dao.insert(bean)
+            forceUpdate()
             exist = false
             //updateSession(false)
         } else {
@@ -366,6 +361,43 @@ class LoginViewModel: BaseViewModel() {
         }
 
         return exist
+    }
+
+    private fun forceUpdate() {
+        val stockDao = StockDao()
+        stockDao.clear()
+        val historialDao = StockHistoryDao()
+        historialDao.clear()
+        val ventasDao = SellsDao()
+        ventasDao.clear()
+        val itemDao = ItemDao()
+        itemDao.clear()
+        val visitasDao = VisitsDao()
+        visitasDao.clear()
+        val cobranzaDao = PaymentDao()
+        cobranzaDao.clear()
+        val chargesDao = ChargesDao()
+        chargesDao.clear()
+        val routingDao = RoutingDao()
+        routingDao.clear()
+        val employeeDao = EmployeeDao()
+        employeeDao.clear()
+        val rolesDao = RolesDao()
+        rolesDao.clear()
+        val clientesRutaDao = RuteClientDao()
+        clientesRutaDao.clear()
+        val clientDao = ClientDao()
+        clientDao.clear()
+        val specialPricesDao = SpecialPricesDao()
+        specialPricesDao.clear()
+        val dao = TaskDao()
+        dao.clear()
+        val bean = TaskBean()
+        CacheInteractor().removeSellerFromCache()
+        CacheInteractor().resetStockId()
+        bean.date = Utils.fechaActual()
+        bean.task = "Sincronización"
+        dao.insert(bean)
     }
 
     fun removeLocalSync() {
@@ -384,5 +416,56 @@ class LoginViewModel: BaseViewModel() {
             return SharedPreferencesManager(it).isSessionUpdated()
         }
         return false
+    }
+
+    fun checkAppVersionInFirebaseStore(versionToDownload: String) {
+        loginViewState.value = LoginViewState.LoadingDataStart
+        val flavor = BuildConfig.FLAVOR
+        val buildType = BuildConfig.BUILD_TYPE
+        val fileName = flavor + "_" + buildType + "_" + versionToDownload + ".apk"
+        val storage = Firebase.storage
+        val storageRef: StorageReference = storage.reference
+        val islandRef = storageRef.child("apks/$flavor/$buildType/$fileName")
+
+
+        islandRef.downloadUrl.addOnSuccessListener {
+            startDownloadInFirebase(islandRef, fileName, versionToDownload)
+        }.addOnFailureListener {
+            downloadApkViewState.postValue(
+                DownloadApkViewState.DownloadApkError(versionToDownload)
+            )
+            loginViewState.postValue(
+                LoginViewState.LoadingDataFinish
+            )
+        }
+    }
+
+    private fun startDownloadInFirebase(islandRef: StorageReference, fileName: String, versionToDownload: String) {
+        val rootPath = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "syspoint/apks/")
+        if (!rootPath.exists()) {
+            rootPath.mkdirs()
+        }
+        val file = File(rootPath, fileName)
+        val stream = FileOutputStream1(rootPath.path + "/"+fileName)
+
+        val BYTES: Long = 1024 * 1024 * 90
+        islandRef.getBytes(BYTES).addOnSuccessListener {
+            stream.write(it)
+            forceUpdate()
+            downloadApkViewState.postValue(
+                DownloadApkViewState.DownloadApkSuccess(file, versionToDownload)
+            )
+            loginViewState.postValue(
+                LoginViewState.LoadingDataFinish
+            )
+        }.addOnFailureListener {
+
+            downloadApkViewState.postValue(
+                DownloadApkViewState.DownloadApkError(versionToDownload)
+            )
+            loginViewState.postValue(
+                LoginViewState.LoadingDataFinish
+            )
+        }
     }
 }

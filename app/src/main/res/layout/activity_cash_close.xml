@@ -68,7 +68,6 @@
                 android:visibility="gone"/>
 
         </LinearLayout>
-
     </RelativeLayout>
 
     <LinearLayout
@@ -81,12 +80,12 @@
 
         <Button
             android:id="@+id/btnFinishCashClose"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="60dp"
+            android:layout_weight="0.5"
             android:text="Terminar"
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
-
     </LinearLayout>
 
 </RelativeLayout>

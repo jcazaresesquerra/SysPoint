@@ -31,5 +31,9 @@ data class Visit(
     
     @SerializedName("motivo_visita")
     @Expose
-    var motivo_visita: String? = null
+    var motivo_visita: String? = null,
+
+    @SerializedName("updated_at")
+    @Expose
+    var updatedAt: String? = null
 ): Serializable

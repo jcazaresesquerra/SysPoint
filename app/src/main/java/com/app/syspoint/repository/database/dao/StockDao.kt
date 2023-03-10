@@ -27,4 +27,10 @@ class StockDao: Dao("InventarioBean") {
             .list() as List<InventarioBean>
         return if (inventarioBeans.size > 0) inventarioBeans[0] else null
     }
+
+    fun getCurrentStockId(): Int {
+        val inventarioBeans = dao.queryBuilder()
+            .list() as List<InventarioBean>
+        return if (inventarioBeans.isNotEmpty()) inventarioBeans[0].stockId else 0
+    }
 }

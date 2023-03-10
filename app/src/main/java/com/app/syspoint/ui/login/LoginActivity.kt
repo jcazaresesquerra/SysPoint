@@ -1,29 +1,35 @@
 package com.app.syspoint.ui.login
 
+import android.Manifest
 import android.Manifest.permission
+import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.BuildConfig
-import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
+import com.app.syspoint.interactor.installer.ApkInstaller
+import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
 import com.app.syspoint.repository.cache.SharedPreferencesManager
+import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
-import java.lang.Exception
+import androidx.annotation.RequiresApi
+
+
+
 
 class LoginActivity: AppCompatActivity() {
 
@@ -34,6 +40,7 @@ class LoginActivity: AppCompatActivity() {
     private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
 
     private var isConnected = false
+    private var isOldApkVersionDialogShowing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +58,7 @@ class LoginActivity: AppCompatActivity() {
         registerNetworkBroadcastForNougat()
 
         viewModel.loginViewState.observe(this, ::loginViewState)
+        viewModel.downloadApkViewState.observe(this, ::downloadApkViewState)
     }
 
     override fun onDestroy() {
@@ -85,6 +93,21 @@ class LoginActivity: AppCompatActivity() {
         }
     }
 
+    private fun downloadApkViewState(viewState: DownloadApkViewState) {
+        when (viewState) {
+            is DownloadApkViewState.ApkOldVersion -> showAppOldVersion(viewState.versionToDownload)
+            is DownloadApkViewState.DownloadApkSuccess -> {
+                showAppOldVersion(viewState.versionToDownload)
+                val installer = ApkInstaller()
+                installer.installApplicationFromFireBase(applicationContext, viewState.file)
+            }
+            is DownloadApkViewState.DownloadApkError -> {
+                showAppOldVersion(viewState.versionToDownload)
+                showErrorDialog("Ocurrio un error al descargar la ultima actualización")
+            }
+        }
+    }
+
     private fun setUpListeners() {
         binding.btnSignIn click {
             binding.btnSignIn.isEnabled = false
@@ -94,15 +117,24 @@ class LoginActivity: AppCompatActivity() {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) val storge_permissions_33 = arrayOf(
+        permission.READ_MEDIA_IMAGES,
+        permission.READ_MEDIA_AUDIO,
+        permission.READ_MEDIA_VIDEO
+    )
+
     private fun checkPermissions(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true
         }
+
         if (checkSelfPermission(permission.CAMERA) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.INSTALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.REQUEST_INSTALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             return true
         }
@@ -111,6 +143,8 @@ class LoginActivity: AppCompatActivity() {
             || shouldShowRequestPermissionRationale(permission.BLUETOOTH)
             || shouldShowRequestPermissionRationale(permission.READ_EXTERNAL_STORAGE)
             || shouldShowRequestPermissionRationale(permission.CALL_PHONE)
+            || shouldShowRequestPermissionRationale(permission.INSTALL_PACKAGES)
+            || shouldShowRequestPermissionRationale(permission.REQUEST_INSTALL_PACKAGES)
             || shouldShowRequestPermissionRationale(permission.ACCESS_FINE_LOCATION))) {
             requestPermissions(
                 arrayOf(
@@ -119,7 +153,9 @@ class LoginActivity: AppCompatActivity() {
                     permission.READ_EXTERNAL_STORAGE,
                     permission.BLUETOOTH,
                     permission.CALL_PHONE,
-                    permission.ACCESS_FINE_LOCATION
+                    permission.ACCESS_FINE_LOCATION,
+                    permission.INSTALL_PACKAGES,
+                    permission.REQUEST_INSTALL_PACKAGES
                 ), 100
             )
         }
@@ -169,6 +205,84 @@ class LoginActivity: AppCompatActivity() {
 
         dialog.setCancelable(false)
         dialog.show()
+    }
+
+    private fun showAppOldVersion(versionToDownload: String) {
+        binding.btnSignIn.isEnabled = false
+        if (!isOldApkVersionDialogShowing) {
+            isOldApkVersionDialogShowing = true
+            val oldApkVersionDialog = PrettyDialog(this)
+            oldApkVersionDialog.setTitle("Error")
+                .setTitleColor(R.color.purple_500)
+                .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
+                .setMessageColor(R.color.purple_700)
+                .setAnimationEnabled(false)
+                .addButton(
+                    getString(R.string.download_dialog),
+                    R.color.pdlg_color_white,
+                    R.color.green_800
+                ) {
+                    val MY_READ_EXTERNAL_REQUEST: Int = 1
+                    if (checkSelfPermission(
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        requestPermissions(
+                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                            MY_READ_EXTERNAL_REQUEST
+                        )
+                    } else {
+                        if (versionToDownload.isNullOrEmpty()) {
+                            showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
+                        } else {
+                            isOldApkVersionDialogShowing = false
+                            oldApkVersionDialog.dismiss()
+
+                            val downloadManager =
+                                getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                            val request = DownloadManager.Request(
+                                Uri.parse(
+                                    Utils.getUpdateURL(versionToDownload)
+                                )
+                            )
+                            val id = downloadManager.enqueue(request)
+
+                            val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
+                                override fun onDownloadSuccess(uri: Uri) {
+                                    binding.rlprogressLogin.setInvisible()
+                                    showAppOldVersion(versionToDownload)
+                                    ApkInstaller().installApplicationFromCpanel(
+                                        applicationContext,
+                                        uri
+                                    )
+                                }
+
+                                override fun onDownloadError(error: String) {
+                                    binding.rlprogressLogin.setInvisible()
+                                    showAppOldVersion(versionToDownload)
+                                    showErrorDialog(error)
+                                }
+
+                            })
+                            registerReceiver(
+                                downloadReceiver,
+                                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                            )
+
+
+                            // just uncomment when firebase is working and paid
+                            //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
+                        }
+                    }
+                }
+                .setIcon(
+                    R.drawable.pdlg_icon_info, R.color.purple_500
+                ) { }
+
+            oldApkVersionDialog.setCancelable(false)
+            oldApkVersionDialog.show()
+        }
+
     }
 
     private fun setUpLogo() {
@@ -257,4 +371,45 @@ class LoginActivity: AppCompatActivity() {
             }
         }
     }
+
+    /**
+     * Connection Listener
+     */
+    interface DownloadListener {
+        fun onDownloadSuccess(uri: Uri)
+        fun onDownloadError(error: String)
+    }
+
+    class DownloadReceiver(): BroadcastReceiver() {
+        private var id: Long = 0
+        private lateinit var downloadListener: DownloadListener
+
+        constructor(id: Long, downloadListener: DownloadListener): this() {
+            this.downloadListener = downloadListener
+            this.id = id
+        }
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null && intent.action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE)) {
+                val downloadManager = context!!.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(id))
+                try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            downloadListener.onDownloadSuccess(downloadManager.getUriForDownloadedFile(id))
+                        } else {
+                            downloadListener.onDownloadError("Error al descargar la aplicación")
+                        }
+                    }
+                } catch (e: Exception) {
+                    downloadListener.onDownloadError("Error al descargar la aplicación")
+                    e.printStackTrace()
+                } finally {
+                    cursor?.close()
+                }
+            }
+        }
+    }
 }
+

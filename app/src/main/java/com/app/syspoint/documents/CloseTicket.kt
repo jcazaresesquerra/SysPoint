@@ -2,22 +2,22 @@ package com.app.syspoint.documents
 
 import android.app.Activity
 import com.app.syspoint.BuildConfig
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.CorteBean
-import com.app.syspoint.repository.database.dao.SellsDao
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.database.bean.*
+import com.app.syspoint.repository.database.dao.*
 
-class CloseTicket(activity: Activity): BaseTicket() {
+class CloseTicket: BaseTicket() {
 
-    private val mActivity: Activity = activity
 
     override fun template() {
         super.template()
-        val listaCorte: List<CorteBean> = SellsDao().getAllPartsGroupedClient()
+        val stockId = StockDao().getCurrentStockId()
 
-        //val mLidata: List<InventarioBean> = StockDao().list() as List<InventarioBean>
+        val listaCorte: List<CorteBean> = SellsDao().getAllPartsGroupedClient()
+        val mLidata: List<InventarioBean> = StockDao().list() as List<InventarioBean>
+        val mListCharge: List<CobranzaBean> = PaymentDao().getAllConfirmedChargesToday(stockId)
 
         var ticket : String = when(BuildConfig.FLAVOR) {
             "donaqui" -> {
@@ -28,47 +28,76 @@ class CloseTicket(activity: Activity): BaseTicket() {
             }
         }
 
-
-        var total = 0.0
+        var totalCredito = 0.0
+        var creditoCount = 0
+        var totalContado = 0.0
+        var contadoCount = 0
         var cliente = ""
 
-        for (partida in listaCorte) {
-            //Si el cliente es cadena  vacia entonces
+        listaCorte.map { partida ->
             if (partida.clienteBean.cuenta.compareTo(cliente, ignoreCase = true) != 0) {
-
-                //Guarda el cliente actual
                 cliente = partida.clienteBean.cuenta
-                val clienteAnterior = cliente
-                if (cliente == clienteAnterior) {
-                    //Muestra lo en el reporte
-                    ticket += """$cliente ${partida.clienteBean.nombre_comercial}
-"""
-                }
+                ticket += "$cliente ${partida.clienteBean.nombre_comercial}" + Constants.newLine
             }
-            total += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
+            if (partida.tipoVenta == "Contado") {
+                totalContado += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
+                contadoCount++
+            } else {
+                totalCredito += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
+                creditoCount++
+            }
 
-            //Completa el documento
-            ticket += partida.descripcion + "\n"
-            ticket += "" + String.format(
-                "%1$-5s %2$11s %3$10s %4$10s",
+            ticket += partida.descripcion + Constants.newLine
+            ticket += String.format(
+                "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
                 partida.cantidad,
-                Utils.FDinero(partida.cantidad * partida.precio * (1 + partida.impuesto / 100)),
-                ""
-            )
+                Utils.FDinero(partida.cantidad * partida.precio * (1 + partida.impuesto / 100))
+            ) + Constants.newLine
         }
 
-        ticket += "================================" + Constants.newLine + Constants.newLine +  // "" + String.format("%1$-5s %2$-10s %3$11s %4$10s", "", "SubTotal:", Utils.FDinero(ventasBean.getImporte()), "") + salto +
-                // "" + String.format("%1$-5s %2$-10s %3$11s %4$10s", "", "     IVA:", Utils.FDinero(ventasBean.getImpuesto()), "") + salto +
-                "" + String.format(
-            "%1$-5s %2$-10s %3$11s %4$10s",
-            "",
-            "   Total:",
-            Utils.FDinero(total),
-            ""
-        ) + "" + Constants.newLine +
-                "================================" + Constants.newLine +
-                "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += "           INVENTARIOS          " + Constants.newLine +
+                  "================================" + Constants.newLine +
+                  "PRODUCTO             " + Constants.newLine +
+                  "INICIAL    VENTA    FINAL  " + Constants.newLine +
+                  "================================" + Constants.newLine
+
+        mLidata.map { inventory ->
+            val stockHistoryDao = StockHistoryDao()
+            val inventarioHistorialBean =
+                stockHistoryDao.getInvatarioPorArticulo(inventory.articulo.articulo)
+            val vendido = inventarioHistorialBean?.cantidad ?: 0
+            val inicial = inventory.totalCantidad
+            val final = inicial - vendido
+            ticket += inventory.articulo.descripcion + Constants.newLine +
+                    String.format(
+                        "%1$-5s  %2$11s  %3$10s",
+                        inicial,
+                        vendido,
+                        final
+                    ) + Constants.newLine
+        }
+
+        ticket += "          VENTAS TOTALES        " + Constants.newLine +
+                  "================================" + Constants.newLine
+        ticket += "VENTAS DE CONTADO ($contadoCount)" + Constants.newLine
+        ticket += Utils.FDinero(totalContado) + Constants.newLine + Constants.newLine
+
+        ticket += "VENTAS A CRÉDITO ($creditoCount)" + Constants.newLine
+        ticket += Utils.FDinero(totalCredito) + Constants.newLine+ Constants.newLine
+
+        ticket += "            COBRANZAS           " + Constants.newLine +
+                  "================================" + Constants.newLine
+        ticket += "COBROS    TOTAL COBRADO         " + Constants.newLine
+        var totalCharged = 0.0
+        mListCharge.map { charge ->
+            totalCharged += charge.acuenta
+        }
+        ticket += "Total:   $totalCharged          " + Constants.newLine
+
+
+        ticket += "================================" + Constants.newLine +
+        "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
 
         ticket += "FIRMA DEL VENDEDOR:           " + Constants.newLine +
                 "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine +

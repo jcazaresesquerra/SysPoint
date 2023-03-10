@@ -58,6 +58,7 @@ class PrecaptureViewModel: ViewModel() {
         visitBean.fecha = Utils.fechaActual()
         visitBean.latidud = clienteBean.latitud
         visitBean.longitud = clienteBean.latitud
+        visitBean.updatedAt = Utils.fechaActualHMS()
         visitsDao.insert(visitBean)
 
         saveVisits()
@@ -155,6 +156,7 @@ class PrecaptureViewModel: ViewModel() {
             visit.latidud = item.latidud
             visit.longitud = item.longitud
             visit.motivo_visita = item.motivo_visita
+            visit.updatedAt = item.updatedAt
             if (vendedoresBean != null) {
                 visit.identificador = vendedoresBean.getIdentificador()
             }

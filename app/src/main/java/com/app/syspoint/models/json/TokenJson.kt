@@ -6,5 +6,7 @@ import com.google.gson.annotations.SerializedName
 
 data class TokenJson(
     @SerializedName("Token") @Expose
-    var tokens: List<Token?>? = null
+    var tokens: List<Token?>? = null,
+    @SerializedName("Error") @Expose
+    var error: List<Token?>? = null
 )

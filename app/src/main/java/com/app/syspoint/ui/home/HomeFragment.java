@@ -83,13 +83,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 public class HomeFragment extends Fragment {
 
@@ -576,21 +572,27 @@ public class HomeFragment extends Fragment {
     }
 
     private void validateToken(Boolean isUpdate) {
-        new TokenInteractorImpl().executeGetToken(new TokenInteractor.OnGetTokenListener() {
-            @Override
-            public void onGetTokenSuccess(@Nullable String token) {
-                if (isUpdate){
-                    getUpdates();
-                } else {
-                    getData();
-                }
-            }
+        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+            if (connected) {
+                new TokenInteractorImpl().executeGetToken(new TokenInteractor.OnGetTokenListener() {
+                    @Override
+                    public void onGetTokenSuccess(@Nullable String token, String currentVersion) {
+                        if (isUpdate){
+                            getUpdates();
+                        } else {
+                            getData();
+                        }
+                    }
 
-            @Override
-            public void onGetTokenError() {
-                showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación");
+                    @Override
+                    public void onGetTokenError(String currentVersion) {
+                        showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación");
+                    }
+                });
+            } else {
+                showDialogNotConnectionInternet();
             }
-        });
+        }).execute(), 100);
     }
 
     private void closeBox() {
