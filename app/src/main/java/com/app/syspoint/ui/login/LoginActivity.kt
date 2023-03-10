@@ -95,14 +95,14 @@ class LoginActivity: AppCompatActivity() {
 
     private fun downloadApkViewState(viewState: DownloadApkViewState) {
         when (viewState) {
-            is DownloadApkViewState.ApkOldVersion -> showAppOldVersion(viewState.versionToDownload)
+            is DownloadApkViewState.ApkOldVersion -> showAppOldVersion(viewState.baseUpdateUrl, viewState.versionToDownload)
             is DownloadApkViewState.DownloadApkSuccess -> {
-                showAppOldVersion(viewState.versionToDownload)
+                showAppOldVersion("", viewState.versionToDownload)
                 val installer = ApkInstaller()
                 installer.installApplicationFromFireBase(applicationContext, viewState.file)
             }
             is DownloadApkViewState.DownloadApkError -> {
-                showAppOldVersion(viewState.versionToDownload)
+                showAppOldVersion("", viewState.versionToDownload)
                 showErrorDialog("Ocurrio un error al descargar la ultima actualización")
             }
         }
@@ -207,8 +207,11 @@ class LoginActivity: AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showAppOldVersion(versionToDownload: String) {
+    private fun showAppOldVersion(baseUpdateUrl: String, versionToDownload: String) {
         binding.btnSignIn.isEnabled = false
+        binding.etLoginEmail.isEnabled = false
+        binding.etLoginPassword.isEnabled = false
+
         if (!isOldApkVersionDialogShowing) {
             isOldApkVersionDialogShowing = true
             val oldApkVersionDialog = PrettyDialog(this)
@@ -238,11 +241,13 @@ class LoginActivity: AppCompatActivity() {
                             isOldApkVersionDialogShowing = false
                             oldApkVersionDialog.dismiss()
 
+                            binding.rlprogressLogin.setVisible()
+
                             val downloadManager =
                                 getSystemService(DOWNLOAD_SERVICE) as DownloadManager
                             val request = DownloadManager.Request(
                                 Uri.parse(
-                                    Utils.getUpdateURL(versionToDownload)
+                                    Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
                                 )
                             )
                             val id = downloadManager.enqueue(request)
@@ -250,7 +255,7 @@ class LoginActivity: AppCompatActivity() {
                             val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
                                 override fun onDownloadSuccess(uri: Uri) {
                                     binding.rlprogressLogin.setInvisible()
-                                    showAppOldVersion(versionToDownload)
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     ApkInstaller().installApplicationFromCpanel(
                                         applicationContext,
                                         uri
@@ -259,7 +264,7 @@ class LoginActivity: AppCompatActivity() {
 
                                 override fun onDownloadError(error: String) {
                                     binding.rlprogressLogin.setInvisible()
-                                    showAppOldVersion(versionToDownload)
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     showErrorDialog(error)
                                 }
 

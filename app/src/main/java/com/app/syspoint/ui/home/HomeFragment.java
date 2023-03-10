@@ -585,7 +585,7 @@ public class HomeFragment extends Fragment {
                     }
 
                     @Override
-                    public void onGetTokenError(String currentVersion) {
+                    public void onGetTokenError(String baseUpdateUrl, String currentVersion) {
                         showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación");
                     }
                 });

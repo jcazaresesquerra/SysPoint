@@ -159,9 +159,9 @@ class MainActivity: BaseActivity() {
                             getUpdates()
                         }
 
-                        override fun onGetTokenError(currentVersion: String) {
+                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String) {
                             showErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación")
-                            showAppOldVersion(currentVersion)
+                            showAppOldVersion(baseUpdateUrl, currentVersion)
                         }
                     })
                 }
@@ -737,7 +737,7 @@ class MainActivity: BaseActivity() {
         }
     }
 
-    private fun showAppOldVersion(versionToDownload: String) {
+    private fun showAppOldVersion(baseUpdateUrl: String, versionToDownload: String) {
         if (!isOldApkVersionDialogShowing) {
             isOldApkVersionDialogShowing = true
             val oldApkVersionDialog = PrettyDialog(this)
@@ -771,7 +771,7 @@ class MainActivity: BaseActivity() {
                                 getSystemService(DOWNLOAD_SERVICE) as DownloadManager
                             val request = DownloadManager.Request(
                                 Uri.parse(
-                                    Utils.getUpdateURL(versionToDownload)
+                                    Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
                                 )
                             )
 
@@ -787,7 +787,7 @@ class MainActivity: BaseActivity() {
                                 object : LoginActivity.DownloadListener {
                                     override fun onDownloadSuccess(uri: Uri) {
                                         progressDialog.dismiss()
-                                        showAppOldVersion(versionToDownload)
+                                        showAppOldVersion(baseUpdateUrl, versionToDownload)
                                         ApkInstaller().installApplicationFromCpanel(
                                             applicationContext,
                                             uri
@@ -796,7 +796,7 @@ class MainActivity: BaseActivity() {
 
                                     override fun onDownloadError(error: String) {
                                         progressDialog.dismiss()
-                                        showAppOldVersion(versionToDownload)
+                                        showAppOldVersion(baseUpdateUrl, versionToDownload)
                                         showErrorDialog(error)
                                     }
 

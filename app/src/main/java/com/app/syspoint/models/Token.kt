@@ -15,5 +15,8 @@ data class Token(
     val version: String? = null,
     @SerializedName("subversion")
     @Expose
-    val subversion: String? = null
+    val subversion: String? = null,
+    @SerializedName("base_update_url")
+    @Expose
+    val baseUpdateUrl: String? = null
 )

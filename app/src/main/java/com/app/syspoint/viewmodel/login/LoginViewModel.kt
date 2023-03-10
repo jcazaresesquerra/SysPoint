@@ -287,9 +287,9 @@ class LoginViewModel: BaseViewModel() {
                             sync()
                         }
 
-                        override fun onGetTokenError(currentVersion: String) {
+                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String) {
                             downloadApkViewState.postValue(
-                                DownloadApkViewState.ApkOldVersion(currentVersion)
+                                DownloadApkViewState.ApkOldVersion(baseUpdateUrl, currentVersion)
                             )
                         }
                     })

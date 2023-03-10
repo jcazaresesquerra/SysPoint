@@ -160,11 +160,11 @@ public class Utils {
         return b[3];
     }
 
-    public static String getUpdateURL(String versionToDownload) {
+    public static String getUpdateURL(String baseUpdateUrl, String versionToDownload) {
         String flavor = BuildConfig.FLAVOR;
         String buildType = BuildConfig.BUILD_TYPE;
         String fileName = flavor + "_" + buildType + "_" + versionToDownload + ".apk";
-        String url = Constants.UPDATE_BASE_URL + fileName;
+        String url = baseUpdateUrl + flavor + "/" + buildType + "/" + fileName;
         return url;
     }
 
