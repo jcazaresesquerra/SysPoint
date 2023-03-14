@@ -363,7 +363,7 @@ class LoginViewModel: BaseViewModel() {
         return exist
     }
 
-    private fun forceUpdate() {
+    fun forceUpdate() {
         val stockDao = StockDao()
         stockDao.clear()
         val historialDao = StockHistoryDao()

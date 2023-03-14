@@ -1,10 +1,10 @@
 package com.app.syspoint.documents
 
-import android.app.Activity
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.models.CloseCash
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
 
@@ -17,7 +17,7 @@ class CloseTicket: BaseTicket() {
 
         val listaCorte: List<CorteBean> = SellsDao().getAllPartsGroupedClient()
         val mLidata: List<InventarioBean> = StockDao().list() as List<InventarioBean>
-        val mListCharge: List<CobranzaBean> = PaymentDao().getAllConfirmedChargesToday(stockId)
+        val mListCharge: List<CloseCash> = PaymentDao().getAllConfirmedChargesToday(stockId)
 
         var ticket : String = when(BuildConfig.FLAVOR) {
             "donaqui" -> {
@@ -88,13 +88,15 @@ class CloseTicket: BaseTicket() {
 
         ticket += "            COBRANZAS           " + Constants.newLine +
                   "================================" + Constants.newLine
-        ticket += "COBROS    TOTAL COBRADO         " + Constants.newLine
-        var totalCharged = 0.0
+        ticket += "CLIENTE    TICKET      TOTAL    " + Constants.newLine
         mListCharge.map { charge ->
-            totalCharged += charge.acuenta
+            ticket += String.format(
+                "%1$-5s  %2$11s  %3$10s",
+                charge.comertialName,
+                charge.ticket,
+                charge.abono
+            ) + Constants.newLine
         }
-        ticket += "Total:   $totalCharged          " + Constants.newLine
-
 
         ticket += "================================" + Constants.newLine +
         "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine

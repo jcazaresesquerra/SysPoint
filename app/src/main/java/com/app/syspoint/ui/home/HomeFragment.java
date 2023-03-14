@@ -18,7 +18,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,8 +36,6 @@ import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
-import com.app.syspoint.interactor.token.TokenInteractor;
-import com.app.syspoint.interactor.token.TokenInteractorImpl;
 import com.app.syspoint.interactor.visit.VisitInteractor;
 import com.app.syspoint.interactor.visit.VisitInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
@@ -109,7 +106,7 @@ public class HomeFragment extends Fragment {
         rlprogress = root.findViewById(R.id.rlprogress_cliente);
 
         initRecyclerView(root);
-        validateToken(true);
+        getData(true);
 
         return root;
     }
@@ -553,7 +550,7 @@ public class HomeFragment extends Fragment {
                     if (!connected) {
                         //showDialogNotConnectionInternet();
                     } else {
-                        validateToken(false);
+                        getData(false);
                     }
                 }).execute(), 100);
 
@@ -571,24 +568,14 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void validateToken(Boolean isUpdate) {
+    private void getData(Boolean isUpdate) {
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             if (connected) {
-                new TokenInteractorImpl().executeGetToken(new TokenInteractor.OnGetTokenListener() {
-                    @Override
-                    public void onGetTokenSuccess(@Nullable String token, String currentVersion) {
-                        if (isUpdate){
-                            getUpdates();
-                        } else {
-                            getData();
-                        }
-                    }
-
-                    @Override
-                    public void onGetTokenError(String baseUpdateUrl, String currentVersion) {
-                        showVersionErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación");
-                    }
-                });
+                if (isUpdate){
+                    getUpdates();
+                } else {
+                    getData();
+                }
             } else {
                 showDialogNotConnectionInternet();
             }
@@ -1082,18 +1069,5 @@ public class HomeFragment extends Fragment {
                 //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void showVersionErrorDialog(String message) {
-        PrettyDialog dialog = new PrettyDialog(getContext());
-        dialog.setTitle("Error")
-                .setTitleColor(R.color.purple_500)
-                .setMessage(message)
-                .setMessageColor(R.color.purple_700)
-                .setAnimationEnabled(false)
-                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> {});
-
-        dialog.setCancelable(false);
-        dialog.show();
     }
 }

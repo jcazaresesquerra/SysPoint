@@ -1,6 +1,5 @@
 package com.app.syspoint.ui
 
-import android.Manifest
 import android.app.Dialog
 import android.app.DownloadManager
 import android.app.ProgressDialog
@@ -8,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -51,7 +49,6 @@ import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
-import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
@@ -59,9 +56,6 @@ import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.utils.*
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.ktx.storage
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -751,61 +745,50 @@ class MainActivity: BaseActivity() {
                     R.color.pdlg_color_white,
                     R.color.green_800
                 ) {
-                    val MY_READ_EXTERNAL_REQUEST: Int = 1
-                    if (checkSelfPermission(
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        requestPermissions(
-                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                            MY_READ_EXTERNAL_REQUEST
-                        )
+                    if (versionToDownload.isNullOrEmpty()) {
+                        showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
                     } else {
-                        if (versionToDownload.isNullOrEmpty()) {
-                            showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
-                        } else {
-                            isOldApkVersionDialogShowing = false
-                            oldApkVersionDialog.dismiss()
+                        isOldApkVersionDialogShowing = false
+                        oldApkVersionDialog.dismiss()
 
-                            val downloadManager =
-                                getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-                            val request = DownloadManager.Request(
-                                Uri.parse(
-                                    Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
-                                )
+                        val downloadManager =
+                            getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                        val request = DownloadManager.Request(
+                            Uri.parse(
+                                Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
                             )
+                        )
 
-                            val progressDialog = ProgressDialog(this@MainActivity)
-                            progressDialog.setMessage("Espere un momento")
-                            progressDialog.setCancelable(false)
-                            progressDialog.show()
+                        val progressDialog = ProgressDialog(this@MainActivity)
+                        progressDialog.setMessage("Espere un momento")
+                        progressDialog.setCancelable(false)
+                        progressDialog.show()
 
-                            val id = downloadManager.enqueue(request)
+                        val id = downloadManager.enqueue(request)
 
-                            val downloadReceiver = LoginActivity.DownloadReceiver(
-                                id,
-                                object : LoginActivity.DownloadListener {
-                                    override fun onDownloadSuccess(uri: Uri) {
-                                        progressDialog.dismiss()
-                                        showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                        ApkInstaller().installApplicationFromCpanel(
-                                            applicationContext,
-                                            uri
-                                        )
-                                    }
+                        val downloadReceiver = LoginActivity.DownloadReceiver(
+                            id,
+                            object : LoginActivity.DownloadListener {
+                                override fun onDownloadSuccess(uri: Uri) {
+                                    progressDialog.dismiss()
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                    ApkInstaller().installApplicationFromCpanel(
+                                        applicationContext,
+                                        uri
+                                    )
+                                }
 
-                                    override fun onDownloadError(error: String) {
-                                        progressDialog.dismiss()
-                                        showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                        showErrorDialog(error)
-                                    }
+                                override fun onDownloadError(error: String) {
+                                    progressDialog.dismiss()
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                    showErrorDialog(error)
+                                }
 
-                                })
-                            registerReceiver(
-                                downloadReceiver,
-                                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-                            )
-                        }
+                            })
+                        registerReceiver(
+                            downloadReceiver,
+                            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                        )
                     }
                 }
                 .setIcon(

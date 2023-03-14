@@ -117,12 +117,6 @@ class LoginActivity: AppCompatActivity() {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU) val storge_permissions_33 = arrayOf(
-        permission.READ_MEDIA_IMAGES,
-        permission.READ_MEDIA_AUDIO,
-        permission.READ_MEDIA_VIDEO
-    )
-
     private fun checkPermissions(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true
@@ -225,60 +219,52 @@ class LoginActivity: AppCompatActivity() {
                     R.color.pdlg_color_white,
                     R.color.green_800
                 ) {
-                    val MY_READ_EXTERNAL_REQUEST: Int = 1
-                    if (checkSelfPermission(
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        requestPermissions(
-                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                            MY_READ_EXTERNAL_REQUEST
-                        )
+
+                    if (versionToDownload.isNullOrEmpty()) {
+                        showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
                     } else {
-                        if (versionToDownload.isNullOrEmpty()) {
-                            showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
-                        } else {
-                            isOldApkVersionDialogShowing = false
-                            oldApkVersionDialog.dismiss()
+                        isOldApkVersionDialogShowing = false
+                        oldApkVersionDialog.dismiss()
 
-                            binding.rlprogressLogin.setVisible()
+                        binding.rlprogressLogin.setVisible()
 
-                            val downloadManager =
-                                getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-                            val request = DownloadManager.Request(
-                                Uri.parse(
-                                    Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
+                        val downloadManager =
+                            getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                        val request = DownloadManager.Request(
+                            Uri.parse(
+                                Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
+                            )
+                        )
+                        val id = downloadManager.enqueue(request)
+
+                        val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
+                            override fun onDownloadSuccess(uri: Uri) {
+                                binding.rlprogressLogin.setInvisible()
+                                showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                ApkInstaller().installApplicationFromCpanel(
+                                    applicationContext,
+                                    uri
                                 )
-                            )
-                            val id = downloadManager.enqueue(request)
+                                viewModel.forceUpdate()
+                            }
 
-                            val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
-                                override fun onDownloadSuccess(uri: Uri) {
-                                    binding.rlprogressLogin.setInvisible()
-                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                    ApkInstaller().installApplicationFromCpanel(
-                                        applicationContext,
-                                        uri
-                                    )
-                                }
+                            override fun onDownloadError(error: String) {
+                                binding.rlprogressLogin.setInvisible()
+                                showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                showErrorDialog(error)
+                            }
 
-                                override fun onDownloadError(error: String) {
-                                    binding.rlprogressLogin.setInvisible()
-                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                    showErrorDialog(error)
-                                }
-
-                            })
-                            registerReceiver(
-                                downloadReceiver,
-                                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-                            )
+                        })
+                        registerReceiver(
+                            downloadReceiver,
+                            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                        )
 
 
-                            // just uncomment when firebase is working and paid
-                            //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
-                        }
+                        // just uncomment when firebase is working and paid
+                        //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
                     }
+
                 }
                 .setIcon(
                     R.drawable.pdlg_icon_info, R.color.purple_500

@@ -1,6 +1,8 @@
 package com.app.syspoint.repository.database.dao
 
 import android.database.Cursor
+import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.models.CloseCash
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.utils.Utils
 
@@ -88,45 +90,34 @@ class PaymentDao: Dao("CobranzaBean") {
             .list() as List<CobranzaBean>
     }
 
-    fun getAllConfirmedChargesToday(stockId: Int): List<CobranzaBean> {
-        return dao.queryBuilder()
-            .where(CobranzaBeanDao.Properties.Estado.eq("CO"))
-            .where(CobranzaBeanDao.Properties.UpdatedAt.between(Utils.fechaActualHMSStartDay(), Utils.fechaActualHMSEndDay()))
-            .where(CobranzaBeanDao.Properties.StockId.eq(stockId))
-            .orderDesc(CobranzaBeanDao.Properties.Id)
-            .list() as List<CobranzaBean>
+    fun getAllConfirmedChargesToday(stockId: Int): List<CloseCash> {
+        val lastUserSession = CacheInteractor().getSeller()
+        val identificador = lastUserSession?.identificador?:""
 
-        /*val lista_corte: MutableList<CorteBean> = ArrayList()
-        var cursor: Cursor? = null
+        val lista_corte: MutableList<CloseCash> = ArrayList()
+        val cobranzaBeanDao = daoSession.cobranzaBeanDao
 
-        cursor = partidaVentaBeanDao.database.rawQuery(
-            "SELECT  " + ClienteBeanDao.TABLENAME + "." + ClienteBeanDao.Properties.Id.columnName + " AS idcliente," + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName + " AS idProducto, SUM(partidas.CANTIDAD) AS cantidad, SUM(partidas.PRECIO) AS precio, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Descripcion.columnName + " AS descripcion, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Impuesto.columnName + " AS iva, "+ VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Tipo_venta.columnName + " AS tipoVenta" +
-                    " FROM " + PartidasBeanDao.TABLENAME +
-                    " INNER JOIN " + ProductoBeanDao.TABLENAME + " ON " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.ArticuloId.columnName + " = " + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName +
-                    " INNER JOIN " + VentasBeanDao.TABLENAME + " ON " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Venta.columnName + " = " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Id.columnName + " AND " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.StockId.columnName + "=" + stockId +
-                    " INNER JOIN " + ClienteBeanDao.TABLENAME + " ON " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.ClienteId.columnName + " = " + ClienteBeanDao.TABLENAME + "." + ClienteBeanDao.Properties.Id.columnName +
-                    " WHERE " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Estado.columnName + " == 'CO' " +
-                    " GROUP BY " + ProductoBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Descripcion.columnName + ", " + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName + "," + ClienteBeanDao.TABLENAME + "." + ClienteBeanDao.Properties.Id.columnName + "," + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Descripcion.columnName + ", " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Impuesto.columnName + " ORDER BY clientes._id ",
-            null
+        val cursor = cobranzaBeanDao.database.rawQuery(
+            "SELECT cli.NOMBRE_COMERCIAL as nombre_comercial, c.VENTA as ticket, c.CLIENTE as cliente, c.ACUENTA as acuenta, c.UPDATED_AT as updated_at, c.STOCK_ID as stock_id, c.EMPLEADO as empleado, c.ESTADO as estado" +
+                    " FROM cobranza AS c "+
+                    " INNER JOIN clientes AS cli ON c.CLIENTE = cli.CUENTA " +
+                    " WHERE c.UPDATED_AT BETWEEN '${Utils.fechaActualHMSStartDay()}' AND '${Utils.fechaActualHMSEndDay()}' " +
+                    " AND c.STOCK_ID = $stockId and c.EMPLEADO = '$identificador' AND c.ACUENTA > 0.0 "
+            ,null
         )
         while (cursor.moveToNext()) {
-            val productoBean =
-                productosDAO.getByID(cursor.getLong(cursor.getColumnIndex("idProducto"))) as ProductoBean?
-            val clienteBean = clientesDAO.getByID(cursor.getString(cursor.getColumnIndex("idcliente")).toLong()
-            ) as ClienteBean?
-            val corteBean = CorteBean()
-            corteBean.clienteId = clienteBean!!.id
-            corteBean.productoBean = productoBean
-            corteBean.productoId = productoBean!!.id
-            corteBean.clienteBean = clienteBean
-            corteBean.cantidad = cursor.getInt(cursor.getColumnIndex("cantidad"))
-            corteBean.precio = cursor.getDouble(cursor.getColumnIndex("precio"))
-            corteBean.descripcion = cursor.getString(cursor.getColumnIndex("descripcion"))
-            corteBean.impuesto = cursor.getDouble(cursor.getColumnIndex("iva"))
-            corteBean.tipoVenta = cursor.getString(cursor.getColumnIndex("tipoVenta"))
-            lista_corte.add(corteBean)
+            val closeCash = CloseCash()
+            closeCash.comertialName = cursor.getString(cursor.getColumnIndex("nombre_comercial"))
+            closeCash.abono = cursor.getDouble(cursor.getColumnIndex("acuenta"))
+            closeCash.ticket = cursor.getString(cursor.getColumnIndex("ticket"))
+            closeCash.updatedAt = cursor.getString(cursor.getColumnIndex("updated_at"))
+            closeCash.employee = cursor.getString(cursor.getColumnIndex("empleado"))
+            closeCash.status = cursor.getString(cursor.getColumnIndex("estado"))
+            closeCash.stockId = cursor.getInt(cursor.getColumnIndex("stock_id"))
+
+            lista_corte.add(closeCash)
         }
-        return lista_corte*/
+        return lista_corte
     }
 
 }

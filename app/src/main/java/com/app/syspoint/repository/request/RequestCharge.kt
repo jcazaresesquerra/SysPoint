@@ -11,6 +11,7 @@ import com.app.syspoint.models.json.RequestTokenBody
 import com.app.syspoint.repository.database.bean.CobranzaBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.repository.database.dao.PaymentDao
+import com.app.syspoint.repository.database.dao.StockDao
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
@@ -36,6 +37,7 @@ class RequestCharge {
                     if (response.isSuccessful) {
                         val paymentDao = PaymentDao()
                         val chargeList = arrayListOf<CobranzaBean>()
+                        val stockId = StockDao().getCurrentStockId()
                         for (item in response.body()!!.payments!!) {
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
@@ -52,6 +54,7 @@ class RequestCharge {
                                 chargeBean.hora = item.hora
                                 chargeBean.empleado = item.identificador
                                 chargeBean.updatedAt = item.updatedAt
+                                chargeBean.stockId = stockId
                                 paymentDao1.insert(chargeBean)
                                 chargeList.add(chargeBean)
                             } else {
@@ -82,6 +85,7 @@ class RequestCharge {
                                     cobranzaBean.hora = item.hora
                                     cobranzaBean.empleado = item.identificador
                                     cobranzaBean.updatedAt = item.updatedAt
+                                    cobranzaBean.stockId = stockId
                                     paymentDao.save(cobranzaBean)
                                 }
                                 chargeList.add(cobranzaBean)
@@ -112,6 +116,7 @@ class RequestCharge {
                     if (response.isSuccessful) {
                         val paymentDao = PaymentDao()
                         val chargeList = arrayListOf<CobranzaBean>()
+                        val stockId = StockDao().getCurrentStockId()
                         for (item in response.body()!!.payments!!) {
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
@@ -128,6 +133,7 @@ class RequestCharge {
                                 chargeBean.hora = item.hora
                                 chargeBean.empleado = item.identificador
                                 chargeBean.updatedAt = item.updatedAt
+                                chargeBean.stockId = stockId
                                 paymentDao1.insert(chargeBean)
                                 chargeList.add(chargeBean)
                             } else {
@@ -158,6 +164,7 @@ class RequestCharge {
                                     cobranzaBean.hora = item.hora
                                     cobranzaBean.empleado = item.identificador
                                     cobranzaBean.updatedAt = item.updatedAt
+                                    cobranzaBean.stockId = stockId
                                     paymentDao.save(cobranzaBean)
                                 }
                                 chargeList.add(cobranzaBean)
@@ -193,6 +200,7 @@ class RequestCharge {
                     if (response.isSuccessful) {
                         val paymentDao = PaymentDao()
                         val chargeByClientList = arrayListOf<CobranzaBean>()
+                        val stockId = StockDao().getCurrentStockId()
                         for (item in response.body()!!.payments!!) {
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
@@ -209,6 +217,7 @@ class RequestCharge {
                                 cobranzaBean1.empleado = item.identificador
                                 cobranzaBean1.isCheck = false
                                 cobranzaBean1.updatedAt = item.updatedAt
+                                cobranzaBean1.stockId = stockId
                                 paymentDao.insert(cobranzaBean1)
                                 chargeByClientList.add(cobranzaBean1)
                             } else {
@@ -240,6 +249,7 @@ class RequestCharge {
                                     cobranzaBean.empleado = item.identificador
                                     cobranzaBean.isCheck = false
                                     cobranzaBean.updatedAt = item.updatedAt
+                                    cobranzaBean.stockId = stockId
                                     paymentDao.save(cobranzaBean)
                                 }
                                 chargeByClientList.add(cobranzaBean)
