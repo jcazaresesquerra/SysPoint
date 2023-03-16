@@ -18,7 +18,7 @@ class SpecialPricesDao: Dao("PreciosEspecialesBean") {
                     PreciosEspecialesBeanDao.Properties.Active.eq(true)
                 )
                 .list() as List<PreciosEspecialesBean>
-            if (ruteoBeans.size > 0) ruteoBeans[0] else null
+            if (ruteoBeans.isNotEmpty()) ruteoBeans[0] else null
         } catch (e: Exception) {
             e.printStackTrace()
             null

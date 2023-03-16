@@ -43,6 +43,7 @@ public class VentasBean extends Bean {
     private String usuario_cancelo;
     private String cobranza;
     private String factudado;
+    private int stockId;
 
     @ToMany(referencedJoinProperty = "venta")
     private List<PartidasBean> listaPartidas;
@@ -53,12 +54,12 @@ private transient DaoSession daoSession;
 @Generated(hash = 1593761064)
 private transient VentasBeanDao myDao;
 
-@Generated(hash = 2022473331)
+@Generated(hash = 340347542)
 public VentasBean(Long id, int venta, String tipo_doc, String fecha, String hora,
         Long clienteId, Long empleadoId, double importe, double impuesto, String datos,
         String estado, String corte, int temporal, int sync, String latidud,
         String longitud, String ticket, String tipo_venta, String usuario_cancelo,
-        String cobranza, String factudado) {
+        String cobranza, String factudado, int stockId) {
     this.id = id;
     this.venta = venta;
     this.tipo_doc = tipo_doc;
@@ -80,6 +81,7 @@ public VentasBean(Long id, int venta, String tipo_doc, String fecha, String hora
     this.usuario_cancelo = usuario_cancelo;
     this.cobranza = cobranza;
     this.factudado = factudado;
+    this.stockId = stockId;
 }
 
 @Generated(hash = 2050629208)
@@ -246,7 +248,15 @@ public void setCobranza(String cobranza) {
     this.cobranza = cobranza;
 }
 
-@Generated(hash = 1668724671)
+    public void setStockId(int stockId) {
+        this.stockId = stockId;
+    }
+
+    public int getStockId() {
+        return stockId;
+    }
+
+    @Generated(hash = 1668724671)
 private transient Long cliente__resolvedKey;
 
 /** To-one relationship, resolved on first access. */

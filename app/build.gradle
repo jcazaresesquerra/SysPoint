@@ -26,10 +26,21 @@ android {
         applicationId "com.app.syspoint"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 4
-        versionName "2.0.2"
+        versionCode 6
+        versionName "2.0.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def versionName = variant.versionName
+            def flavorName = variant.flavorName
+            def buildType = variant.buildType.name
+
+            def apkName = flavorName + '_' + buildType + '_' + versionName + '.apk';
+            output.outputFileName = apkName
+        }
     }
 
     buildTypes {
@@ -89,7 +100,7 @@ ext {
 
 
 greendao {
-    schemaVersion 2
+    schemaVersion 12
 }
 
 dependencies {
@@ -114,6 +125,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+    implementation 'tech.thdev:flow-call-adapter-factory:1.0.0'
 
     //Circular image
     implementation 'de.hdodenhof:circleimageview:2.1.0'
@@ -124,9 +136,6 @@ dependencies {
 
     //Lector de codigo de barrar
     implementation 'me.dm7.barcodescanner:zxing:1.9'
-
-    //Dialogos
-    implementation 'com.github.mjn1369:prettydialog:1.0.4'
 
     //Location
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
@@ -159,6 +168,10 @@ dependencies {
     // FIREBASE
     implementation platform('com.google.firebase:firebase-bom:30.3.1')
     implementation 'com.google.firebase:firebase-analytics'
+
+    // FIREBASE STORAGE
+    implementation 'com.google.firebase:firebase-storage-ktx'
+    implementation 'com.google.firebase:firebase-storage:20.1.0'
 
     // Import the BoM for the Firebase platform
     implementation platform('com.google.firebase:firebase-bom:30.2.0')

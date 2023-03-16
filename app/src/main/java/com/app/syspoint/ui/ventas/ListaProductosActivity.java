@@ -37,7 +37,6 @@ public class ListaProductosActivity extends AppCompatActivity {
 
     private AdapterListaProductosVentas mAdapter;
     private List<ProductoBean> mData;
-    private RelativeLayout rlprogress;
     private LinearLayout lyt_productos;
     public static String articuloSeleccionado;
 
@@ -47,75 +46,42 @@ public class ListaProductosActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lista_productos);
 
         lyt_productos = findViewById(R.id.lyt_productos);
-        rlprogress = findViewById(R.id.rlprogress_productos);
+        RelativeLayout rlprogress = findViewById(R.id.rlprogress_productos);
 
         this.initToolBar();
         this.initRecyclerView();
         this.initControls();
     }
 
-    private void initControls() {
-        FloatingActionButton button = findViewById(R.id.fab_add_barcoder);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), ScannerActivity.class));
-            }
-        });
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == Activity.RESULT_CANCELED) return;
+
+        String cantidad = data.getStringExtra(Actividades.PARAM_1);
+
+        //Establece el resultado que debe de regresar
+        Intent intent = new Intent();
+        intent.putExtra(Actividades.PARAM_1, cantidad);
+        intent.putExtra(Actividades.PARAM_2, articuloSeleccionado);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
-
-    private String obtienePersistencia(){
-
-        String persistencia = "all";
-
-        PricePersistenceDao dao = new PricePersistenceDao();
-        PersistenciaPrecioBean precioBean = dao.getPersistence();
-        if (precioBean != null){
-            if (precioBean.getMostrar().compareToIgnoreCase("all") == 0){
-                persistencia = "all";
-            }else {
-                persistencia = "existencia";
-            }
-        }
-        return  persistencia;
-    }
-
-    private void initToolBar() {
-
-        Toolbar toolbar = findViewById(R.id.toolbar_productos);
-        toolbar.setTitle("Productos");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
-
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_lista_productos, menu);
 
+        MenuItem searchMenuItem = menu.findItem(R.id.buscarProducto);
+        SearchView searchView = (SearchView) searchMenuItem.getActionView();
 
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                searchMenuItem.collapseActionView();
+                searchView.setQuery("", false);
 
-        final MenuItem searchMenuItem = menu.findItem(R.id.buscarProducto);
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
-
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                // TODO Auto-generated method stub
-                if (!hasFocus) {
-                    searchMenuItem.collapseActionView();
-                    searchView.setQuery("", false);
-
-                }
             }
         });
 
@@ -146,7 +112,6 @@ public class ListaProductosActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch (item.getItemId()) {
 
             case android.R.id.home:
@@ -162,7 +127,7 @@ public class ListaProductosActivity extends AppCompatActivity {
                     bean1.setMostrar("all");
                     dao1.save(bean1);
                 }
-                mData = (List<ProductoBean>) (List<?>) new ProductDao().list();
+                mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
                 refreshData(mData);
                 return true;
 
@@ -177,13 +142,29 @@ public class ListaProductosActivity extends AppCompatActivity {
                 }
 
                 mData = new ArrayList<>();
-                mData = (List<ProductoBean>) (List<?>) new ProductDao().getProductosInventario();
+                mData = (List<ProductoBean>) new ProductDao().getProductosInventario();
                 refreshData(mData);
                 return true;
-
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void initControls() {
+        FloatingActionButton button = findViewById(R.id.fab_add_barcoder);
+        button.setOnClickListener(v ->
+                startActivity(new Intent(getApplicationContext(), ScannerActivity.class))
+        );
+    }
+
+    private void initToolBar() {
+        Toolbar toolbar = findViewById(R.id.toolbar_productos);
+        toolbar.setTitle("Productos");
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private void initRecyclerView() {
@@ -191,9 +172,9 @@ public class ListaProductosActivity extends AppCompatActivity {
         mData = new ArrayList<>();
 
         if (persistencia.compareToIgnoreCase("all") == 0){
-            mData = (List<ProductoBean>) (List<?>) new ProductDao().list();
+            mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
         }else {
-            mData = (List<ProductoBean>) (List<?>) new ProductDao().getProductosInventario();
+            mData = (List<ProductoBean>) new ProductDao().getProductosInventario();
         }
 
         if (mData.size() > 0) {
@@ -208,18 +189,13 @@ public class ListaProductosActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterListaProductosVentas(mData, new AdapterListaProductosVentas.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                ProductoBean producto = mData.get(position);
-                articuloSeleccionado = producto.getArticulo();
-                Actividades.getSingleton(ListaProductosActivity.this, CantidadActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
-
-            }
+        mAdapter = new AdapterListaProductosVentas(mData, position -> {
+            ProductoBean producto = mData.get(position);
+            articuloSeleccionado = producto.getArticulo();
+            Actividades.getSingleton(ListaProductosActivity.this, CantidadActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });
         recyclerView.setAdapter(mAdapter);
     }
-
 
     private void refreshData(List<ProductoBean> data){
         mAdapter.setData(data);
@@ -230,21 +206,18 @@ public class ListaProductosActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private String obtienePersistencia(){
+        String persistencia = "all";
 
-        if(resultCode == Activity.RESULT_CANCELED)
-            return;
-
-        String cantidad = data.getStringExtra(Actividades.PARAM_1);
-
-        //Establece el resultado que debe de regresar
-        Intent intent = new Intent();
-        intent.putExtra(Actividades.PARAM_1, cantidad);
-        intent.putExtra(Actividades.PARAM_2, articuloSeleccionado);
-        setResult(Activity.RESULT_OK, intent);
-        finish();
-
+        PricePersistenceDao dao = new PricePersistenceDao();
+        PersistenciaPrecioBean precioBean = dao.getPersistence();
+        if (precioBean != null){
+            if (precioBean.getMostrar().compareToIgnoreCase("all") == 0){
+                persistencia = "all";
+            }else {
+                persistencia = "existencia";
+            }
+        }
+        return  persistencia;
     }
 }

@@ -6,6 +6,7 @@ import com.app.syspoint.repository.database.bean.RuteoBean
 sealed class HomeViewState {
     data class ClientRuteDefined(val clientRute: List<ClientesRutaBean>): HomeViewState()
     data class UpdateRute(val ruteBean: RuteoBean): HomeViewState()
+    data class RuteLoaded(val data: List<ClientesRutaBean?>): HomeViewState()
     object CreateRute: HomeViewState()
     object LoadingStart: HomeViewState()
     object GettingUpdates: HomeViewState()

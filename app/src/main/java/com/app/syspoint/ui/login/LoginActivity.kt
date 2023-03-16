@@ -1,29 +1,46 @@
 package com.app.syspoint.ui.login
 
+import android.Manifest
 import android.Manifest.permission
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.BuildConfig
-import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
+import com.app.syspoint.interactor.installer.ApkInstaller
+import com.app.syspoint.models.sealed.DownloadApkViewState
+import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.models.sealed.LoginViewState.*
-import com.app.syspoint.utils.click
-import com.app.syspoint.utils.setInvisible
-import com.app.syspoint.utils.setVisible
+import com.app.syspoint.repository.cache.SharedPreferencesManager
+import com.app.syspoint.ui.MainActivity
+import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
-import libs.mjn.prettydialog.PrettyDialog
+import androidx.annotation.RequiresApi
+
+
+
 
 class LoginActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: LoginViewModel
+
+    // receiver
+    private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
+
+    private var isConnected = false
+    private var isOldApkVersionDialogShowing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,16 +55,56 @@ class LoginActivity: AppCompatActivity() {
         setUpLogo()
         setUpListeners()
         checkPermissions()
+        registerNetworkBroadcastForNougat()
 
         viewModel.loginViewState.observe(this, ::loginViewState)
+        viewModel.downloadApkViewState.observe(this, ::downloadApkViewState)
+    }
+
+    override fun onDestroy() {
+        if (viewModel.downloadingViewState.value is DownloadingViewState.StartDownloadViewState)
+            SharedPreferencesManager(this).storeLocalSession(false)
+        super.onDestroy()
     }
 
     private fun loginViewState(viewState: LoginViewState) {
         when(viewState) {
-            LoggedIn -> showMainActivity()
-            LoginError -> showErrorDialog()
-            LoadingDataStart -> binding.rlprogressLogin.setVisible()
-            LoadingDataFinish -> binding.rlprogressLogin.setInvisible()
+            is LoggedIn -> showMainActivity()
+            is LoginError -> showErrorDialog(viewState.error)
+            is LoginVersionError -> showVersionErrorDialog(viewState.error)
+            is LoadingDataStart -> binding.rlprogressLogin.setVisible()
+            is LoadingDataFinish -> {
+                binding.rlprogressLogin.setInvisible()
+                if (isConnected) {
+                    hideNotInternetConnectionError()
+                } else {
+                    showNotInternetConnectionError()
+                }
+            }
+            is ConnectedToInternet -> {
+                isConnected = true
+                hideNotInternetConnectionError()
+            }
+            is NotInternetConnection -> {
+                isConnected = false
+                binding.rlprogressLogin.setInvisible()
+                showNotInternetConnectionError()
+            }
+        }
+    }
+
+    private fun downloadApkViewState(viewState: DownloadApkViewState) {
+        when (viewState) {
+            is DownloadApkViewState.ApkOldVersion -> showAppOldVersion(viewState.baseUpdateUrl, viewState.versionToDownload)
+            is DownloadApkViewState.DownloadApkSuccess -> {
+                showAppOldVersion("", viewState.versionToDownload)
+                val installer = ApkInstaller()
+                installer.installApplicationFromFireBase(applicationContext, viewState.file)
+            }
+            is DownloadApkViewState.DownloadApkError -> {
+                showAppOldVersion("", viewState.versionToDownload)
+                showErrorDialog("Ocurrio un error al descargar la ultima actualización")
+            }
         }
     }
 
@@ -57,7 +114,6 @@ class LoginActivity: AppCompatActivity() {
             val email: String = binding.etLoginEmail.text.toString()
             val password: String = binding.etLoginPassword.text.toString()
             viewModel.login(email, password)
-            binding.btnSignIn.isEnabled = true
         }
     }
 
@@ -65,25 +121,35 @@ class LoginActivity: AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true
         }
+
         if (checkSelfPermission(permission.CAMERA) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-            && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.INSTALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.REQUEST_INSTALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             return true
         }
         if (!(shouldShowRequestPermissionRationale(permission.CAMERA)
             || shouldShowRequestPermissionRationale(permission.WRITE_EXTERNAL_STORAGE)
             || shouldShowRequestPermissionRationale(permission.BLUETOOTH)
             || shouldShowRequestPermissionRationale(permission.READ_EXTERNAL_STORAGE)
-            || shouldShowRequestPermissionRationale(permission.CALL_PHONE))) {
+            || shouldShowRequestPermissionRationale(permission.CALL_PHONE)
+            || shouldShowRequestPermissionRationale(permission.INSTALL_PACKAGES)
+            || shouldShowRequestPermissionRationale(permission.REQUEST_INSTALL_PACKAGES)
+            || shouldShowRequestPermissionRationale(permission.ACCESS_FINE_LOCATION))) {
             requestPermissions(
                 arrayOf(
                     permission.CAMERA,
                     permission.WRITE_EXTERNAL_STORAGE,
                     permission.READ_EXTERNAL_STORAGE,
                     permission.BLUETOOTH,
-                    permission.CALL_PHONE
+                    permission.CALL_PHONE,
+                    permission.ACCESS_FINE_LOCATION,
+                    permission.INSTALL_PACKAGES,
+                    permission.REQUEST_INSTALL_PACKAGES
                 ), 100
             )
         }
@@ -91,6 +157,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showMainActivity() {
+        binding.btnSignIn.isEnabled = true
         val isAdmin = viewModel.isUserAdmin()
 
         val intent = Intent(applicationContext, MainActivity::class.java)
@@ -99,11 +166,12 @@ class LoginActivity: AppCompatActivity() {
         finish()
     }
 
-    private fun showErrorDialog() {
+    private fun showErrorDialog(message: String) {
+        binding.btnSignIn.isEnabled = true
         val dialog = PrettyDialog(this)
-        dialog.setTitle("No encontrado")
+        dialog.setTitle("Error")
             .setTitleColor(R.color.purple_500)
-            .setMessage("Usuario no encontrado verifique los datos de acceso")
+            .setMessage(message)
             .setMessageColor(R.color.purple_700)
             .setAnimationEnabled(false)
             .setIcon(
@@ -117,6 +185,97 @@ class LoginActivity: AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showVersionErrorDialog(message: String) {
+        binding.btnSignIn.isEnabled = true
+        val dialog = PrettyDialog(this)
+        dialog.setTitle("Error")
+            .setTitleColor(R.color.purple_500)
+            .setMessage(message)
+            .setMessageColor(R.color.purple_700)
+            .setAnimationEnabled(false)
+            .setIcon(
+                R.drawable.pdlg_icon_info, R.color.purple_500
+            ) {  }
+
+        dialog.setCancelable(false)
+        dialog.show()
+    }
+
+    private fun showAppOldVersion(baseUpdateUrl: String, versionToDownload: String) {
+        binding.btnSignIn.isEnabled = false
+        binding.etLoginEmail.isEnabled = false
+        binding.etLoginPassword.isEnabled = false
+
+        if (!isOldApkVersionDialogShowing) {
+            isOldApkVersionDialogShowing = true
+            val oldApkVersionDialog = PrettyDialog(this)
+            oldApkVersionDialog.setTitle("Error")
+                .setTitleColor(R.color.purple_500)
+                .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
+                .setMessageColor(R.color.purple_700)
+                .setAnimationEnabled(false)
+                .addButton(
+                    getString(R.string.download_dialog),
+                    R.color.pdlg_color_white,
+                    R.color.green_800
+                ) {
+
+                    if (versionToDownload.isNullOrEmpty()) {
+                        showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
+                    } else {
+                        isOldApkVersionDialogShowing = false
+                        oldApkVersionDialog.dismiss()
+
+                        binding.rlprogressLogin.setVisible()
+
+                        val downloadManager =
+                            getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                        val request = DownloadManager.Request(
+                            Uri.parse(
+                                Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
+                            )
+                        )
+                        val id = downloadManager.enqueue(request)
+
+                        val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
+                            override fun onDownloadSuccess(uri: Uri) {
+                                binding.rlprogressLogin.setInvisible()
+                                showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                ApkInstaller().installApplicationFromCpanel(
+                                    applicationContext,
+                                    uri
+                                )
+                                viewModel.forceUpdate()
+                            }
+
+                            override fun onDownloadError(error: String) {
+                                binding.rlprogressLogin.setInvisible()
+                                showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                showErrorDialog(error)
+                            }
+
+                        })
+                        registerReceiver(
+                            downloadReceiver,
+                            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                        )
+
+
+                        // just uncomment when firebase is working and paid
+                        //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
+                    }
+
+                }
+                .setIcon(
+                    R.drawable.pdlg_icon_info, R.color.purple_500
+                ) { }
+
+            oldApkVersionDialog.setCancelable(false)
+            oldApkVersionDialog.show()
+        }
+
+    }
+
     private fun setUpLogo() {
         when (BuildConfig.FLAVOR) {
             "donaqui" -> {
@@ -127,4 +286,121 @@ class LoginActivity: AppCompatActivity() {
             }
         }
     }
+
+    private fun showNotInternetConnectionError() {
+        showError("No hay regitros en la base de datos, verifique su conexion a internet y vuelva a intentar.")
+        binding.etLoginEmail.isEnabled = false
+        binding.etLoginPassword.isEnabled = false
+        binding.btnSignIn.isEnabled = false
+        binding.errorLogin.setVisible()
+        //binding.etLoginEmail.inputType = InputType.TYPE_NULL
+        //binding.etLoginPassword.inputType = InputType.TYPE_NULL
+    }
+
+    private fun hideNotInternetConnectionError() {
+        showError("Conectado")
+        binding.etLoginEmail.isEnabled = true
+        binding.etLoginPassword.isEnabled = true
+        binding.btnSignIn.isEnabled = true
+        //binding.etLoginEmail.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        //binding.etLoginPassword.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        binding.errorLogin.setGone()
+    }
+
+    private fun showError(error: String) {
+        binding.errorLogin.text = error
+    }
+
+    private fun registerNetworkBroadcastForNougat() {
+        mNetworkChangeReceiver = NetworkChangeReceiver(object : ConnectionNetworkListener {
+            override fun onConnected() {
+                isConnected = true
+                hideNotInternetConnectionError()
+                viewModel.validateToken()
+            }
+            override fun onDisconnected() {
+                isConnected = false
+            }
+        })
+        registerReceiver(
+            mNetworkChangeReceiver,
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
+    }
+
+    /**
+     * Connection Listener
+     */
+    interface ConnectionNetworkListener {
+        fun onConnected()
+        fun onDisconnected()
+    }
+
+    /**
+     * Connection BroadcastReceiver
+     */
+    class NetworkChangeReceiver(): BroadcastReceiver() {
+        private lateinit var mConnectionNetworkListener: ConnectionNetworkListener
+
+        constructor(connectionNetworkListener: ConnectionNetworkListener): this() {
+            mConnectionNetworkListener = connectionNetworkListener
+        }
+
+        override fun onReceive(context: Context?, p1: Intent?) {
+            try {
+                val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val netInfo = cm.activeNetworkInfo
+                val isConnected = netInfo != null && netInfo.isConnected
+                if (isConnected) {
+                    mConnectionNetworkListener.onConnected()
+                } else {
+                    mConnectionNetworkListener.onDisconnected()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                mConnectionNetworkListener.onDisconnected()
+            }
+        }
+    }
+
+    /**
+     * Connection Listener
+     */
+    interface DownloadListener {
+        fun onDownloadSuccess(uri: Uri)
+        fun onDownloadError(error: String)
+    }
+
+    class DownloadReceiver(): BroadcastReceiver() {
+        private var id: Long = 0
+        private lateinit var downloadListener: DownloadListener
+
+        constructor(id: Long, downloadListener: DownloadListener): this() {
+            this.downloadListener = downloadListener
+            this.id = id
+        }
+
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null && intent.action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE)) {
+                val downloadManager = context!!.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(id))
+                try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            downloadListener.onDownloadSuccess(downloadManager.getUriForDownloadedFile(id))
+                        } else {
+                            downloadListener.onDownloadError("Error al descargar la aplicación")
+                        }
+                    }
+                } catch (e: Exception) {
+                    downloadListener.onDownloadError("Error al descargar la aplicación")
+                    e.printStackTrace()
+                } finally {
+                    cursor?.close()
+                }
+            }
+        }
+    }
 }
+

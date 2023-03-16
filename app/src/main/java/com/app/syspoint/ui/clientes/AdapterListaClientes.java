@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.ClientesRutaBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
     public void setClients(List<ClienteBean> data) {
         this.mDataFiltrable  = data;
+        this.mData = data;
         notifyDataSetChanged();
     }
 
@@ -98,7 +100,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
         TextView textViewNombre;
         TextView textViewCuenta;
-        TextView textViewCategoria;
         TextView textViewColonia;
         ImageView imageView;
 
@@ -106,7 +107,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             super(itemView);
             this.textViewNombre = itemView.findViewById(R.id.textView_item_nombre_cliente_lista);
             this.textViewCuenta = itemView.findViewById(R.id.textView_item_cuenta_cliente_lista);
-            this.textViewCategoria = itemView.findViewById(R.id.textView_item_categoria_cliente_lista);
             this.textViewColonia = itemView.findViewById(R.id.textView_item_colonia_cliente_lista);
             //this.imageView = itemView.findViewById(R.id.img_more);
         }
@@ -115,7 +115,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
             textViewNombre.setText(""+ cliente.getNombre_comercial());
             textViewCuenta.setText("" + cliente.getCuenta());
-            textViewCategoria.setText("" + cliente.getCategoria());
             textViewColonia.setText("Col. " + cliente.getColonia());
 
             itemView.setOnLongClickListener(v -> {
@@ -127,12 +126,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             itemView.setOnClickListener(v -> {
                 if (mOnItemClickListener != null) {
                     itemView.setEnabled(false);
-                    onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition(), new OnDialogShownListener() {
-                        @Override
-                        public void onDialogShown() {
-                            itemView.setEnabled(true);
-                        }
-                    });
+                    onItemClickListener.onItemClick(v, mDataFiltrable.get(getAdapterPosition()), getAdapterPosition(), () -> itemView.setEnabled(true));
                     itemView.setEnabled(true);
                 }
             });

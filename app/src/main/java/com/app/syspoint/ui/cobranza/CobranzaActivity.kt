@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -20,11 +21,11 @@ import com.app.syspoint.repository.database.dao.PaymentModelDao
 import com.app.syspoint.ui.cobranza.adapter.AdapterCobranza
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.charge.ChargeViewModel
-import libs.mjn.prettydialog.PrettyDialog
 
 class CobranzaActivity: AppCompatActivity() {
 
     private lateinit var binding: ActivityCobranzaBinding
+    private lateinit var headerBinding: EncabezadoCobranzaBinding
     private lateinit var viewModel: ChargeViewModel
     private lateinit var adapter: AdapterCobranza
 
@@ -32,10 +33,15 @@ class CobranzaActivity: AppCompatActivity() {
 
     private lateinit var clientId: String
 
+    private val TAG = "ChargeViewModel"
+
+    private var endCharge = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityCobranzaBinding.inflate(layoutInflater)
+        headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
         viewModel = ViewModelProvider(this)[ChargeViewModel::class.java]
         viewModel.chargeViewState.observe(this, ::renderChargeViewState)
 
@@ -48,7 +54,7 @@ class CobranzaActivity: AppCompatActivity() {
         viewModel.deletePartidas(clientId)
         viewModel.setUpCharge()
         viewModel.loadClientData(clientId)
-        viewModel.downloadCharge(clientId)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -90,6 +96,7 @@ class CobranzaActivity: AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "onResume")
         viewModel.setUpCharge()
         viewModel.getTaxes(clientId)
     }
@@ -145,7 +152,6 @@ class CobranzaActivity: AppCompatActivity() {
                 }
             }
             is ChargeViewState.ChargeLoaded -> {
-                val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
                 headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.saldoCiente)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
                 headerBinding.textViewClienteSaldoCobranzaView.text = Utils.FDinero(chargeViewState.saldoCiente)
@@ -157,9 +163,9 @@ class CobranzaActivity: AppCompatActivity() {
                 headerBinding.textViewClienteCobranzaView.text = chargeViewState.clientBean.cuenta
                 headerBinding.textViewClienteNombreCobranzaView.text = chargeViewState.clientBean.nombre_comercial
                 //this.id_cliente_seleccionado = chargeViewState.clienteBean.cuenta
-                headerBinding.textViewSubtotalCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
+                headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.clientBean.saldo_credito)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
-                headerBinding.textViewClienteCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
+                headerBinding.textViewClienteSaldoCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
                 //this.saldoCliente = chargeViewState.clienteBean.saldo_credito
             }
             is ChargeViewState.EndChargeWithDocument -> {
@@ -175,7 +181,7 @@ class CobranzaActivity: AppCompatActivity() {
                 sellerNotFoundDialog()
             }
             is ChargeViewState.NotInternetConnection -> {
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is ChargeViewState.ComputedTaxes -> {
                 setTaxes(chargeViewState.totalAmount, chargeViewState.restAmount, chargeViewState.show)
@@ -240,12 +246,13 @@ class CobranzaActivity: AppCompatActivity() {
     }
 
     private fun setUpListeners() {
-        val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
         headerBinding.fbAddDocumentos click {
+            Log.d(TAG, "fbAddDocumentos clicked")
             val parametros = HashMap<String, String>()
             parametros[Actividades.PARAM_1] = clientId
             Actividades.getSingleton(this@CobranzaActivity, ListaDocumentosCobranzaActivity::class.java)
                 .muestraActividadForResultAndParams(Actividades.PARAM_INT_1, parametros)
+            Log.d(TAG, "fbAddDocumentos finish")
         }
     }
 
@@ -274,11 +281,15 @@ class CobranzaActivity: AppCompatActivity() {
             .setAnimationEnabled(false)
             .setIcon(R.drawable.ic_save_white, R.color.purple_500) { dialog.dismiss() }
             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
-                dialog.dismiss()
-                Utils.addActivity2Stack(this@CobranzaActivity)
-                val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
-                val import = headerBinding.textViewImpuestoCobranzaView.text.toString()
-                viewModel.handleEndChargeWithDocument(clientId, import)
+                if (!endCharge) {
+                    endCharge = true
+                    dialog.dismiss()
+                    Utils.addActivity2Stack(this@CobranzaActivity)
+                    val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
+                    val import = headerBinding.textViewImpuestoCobranzaView.text.toString()
+                    viewModel.handleEndChargeWithDocument(clientId, import)
+                    endCharge = false
+                }
             }.addButton(
                 getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900
             ) { dialog.dismiss() }

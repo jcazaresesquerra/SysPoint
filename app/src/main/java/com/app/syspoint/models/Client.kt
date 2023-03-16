@@ -40,21 +40,9 @@ data class Client (
     @Expose
     var fechaRegistro: String? = null,
 
-    @SerializedName("fecha_baja")
-    @Expose
-    var fechaBaja: String? = null,
-
     @SerializedName("cuenta")
     @Expose
     var cuenta: String? = null,
-
-    @SerializedName("grupo")
-    @Expose
-    var grupo: String? = null,
-
-    @SerializedName("categoria")
-    @Expose
-    var categoria: String? = null,
 
     @SerializedName("status")
     @Expose
@@ -62,31 +50,11 @@ data class Client (
 
     @SerializedName("consec")
     @Expose
-    var consec: Int = 0,
-
-    @SerializedName("region")
-    @Expose
-    var region: String? = null,
-
-    @SerializedName("sector")
-    @Expose
-    var sector: String? = null,
+    var consec: String? = null,
 
     @SerializedName("rango")
     @Expose
     var rango: String? = null,
-
-    @SerializedName("ruta")
-    @Expose
-    var ruta: String? = null,
-
-    @SerializedName("secuencia")
-    @Expose
-    var secuencia: Int = 0,
-
-    @SerializedName("periodo")
-    @Expose
-    var periodo: Int = 0,
 
     @SerializedName("lun")
     @Expose
@@ -122,7 +90,7 @@ data class Client (
 
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: Any? = null,
+    var updatedAt: String? = null,
 
 
     @SerializedName("latitud")
@@ -139,7 +107,7 @@ data class Client (
 
     @SerializedName("comentarios")
     @Expose
-    var recordatorio: String? = null,
+    var recordatorio: String? = "null",
 
     @SerializedName("saldo_credito")
     @Expose
@@ -155,5 +123,33 @@ data class Client (
 
     @SerializedName("matriz")
     @Expose
-    var matriz: String? = null
+    var matriz: String? = null,
+
+    @SerializedName("lunOrden")
+    @Expose
+    var lunOrder: Int = 0,
+
+    @SerializedName("marOrden")
+    @Expose
+    var marOrder: Int = 0,
+
+    @SerializedName("mieOrden")
+    @Expose
+    var mieOrder: Int = 0,
+
+    @SerializedName("jueOrden")
+    @Expose
+    var jueOrder: Int = 0,
+
+    @SerializedName("vieOrden")
+    @Expose
+    var vieOrder: Int = 0,
+
+    @SerializedName("sabOrden")
+    @Expose
+    var sabOrder: Int = 0,
+
+    @SerializedName("domOrden")
+    @Expose
+    var domOrder: Int = 0,
 ): Serializable

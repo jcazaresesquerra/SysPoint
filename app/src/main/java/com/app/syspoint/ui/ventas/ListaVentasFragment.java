@@ -65,6 +65,8 @@ import com.app.syspoint.models.Payment;
 import com.app.syspoint.ui.ventas.adapter.AdapterListaVentas;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import org.json.JSONArray;
@@ -77,11 +79,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ListaVentasFragment extends Fragment {
 
@@ -96,8 +94,6 @@ public class ListaVentasFragment extends Fragment {
     private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
 
     private BluetoothAdapter mBTAdapter;
-    private Set<BluetoothDevice> mPairedDevices;
-    private ArrayAdapter<String> mBTArrayAdapter;
 
     private Handler mHandler; // Our main handler that will receive callback notifications
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
@@ -106,6 +102,8 @@ public class ListaVentasFragment extends Fragment {
     private List<VentasBean> mData;
     private AdapterListaVentas mAdapter;
     private LinearLayout lyt_empleados;
+
+    private boolean cancelSellClicked = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -168,7 +166,7 @@ public class ListaVentasFragment extends Fragment {
     private void initRecyclerView(View root) {
 
         mData = new ArrayList<>();
-        mData = (List<VentasBean>) (List<?>) new SellsDao().getListVentasByDate(Utils.fechaActual());
+        mData = new SellsDao().getListVentasByDate(Utils.fechaActual());
 
         if (mData.size() > 0) {
             lyt_empleados.setVisibility(View.GONE);
@@ -296,76 +294,80 @@ public class ListaVentasFragment extends Fragment {
                             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
                                 @Override
                                 public void onClick() {
-                                    EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
+                                    if (!cancelSellClicked) {
+                                        cancelSellClicked = true;
+                                        EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
 
-                                    if (cancelaUsuario == null && getContext() != null) {
-                                        cancelaUsuario = new CacheInteractor().getSeller();
-                                    }
-
-                                    SellsDao sellsDao = new SellsDao();
-                                    venta.setEstado("CA");
-                                    venta.setUsuario_cancelo(cancelaUsuario.getNombre());
-                                    sellsDao.save(venta);
-
-                                    mData = (List<VentasBean>) (List<?>) new SellsDao().getListVentasByDate(Utils.fechaActual());
-                                    mAdapter.setData(mData);
-
-                                    ProgressDialog progressDialog = new ProgressDialog(getActivity());
-                                    progressDialog.setMessage("Espere un momento");
-                                    progressDialog.setCancelable(false);
-                                    progressDialog.show();
-                                    new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                                        progressDialog.dismiss();
-                                        if (connected)  {
-                                            syncCloudVenta(venta.getId());
+                                        if (cancelaUsuario == null && getContext() != null) {
+                                            cancelaUsuario = new CacheInteractor().getSeller();
                                         }
 
-                                        if (venta.getCobranza() != null) {
-                                            //Actualiza el documento de la cobranza
-                                            final PaymentDao paymentDao = new PaymentDao();
-                                            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(venta.getCobranza());
-                                            if (cobranzaBean != null) {
-                                                cobranzaBean.setEstado("CA");
-                                                paymentDao.save(cobranzaBean);
-                                                final ClientDao clientDao = new ClientDao();
-                                                final ClienteBean clienteBean = clientDao.getClientByAccount(venta.getCliente().getCuenta());
-                                                if (clienteBean != null) {
-                                                    clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
-                                                    clientDao.save(clienteBean);
-                                                    testLoadClientes(String.valueOf(clienteBean.getId()));
+                                        SellsDao sellsDao = new SellsDao();
+                                        venta.setEstado("CA");
+                                        venta.setUsuario_cancelo(cancelaUsuario.getNombre());
+                                        sellsDao.save(venta);
+
+                                        mData = (List<VentasBean>) new SellsDao().getListVentasByDate(Utils.fechaActual());
+                                        mAdapter.setData(mData);
+
+                                        ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                                        progressDialog.setMessage("Espere un momento");
+                                        progressDialog.setCancelable(false);
+                                        progressDialog.show();
+                                        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                                            progressDialog.dismiss();
+                                            if (connected) {
+                                                syncCloudVenta(venta.getId());
+                                            }
+
+                                            if (venta.getCobranza() != null) {
+                                                //Actualiza el documento de la cobranza
+                                                final PaymentDao paymentDao = new PaymentDao();
+                                                final CobranzaBean cobranzaBean = paymentDao.getByCobranza(venta.getCobranza());
+                                                if (cobranzaBean != null) {
+                                                    cobranzaBean.setEstado("CA");
+                                                    paymentDao.save(cobranzaBean);
+                                                    final ClientDao clientDao = new ClientDao();
+                                                    final ClienteBean clienteBean = clientDao.getClientByAccount(venta.getCliente().getCuenta());
+                                                    if (clienteBean != null) {
+                                                        clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
+                                                        clientDao.save(clienteBean);
+                                                        testLoadClientes(String.valueOf(clienteBean.getId()));
+                                                        saveCharge();
+                                                    }
+                                                }
+                                                if (connected) {
                                                     saveCharge();
                                                 }
                                             }
-                                            if (connected) {
-                                                saveCharge();
-                                            }
-                                        }
 
 
-                                        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta.getVenta());
+                                            final VentasBean ventasBean = sellsDao.getVentaByInventario(venta.getVenta());
 
-                                        for (PartidasBean item : ventasBean.getListaPartidas()){
-                                            final ProductDao productDao = new ProductDao();
-                                            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                                            for (PartidasBean item : ventasBean.getListaPartidas()) {
+                                                final ProductDao productDao = new ProductDao();
+                                                final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
 
-                                            if (productoBean != null){
+                                                if (productoBean != null) {
 
-                                                productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
-                                                productDao.save(productoBean);
+                                                    productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
+                                                    productDao.save(productoBean);
 
 
-                                                final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                                                final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                                                    final StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                                                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
-                                                if (inventarioHistorialBean != null){
-                                                    inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
-                                                    stockHistoryDao.save(inventarioHistorialBean);
+                                                    if (inventarioHistorialBean != null) {
+                                                        inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
+                                                        stockHistoryDao.save(inventarioHistorialBean);
 
+                                                    }
                                                 }
                                             }
-                                        }
-                                        dialogs.dismiss();
-                                    }).execute(), 100);
+                                            dialogs.dismiss();
+                                            cancelSellClicked = false;
+                                        }).execute(), 100);
+                                    }
                                 }
                             })
                             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
@@ -382,7 +384,7 @@ public class ListaVentasFragment extends Fragment {
                     sellTicket.setBean(venta);
                     sellTicket.template();
 
-                    if(mConnectedThread != null) //First check to make sure thread created
+                    if (mConnectedThread != null) //First check to make sure thread created
                         mConnectedThread.write(sellTicket.getDocument());
 
                 }
@@ -442,22 +444,10 @@ public class ListaVentasFragment extends Fragment {
             cliente.setCiudad(item.getCiudad());
             cliente.setCodigoPostal(item.getCodigo_postal());
             cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setFechaBaja(item.getFecha_baja());
             cliente.setCuenta(item.getCuenta());
-            cliente.setGrupo(item.getGrupo());
-            cliente.setCategoria(item.getCategoria());
-            if (item.getStatus() == false) {
-                cliente.setStatus(0);
-            } else {
-                cliente.setStatus(1);
-            }
+            cliente.setStatus(item.getStatus()? 1 : 0);
             cliente.setConsec(item.getConsec());
-            cliente.setRegion(item.getRegion());
-            cliente.setSector(item.getSector());
             cliente.setRango(item.getRango());
-            cliente.setSecuencia(item.getSecuencia());
-            cliente.setPeriodo(item.getPeriodo());
-            cliente.setRuta(item.getRuta());
             cliente.setLun(item.getLun());
             cliente.setMar(item.getMar());
             cliente.setMie(item.getMie());
@@ -659,11 +649,7 @@ public class ListaVentasFragment extends Fragment {
         PrinterDao existeImpresora = new PrinterDao();
         int existe = existeImpresora.existeConfiguracionImpresora();
 
-        if (existe > 0) {
-            return true;
-        }
-
-        return false;
+        return existe > 0;
     }
 
     public boolean isBluetoothEnabled() {

@@ -33,10 +33,10 @@ class AdapterListaProductos(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(mData[position], onItemClickListener)
+        holder.bind(mDataFilter[position], onItemClickListener)
     }
 
-    override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
+    override fun getItemCount(): Int = if (mDataFilter.isEmpty()) 0 else mDataFilter.size
 
     override fun getFilter(): Filter {
         return object : Filter() {
@@ -49,8 +49,8 @@ class AdapterListaProductos(
                     val filtroProductos: MutableList<ProductoBean> = ArrayList()
                     for (row in mDataFilter) {
                         row?.let {
-                            if (row.articulo.lowercase(Locale.getDefault()).contains(filtro) ||
-                                row.descripcion.lowercase(Locale.getDefault()).contains(filtro)
+                            if (row.articulo.toLowerCase().contains(filtro.toLowerCase()) ||
+                                row.descripcion.toLowerCase().contains(filtro.toLowerCase())
                             ) {
                                 filtroProductos.add(row)
                             }
@@ -71,6 +71,7 @@ class AdapterListaProductos(
     }
 
     fun setData(data: List<ProductoBean?>) {
+        mDataFilter = data
         mData = data
         notifyDataSetChanged()
     }
@@ -82,15 +83,10 @@ class AdapterListaProductos(
                 binding.textViewArticuloList.text = producto.articulo
                 binding.textViewDescripcionProductoList.text = producto.descripcion
                 binding.textViewPreciosArticuloList.text = "$" + producto.precio
-                binding.textViewArticuloUnidadMedidaList.text = producto.unidad_medida
                 binding.textViewArticuloIVAList.text = producto.iva.toString() + "%"
-                binding.textViewArticuloIESPList.text = producto.ieps.toString() + "%"
                 binding.textViewArticuloCategoriaList.text = "SYS"
-                binding.textViewArticuloPrioridadList.text = producto.prioridad.toString()
                 binding.textViewArticuloStatusList.text = producto.status
-                binding.textViewArticuloCodAlfaList.text = producto.codigo_alfa
                 binding.textViewArticuloCodBarrasList.text = producto.codigo_barras
-                binding.textViewArticuloRegionList.text = producto.region
 
                 if (producto.path_img != null) {
                     val decodedString: ByteArray =

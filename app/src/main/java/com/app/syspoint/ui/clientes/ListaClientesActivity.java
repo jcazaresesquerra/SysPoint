@@ -2,13 +2,13 @@ package com.app.syspoint.ui.clientes;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,21 +18,30 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.repository.database.bean.ClienteBean;
+import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.utils.Actividades;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListaClientesActivity extends AppCompatActivity {
 
     AdapterListaClientes mAdapter;
     List<ClienteBean> mData;
+    private LinearLayout lyt_clientes;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_clientes);
+        lyt_clientes = findViewById(R.id.lyt_clientes);
+
         initToolBar();
         initRecyclerView();
     }
@@ -44,10 +53,8 @@ public class ListaClientesActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     @Override
@@ -67,7 +74,6 @@ public class ListaClientesActivity extends AppCompatActivity {
                 if (!hasFocus) {
                     searchMenuItem.collapseActionView();
                     searchView.setQuery("", false);
-
                 }
             }
         });
@@ -76,7 +82,25 @@ public class ListaClientesActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextSubmit(String arg0) {
-                mAdapter.getFilter().filter(arg0);
+                //mAdapter.getFilter().filter(arg0);
+                new ClientInteractorImp().executeFindClient(arg0, new ClientInteractor.FindClientListener() {
+                    @Override
+                    public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
+                        List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
+                        mAdapter.setClients(clientBeanList);
+
+                        if (clientBeanList.size() > 0) {
+                            lyt_clientes.setVisibility(View.GONE);
+                        } else {
+                            lyt_clientes.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onFindClientError() {
+
+                    }
+                });
                 return false;
             }
 
@@ -108,8 +132,20 @@ public class ListaClientesActivity extends AppCompatActivity {
 
 
     private void initRecyclerView() {
+        RoutingDao routingDao = new RoutingDao();
+        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
-        mData = (List<ClienteBean>) (List<?>) new ClientDao().list();
+        if (ruteoBean != null) {
+            mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
+        } else {
+            mData = new ArrayList<>();
+        }
+
+        if (mData.size() > 0) {
+            lyt_clientes.setVisibility(View.GONE);
+        } else {
+            lyt_clientes.setVisibility(View.VISIBLE);
+        }
 
         final RecyclerView recyclerView = findViewById(R.id.recyclerView_lista_clientes);
         recyclerView.setHasFixedSize(true);
@@ -132,7 +168,6 @@ public class ListaClientesActivity extends AppCompatActivity {
                 position -> false);
 
         recyclerView.setAdapter(mAdapter);
-
     }
 
 }

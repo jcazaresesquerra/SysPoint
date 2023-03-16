@@ -21,18 +21,10 @@ public class ClienteBean extends Bean {
     private String ciudad;
     private int codigo_postal;
     private String fecha_registro;
-    private String fecha_baja;
     private String cuenta;
-    private String grupo;
-    private String categoria;
     private boolean status;
-    private int consec;
-    private String region;
-    private String sector;
+    private String consec;
     private String rango;
-    private String ruta;
-    private int secuencia;
-    private int periodo;
     private int lun;
     private int mar;
     private int mie;
@@ -40,6 +32,13 @@ public class ClienteBean extends Bean {
     private int vie;
     private int sab;
     private int dom;
+    private int lunOrder;
+    private int marOrder;
+    private int mieOrder;
+    private int jueOrder;
+    private int vieOrder;
+    private int sabOrder;
+    private int domOrder;
     private int visitado;
     private String latitud;
     private String longitud;
@@ -53,18 +52,16 @@ public class ClienteBean extends Bean {
     private double saldo_credito = 0.00;
     private String matriz;
     private String date_sync;
+    private String updatedAt;
 
-@Generated(hash = 85095958)
-public ClienteBean(Long id, String nombre_comercial, String calle,
-        String numero, String colonia, String ciudad, int codigo_postal,
-        String fecha_registro, String fecha_baja, String cuenta, String grupo,
-        String categoria, boolean status, int consec, String region,
-        String sector, String rango, String ruta, int secuencia, int periodo,
-        int lun, int mar, int mie, int jue, int vie, int sab, int dom,
-        int visitado, String latitud, String longitud, String contacto_phone,
-        String recordatorio, boolean is_recordatorio, int visitasNoefectivas,
-        boolean is_credito, double limite_credito, double saldo_credito,
-        String matriz, String date_sync) {
+@Generated(hash = 94399585)
+public ClienteBean(Long id, String nombre_comercial, String calle, String numero, String colonia,
+        String ciudad, int codigo_postal, String fecha_registro, String cuenta, boolean status, String consec,
+        String rango, int lun, int mar, int mie, int jue, int vie, int sab, int dom, int lunOrder,
+        int marOrder, int mieOrder, int jueOrder, int vieOrder, int sabOrder, int domOrder, int visitado,
+        String latitud, String longitud, String contacto_phone, String recordatorio, boolean is_recordatorio,
+        int visitasNoefectivas, boolean is_credito, double limite_credito, double saldo_credito,
+        String matriz, String date_sync, String updatedAt) {
     this.id = id;
     this.nombre_comercial = nombre_comercial;
     this.calle = calle;
@@ -73,18 +70,10 @@ public ClienteBean(Long id, String nombre_comercial, String calle,
     this.ciudad = ciudad;
     this.codigo_postal = codigo_postal;
     this.fecha_registro = fecha_registro;
-    this.fecha_baja = fecha_baja;
     this.cuenta = cuenta;
-    this.grupo = grupo;
-    this.categoria = categoria;
     this.status = status;
     this.consec = consec;
-    this.region = region;
-    this.sector = sector;
     this.rango = rango;
-    this.ruta = ruta;
-    this.secuencia = secuencia;
-    this.periodo = periodo;
     this.lun = lun;
     this.mar = mar;
     this.mie = mie;
@@ -92,6 +81,13 @@ public ClienteBean(Long id, String nombre_comercial, String calle,
     this.vie = vie;
     this.sab = sab;
     this.dom = dom;
+    this.lunOrder = lunOrder;
+    this.marOrder = marOrder;
+    this.mieOrder = mieOrder;
+    this.jueOrder = jueOrder;
+    this.vieOrder = vieOrder;
+    this.sabOrder = sabOrder;
+    this.domOrder = domOrder;
     this.visitado = visitado;
     this.latitud = latitud;
     this.longitud = longitud;
@@ -104,6 +100,7 @@ public ClienteBean(Long id, String nombre_comercial, String calle,
     this.saldo_credito = saldo_credito;
     this.matriz = matriz;
     this.date_sync = date_sync;
+    this.updatedAt = updatedAt;
 }
 @Generated(hash = 1475481445)
 public ClienteBean() {
@@ -156,29 +153,11 @@ public String getFecha_registro() {
 public void setFecha_registro(String fecha_registro) {
     this.fecha_registro = fecha_registro;
 }
-public String getFecha_baja() {
-    return this.fecha_baja;
-}
-public void setFecha_baja(String fecha_baja) {
-    this.fecha_baja = fecha_baja;
-}
 public String getCuenta() {
     return this.cuenta;
 }
 public void setCuenta(String cuenta) {
     this.cuenta = cuenta;
-}
-public String getGrupo() {
-    return this.grupo;
-}
-public void setGrupo(String grupo) {
-    this.grupo = grupo;
-}
-public String getCategoria() {
-    return this.categoria;
-}
-public void setCategoria(String categoria) {
-    this.categoria = categoria;
 }
 public boolean getStatus() {
     return this.status;
@@ -186,47 +165,17 @@ public boolean getStatus() {
 public void setStatus(boolean status) {
     this.status = status;
 }
-public int getConsec() {
+public String getConsec() {
     return this.consec;
 }
-public void setConsec(int consec) {
+public void setConsec(String consec) {
     this.consec = consec;
-}
-public String getRegion() {
-    return this.region;
-}
-public void setRegion(String region) {
-    this.region = region;
-}
-public String getSector() {
-    return this.sector;
-}
-public void setSector(String sector) {
-    this.sector = sector;
 }
 public String getRango() {
     return this.rango;
 }
 public void setRango(String rango) {
     this.rango = rango;
-}
-public String getRuta() {
-    return this.ruta;
-}
-public void setRuta(String ruta) {
-    this.ruta = ruta;
-}
-public int getSecuencia() {
-    return this.secuencia;
-}
-public void setSecuencia(int secuencia) {
-    this.secuencia = secuencia;
-}
-public int getPeriodo() {
-    return this.periodo;
-}
-public void setPeriodo(int periodo) {
-    this.periodo = periodo;
 }
 public int getLun() {
     return this.lun;
@@ -270,6 +219,48 @@ public int getDom() {
 public void setDom(int dom) {
     this.dom = dom;
 }
+    public int getLunOrder() {
+        return this.lunOrder;
+    }
+    public void setLunOrder(int lunOrder) {
+        this.lunOrder = lunOrder;
+    }
+    public int getMarOrder() {
+        return this.marOrder;
+    }
+    public void setMarOrder(int marOrder) {
+        this.marOrder = marOrder;
+    }
+    public int getMieOrder() {
+        return this.mieOrder;
+    }
+    public void setMieOrder(int mieOrder) {
+        this.mieOrder = mieOrder;
+    }
+    public int getJueOrder() {
+        return this.jueOrder;
+    }
+    public void setJueOrder(int jueOrder) {
+        this.jueOrder = jueOrder;
+    }
+    public int getVieOrder() {
+        return this.vieOrder;
+    }
+    public void setVieOrder(int vieOrder) {
+        this.vieOrder = vieOrder;
+    }
+    public int getSabOrder() {
+        return this.sabOrder;
+    }
+    public void setSabOrder(int sabOrder) {
+        this.sabOrder = sabOrder;
+    }
+    public int getDomOrder() {
+        return this.domOrder;
+    }
+    public void setDomOrder(int domOrder) {
+        this.domOrder = domOrder;
+    }
 public int getVisitado() {
     return this.visitado;
 }
@@ -343,7 +334,11 @@ public void setDate_sync(String date_sync) {
     this.date_sync = date_sync;
 }
 
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
 
-
-    
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

@@ -43,6 +43,22 @@
         <item>Activo</item>
         <item>Inactivo</item>
     </string-array>
+
+    <string-array name="edit_ruta">
+        <item>Ruta editable</item>
+        <item>Ruta no editable</item>
+    </string-array>
+
+    <string-array name="edit_day">
+        <item>Lunes</item>
+        <item>Martes</item>
+        <item>Miercoles</item>
+        <item>Jueves</item>
+        <item>Viernes</item>
+        <item>Sabado</item>
+        <item>Domingo</item>
+    </string-array>
+
     <string-array name="grupo">
         <item>Independiente</item>
     </string-array>
@@ -51,15 +67,6 @@
         <item>Independiente</item>
         <item>Matrix</item>
         <item>Sucursal</item>
-    </string-array>
-
-    <string-array name="tipo_contrato">
-        <item>Capacitación Inicial</item>
-        <item>Por obra</item>
-        <item>Tiempo Determinado</item>
-        <item>Temporada</item>
-        <item>Periodo de prueba</item>
-        <item>Tiempo indeterminado</item>
     </string-array>
 
     <string-array name="ruteo_sector">

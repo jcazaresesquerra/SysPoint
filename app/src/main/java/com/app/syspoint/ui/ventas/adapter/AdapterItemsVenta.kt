@@ -21,11 +21,11 @@ class AdapterItemsVenta(
     private var mData = data
 
     interface OnItemClickListener {
-        fun onItemClick(position: Int)
+        fun onItemClick(sell: VentasModelBean)
     }
 
     interface OnItemLongClickListener {
-        fun onItemLongClicked(position: Int): Boolean
+        fun onItemLongClicked(sell: VentasModelBean): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -47,12 +47,12 @@ class AdapterItemsVenta(
     class Holder(val binding: ItemVentasCardviewBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(ventasModelBean: VentasModelBean?, onItemLongClickListener: OnItemLongClickListener, onItemClickListener: OnItemClickListener) {
             ventasModelBean?.let { item ->
-                binding.textViewProductoCodigoVenta.setText(item.articulo)
-                binding.textViewProductoDescripcionVenta.setText(item.descripcion)
-                binding.textViewProductoCantidadVenta.setText("Cant. " + item.cantidad)
-                binding.textViewProductoPrecioVenta.setText(Utils.FDinero(item.precio))
+                binding.textViewProductoCodigoVenta.text = item.articulo
+                binding.textViewProductoDescripcionVenta.text = item.descripcion
+                binding.textViewProductoCantidadVenta.text = "Cant. " + item.cantidad
+                binding.textViewProductoPrecioVenta.text = Utils.FDinero(item.precio)
                 val total: Double = item.precio * item.cantidad
-                binding.textViewProductoTotalVenta.setText(Utils.FDinero(total))
+                binding.textViewProductoTotalVenta.text = Utils.FDinero(total)
 
                 val productDao = ProductDao()
                 val productoBean = productDao.getProductoByArticulo(item.articulo)
@@ -66,10 +66,10 @@ class AdapterItemsVenta(
                     }
                 }
 
-                itemView click  { onItemClickListener.onItemClick(adapterPosition) }
+                itemView click  { onItemClickListener.onItemClick(ventasModelBean) }
 
                 itemView longClick  {
-                    onItemLongClickListener.onItemLongClicked(adapterPosition)
+                    onItemLongClickListener.onItemLongClicked(ventasModelBean)
                     false
                 }
             }

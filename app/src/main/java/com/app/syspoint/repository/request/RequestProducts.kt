@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 
 class RequestProducts {
     companion object {
@@ -37,37 +38,32 @@ class RequestProducts {
                                 producto.articulo = items.articulo
                                 producto.descripcion = items.descripcion
                                 producto.status = items.status
-                                producto.unidad_medida = items.unidadMedida
-                                producto.clave_sat = items.claveSat
-                                producto.unidad_sat = items.unidadSat
                                 producto.precio = items.precio
-                                producto.costo = items.costo
                                 producto.iva = items.iva
-                                producto.ieps = items.ieps
-                                producto.prioridad = items.prioridad
-                                producto.region = items.region
-                                producto.codigo_alfa = items.codigoAlfa
                                 producto.codigo_barras = items.codigoBarras
                                 producto.path_img = items.pathImage
+                                producto.updatedAt = items.updatedAt
                                 dao.insert(producto)
                                 products.add(producto)
                             } else {
-                                productBean.articulo = items.articulo
-                                productBean.descripcion = items.descripcion
-                                productBean.status = items.status
-                                productBean.unidad_medida = items.unidadMedida
-                                productBean.clave_sat = items.claveSat
-                                productBean.unidad_sat = items.unidadSat
-                                productBean.precio = items.precio
-                                productBean.costo = items.costo
-                                productBean.iva = items.iva
-                                productBean.ieps = items.ieps
-                                productBean.prioridad = items.prioridad
-                                productBean.region = items.region
-                                productBean.codigo_alfa = items.codigoAlfa
-                                productBean.codigo_barras = items.codigoBarras
-                                productBean.path_img = items.pathImage
-                                productDao.save(productBean)
+                                val update = if (!productBean.updatedAt.isNullOrEmpty() && !items.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(items.updatedAt)
+                                    val dateBean = formatter.parse(productBean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    productBean.articulo = items.articulo
+                                    productBean.descripcion = items.descripcion
+                                    productBean.status = items.status
+                                    productBean.precio = items.precio
+                                    productBean.iva = items.iva
+                                    productBean.codigo_barras = items.codigoBarras
+                                    productBean.path_img = items.pathImage
+                                    productBean.updatedAt = items.updatedAt
+                                    productDao.save(productBean)
+                                }
                                 products.add(productBean)
                             }
                         }
@@ -103,6 +99,7 @@ class RequestProducts {
                     if (response.isSuccessful) {
                         onSaveProductsListener.onSaveProductsSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onSaveProductsListener.onSaveProductsError()
                     }
                 }

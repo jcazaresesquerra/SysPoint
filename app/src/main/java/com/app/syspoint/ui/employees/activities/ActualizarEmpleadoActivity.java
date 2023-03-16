@@ -23,12 +23,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,8 +46,11 @@ import com.app.syspoint.repository.database.dao.EmployeeDao;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -63,60 +64,38 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
-    byte[] imageByteArray;
-    Bitmap decoded;
     private EditText ip_actualiza_empleado_nombre;
     private EditText ip_actualiza_empleado_direccion;
     private EditText ip_actualiza_empleado_email;
     private EditText ip_actualiza_empleado_telefono;
     private EditText ip_actualiza_empleado_fechaNacimiento;
     private EditText ip_actualiza_empleado_fecha_ingreso;
-    private EditText ip_actualiza_empleado_fecha_egreso;
     private EditText ip_actualiza_empleado_contrasenia;
     private EditText ip_actualiza_empleado_contrasenia_valida;
     private EditText ip_actualiza_empleado_id;
-    private EditText ip_actualiza_empleado_nss;
-    private EditText ip_actualiza_empleado_rfc;
-    private EditText ip_actualiza_empleado_curp;
-    private EditText ip_actualiza_empleado_puesto;
-    private EditText ip_actualiza_empleado_departamento;
-    private Spinner spinner_tipo_contrato_actualiza_empleado;
-    private String tipo_contrato_seleccionado;
-    private String region_seleccionada;
-    private EditText ip_actualiza_empleado_sueldo;
-
-    private Spinner spinner_region_actualiza_empleado;
-    private EditText ip_actualiza_empleado_hora_entrada;
-    private EditText ip_actualiza_empleado_hora_salida;
-    private EditText ip_actualiza_empleado_salida_comida;
-    private EditText ip_actualiza_empleado_entrada_comida;
-    private EditText ip_actualiza_empleado_turno;
     private Spinner spinner_actualiza_empleado_status;
-    private String status_seleccionado;
-
-    private ImageButton imageButtonFechaIngreso;
-    private ImageButton imageButtonFechaEgreso;
-    private ImageButton imageButtonFechaNacimiento;
-    private int mYear, mMonth, mDay;
-    private List<String> listaCamposValidos;
-    private String empladoGlobal;
-    EmpleadoBean empleadoBean = null;
-    CircleImageView circleImageView;
+    private Spinner rute_employee_spinner;
+    private SwitchCompat checkbox_clientes_actualiza_empleado;
+    private SwitchCompat checkbox_productos_actualiza_empleado;
+    private SwitchCompat checkbox_ventas_actualiza_empleado;
+    private SwitchCompat checkbox_empleados_actualiza_empleado;
+    private SwitchCompat checkbox_inventario_actualiza_empleado;
+    private SwitchCompat checkbox_cobranza_actualiza_empleado;
+    private SwitchCompat checkbox_edit_rute;
+    private CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
-
-
-    private SwitchCompat checkbor_clientes_actualiza_empleado;
-    private SwitchCompat checkbor_productos_actualiza_empleado;
-    private SwitchCompat checkbor_ventas_actualiza_empleado;
-    private SwitchCompat checkbor_empleados_actualiza_empleado;
-    private SwitchCompat checkbor_inventario_actualiza_empleado;
-    private SwitchCompat checkbor_cobranza_actualiza_empleado;
+    private List<String> listaCamposValidos;
+    private String status_seleccionado;
+    private String ruta_seleccionado;
+    private String idEmpleado;
+    private String empladoGlobal;
+    byte[] imageByteArray;
+    private Bitmap decoded;
+    private int mYear, mMonth, mDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,9 +105,8 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         this.initToolBar();
         this.initControls();
         getData();
-        loadSpinnerRegion();
-        loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRute();
     }
 
     private void getData(){
@@ -136,69 +114,56 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         empladoGlobal = intent.getStringExtra(Actividades.PARAM_1);
 
         try {
-
             EmployeeDao employeeDao = new EmployeeDao();
             EmpleadoBean empleadoBean = employeeDao.getEmployeeByIdentifier(empladoGlobal);
 
             if (empleadoBean != null){
-
                 ip_actualiza_empleado_nombre.setText(empleadoBean.getNombre());
                 ip_actualiza_empleado_direccion.setText(empleadoBean.getDireccion());
                 ip_actualiza_empleado_email.setText(empleadoBean.getEmail());
                 ip_actualiza_empleado_telefono.setText(empleadoBean.getTelefono());
                 ip_actualiza_empleado_fechaNacimiento.setText(empleadoBean.getFecha_nacimiento());
                 ip_actualiza_empleado_fecha_ingreso.setText(empleadoBean.getFecha_ingreso());
-                ip_actualiza_empleado_fecha_egreso.setText(empleadoBean.getFecha_egreso());
                 ip_actualiza_empleado_contrasenia.setText(empleadoBean.contrasenia);
                 ip_actualiza_empleado_contrasenia_valida.setText(empleadoBean.contrasenia);
-                ip_actualiza_empleado_nss.setText(empleadoBean.getNss());
-                ip_actualiza_empleado_rfc.setText(empleadoBean.getRfc());
-                ip_actualiza_empleado_curp.setText(empleadoBean.getCurp());
-                ip_actualiza_empleado_puesto.setText(empleadoBean.getPuesto());
                 ip_actualiza_empleado_id.setText(empleadoBean.getIdentificador());
-                //ip_actualiza_empleado_departamento.setText(empleadoBean.getPuesto());
-                ip_actualiza_empleado_hora_entrada.setText(empleadoBean.getHora_entrada());
-                ip_actualiza_empleado_hora_salida.setText(empleadoBean.getHora_salida());
-                ip_actualiza_empleado_salida_comida.setText(empleadoBean.getSalida_comer());
-                ip_actualiza_empleado_entrada_comida.setText(empleadoBean.entrada_comer);
-                ip_actualiza_empleado_sueldo.setText(String.valueOf(empleadoBean.getSueldo_diario()));
-                ip_actualiza_empleado_turno.setText(empleadoBean.getTurno());
 
-                tipo_contrato_seleccionado = empleadoBean.getTipo_contrato();
                 if (empleadoBean.getStatus()) {
                     status_seleccionado = "InActivo";
                 } else {
                     status_seleccionado = "Activo";
                 }
 
+                // set rute and day
+                ruta_seleccionado = empleadoBean.getRute();
 
                 final RolesDao rolesDao = new RolesDao();
                 final List<RolesBean> listRoles = rolesDao.getListaRolesByEmpleado(empleadoBean.getIdentificador());
 
                 //Contiene la lista de roles
                 for(RolesBean item: listRoles){
-
                     if (item.getModulo().compareToIgnoreCase("Clientes") == 0){
-                        checkbor_clientes_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_clientes_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Productos") == 0){
-                        checkbor_productos_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_productos_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Ventas") == 0){
-                        checkbor_ventas_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_ventas_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Empleados") == 0){
-                        checkbor_empleados_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_empleados_actualiza_empleado.setChecked(item.getActive());
                     }
                     if (item.getModulo().compareToIgnoreCase("Inventarios") == 0){
-                        checkbor_inventario_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_inventario_actualiza_empleado.setChecked(item.getActive());
                     }
                     if(item.getModulo().compareToIgnoreCase("Cobranza") == 0){
-                        checkbor_cobranza_actualiza_empleado.setChecked(item.getActive());
+                        checkbox_cobranza_actualiza_empleado.setChecked(item.getActive());
+                    }
+                    if(item.getModulo().compareToIgnoreCase("Rutas") == 0){
+                        checkbox_edit_rute.setChecked(item.getActive());
                     }
                 }
-
-                region_seleccionada = empleadoBean.getRegion();
 
                 if (empleadoBean.getPath_image() != null){
                     byte[] decodedString = Base64.decode(empleadoBean.getPath_image(), Base64.DEFAULT);
@@ -206,39 +171,18 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                     circleImageView.setImageBitmap(decodedByte);
                 }
             }
-
         }catch (Exception e){
             e.printStackTrace();
         }
-
     }
 
     private void initControls() {
-
         circleImageView = findViewById(R.id.perfil_actualiza_img);
-        imageButtonFechaIngreso = findViewById(R.id.img_button_fecha_ingreso);
-        imageButtonFechaIngreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateIngreso();
-            }
-        });
+        ImageButton imageButtonFechaIngreso = findViewById(R.id.img_button_fecha_ingreso);
+        imageButtonFechaIngreso.setOnClickListener(v -> dateIngreso());
 
-        imageButtonFechaEgreso = findViewById(R.id.img_button_fecha_egreso);
-        imageButtonFechaEgreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateEgreso();
-            }
-        });
-
-        imageButtonFechaNacimiento = findViewById(R.id.img_button_fecha_nacimiento);
-        imageButtonFechaNacimiento.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateFechaNacimiento();
-            }
-        });
+        ImageButton imageButtonFechaNacimiento = findViewById(R.id.img_button_fecha_nacimiento);
+        imageButtonFechaNacimiento.setOnClickListener(v -> setBirdDate());
 
         ip_actualiza_empleado_nombre = findViewById(R.id.ip_actualiza_empleado_nombre);
         ip_actualiza_empleado_direccion = findViewById(R.id.ip_actualiza_empleado_direccion);
@@ -246,91 +190,22 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         ip_actualiza_empleado_telefono = findViewById(R.id.ip_actualiza_empleado_telefono);
         ip_actualiza_empleado_fechaNacimiento = findViewById(R.id.ip_actualiza_empleado_fechaNacimiento);
         ip_actualiza_empleado_fecha_ingreso = findViewById(R.id.ip_actualiza_empleado_fecha_ingreso);
-        ip_actualiza_empleado_fecha_egreso = findViewById(R.id.ip_actualiza_empleado_fecha_egreso);
         ip_actualiza_empleado_contrasenia = findViewById(R.id.ip_actualiza_empleado_contrasenia);
         ip_actualiza_empleado_contrasenia_valida = findViewById(R.id.ip_actualiza_empleado_contrasenia_valida);
         ip_actualiza_empleado_id = findViewById(R.id.ip_actualiza_empleado_id);
-        ip_actualiza_empleado_nss = findViewById(R.id.ip_actualiza_empleado_nss);
-        ip_actualiza_empleado_rfc = findViewById(R.id.ip_actualiza_empleado_rfc);
-        ip_actualiza_empleado_curp = findViewById(R.id.ip_actualiza_empleado_curp);
-        ip_actualiza_empleado_puesto = findViewById(R.id.ip_actualiza_empleado_puesto);
-        ip_actualiza_empleado_departamento = findViewById(R.id.ip_actualiza_empleado_departamento);
-        ip_actualiza_empleado_hora_entrada = findViewById(R.id.ip_actualiza_empleado_hora_entrada);
-        ip_actualiza_empleado_hora_salida = findViewById(R.id.ip_actualiza_empleado_hora_salida);
-        ip_actualiza_empleado_salida_comida = findViewById(R.id.ip_actualiza_empleado_salida_comida);
-        ip_actualiza_empleado_entrada_comida = findViewById(R.id.ip_actualiza_empleado_entrada_comida);
-        ip_actualiza_empleado_sueldo = findViewById(R.id.ip_actualiza_empleado_sueldo);
-        ip_actualiza_empleado_turno = findViewById(R.id.ip_actualiza_empleado_turno);
-
-        checkbor_clientes_actualiza_empleado = findViewById(R.id.checkbor_clientes_actualiza_empleado);
-        checkbor_productos_actualiza_empleado = findViewById(R.id.checkbor_productos_actualiza_empleado);
-        checkbor_ventas_actualiza_empleado = findViewById(R.id.checkbor_ventas_actualiza_empleado);
-        checkbor_empleados_actualiza_empleado = findViewById(R.id.checkbor_empleados_actualiza_empleado);
-        checkbor_inventario_actualiza_empleado = findViewById(R.id.checkbor_inventarios_actualiza_empleado);
-        checkbor_cobranza_actualiza_empleado = findViewById(R.id.checkbor_cobranza_actualiza_empleado);
-    }
-
-    private void loadSpinnerRegion() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.region);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_actualiza_empleado = findViewById(R.id.spinner_region_actualiza_empleado);
-        spinner_region_actualiza_empleado.setAdapter(adapter);
-        spinner_region_actualiza_empleado.setSelection(arrayList.indexOf(region_seleccionada));
-        spinner_region_actualiza_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_region_actualiza_empleado.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadSpinnerTipoContrato() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.tipo_contrato);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_tipo_contrato_actualiza_empleado = findViewById(R.id.spinner_tipo_contrato_actualiza_empleado);
-        spinner_tipo_contrato_actualiza_empleado.setAdapter(adapter);
-        spinner_tipo_contrato_actualiza_empleado.setSelection(arrayList.indexOf(tipo_contrato_seleccionado));
-        spinner_tipo_contrato_actualiza_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                tipo_contrato_seleccionado = spinner_tipo_contrato_actualiza_empleado.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        checkbox_clientes_actualiza_empleado = findViewById(R.id.checkbox_clientes_actualiza_empleado);
+        checkbox_productos_actualiza_empleado = findViewById(R.id.checkbox_productos_actualiza_empleado);
+        checkbox_ventas_actualiza_empleado = findViewById(R.id.checkbox_ventas_actualiza_empleado);
+        checkbox_empleados_actualiza_empleado = findViewById(R.id.checkbox_empleados_actualiza_empleado);
+        checkbox_inventario_actualiza_empleado = findViewById(R.id.checkbox_inventarios_actualiza_empleado);
+        checkbox_cobranza_actualiza_empleado = findViewById(R.id.checkbox_cobranza_actualiza_empleado);
+        checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
     }
 
     private void loadSpinnerStatus() {
-
-        //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.status_producto);
-
-        //Obtiene la lista de Strings
         List<String> arrayList = Utils.convertArrayStringListString(array);
 
-        //Creamos el adaptador
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
         spinner_actualiza_empleado_status = findViewById(R.id.spinner_actualiza_empleado_status);
         spinner_actualiza_empleado_status.setAdapter(adapter);
@@ -338,89 +213,68 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         spinner_actualiza_empleado_status.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 status_seleccionado = spinner_actualiza_empleado_status.getSelectedItem().toString();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
 
+    private void loadSpinnerRute() {
+        /*RuteClientDao dao = new RuteClientDao();
+        List<String> arrayListRute = dao.getAllRutes();*/
+        String[] array = getArrayString(R.array.ruteo_rango_rutas);
+        List<String> arrayListRute = Utils.convertArrayStringListString(array);
+
+        if (ruta_seleccionado == null || ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
+
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
 
     private void dateIngreso() {
-
         final Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
         mMonth = c.get(Calendar.MONTH);
         mDay = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_actualiza_empleado_fecha_ingreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
+                (view, year, monthOfYear, dayOfMonth) ->
+                        ip_actualiza_empleado_fecha_ingreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year), mYear, mMonth, mDay);
         datePickerDialog.show();
 
     }
 
-    private void dateEgreso() {
-
+    private void setBirdDate() {
         final Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
         mMonth = c.get(Calendar.MONTH);
         mDay = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_actualiza_empleado_fecha_egreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
+                (view, year, monthOfYear, dayOfMonth) ->
+                        ip_actualiza_empleado_fechaNacimiento.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year), mYear, mMonth, mDay);
         datePickerDialog.show();
-
-    }
-
-    private void dateFechaNacimiento() {
-
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_actualiza_empleado_fechaNacimiento.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
-        datePickerDialog.show();
-
     }
 
     protected String[] getArrayString(final int id) {
         return this.getResources().getStringArray(id);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -429,25 +283,18 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         switch (item.getItemId()) {
-
             case android.R.id.home:
                 finish();
                 return true;
-
             case R.id.searchActualizaImagenEmpleado:
                 selectImage();
                 return true;
-
             case R.id.actualizaEmpleado:
-
                 if (validaCampos()) {
                     if (validaEmpleado()) {
-
                         final PrettyDialog dialog = new PrettyDialog(this);
                         dialog.setTitle("Actualizar")
                                 .setTitleColor(R.color.purple_500)
@@ -470,17 +317,13 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                                 .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
                                     @Override
                                     public void onClick() {
-
                                         dialog.dismiss();
-
                                     }
                                 });
                         dialog.setCancelable(false);
                         dialog.show();
-
                     }
                 }else {
-
                     StringBuilder campos = new StringBuilder();
                     for (String validItem : listaCamposValidos) {
                         campos.append(validItem).append("\n");
@@ -521,11 +364,8 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         boolean valida = true;
 
         String nombre = ip_actualiza_empleado_nombre.getText().toString();
-
         String contrasenia = ip_actualiza_empleado_contrasenia.getText().toString();
-
         String confirmar = ip_actualiza_empleado_contrasenia_valida.getText().toString();
-
 
         if (nombre.isEmpty()) {
             valida = false;
@@ -552,31 +392,16 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private boolean validaEmpleado() {
-
-        boolean valida = true;
-
         EmployeeDao dao = new EmployeeDao();
         EmpleadoBean bean = dao.getEmployeeByIdentifier(ip_actualiza_empleado_id.getText().toString());
-
-        if (bean == null) {
-            valida = false;
-        } else {
-            valida = true;
-        }
-        return valida;
+        return bean != null;
     }
 
-    /**
-     * uploadfoto-------------start.
-     */
     private boolean check_ReadStoragepermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -620,14 +445,11 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         return result;
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-
             if (requestCode == 2) {
                 Uri selectedImage = data.getData();
                 InputStream imageStream = null;
@@ -667,7 +489,6 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 circleImageView.setImageBitmap(rotatedBitmap);
                 imageByteArray = baos.toByteArray();
                 decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(baos.toByteArray()));
-
             }
         }
     }
@@ -680,190 +501,131 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }
 
-    String idEmpleado;
+
     private void saveEmpleado() {
         EmployeeDao dao = new EmployeeDao();
         EmpleadoBean bean = dao.getEmployeeByIdentifier(ip_actualiza_empleado_id.getText().toString());
+
         bean.setNombre(ip_actualiza_empleado_nombre.getText().toString());
         bean.setDireccion(ip_actualiza_empleado_direccion.getText().toString());
         bean.setEmail(ip_actualiza_empleado_email.getText().toString());
         bean.setTelefono(ip_actualiza_empleado_telefono.getText().toString());
         bean.setFecha_nacimiento(ip_actualiza_empleado_fechaNacimiento.getText().toString());
         bean.setFecha_ingreso(ip_actualiza_empleado_fecha_ingreso.getText().toString());
-        bean.setFecha_egreso(ip_actualiza_empleado_fecha_egreso.getText().toString());
         bean.setContrasenia(ip_actualiza_empleado_contrasenia.getText().toString());
         bean.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-        bean.setNss(ip_actualiza_empleado_nss.getText().toString());
-        bean.setRfc(ip_actualiza_empleado_rfc.getText().toString());
-        bean.setCurp(ip_actualiza_empleado_curp.getText().toString());
-        bean.setPuesto(ip_actualiza_empleado_puesto.getText().toString());
-        bean.setArea_depto(ip_actualiza_empleado_departamento.getText().toString());
-        bean.setTipo_contrato(tipo_contrato_seleccionado);
-        bean.setRegion(region_seleccionada);
-        bean.setHora_entrada(ip_actualiza_empleado_hora_entrada.getText().toString());
-        bean.setHora_salida(ip_actualiza_empleado_hora_salida.getText().toString());
-        bean.setSalida_comer(ip_actualiza_empleado_salida_comida.getText().toString());
-        bean.setEntrada_comer(ip_actualiza_empleado_entrada_comida.getText().toString());
-        String sueldo = ip_actualiza_empleado_sueldo.getText().toString();
+        bean.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
+        bean.setUpdatedAt(Utils.fechaActualHMS());
+        bean.setRute(ruta_seleccionado);
 
-        if (sueldo.isEmpty()){
-            bean.setSueldo_diario(0);
-        }else {
-            bean.setSueldo_diario(Double.parseDouble(sueldo));
-        }
-        bean.setTurno(ip_actualiza_empleado_turno.getText().toString());
-        if (status_seleccionado.compareToIgnoreCase("Activo") == 0) {
-            bean.setStatus(true);
-        } else {
-            bean.setStatus(false);
-        }
-        if (decoded != null) {
-            bean.setPath_image(getStringImage(decoded));
-        }
-        //Registra el empleado
+        if (decoded != null) bean.setPath_image(getStringImage(decoded));
+
         dao.save(bean);
 
-
         final RolesDao rolesDao = new RolesDao();
-        final RolesBean moduloClientes;
-        final RolesBean moduloProductos;
-        final RolesBean moduloVentas;
-        final RolesBean moduloEmpleado;
-        final RolesBean moduloInventario;
-        final RolesBean moduloCobranza;
 
-        if  (checkbor_clientes_actualiza_empleado.isChecked()){
-            moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
-            if (moduloClientes != null){
-                moduloClientes.setActive(true);
-                rolesDao.save(moduloClientes);
-            }
-        }else {
-            moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
-            if (moduloClientes != null){
-                moduloClientes.setActive(false);
-                rolesDao.save(moduloClientes);
-            }
+        RolesBean moduloRuta = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Rutas");
+        if (moduloRuta != null){
+            moduloRuta.setActive(checkbox_edit_rute.isChecked());
+            rolesDao.save(moduloRuta);
+        } else {
+            moduloRuta = new RolesBean();
+            moduloRuta.setEmpleado(bean);
+            moduloRuta.setModulo("Rutas");
+            moduloRuta.setActive(checkbox_edit_rute.isChecked());
+            moduloRuta.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloRuta);
         }
 
-        if (checkbor_productos_actualiza_empleado.isChecked()) {
-            moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
-            if (moduloProductos != null){
-                moduloProductos.setActive(true);
-                rolesDao.save(moduloProductos);
-            }
-        }else {
-            moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
-            if (moduloProductos != null){
-                moduloProductos.setActive(false);
-                rolesDao.save(moduloProductos);
-            }
+        RolesBean moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
+        if (moduloClientes != null){
+            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            rolesDao.save(moduloClientes);
+        } else {
+            moduloClientes = new RolesBean();
+            moduloClientes.setEmpleado(bean);
+            moduloClientes.setModulo("Clientes");
+            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            moduloClientes.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloClientes);
         }
 
-        if (checkbor_ventas_actualiza_empleado.isChecked()){
-            moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
-            if (moduloVentas != null){
-                moduloVentas.setActive(true);
-                rolesDao.save(moduloVentas);
-            }
-
-        }else {
-            moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
-            if (moduloVentas != null){
-                moduloVentas.setActive(false);
-                rolesDao.save(moduloVentas);
-            }
+        RolesBean moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
+        if (moduloProductos != null){
+            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            rolesDao.save(moduloProductos);
+        } else {
+            moduloProductos = new RolesBean();
+            moduloProductos.setEmpleado(bean);
+            moduloProductos.setModulo("Productos");
+            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            moduloProductos.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloProductos);
         }
 
-
-        if (checkbor_empleados_actualiza_empleado.isChecked()){
-            moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
-            if (moduloEmpleado != null){
-                moduloEmpleado.setActive(true);
-                rolesDao.save(moduloEmpleado);
-            }
-        }else {
-            moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
-            if (moduloEmpleado != null){
-                moduloEmpleado.setActive(false);
-                rolesDao.save(moduloEmpleado);
-            }
+        RolesBean moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
+        if (moduloVentas != null){
+            moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
+            rolesDao.save(moduloVentas);
+        } else {
+            moduloVentas = new RolesBean();
+            moduloVentas.setEmpleado(bean);
+            moduloVentas.setModulo("Ventas");
+            moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
+            moduloVentas.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloVentas);
         }
 
-
-        if (checkbor_inventario_actualiza_empleado.isChecked()){
-            moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
-            if (moduloInventario != null){
-                moduloInventario.setActive(true);
-                rolesDao.save(moduloInventario);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Inventarios");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
-        }else {
-            moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
-            if (moduloInventario != null){
-                moduloInventario.setActive(false);
-                rolesDao.save(moduloInventario);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Inventarios");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
+        RolesBean moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
+        if (moduloEmpleado != null){
+            moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
+            rolesDao.save(moduloEmpleado);
+        } else {
+            moduloEmpleado = new RolesBean();
+            moduloEmpleado.setEmpleado(bean);
+            moduloEmpleado.setModulo("Empleados");
+            moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
+            moduloEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloEmpleado);
         }
 
-        if (checkbor_cobranza_actualiza_empleado.isChecked()){
-            moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
-            if (moduloCobranza != null){
-                moduloCobranza.setActive(true);
-                rolesDao.save(moduloCobranza);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Cobranza");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
-        }else {
-            moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
-            if (moduloCobranza != null){
-                moduloCobranza.setActive(false);
-                rolesDao.save(moduloCobranza);
-            }else{
-                RolesBean rolEmpleado = new RolesBean();
-                RolesDao rolEmpleadoDao = new RolesDao();
-                rolEmpleado.setEmpleado(bean);
-                rolEmpleado.setModulo("Cobranza");
-                rolEmpleado.setActive(true);
-                rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-                rolEmpleadoDao.insert(rolEmpleado);
-            }
+        RolesBean moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
+        if (moduloInventario != null){
+            moduloInventario.setActive(checkbox_inventario_actualiza_empleado.isChecked());
+            rolesDao.save(moduloInventario);
+        }else{
+            RolesBean rolEmpleado = new RolesBean();
+            rolEmpleado.setEmpleado(bean);
+            rolEmpleado.setModulo("Inventarios");
+            rolEmpleado.setActive(checkbox_inventario_actualiza_empleado.isChecked());
+            rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(rolEmpleado);
+        }
+
+        RolesBean moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
+        if (moduloCobranza != null){
+            moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
+            rolesDao.save(moduloCobranza);
+        }else{
+            moduloCobranza = new RolesBean();
+            moduloCobranza.setEmpleado(bean);
+            moduloCobranza.setModulo("Cobranza");
+            moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
+            moduloCobranza.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insert(moduloCobranza);
         }
 
         idEmpleado = String.valueOf(bean.getId());
 
         if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
             enviaRolsServidor(bean.identificador);
         }
     }
 
-
     private void showDialogNotConnectionInternet() {
-
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
         dialog.setContentView(R.layout.dialog_warning);
@@ -874,12 +636,9 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                testLoadEmpleado(idEmpleado);
-                dialog.dismiss();
-            }
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
+            testLoadEmpleado(idEmpleado);
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -887,23 +646,17 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     }
 
     private void enviaRolsServidor(String id){
-     progressshow();
-
-        final RolesDao rolesDao = new RolesDao();
-        List<RolesBean> listaRolDB = new ArrayList<>();
-        listaRolDB = rolesDao.getListaRolesByEmpleado(id);
-
+        progressshow();
+        RolesDao rolesDao = new RolesDao();
+        List<RolesBean> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
         List<Role> listaRoles = new ArrayList<>();
-        for (RolesBean items : listaRolDB){
-            final Role role = new Role();
 
-            role.setEmpleado(items.getEmpleado().identificador);
+        for (RolesBean items : listaRolDB){
+            Role role = new Role();
+            role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
-            if (items.getActive()== true){
-                role.setActivo(1);
-            }else {
-                role.setActivo(0);
-            }
+            role.setActivo(items.getActive()? 1 : 0);
+
             listaRoles.add(role);
         }
 
@@ -924,8 +677,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
         progressshow();
         final EmployeeDao employeeDao = new EmployeeDao();
-        List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
-        listaEmpleadosDB =  employeeDao.getEmployeeById(id);
+        List<EmpleadoBean> listaEmpleadosDB = employeeDao.getEmployeeById(id);
 
         List<Employee> listEmpleados = new ArrayList<>();
         for (EmpleadoBean item : listaEmpleadosDB){
@@ -955,77 +707,10 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 empleado.setFechaIngreso(item.getFecha_ingreso());
             }
 
-            if (item.getFecha_egreso().isEmpty()){
-                empleado.setFechaEgreso("-");
-            }else{
-                empleado.setFechaEgreso(item.getFecha_egreso());
-            }
-
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            if (item.getNss().isEmpty()){
-                empleado.setNss("-");
-            }else{
-                empleado.setNss(item.getNss());
-            }
-
-            if (item.getRfc().isEmpty()){
-                empleado.setRfc("-");
-            }else{
-                empleado.setRfc(item.getRfc());
-            }
-
-            if (item.getCurp().isEmpty()){
-                empleado.setCurp("-");
-            }else{
-                empleado.setCurp(item.getCurp());
-            }
-
-            if (item.getPuesto().isEmpty()){
-                empleado.setPuesto("-");
-            }else{
-                empleado.setPuesto(item.getPuesto());
-            }
-
-            if (item.getArea_depto().isEmpty()){
-                empleado.setAreaDepto("--");
-            }else{
-                empleado.setAreaDepto(item.getArea_depto());
-            }
-
-            empleado.setTipoContrato(item.getTipo_contrato());
-            empleado.setRegion(item.getRegion());
-
-            if (item.getHora_entrada().isEmpty()){
-                empleado.setHoraEntrada("");
-            }else{
-                empleado.setHoraEntrada(item.getHora_entrada());
-            }
-
-            if (item.getHora_salida().isEmpty()){
-                empleado.setHoraSalida("");
-            }else{
-                empleado.setHoraSalida(item.getHora_salida());
-            }
-
-            if (item.getSalida_comer().isEmpty()){
-                empleado.setSalidaComer("");
-            }else{
-                empleado.setSalidaComer(item.getSalida_comer());
-            }
-
-            if (item.getEntrada_comer().isEmpty()){
-                empleado.setEntradaComer("");
-            }else{
-                empleado.setEntradaComer(item.getEntrada_comer());
-            }
-
-            empleado.setSueldoDiario(0);
-            if (item.getStatus() == false){
-                empleado.setStatus(0);
-            }else {
-                empleado.setStatus(1);
-            }
+            empleado.setStatus(item.getStatus()? 1 : 0);
+            empleado.setUpdatedAt(item.updatedAt);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -1033,10 +718,10 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (item.getTurno().isEmpty()){
-                empleado.setTurno("--");
-            }else{
-                empleado.setTurno(item.getEntrada_comer());
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
             }
 
             listEmpleados.add(empleado);
@@ -1047,13 +732,14 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
             public void onSaveEmployeeSuccess() {
                 progresshide();
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Empleados sincronizados", Toast.LENGTH_LONG).show();
-
+                finish();
             }
 
             @Override
             public void onSaveEmployeeError() {
                 progresshide();
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
+                finish();
             }
         });
     }

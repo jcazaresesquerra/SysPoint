@@ -1,9 +1,11 @@
 package com.app.syspoint.ui.cobranza;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,14 +28,14 @@ import com.app.syspoint.repository.database.dao.PaymentDao;
 import com.app.syspoint.repository.database.dao.PaymentModelDao;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaDocumentosCobranza;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 
 import java.util.List;
 
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-
 public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
+    private static final String TAG = "ChargeViewModel";
     private AdapterListaDocumentosCobranza mAdapter;
     private List<CobranzaBean> lista;
     private LinearLayout lyt_lista_documentos;
@@ -87,32 +89,14 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private void initRecyclerViews(){
-        new ChargeInteractorImp().executeGetChargeByClient(clienteGlobal, new ChargeInteractor.OnGetChargeByClientListener() {
-            @Override
-            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
-                runOnUiThread(() -> {
-                    lista = (List<CobranzaBean>) chargeByClientList;
-                    if (mAdapter != null) {
-                        mAdapter.setData(lista);
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-
-            @Override
-            public void onGetChargeByClientError() {
-
-            }
-        });
-
+        Log.d(TAG, "getByCobranzaByCliente start");
         lista = new PaymentDao().getByCobranzaByCliente(clienteGlobal);
+        Log.d(TAG, "getByCobranzaByCliente finish");
 
         if (lista.size() > 0){
             lyt_lista_documentos.setVisibility(View.GONE);
@@ -227,7 +211,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
             for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
                 final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
-                int venta = cobranzaBean.getVenta();
+                long venta = cobranzaBean.getVenta();
                 String cobranza = cobranzaBean.getCobranza();
                 double importe = cobranzaBean.getImporte();
                 double saldo = cobranzaBean.getSaldo();
@@ -241,7 +225,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
             // Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
         }
     }
-    private void AddItems(int venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
+    private void AddItems(long venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
         final CobranzaModel item = new CobranzaModel();
         final PaymentModelDao dao = new PaymentModelDao();
         item.setVenta(venta);

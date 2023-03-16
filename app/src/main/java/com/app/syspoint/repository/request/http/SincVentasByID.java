@@ -15,7 +15,6 @@ public class SincVentasByID extends Servicio {
     private  Response responseVentas;
 
     public SincVentasByID (Long id) throws Exception {
-
         super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
@@ -62,7 +61,6 @@ public class SincVentasByID extends Servicio {
                 jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getArticulo());
                 jsonObjectPatidas.put("cantidad", "" + detalle.getCantidad());
                 jsonObjectPatidas.put("precio", "" + detalle.getPrecio());
-                jsonObjectPatidas.put("costo", "" + detalle.getCosto());
                 jsonObjectPatidas.put("impuesto", "" + detalle.getImpuesto());
                 jsonObjectPatidas.put("observ", "" + detalle.getObserv());
                 jsonObjectPatidas.put("fecha", "" + detalle.getFecha());

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaCobranzaCardviewBinding
 import com.app.syspoint.repository.database.bean.CobrosBean
 import com.app.syspoint.utils.Utils
+import com.app.syspoint.utils.click
 
 class AdapterListaCobranzas(
     data: List<CobrosBean?>,
@@ -37,7 +38,9 @@ class AdapterListaCobranzas(
                 binding.tvListaCobranzaFechaView.text = it.fecha
                 binding.tvListaCobranzaImporteView.text = "$$subtotalFormato"
 
-                itemView.setOnClickListener { onItemClickListener.onItemClick(adapterPosition) }
+                binding.itemContainer click  {
+                    onItemClickListener.onItemClick(adapterPosition)
+                }
             }
         }
     }

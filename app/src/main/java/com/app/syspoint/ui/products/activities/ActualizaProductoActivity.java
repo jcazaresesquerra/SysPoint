@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -45,6 +46,7 @@ import com.app.syspoint.models.Product;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
+import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,32 +57,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import libs.mjn.prettydialog.PrettyDialog;
-
 public class ActualizaProductoActivity extends AppCompatActivity {
 
     byte[] imageByteArray;
     Bitmap decoded;
     private EditText editTextArticulo;
     private EditText editTextDescripcion;
-    private EditText editTextClaveSAT;
-    private EditText editTextUnidadSAT;
     private EditText editTextPrecio;
-    private EditText editTextCosto;
     private EditText editTextIVA;
-    private EditText editTextIEPS;
-    private EditText editTextPrioridad;
-    private EditText editTextCodigoAlfa;
     private EditText editTextCodigoDeBarras;
     private String status_seleccionado;
-    private String unidad_medida_seleccionada;
-    private String region_seleccionada;
     private List<String> listaCamposValidos;
     Spinner spinner_producto_status;
     ImageView imgView;
     private String statusSeleccioandoDB;
-    private String unidadSeleccionadaDB;
-    private String regionSeleccionadaDB;
 
     private RelativeLayout rlprogress;
     @Override
@@ -93,49 +83,62 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         initTextView();
         getData();
         loadStatusSpinner();
-        loadUnidadMedidaSpinner();
-        loadRegionSpinner();
     }
 
-    private void getData() {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        Intent intent = getIntent();
-        String productoGlobal = intent.getStringExtra(Actividades.PARAM_1);
+        super.onActivityResult(requestCode, resultCode, data);
 
-        ProductDao productDao = new ProductDao();
-        ProductoBean productoBean = productDao.getProductoByArticulo(productoGlobal);
+        if (resultCode == RESULT_OK) {
 
-        if (productoBean != null) {
+            if (requestCode == 2) {
+                Uri selectedImage = data.getData();
+                InputStream imageStream = null;
+                try {
+                    imageStream = this.getContentResolver().openInputStream(Objects.requireNonNull(selectedImage));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                final Bitmap imagebitmap = BitmapFactory.decodeStream(imageStream);
 
-            editTextArticulo.setText(productoBean.getArticulo());
-            editTextDescripcion.setText(productoBean.getDescripcion());
-            editTextClaveSAT.setText(productoBean.getClave_sat());
-            editTextUnidadSAT.setText(productoBean.getUnidad_sat());
-            editTextPrecio.setText(String.valueOf(productoBean.getPrecio()));
-            editTextCosto.setText(String.valueOf(productoBean.getCosto()));
-            editTextIVA.setText(String.valueOf(productoBean.getIva()));
-            editTextIEPS.setText(String.valueOf(productoBean.getIeps()));
-            editTextPrioridad.setText(String.valueOf(productoBean.getPrioridad()));
-            editTextCodigoAlfa.setText(String.valueOf(productoBean.getCodigo_alfa()));
-            editTextCodigoDeBarras.setText(String.valueOf(productoBean.getCodigo_barras()));
-            statusSeleccioandoDB = productoBean.getStatus();
-            unidadSeleccionadaDB = productoBean.getUnidad_medida();
-            regionSeleccionadaDB = productoBean.getRegion();
+                String path = getPath(selectedImage);
+                Matrix matrix = new Matrix();
+                ExifInterface exif;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    try {
+                        exif = new ExifInterface(path);
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+                        switch (orientation) {
+                            case ExifInterface.ORIENTATION_ROTATE_90:
+                                matrix.postRotate(90);
+                                break;
+                            case ExifInterface.ORIENTATION_ROTATE_180:
+                                matrix.postRotate(180);
+                                break;
+                            case ExifInterface.ORIENTATION_ROTATE_270:
+                                matrix.postRotate(270);
+                                break;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
 
-            if (productoBean.getPath_img() != null){
-                byte[] decodedString = Base64.decode(productoBean.getPath_img(), Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                imgView.setImageBitmap(decodedByte);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(imagebitmap, 0, 0, imagebitmap.getWidth(), imagebitmap.getHeight(), matrix, true);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+                imgView.setImageBitmap(rotatedBitmap);
+                imageByteArray = baos.toByteArray();
+                decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(baos.toByteArray()));
+            }else {
+                String resultadoLector = data.getStringExtra(Actividades.PARAM_1);
+
+                if (!resultadoLector.isEmpty()){
+                    editTextCodigoDeBarras.setText(resultadoLector);
+                }
             }
         }
-
-
-    }
-
-    private void initConstrols() {
-
-        ImageButton imageButtonScanner = findViewById(R.id.img_scanner_actualiza);
-        imageButtonScanner.setOnClickListener(v -> Actividades.getSingleton(ActualizaProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1));
     }
 
     @Override
@@ -208,18 +211,11 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     }
 
     private void initTextView() {
-
         imgView = findViewById(R.id.img_producto_actualiza);
         editTextArticulo = findViewById(R.id.inp_articulo_actualiza);
         editTextDescripcion = findViewById(R.id.inp_descripcion_articulo_actualiza);
-        editTextClaveSAT = findViewById(R.id.inp_articulo_clave_sat_actualiza);
-        editTextUnidadSAT = findViewById(R.id.inp_articulo_unida_sat_actualiza);
         editTextPrecio = findViewById(R.id.inp_articulo_precio_actualiza);
-        editTextCosto =  findViewById(R.id.inp_articulo_costo_actualiza);
         editTextIVA = findViewById(R.id.inp_articulo_iva_actualiza);
-        editTextIEPS = findViewById(R.id.inp_articulo_ieps_actualiza);
-        editTextPrioridad = findViewById(R.id.inp_articulo_prioridad_actualiza);
-        editTextCodigoAlfa = findViewById(R.id.inp_articulo_codigo_alfa_actualiza);
         editTextCodigoDeBarras = findViewById(R.id.inp_articulo_codigo_barras_actualiza);
     }
 
@@ -230,22 +226,41 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
+    }
 
+    private void initConstrols() {
+        ImageButton imageButtonScanner = findViewById(R.id.img_scanner_actualiza);
+        imageButtonScanner.setOnClickListener(v -> Actividades.getSingleton(ActualizaProductoActivity.this, ScannerActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1));
+    }
+
+    private void getData() {
+        Intent intent = getIntent();
+        String productoGlobal = intent.getStringExtra(Actividades.PARAM_1);
+
+        ProductDao productDao = new ProductDao();
+        ProductoBean productoBean = productDao.getProductoByArticulo(productoGlobal);
+
+        if (productoBean != null) {
+            editTextArticulo.setText(productoBean.getArticulo());
+            editTextDescripcion.setText(productoBean.getDescripcion());
+            editTextPrecio.setText(String.valueOf(productoBean.getPrecio()));
+            editTextIVA.setText(String.valueOf(productoBean.getIva()));
+            editTextCodigoDeBarras.setText(String.valueOf(productoBean.getCodigo_barras()));
+            statusSeleccioandoDB = productoBean.getStatus();
+
+            if (productoBean.getPath_img() != null){
+                byte[] decodedString = Base64.decode(productoBean.getPath_img(), Base64.DEFAULT);
+                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                imgView.setImageBitmap(decodedByte);
+            }
+        }
     }
 
     private void loadStatusSpinner(){
-
-        //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.status_producto);
-
-        //Obtiene la lista de Strings
         List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
         spinner_producto_status = findViewById(R.id.spinner_producto_status);
         spinner_producto_status.setAdapter(adapter);
@@ -258,62 +273,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadUnidadMedidaSpinner(){
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.unidades_de_medida);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_unidad_medida, arrayList);
-        Spinner spinner_producto_unidad_medida = findViewById(R.id.spinner_producto_unidad_medida);
-        spinner_producto_unidad_medida.setAdapter(adapter);
-        spinner_producto_unidad_medida.setSelection(arrayList.indexOf(unidadSeleccionadaDB));
-        spinner_producto_unidad_medida.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                unidad_medida_seleccionada = spinner_producto_unidad_medida.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-    }
-
-    private void loadRegionSpinner(){
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.region);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_region, arrayList);
-        Spinner spinner_producto_region = findViewById(R.id.spinner_productoregion);
-        spinner_producto_region.setAdapter(adapter);
-        spinner_producto_region.setSelection(arrayList.indexOf(regionSeleccionadaDB));
-        spinner_producto_region.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_producto_region.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
@@ -330,7 +290,6 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         String descripcion = editTextDescripcion.getText().toString();
         String precio  = editTextPrecio.getText().toString();
         String iva = editTextIVA.getText().toString();
-        String ieps = editTextIEPS.getText().toString();
 
         if (articulo.isEmpty()){
             valida = false;
@@ -351,10 +310,6 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             valida = false;
             listaCamposValidos.add("iva");
 
-        }
-        if (ieps.isEmpty()){
-            valida = false;
-            listaCamposValidos.add("ieps");
         }
 
         return valida;
@@ -378,17 +333,10 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             producto.setArticulo(editTextArticulo.getText().toString());
             producto.setDescripcion(editTextDescripcion.getText().toString());
             producto.setStatus(status_seleccionado);
-            producto.setUnidad_medida(unidad_medida_seleccionada);
-            producto.setClave_sat(editTextClaveSAT.getText().toString());
-            producto.setUnidad_sat(editTextUnidadSAT.getText().toString());
             producto.setPrecio(Double.parseDouble(editTextPrecio.getText().toString()));
-            producto.setCosto(Double.parseDouble(editTextCosto.getText().toString()));
             producto.setIva(Integer.parseInt(editTextIVA.getText().toString()));
-            producto.setIeps(Integer.parseInt(editTextIEPS.getText().toString()));
-            producto.setPrioridad(Integer.parseInt(editTextPrioridad.getText().toString()));
-            producto.setRegion(region_seleccionada);
-            producto.setCodigo_alfa(editTextCodigoAlfa.getText().toString());
             producto.setCodigo_barras(editTextCodigoDeBarras.getText().toString());
+            producto.setUpdatedAt(Utils.fechaActualHMS());
             if (decoded != null) {
                 producto.setPath_img(getStringImage(decoded));
             }
@@ -397,12 +345,12 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             idProducto = String.valueOf(producto.getId());
 
             if (!Utils.isNetworkAvailable(getApplication())) {
-                showDialogNotConnectionInternet();
+                //showDialogNotConnectionInternet();
             } else {
                 testLoadProductos(idProducto);
             }
         } else {
-            Toast.makeText(this, "Ha ocurrido un error, vuelve a intentarlo", Toast.LENGTH_SHORT).show();
+            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente saveProducto");
         }
     }
 
@@ -447,37 +395,9 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             producto.setArticulo(item.getArticulo());
             producto.setDescripcion(item.getDescripcion());
             producto.setStatus(item.getStatus());
-            if (item.getUnidad_medida().isEmpty()){
-                producto.setUnidadMedida("-");
-            }else {
-                producto.setUnidadMedida(item.getUnidad_medida());
-            }
-
-
-            if (item.getClave_sat().isEmpty()){
-                producto.setClaveSat("-");
-            }else {
-                producto.setClaveSat(item.getClave_sat());
-            }
-
-            if (item.getUnidad_sat().isEmpty()){
-                producto.setUnidadSat("-");
-            }else {
-                producto.setUnidadSat(item.getClave_sat());
-            }
-
             producto.setPrecio(item.getPrecio());
-            producto.setCosto(item.getCosto());
             producto.setIva(item.getIva());
-            producto.setIeps(item.getIeps());
-            producto.setPrioridad(item.getPrioridad());
-            producto.setRegion(item.getRegion());
-
-            if (item.getCodigo_alfa().isEmpty()){
-                producto.setCodigoAlfa("");
-            }else {
-                producto.setCodigoAlfa(item.getCodigo_alfa());
-            }
+            producto.setUpdatedAt(item.getUpdatedAt());
 
             if (item.getCodigo_barras().isEmpty()){
                 producto.setCodigoBarras("");
@@ -558,71 +478,12 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         return result;
     }
 
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-
-            if (requestCode == 2) {
-                Uri selectedImage = data.getData();
-                InputStream imageStream = null;
-                try {
-                    imageStream = this.getContentResolver().openInputStream(Objects.requireNonNull(selectedImage));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                final Bitmap imagebitmap = BitmapFactory.decodeStream(imageStream);
-
-                String path = getPath(selectedImage);
-                Matrix matrix = new Matrix();
-                ExifInterface exif;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    try {
-                        exif = new ExifInterface(path);
-                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
-                        switch (orientation) {
-                            case ExifInterface.ORIENTATION_ROTATE_90:
-                                matrix.postRotate(90);
-                                break;
-                            case ExifInterface.ORIENTATION_ROTATE_180:
-                                matrix.postRotate(180);
-                                break;
-                            case ExifInterface.ORIENTATION_ROTATE_270:
-                                matrix.postRotate(270);
-                                break;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                Bitmap rotatedBitmap = Bitmap.createBitmap(imagebitmap, 0, 0, imagebitmap.getWidth(), imagebitmap.getHeight(), matrix, true);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
-                imgView.setImageBitmap(rotatedBitmap);
-                imageByteArray = baos.toByteArray();
-                decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(baos.toByteArray()));
-            }else {
-                String resultadoLector = data.getStringExtra(Actividades.PARAM_1);
-
-                if (!resultadoLector.isEmpty()){
-                    editTextCodigoDeBarras.setText(resultadoLector);
-                }
-            }
-        }
-    }
-
     public String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 20, baos);
         imageByteArray = baos.toByteArray();
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }
-
-
 
     public void progressshow() {
         rlprogress.setVisibility(View.VISIBLE);

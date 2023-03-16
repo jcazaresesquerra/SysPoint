@@ -1,5 +1,6 @@
 package com.app.syspoint.ui.ventas;
 
+import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -30,6 +31,7 @@ import com.app.syspoint.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import okhttp3.MediaType;
@@ -70,10 +72,8 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_500));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_500));
     }
 
     private void initControls(){
@@ -81,41 +81,55 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
         mPhotoImage = findViewById(R.id.imageView4);
 
         fb_open_camera = findViewById(R.id.fb_open_camera);
-        fb_open_camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCameraApp();
-            }
-        });
+        fb_open_camera.setOnClickListener(v -> showCameraApp());
 
         btn_load_imagen = findViewById(R.id.btn_load_imagen);
-        btn_load_imagen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File image = getPicture();
+        btn_load_imagen.setOnClickListener(v -> {
+            File image = getPicture();
+            if (image== null) {
+                Toast.makeText(CApturaComprobanteActivity.this, "Se necesita tomar primero la foto del comprobante", Toast.LENGTH_SHORT).show();
 
-                new FileInteractorImp().executePostFile(image, ventaID, new FileInteractor.OnPostFileListener() {
-                    @Override
-                    public void onPostFileSuccess() {
-                        hidenProgress();
-                        Toast.makeText(CApturaComprobanteActivity.this, "El comprobante se subio correctamente", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-
-                    @Override
-                    public void onPostFileError() {
-                        hidenProgress();
-                        Toast.makeText(CApturaComprobanteActivity.this, "El comprobante no se pudo subir correctamente", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                });
+                return;
             }
+
+            new FileInteractorImp().executePostFile(image, ventaID, new FileInteractor.OnPostFileListener() {
+                @Override
+                public void onPostFileSuccess() {
+                    hidenProgress();
+                    Toast.makeText(CApturaComprobanteActivity.this, "El comprobante se subio correctamente", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+
+                @Override
+                public void onPostFileError() {
+                    hidenProgress();
+                    Toast.makeText(CApturaComprobanteActivity.this, "El comprobante no se pudo subir correctamente", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
         });
 
     }
 
 
     private void showCameraApp() {
+        if (!(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH)
+                || shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.CALL_PHONE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION))) {
+            requestPermissions(
+                   new String[]{
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.BLUETOOTH,
+                        Manifest.permission.CALL_PHONE,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                     }, 100
+            );
+        }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (intent.resolveActivity(getPackageManager()) != null) {
@@ -128,7 +142,7 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
 
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.app.syspoint.fileprovider",
+                        "com.app.syspoint.provider",
                         photoFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);

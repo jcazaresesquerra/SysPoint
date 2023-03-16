@@ -36,5 +36,4 @@
     <style name="linearlayout.match_p_match_p.orientation_vertical.layout_gravity_center">
         <item name="android:layout_gravity">center</item>
     </style>
-
 </resources>

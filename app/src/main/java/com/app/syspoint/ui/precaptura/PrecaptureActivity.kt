@@ -3,12 +3,11 @@ package com.app.syspoint.ui.precaptura
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +19,7 @@ import com.app.syspoint.models.sealed.PrecaptureViewState
 import com.app.syspoint.ui.ventas.FinalizaPrecapturaActivity
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Constants
+import com.app.syspoint.utils.PrettyDialog
 import com.app.syspoint.viewmodel.precaptura.PrecaptureViewModel
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -30,7 +30,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import libs.mjn.prettydialog.PrettyDialog
 
 class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks,
@@ -168,13 +167,13 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 //Toast.makeText(applicationContext, "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveClientErrorState -> {
-                Toast.makeText(applicationContext, "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveVisitSuccessState -> {
                 //Toast.makeText(applicationContext, "Visita sincroniza", Toast.LENGTH_LONG).show()
             }
             is PrecaptureViewState.SaveVisitErrorState -> {
-                Toast.makeText(applicationContext, "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -184,10 +183,8 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
         setSupportActionBar(binding.toolbarPrecaptura)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = resources.getColor(R.color.purple_700)
-        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = resources.getColor(R.color.purple_700)
     }
 
     private fun setUpRecyclerView() {
@@ -212,11 +209,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                         conceptSelectedView = item.name
                         item.isSelected = true
                     } else {
-                        Toast.makeText(
-                            applicationContext,
-                            "Ha ocurrido un error, intente nuevamente",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente ViewTypeAdapter")
                     }
                     binding.rvTipoVisita.adapter!!.notifyDataSetChanged()
                 }

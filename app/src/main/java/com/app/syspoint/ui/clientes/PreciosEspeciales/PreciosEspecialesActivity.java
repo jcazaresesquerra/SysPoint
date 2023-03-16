@@ -22,6 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.models.json.SpecialPriceJson;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.app.syspoint.R;
@@ -41,12 +43,6 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class PreciosEspecialesActivity extends AppCompatActivity {
 
@@ -127,10 +123,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
 
@@ -195,7 +189,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
         if (mData == null) {
             mData = new ArrayList<>();
-            mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
+            mData = new SpecialPricesDao().getListaPrecioPorCliente(cuentaCliente);
         }
 
         if (mData.size() > 0) {
@@ -242,10 +236,10 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
                                 } else {
                                     enviaPrecioServidor();
                                 }
-                                mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+                                mData = new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+                                mData.removeIf(item -> !item.getActive());
                                 mAdapter.setPrecios(mData);
                                 dialog.dismiss();
-
                             }
                         })
                         .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_700, new PrettyDialogCallback() {
@@ -267,7 +261,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mData = (List<PreciosEspecialesBean>) (List<?>) new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+        mData = new SpecialPricesDao().getListaPrecioPorCliente(clienteID);
+        mData.removeIf(item -> !item.getActive());
         mAdapter.setPrecios(mData);
         goneBackground();
     }

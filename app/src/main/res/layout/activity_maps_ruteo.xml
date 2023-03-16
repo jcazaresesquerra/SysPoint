@@ -16,4 +16,22 @@
             android:layout_height="match_parent" />
     </RelativeLayout>
 
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/framelayout"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone">
+        <ImageView
+            android:id="@+id/marker"
+            android:layout_height="20dp"
+            android:layout_width="20dp"
+            android:background="@drawable/gm_mark_green"/>
+
+        <TextView android:id="@+id/marker_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            />
+    </RelativeLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

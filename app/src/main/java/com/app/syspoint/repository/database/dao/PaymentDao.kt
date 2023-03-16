@@ -1,7 +1,10 @@
 package com.app.syspoint.repository.database.dao
 
-import com.app.syspoint.repository.database.bean.CobranzaBean
-import com.app.syspoint.repository.database.bean.CobranzaBeanDao
+import android.database.Cursor
+import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.models.CloseCash
+import com.app.syspoint.repository.database.bean.*
+import com.app.syspoint.utils.Utils
 
 class PaymentDao: Dao("CobranzaBean") {
     fun getSaldoByCliente(cliente: String): Double {
@@ -85,6 +88,36 @@ class PaymentDao: Dao("CobranzaBean") {
                 CobranzaBeanDao.Properties.Saldo.ge(1)
             )
             .list() as List<CobranzaBean>
+    }
+
+    fun getAllConfirmedChargesToday(stockId: Int): List<CloseCash> {
+        val lastUserSession = CacheInteractor().getSeller()
+        val identificador = lastUserSession?.identificador?:""
+
+        val lista_corte: MutableList<CloseCash> = ArrayList()
+        val cobranzaBeanDao = daoSession.cobranzaBeanDao
+
+        val cursor = cobranzaBeanDao.database.rawQuery(
+            "SELECT cli.NOMBRE_COMERCIAL as nombre_comercial, c.VENTA as ticket, c.CLIENTE as cliente, c.ACUENTA as acuenta, c.UPDATED_AT as updated_at, c.STOCK_ID as stock_id, c.EMPLEADO as empleado, c.ESTADO as estado" +
+                    " FROM cobranza AS c "+
+                    " INNER JOIN clientes AS cli ON c.CLIENTE = cli.CUENTA " +
+                    " WHERE c.UPDATED_AT BETWEEN '${Utils.fechaActualHMSStartDay()}' AND '${Utils.fechaActualHMSEndDay()}' " +
+                    " AND c.STOCK_ID = $stockId AND c.ACUENTA > 0.0 "
+            ,null
+        )
+        while (cursor.moveToNext()) {
+            val closeCash = CloseCash()
+            closeCash.comertialName = cursor.getString(cursor.getColumnIndex("nombre_comercial"))
+            closeCash.abono = cursor.getDouble(cursor.getColumnIndex("acuenta"))
+            closeCash.ticket = cursor.getString(cursor.getColumnIndex("ticket"))
+            closeCash.updatedAt = cursor.getString(cursor.getColumnIndex("updated_at"))
+            closeCash.employee = cursor.getString(cursor.getColumnIndex("empleado"))
+            closeCash.status = cursor.getString(cursor.getColumnIndex("estado"))
+            closeCash.stockId = cursor.getInt(cursor.getColumnIndex("stock_id"))
+
+            lista_corte.add(closeCash)
+        }
+        return lista_corte
     }
 
 }

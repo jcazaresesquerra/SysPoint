@@ -8,6 +8,6 @@ class TaskDao: Dao("TaskBean") {
         val taskBeans = dao.queryBuilder()
             .where(TaskBeanDao.Properties.Date.eq(date))
             .list() as List<TaskBean>
-        return if (taskBeans.size > 0) taskBeans[0] else null
+        return if (taskBeans.isNotEmpty()) taskBeans[0] else null
     }
 }

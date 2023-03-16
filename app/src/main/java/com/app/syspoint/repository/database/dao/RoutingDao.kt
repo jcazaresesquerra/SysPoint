@@ -9,7 +9,7 @@ class RoutingDao: Dao("RuteoBean") {
         val ruteoBeans = dao.queryBuilder()
             .where(RuteoBeanDao.Properties.Id.eq(1))
             .list() as List<RuteoBean>
-        return if (ruteoBeans.size > 0) ruteoBeans[0] else null
+        return if (ruteoBeans.isNotEmpty()) ruteoBeans[0] else null
     }
 
 
@@ -17,6 +17,6 @@ class RoutingDao: Dao("RuteoBean") {
         val ruteoBeans = dao.queryBuilder()
             .where(RuteoBeanDao.Properties.Fecha.eq(fecha))
             .list() as List<RuteoBean>
-        return if (ruteoBeans.size > 0) ruteoBeans[0] else null
+        return if (ruteoBeans.isNotEmpty()) ruteoBeans[0] else null
     }
 }

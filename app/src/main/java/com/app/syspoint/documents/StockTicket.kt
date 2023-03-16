@@ -25,13 +25,13 @@ class StockTicket: BaseTicket() {
         }
         var total = 0.0
         for (items in stockData) {
-            total += items.precio * items.cantidad
+            total += items.precio * items.lastCantidad
             ticket += "" + items.articulo.descripcion + Constants.newLine +
                     "" + String.format(
                 "%1$-5s %2$11s %3$10s %4$10s",
-                items.cantidad,
+                items.lastCantidad,
                 Utils.FDinero(items.precio),
-                Utils.FDinero(items.precio * items.cantidad),
+                Utils.FDinero(items.precio * items.lastCantidad),
                 ""
             ) + Constants.newLine
         }

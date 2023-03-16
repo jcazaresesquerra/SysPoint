@@ -49,22 +49,7 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
             android:orientation="horizontal"
             android:padding="5dp">
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:hint="Concepto, Articulo"
-                    android:id="@+id/inp_articulo_registro"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
@@ -107,7 +92,7 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
                 android:textAlignment="center"
                 android:textColor="@color/purple_700"
                 android:textStyle="bold"
-                android:text="U/M *">
+                android:text="Concepto, Articulo">
 
             </TextView>
 
@@ -127,15 +112,28 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="5dp">
 
-            <Spinner
-                android:id="@+id/spinner_producto_unidad_medida"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            </Spinner>
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:hint="Concepto, Articulo"
+                    android:id="@+id/inp_articulo_registro"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                </com.google.android.material.textfield.TextInputEditText>
+
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Spinner
                 android:id="@+id/spinner_producto_status"
@@ -147,51 +145,6 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Clave producto SAT">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_clave_sat_registro"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Clave unidad SAT">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_unida_sat_registro"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -223,32 +176,6 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"
-                android:hint="Costo $">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_costo_registro"
-                    android:inputType="numberDecimal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
                 android:hint="I.V.A (%)">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -263,104 +190,10 @@ tools:context=".ui.products.activities.RegistrarProductoActivity">
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="I.E.P.S (%)">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_ieps_registro"
-                    android:inputType="number"
-                    android:maxLines="1"
-                    android:maxLength="2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <Spinner
-                android:id="@+id/spinner_producto_categoria"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-
-            </Spinner>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Prioridad">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_prioridad_registro"
-                    android:inputType="number"
-                    android:maxLines="1"
-                    android:maxLength="2"
-                    android:text="0"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
 
 
-            <Spinner
-                android:id="@+id/spinner_productoregion"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-
-            </Spinner>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Cod alfa(10 car max)">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inp_articulo_codigo_alfa_registro"
-                    android:inputType="text"
-                    android:maxLength="10"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

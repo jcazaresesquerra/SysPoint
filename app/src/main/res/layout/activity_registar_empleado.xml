@@ -210,44 +210,8 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                 android:layout_height="60dp"
                 android:layout_marginStart="5dp"
                 android:layout_weight="1" />
-
         </LinearLayout>
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Fecha egreso">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_fecha_egreso"
-                    android:inputType="text"
-                    android:enabled="false"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <ImageButton
-                android:id="@+id/img_button_fecha_egreso"
-                android:src="@drawable/ic_calendar_black"
-                android:layout_width="150dp"
-                android:layout_height="60dp"
-                android:layout_marginStart="5dp"
-                android:layout_weight="1" />
-
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -310,14 +274,61 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/ip_registro_empleado_id"
-                    android:inputType="text"
-                    android:maxLength="4"
+                    android:inputType="none"
+                    android:editable="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:focusableInTouchMode="false"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
                 </com.google.android.material.textfield.TextInputEditText>
 
             </com.google.android.material.textfield.TextInputLayout>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/purple_700"
+                android:textStyle="bold"
+                android:hint="Ruta"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/purple_700"
+                android:textStyle="bold"
+                android:hint="Estatus"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="5dp">
+            <Spinner
+                android:id="@+id/rute_employee_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"/>
 
             <Spinner
                 android:id="@+id/spinner_registro_empleado_status"
@@ -326,190 +337,6 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="50dp">
-
-            </Spinner>
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="NSS">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_nss"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="RFC">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_rfc"
-                    android:maxLines="1"
-                    android:maxLength="13"
-                    android:inputType="text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Curp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_curp"
-                    android:inputType="text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Puesto">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_puesto"
-                    android:inputType="text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Departamento">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_departamento"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:textAlignment="center"
-                android:textColor="@color/purple_700"
-                android:textStyle="bold"
-                android:hint="Tipo contrato">
-
-            </TextView>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:textAlignment="center"
-                android:textColor="@color/purple_700"
-                android:textStyle="bold"
-                android:hint="Region">
-
-
-            </TextView>
-
-        </LinearLayout>
-
-
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <Spinner
-                android:id="@+id/spinner_tipo_contrato_registro_empleado"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-
-            </Spinner>
-
-            <Spinner
-                android:id="@+id/spinner_region_registro_empleado"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="5dp"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-
             </Spinner>
 
         </LinearLayout>
@@ -519,7 +346,6 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
 
             <LinearLayout
                 android:background="@color/grey_3"
@@ -536,7 +362,6 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                     android:text="Permisos"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textStyle="bold" />
-
             </LinearLayout>
 
 
@@ -588,7 +413,7 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_ventas_registro_empleado"
+                            android:id="@+id/checkbox_ventas_registro_empleado"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -639,7 +464,7 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_clientes_registro_empleado"
+                            android:id="@+id/checkbox_clientes_registro_empleado"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -690,10 +515,10 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_productos_registro_empleado"
+                            android:id="@+id/checkbox_productos_registro_empleado"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:checked="false"
+                            android:checked="true"
                             app:thumbTint="@color/purple_700" />
 
                         <View
@@ -740,7 +565,7 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_empleados_registro_empleado"
+                            android:id="@+id/checkbox_empleados_registro_empleado"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -791,7 +616,7 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_inventario_registro_empleado"
+                            android:id="@+id/checkbox_inventario_registro_empleado"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -841,7 +666,57 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                             android:layout_height="wrap_content" />
 
                         <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/checkbor_cobranza_registro_empleado"
+                            android:id="@+id/checkbox_cobranza_registro_empleado"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            app:thumbTint="@color/purple_700" />
+
+                        <View
+                            android:layout_width="@dimen/spacing_middle"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:gravity="center_vertical"
+                        android:minHeight="@dimen/spacing_xxlarge"
+                        android:orientation="horizontal"
+                        android:paddingLeft="@dimen/spacing_medium"
+                        android:paddingRight="@dimen/spacing_medium">
+
+                        <ImageButton
+                            android:layout_width="@dimen/spacing_xmlarge"
+                            android:layout_height="@dimen/spacing_xmlarge"
+                            android:background="@android:color/transparent"
+                            app:srcCompat="@drawable/ic_map" />
+
+                        <View
+                            android:layout_width="@dimen/spacing_small"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Ruta"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                            android:textColor="@color/grey_80" />
+
+                        <View
+                            android:layout_width="@dimen/spacing_large"
+                            android:layout_height="wrap_content" />
+
+                        <View
+                            android:layout_width="@dimen/spacing_middle"
+                            android:layout_height="wrap_content" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/checkbox_edit_rute"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"
@@ -857,153 +732,6 @@ tools:context=".ui.employees.activities.RegistarEmpleadoActivity">
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Hora entrada">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_hora_entrada"
-                    android:inputType="text"
-                    android:text="08:00"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Hora salida">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_hora_salida"
-                    android:inputType="text"
-                    android:text="16:00"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Salida comida">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_salida_comida"
-                    android:inputType="text"
-                    android:text="12:00"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:hint="Entrada comida">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_entrada_comida"
-                    android:inputType="text"
-                    android:text="12:30"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:hint="Sueldo diario">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_sueldo"
-                    android:inputType="numberDecimal"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="5dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:hint="Turno">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ip_registro_empleado_turno"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.google.android.material.textfield.TextInputEditText>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

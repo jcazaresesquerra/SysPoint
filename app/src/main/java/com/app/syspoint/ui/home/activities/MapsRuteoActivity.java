@@ -3,10 +3,14 @@ package com.app.syspoint.ui.home.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -22,7 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -42,11 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-
 public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMarkerClickListener {
-
 
     List<ClientesRutaBean> mData = null;
     private static final int REQUEST_PERMISSION_LOCATION = 991;
@@ -56,6 +58,10 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     private LocationManager locationManager;
     private MarkerOptions markerOptions;
     private DialogOptionsClients dialogOptionsClients;
+
+    private boolean markerClick = false;
+    private LatLng lastKnownPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +69,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getDataRuteo();
-
 
         dialogOptionsClients = new DialogOptionsClients(this);
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
@@ -96,7 +101,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                     updateLastLocation(true);
                 }
             }
-
         }
     }
 
@@ -107,7 +111,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 updateLastLocation(true);
             }
         }
-
     }
 
     @Override
@@ -117,7 +120,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 updateLastLocation(true);
             }
         }
-
     }
 
     @Override
@@ -134,7 +136,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
         gMap.setOnMarkerClickListener(this);
-
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
@@ -161,12 +162,10 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private void updateLastLocation(boolean move) {
-
         RoutingDao routingDao = new RoutingDao();
         RuteoBean ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-
             //if (ruteoBean.getDia() == 1) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaLunes(ruteoBean.getRuta(), 1);
             //} else if (ruteoBean.getDia() == 2) {
@@ -187,29 +186,82 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             //if (ruteoBean.getDia() == 7) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
             //}
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
-
-
+            mData = (List<ClientesRutaBean>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
+        LatLng position = null;
+        int i = 1;
         for (ClientesRutaBean item : mData) {
-            if (item.getLatitud() != null && item.getLongitud() != null ) {
-               LatLng clients = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
+            if (item.getLatitud() != null && item.getLongitud() != null) {
+                position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
                 markerOptions = new MarkerOptions();
-                markerOptions.position(clients);
+                markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
+                Bitmap bitmap = getBitmapMarker(i);
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
+
                 markerOptions.snippet(item.getCuenta());
                 markerOptions.draggable(true);
                 gMap.addMarker(markerOptions);
-
-                CameraPosition camera  = new CameraPosition.Builder()
-                        .target(clients)
-                        .zoom(15)
-                        .build();
-                gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+                i++;
             }
         }
+
+        gMap.setOnMarkerClickListener(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
+            return;
+        }
+
+        locationManager = (LocationManager) getApplication().getSystemService(LOCATION_SERVICE);
+        gMap.setMyLocationEnabled(true);
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 15000, 10, new android.location.LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(location.getLatitude(), location.getLongitude()), 15f)
+                );
+            }
+        });
+        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("SysPoint", "Location, permission denied");
+            return;
+        }
+
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
+        android.location.Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+
+        if (lastKnownLocation != null) {
+            double userLat = lastKnownLocation.getLatitude();
+            double userLong = lastKnownLocation.getLongitude();
+            position = new LatLng(userLat, userLong);
+            CameraPosition camera = new CameraPosition.Builder()
+                    .target(position)
+                    .zoom(15)
+                    .build();
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        } else if (lastKnownPosition != null) {
+            double userLat = lastKnownPosition.latitude;
+            double userLong = lastKnownPosition.longitude;
+            position = new LatLng(userLat, userLong);
+            CameraPosition camera = new CameraPosition.Builder()
+                    .target(position)
+                    .zoom(15)
+                    .build();
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        } else if (position != null) {
+            CameraPosition camera  = new CameraPosition.Builder()
+                    .target(position)
+                    .zoom(15)
+                    .build();
+            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        } else {
+            onMapReady(gMap);
+        }*/
     }
 
     void getDataRuteo(){
@@ -239,7 +291,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
            //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
            //}
 
-            mData = (List<ClientesRutaBean>) (List<?>) new RuteClientDao().getAllRutaClientes();
+            mData = (List<ClientesRutaBean>)new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
     }
@@ -277,61 +329,71 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClientByAccount( marker.getSnippet());
+        if (!markerClick) {
+            markerClick = true;
 
+            ClientDao clientDao = new ClientDao();
+            ClienteBean clienteBean = clientDao.getClientByAccount(marker.getSnippet());
 
-        final PrettyDialog dialog = new PrettyDialog(this);
-        dialog.setTitle("" + clienteBean.getNombre_comercial())
-                .setTitleColor(R.color.purple_500)
-                .setMessage("Adeudo: $"+clienteBean.getSaldo_credito()+"0")
-                .setMessageColor(R.color.purple_700)
-                .setAnimationEnabled(false)
-                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        dialog.dismiss();
-                    }
-                })
-                .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                        HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, marker.getSnippet());
-                        Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
-                        dialog.dismiss();
-                    }
-                })
-
-
-                .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
-                            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
-                            startActivity(intent);
-                    }
-
-
-
-                })
-                 .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                    @Override
-                    public void onClick() {
+            final PrettyDialog dialog = new PrettyDialog(this);
+            dialog.setTitle("" + clienteBean.getNombre_comercial())
+                    .setTitleColor(R.color.purple_500)
+                    .setMessage("Adeudo: $" + clienteBean.getSaldo_credito() + "0")
+                    .setMessageColor(R.color.purple_700)
+                    .setAnimationEnabled(false)
+                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            dialog.dismiss();
+                            markerClick = false;
+                        }
+                    })
+                    .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
+                        @Override
+                        public void onClick() {
+                            HashMap<String, String> parametros = new HashMap<>();
+                            parametros.put(Actividades.PARAM_1, marker.getSnippet());
+                            Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
+                            dialog.dismiss();
+                            markerClick = false;
+                            lastKnownPosition = marker.getPosition();
+                        }
+                    })
+                    .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, () -> {
+                        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
+                        startActivity(intent);
+                        markerClick = false;
+                        lastKnownPosition = marker.getPosition();
+                    })
+                    .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, () -> {
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
                         startActivity(intent);
                         dialog.dismiss();
-                    }
-                })
-        .addButton("Cancelar", R.color.white, R.color.red_900, new PrettyDialogCallback() {
-            @Override
-            public void onClick() {
-                dialog.dismiss();
-            }
-        })
-        ;
-        dialog.setCancelable(false);
-        dialog.show();
+                        markerClick = false;
+                    })
+                    .addButton("Cancelar", R.color.white, R.color.red_900, () -> {
+                        dialog.dismiss();
+                        markerClick = false;
+                    });
+            dialog.setCancelable(false);
+            dialog.show();
+        }
         return false;
+    }
+
+    private Bitmap getBitmapMarker(int order) {
+        RelativeLayout tv = (RelativeLayout) this.getLayoutInflater().inflate(R.layout.maps_marker, null, false);
+        tv.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        tv.layout(0, 0, tv.getMeasuredWidth(), tv.getMeasuredHeight());
+
+        TextView text = tv.findViewById(R.id.marker_number);
+        text.setText(String.valueOf(order));
+
+        tv.setDrawingCacheEnabled(true);
+        tv.buildDrawingCache();
+        Bitmap bm = tv.getDrawingCache();
+        return bm;
     }
 }

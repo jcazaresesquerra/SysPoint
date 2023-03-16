@@ -52,9 +52,6 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
-
 /*public class CobranzaActivity extends AppCompatActivity {
 
     private TextView textViewClienteVenta;

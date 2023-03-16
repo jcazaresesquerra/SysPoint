@@ -88,6 +88,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
     double longitudMarket;
     String lngMarker = "";
     String latMarker = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,8 +104,6 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                 .findFragmentById(R.id.mapView);
         Objects.requireNonNull(mapFragment).getMapAsync(this);
 
-        setPickUpButton = findViewById(R.id.pickUpButton);
-
         if (googleApiClient == null) {
             googleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
@@ -113,59 +112,33 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                     .build();
         }
 
-        setPickUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onPickUp();
-            }
-        });
+        setPickUpButton = findViewById(R.id.pickUpButton);
+        setPickUpButton.setOnClickListener(view -> onPickUp());
 
         bnt_direcction_client = findViewById(R.id.bnt_direcction_client);
-        bnt_direcction_client.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent();
-                intent.putExtra(Actividades.PARAM_1, numero);
-                intent.putExtra(Actividades.PARAM_2, calle);
-                intent.putExtra(Actividades.PARAM_3, localidad);
-                intent.putExtra(Actividades.PARAM_4, colonia);
-                intent.putExtra(Actividades.PARAM_5, estado);
-                intent.putExtra(Actividades.PARAM_6, pais);
-                intent.putExtra(Actividades.PARAM_7, cp);
-                intent.putExtra(Actividades.PARAM_8, latMarker);
-                intent.putExtra(Actividades.PARAM_9, lngMarker);
-                setResult(Activity.RESULT_OK, intent);
+        bnt_direcction_client.setOnClickListener(view -> {
+            Intent intent = new Intent();
+            intent.putExtra(Actividades.PARAM_1, numero);
+            intent.putExtra(Actividades.PARAM_2, calle);
+            intent.putExtra(Actividades.PARAM_3, localidad);
+            intent.putExtra(Actividades.PARAM_4, colonia);
+            intent.putExtra(Actividades.PARAM_5, estado);
+            intent.putExtra(Actividades.PARAM_6, pais);
+            intent.putExtra(Actividades.PARAM_7, cp);
+            intent.putExtra(Actividades.PARAM_8, latMarker);
+            intent.putExtra(Actividades.PARAM_9, lngMarker);
+            setResult(Activity.RESULT_OK, intent);
 
-                //Cierra la actividad
-                finish();
-            }
+            //Cierra la actividad
+            finish();
         });
 
         imageView = findViewById(R.id.back_btn);
-
         imageViewSearch = findViewById(R.id.fb_search_map);
-
         pickUpText = findViewById(R.id.pickUpText);
-
-        pickUpText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openAutocompleteActivity(1);
-            }
-        });
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-
-        imageViewSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openAutocompleteActivity(1);
-            }
-        });
+        pickUpText.setOnClickListener(view -> openAutocompleteActivity(1));
+        imageView.setOnClickListener(view -> finish());
+        imageViewSearch.setOnClickListener(view -> openAutocompleteActivity(1));
 
        // updateLastLocation(false);
     }
@@ -189,10 +162,22 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 pickUpText.setText(place.getAddress());
                 LatLng latLng = place.getLatLng();
+
                 if (latLng != null) {
-                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(latLng.latitude, latLng.longitude), 15f)
-                    );
+                    int height = 150;
+                    int width = 160;
+                    BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.market);
+                    Bitmap b = bitmapdraw.getBitmap();
+                    Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+                    if (gMap != null) {
+                        gMap.clear();
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(latLng.latitude, latLng.longitude), 15f)
+                        );
+                        gMap.addMarker(new MarkerOptions().position(latLng).title("Aqui estoy").draggable(true).icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+                    }
+                    lat = String.valueOf(latLng.latitude);
+                    lng = String.valueOf(latLng.longitude);
                     onPickUp();
                 }
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
@@ -261,8 +246,24 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                                      cp = number6.getString("short_name");
                                      address = userdata.getString("formatted_address");
 
-                                     lat = geometriString.get("lat").toString();
-                                     lng = geometriString.get("lng").toString();
+                                     String latStr;
+                                     String lngStr;
+                                     if (geometriString != null && !geometriString.get("lat").toString().isEmpty()) {
+                                         latStr = geometriString.get("lat").toString();
+                                     } else  {
+                                         latStr = String.valueOf(latlang.latitude);
+                                     }
+
+                                     if (geometriString != null && !geometriString.get("lng").toString().isEmpty()) {
+                                         lngStr = geometriString.get("lng").toString();
+                                     } else  {
+                                         lngStr = String.valueOf(latlang.latitude);
+                                     }
+
+                                     lat = latStr;
+                                     lng = lngStr;
+                                     latMarker= lat;
+                                     lngMarker = lng;
 
                                     textView.setText(address);
                                     Log.e("Json", userdata.toString());
@@ -376,33 +377,33 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
+       try {
+           latitudeMarker = marker.getPosition().latitude;
+           longitudMarket = marker.getPosition().longitude;
+           latMarker= String.valueOf(latitudeMarker);
+           lngMarker = String.valueOf(longitudMarket);
 
-         latitudeMarker = marker.getPosition().latitude;
-         longitudMarket = marker.getPosition().longitude;
+           List<Address> list = geocoder.getFromLocation(
+                   marker.getPosition().latitude, marker.getPosition().longitude, 1);
 
-         latMarker= String.valueOf(latitudeMarker);
-         lngMarker = String.valueOf(longitudMarket);
+           String direccion = list.get(0).getAddressLine(0);
+           String cityName = list.get(0).getCountryName();
+           String stateName = list.get(0).getAdminArea();
+           String codigo = list.get(0).getPostalCode();
+           numero = list.get(0).getFeatureName();
+           calle = list.get(0).getThoroughfare();
+           localidad = list.get(0).getLocality();
+           colonia = list.get(0).getLocality();
+           estado = stateName;
+           pais = cityName;
+           cp = codigo;
+           address = direccion;
 
-        try {
-            List<Address> list = geocoder.getFromLocation(
-                    marker.getPosition().latitude, marker.getPosition().longitude, 1);
+           runOnUiThread(() -> pickUpText.setText(address));
 
-                  String direccion = list.get(0).getAddressLine(0);
-                  String cityName = list.get(0).getCountryName();
-                  String stateName = list.get(0).getAdminArea();
-                  String codigo = list.get(0).getPostalCode();
-                 numero = list.get(0).getFeatureName();
-                 calle = list.get(0).getThoroughfare();
-                 localidad = list.get(0).getLocality();
-                 colonia = list.get(0).getLocality();
-                 estado = stateName;
-                 pais = cityName;
-                 cp = codigo;
-                 address = direccion;
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        pickUpText.setText(address);
     }
 }

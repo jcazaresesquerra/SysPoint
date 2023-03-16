@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Employee (
-    @SerializedName("id") @Expose
+    @SerializedName("id")
+    @Expose
     var id: Int? = null,
     
     @SerializedName("nombre")
@@ -32,10 +33,6 @@ data class Employee (
     @Expose
     var fechaIngreso: String? = null,
     
-    @SerializedName("fecha_egreso")
-    @Expose
-    var fechaEgreso: String? = null,
-    
     @SerializedName("contrasenia")
     @Expose
     var contrasenia: String? = null,
@@ -48,58 +45,6 @@ data class Employee (
     @Expose
     var status: Int? = null,
     
-    @SerializedName("nss")
-    @Expose
-    var nss: String? = null,
-    
-    @SerializedName("rfc")
-    @Expose
-    var rfc: String? = null,
-    
-    @SerializedName("curp")
-    @Expose
-    var curp: String? = null,
-    
-    @SerializedName("puesto")
-    @Expose
-    var puesto: String? = null,
-    
-    @SerializedName("area_depto")
-    @Expose
-    var areaDepto: String? = null,
-    
-    @SerializedName("tipo_contrato")
-    @Expose
-    var tipoContrato: String? = null,
-    
-    @SerializedName("region")
-    @Expose
-    var region: String? = null,
-    
-    @SerializedName("hora_entrada")
-    @Expose
-    var horaEntrada: String? = null,
-    
-    @SerializedName("hora_salida")
-    @Expose
-    var horaSalida: String? = null,
-    
-    @SerializedName("salida_comer")
-    @Expose
-    var salidaComer: String? = null,
-    
-    @SerializedName("entrada_comer")
-    @Expose
-    var entradaComer: String? = null,
-    
-    @SerializedName("sueldo_diario")
-    @Expose
-    var sueldoDiario: Int = 0,
-    
-    @SerializedName("turno")
-    @Expose
-    var turno: String? = null,
-    
     @SerializedName("path_image")
     @Expose
     var pathImage: String? = null,
@@ -110,5 +55,9 @@ data class Employee (
     
     @SerializedName("updated_at")
     @Expose
-    var updatedAt: String? = null
+    var updatedAt: String? = null,
+
+    @SerializedName("rute")
+    @Expose
+    var rute: String? = null,
 ): Serializable

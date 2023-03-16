@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -110,7 +111,7 @@ class ProductFragment: Fragment() {
             }
             is ProductViewState.NetworkDisconnectedState -> {
                 syncProductsClicked = false
-                showDialogNotConnectionInternet()
+                //showDialogNotConnectionInternet()
             }
             is ProductViewState.EditProductState -> {
                 editProduct(productViewState.item)
@@ -134,11 +135,7 @@ class ProductFragment: Fragment() {
             }
             is ProductViewState.GetProductsError -> {
                 syncProductsClicked = false
-                Toast.makeText(
-                    requireContext(),
-                    "Ha ocurrido un problema, vuelve a intentarlo",
-                    Toast.LENGTH_LONG
-                ).show()
+                Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente ProductViewState.GetProductsError")
             }
         }
     }

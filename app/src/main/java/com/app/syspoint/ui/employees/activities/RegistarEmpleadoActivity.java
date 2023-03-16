@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,12 +22,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,19 +33,23 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.exifinterface.media.ExifInterface;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
 import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
-import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.dao.EmployeeDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.repository.database.bean.EmpleadoBean;
+import com.app.syspoint.repository.database.bean.RolesBean;
+import com.app.syspoint.repository.database.dao.ClientDao;
+import com.app.syspoint.repository.database.dao.EmployeeDao;
+import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.utils.Constants;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.io.ByteArrayInputStream;
@@ -62,14 +63,8 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class RegistarEmpleadoActivity extends AppCompatActivity {
-
-
-    byte[] imageByteArray;
-    Bitmap decoded;
 
     private EditText ip_registro_empleado_nombre;
     private EditText ip_registro_empleado_direccion;
@@ -77,44 +72,28 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private EditText ip_registro_empleado_telefono;
     private EditText ip_registro_empleado_fechaNacimiento;
     private EditText ip_registro_empleado_fecha_ingreso;
-    private EditText ip_registro_empleado_fecha_egreso;
     private EditText ip_registro_empleado_contrasenia;
     private EditText ip_registro_empleado_contrasenia_valida;
     private EditText ip_registro_empleado_id;
-    private EditText ip_registro_empleado_nss;
-    private EditText ip_registro_empleado_rfc;
-    private EditText ip_registro_empleado_curp;
-    private EditText ip_registro_empleado_puesto;
-    private EditText ip_registro_empleado_departamento;
-    private Spinner spinner_tipo_contrato_registro_empleado;
-    private String tipo_contrato_seleccionado;
-    private String region_seleccionada;
-    private EditText ip_registro_empleado_sueldo;
-
-    private Spinner spinner_region_registro_empleado;
-    private EditText ip_registro_empleado_hora_entrada;
-    private EditText ip_registro_empleado_hora_salida;
-    private EditText ip_registro_empleado_salida_comida;
-    private EditText ip_registro_empleado_entrada_comida;
-    private EditText ip_registro_empleado_turno;
+    private Spinner rute_employee_spinner;
     private Spinner spinner_registro_empleado_status;
-    private String status_seleccionado;
-
-    private ImageButton imageButtonFechaIngreso;
-    private ImageButton imageButtonFechaEgreso;
-    private ImageButton imageButtonFechaNacimiento;
-    private int mYear, mMonth, mDay;
-    private List<String> listaCamposValidos;
-    CircleImageView circleImageView;
+    private SwitchCompat checkbox_clientes_registro_empleado;
+    private SwitchCompat checkbox_productos_registro_empleado;
+    private SwitchCompat checkbox_ventas_registro_empleado;
+    private SwitchCompat checkbox_empleados_registro_empleado;
+    private SwitchCompat checkbox_inventarios_registro_empleado;
+    private SwitchCompat checkbox_cobranza_registro_empleado;
+    private SwitchCompat checkbox_edit_rute;
+    private CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
-
-    private SwitchCompat checkbor_clientes_registro_empleado;
-    private SwitchCompat checkbor_productos_registro_empleado;
-    private SwitchCompat checkbor_ventas_registro_empleado;
-    private SwitchCompat checkbor_empleados_registro_empleado;
-    private SwitchCompat checkbor_inventarios_registro_empleado;
-    private SwitchCompat checkbor_cobranza_registro_empleado;
+    private List<String> listaCamposValidos;
+    private String ruta_seleccionado;
+    private String status_seleccionado;
+    private int mYear, mMonth, mDay;
+    private int no_cuenta = 0;
+    byte[] imageByteArray;
+    Bitmap decoded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,40 +103,17 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         this.initToolBar();
         this.initControls();
 
-
-        //Establece la fecha actual en los controles
         ip_registro_empleado_fecha_ingreso.setText(Utils.fechaActualPicker());
-        ip_registro_empleado_fecha_egreso.setText(Utils.fechaActualPicker());
         ip_registro_empleado_fechaNacimiento.setText(Utils.fechaActualPicker());
-
     }
 
     private void initControls() {
-
         circleImageView = findViewById(R.id.perfil_img);
-        imageButtonFechaIngreso = findViewById(R.id.img_button_fecha_ingreso);
-        imageButtonFechaIngreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateIngreso();
-            }
-        });
+        ImageButton imageButtonFechaIngreso = findViewById(R.id.img_button_fecha_ingreso);
+        imageButtonFechaIngreso.setOnClickListener(v -> dateIngreso());
 
-        imageButtonFechaEgreso = findViewById(R.id.img_button_fecha_egreso);
-        imageButtonFechaEgreso.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateEgreso();
-            }
-        });
-
-        imageButtonFechaNacimiento = findViewById(R.id.img_button_fecha_nacimiento);
-        imageButtonFechaNacimiento.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dateFechaNacimiento();
-            }
-        });
+        ImageButton imageButtonFechaNacimiento = findViewById(R.id.img_button_fecha_nacimiento);
+        imageButtonFechaNacimiento.setOnClickListener(v -> setBirdDate());
 
         ip_registro_empleado_nombre = findViewById(R.id.ip_registro_empleado_nombre);
         ip_registro_empleado_direccion = findViewById(R.id.ip_registro_empleado_direccion);
@@ -165,179 +121,111 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         ip_registro_empleado_telefono = findViewById(R.id.ip_registro_empleado_telefono);
         ip_registro_empleado_fechaNacimiento = findViewById(R.id.ip_registro_empleado_fechaNacimiento);
         ip_registro_empleado_fecha_ingreso = findViewById(R.id.ip_registro_empleado_fecha_ingreso);
-        ip_registro_empleado_fecha_egreso = findViewById(R.id.ip_registro_empleado_fecha_egreso);
         ip_registro_empleado_contrasenia = findViewById(R.id.ip_registro_empleado_contrasenia);
         ip_registro_empleado_contrasenia_valida = findViewById(R.id.ip_registro_empleado_contrasenia_valida);
         ip_registro_empleado_id = findViewById(R.id.ip_registro_empleado_id);
-        ip_registro_empleado_nss = findViewById(R.id.ip_registro_empleado_nss);
-        ip_registro_empleado_rfc = findViewById(R.id.ip_registro_empleado_rfc);
-        ip_registro_empleado_curp = findViewById(R.id.ip_registro_empleado_curp);
-        ip_registro_empleado_puesto = findViewById(R.id.ip_registro_empleado_puesto);
-        ip_registro_empleado_departamento = findViewById(R.id.ip_registro_empleado_departamento);
-        ip_registro_empleado_hora_entrada = findViewById(R.id.ip_registro_empleado_hora_entrada);
-        ip_registro_empleado_hora_salida = findViewById(R.id.ip_registro_empleado_hora_salida);
-        ip_registro_empleado_salida_comida = findViewById(R.id.ip_registro_empleado_salida_comida);
-        ip_registro_empleado_entrada_comida = findViewById(R.id.ip_registro_empleado_entrada_comida);
-        ip_registro_empleado_sueldo = findViewById(R.id.ip_registro_empleado_sueldo);
-        ip_registro_empleado_turno = findViewById(R.id.ip_registro_empleado_turno);
 
-        checkbor_clientes_registro_empleado = findViewById(R.id.checkbor_clientes_registro_empleado);
-        checkbor_productos_registro_empleado = findViewById(R.id.checkbor_productos_registro_empleado);
-        checkbor_ventas_registro_empleado = findViewById(R.id.checkbor_ventas_registro_empleado);
-        checkbor_empleados_registro_empleado = findViewById(R.id.checkbor_empleados_registro_empleado);
+        checkbox_clientes_registro_empleado = findViewById(R.id.checkbox_clientes_registro_empleado);
+        checkbox_productos_registro_empleado = findViewById(R.id.checkbox_productos_registro_empleado);
+        checkbox_ventas_registro_empleado = findViewById(R.id.checkbox_ventas_registro_empleado);
+        checkbox_empleados_registro_empleado = findViewById(R.id.checkbox_empleados_registro_empleado);
+        checkbox_inventarios_registro_empleado = findViewById(R.id.checkbox_inventario_registro_empleado);
+        checkbox_cobranza_registro_empleado = findViewById(R.id.checkbox_cobranza_registro_empleado);
+        checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
 
-
-        checkbor_inventarios_registro_empleado = findViewById(R.id.checkbor_inventario_registro_empleado);
-        checkbor_cobranza_registro_empleado = findViewById(R.id.checkbor_cobranza_registro_empleado);
-
-        loadSpinnerRegion();
-        loadSpinnerTipoContrato();
         loadSpinnerStatus();
+        loadSpinnerRuteAndDay();
+        this.loadConsecCuenta();
     }
 
+    private void loadSpinnerRuteAndDay() {
+        /*List<String> arrayListRute = dao.getAllRutes();
+        if (arrayListRute.size() < 2) {
+            String[] array = getArrayString(R.array.ruteo_rango_rutas);
+            arrayListRute = Utils.convertArrayStringListString(array);
+        }*/
+        String[] array = getArrayString(R.array.ruteo_rango_rutas);
+        List<String> arrayListRute = Utils.convertArrayStringListString(array);
 
-    private void loadSpinnerRegion() {
+        if (ruta_seleccionado == null || ruta_seleccionado.isEmpty()) {
+            ruta_seleccionado = arrayListRute.get(0);
+        }
 
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.region);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_tipo_contrato_registro_empleado = findViewById(R.id.spinner_tipo_contrato_registro_empleado);
-        spinner_tipo_contrato_registro_empleado.setAdapter(adapter);
-        spinner_tipo_contrato_registro_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        ArrayAdapter<String> adapterRute = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayListRute);
+        rute_employee_spinner = findViewById(R.id.rute_employee_spinner);
+        rute_employee_spinner.setAdapter(adapterRute);
+        rute_employee_spinner.setSelection(arrayListRute.indexOf(ruta_seleccionado));
+        rute_employee_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                tipo_contrato_seleccionado = spinner_tipo_contrato_registro_empleado.getSelectedItem().toString();
+                ruta_seleccionado = rute_employee_spinner.getSelectedItem().toString();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-    }
-
-    private void loadSpinnerTipoContrato() {
-
-        //Obtiene el array de las unidades de medida
-        String[] array = getArrayString(R.array.tipo_contrato);
-
-        //Obtiene la lista de Strings
-        List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
-        spinner_region_registro_empleado = findViewById(R.id.spinner_region_registro_empleado);
-        spinner_region_registro_empleado.setAdapter(adapter);
-        spinner_region_registro_empleado.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                region_seleccionada = spinner_region_registro_empleado.getSelectedItem().toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
     private void loadSpinnerStatus() {
-
-        //Obtiene el array de las unidades de medida
         String[] array = getArrayString(R.array.status_producto);
-
-        //Obtiene la lista de Strings
         List<String> arrayList = Utils.convertArrayStringListString(array);
-
-        //Creamos el adaptador
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_status_producto, arrayList);
         spinner_registro_empleado_status = findViewById(R.id.spinner_registro_empleado_status);
         spinner_registro_empleado_status.setAdapter(adapter);
         spinner_registro_empleado_status.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 status_seleccionado = spinner_registro_empleado_status.getSelectedItem().toString();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
 
+    private void loadConsecCuenta() {
+
+        final EmployeeDao employeeDao = new EmployeeDao();
+        no_cuenta = employeeDao.getLastConsec();
+        String consectivo = "";
+        if (no_cuenta < 10) {
+            consectivo = "E00" + no_cuenta;
+        } else if (no_cuenta >= 10 && no_cuenta <= 99) {
+            consectivo = "E0" + no_cuenta;
+        } else if (no_cuenta >= 100 && no_cuenta <= 999) {
+            consectivo = "E0" + no_cuenta;
+        } else if (no_cuenta >= 1000 && no_cuenta <= 9999) {
+            consectivo = "E" + no_cuenta;
+        } else {
+            consectivo = "E" + no_cuenta;
+        }
+
+        ip_registro_empleado_id.setText(consectivo);
     }
 
 
     private void dateIngreso() {
-
-        final Calendar c = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
         mMonth = c.get(Calendar.MONTH);
         mDay = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_registro_empleado_fecha_ingreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
+                (view, year, monthOfYear, dayOfMonth) ->
+                        ip_registro_empleado_fecha_ingreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year), mYear, mMonth, mDay);
         datePickerDialog.show();
-
     }
 
-    private void dateEgreso() {
-
+    private void setBirdDate() {
         final Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
         mMonth = c.get(Calendar.MONTH);
         mDay = c.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_registro_empleado_fecha_egreso.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
+                (view, year, monthOfYear, dayOfMonth) ->
+                        ip_registro_empleado_fechaNacimiento.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year), mYear, mMonth, mDay);
         datePickerDialog.show();
-
-    }
-
-    private void dateFechaNacimiento() {
-
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-
-                        ip_registro_empleado_fechaNacimiento.setText(dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
-
-                    }
-                }, mYear, mMonth, mDay);
-        datePickerDialog.show();
-
     }
 
     protected String[] getArrayString(final int id) {
@@ -353,23 +241,16 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-
         switch (item.getItemId()) {
-
             case android.R.id.home:
                 finish();
                 return true;
-
             case R.id.searchImagen:
                 selectImage();
                 return true;
-
             case R.id.guardaEmpleado:
-
                 if (validaCampos()) {
                     if (!validaEmpleado()) {
-
                         final PrettyDialog dialog = new PrettyDialog(this);
                         dialog.setTitle("Registrar")
                                 .setTitleColor(R.color.purple_500)
@@ -401,7 +282,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                         dialog.show();
 
                     } else {
-                        final PrettyDialog dialog = new PrettyDialog(this);
+                        PrettyDialog dialog = new PrettyDialog(this);
                         dialog.setTitle("Exitente")
                                 .setTitleColor(R.color.purple_500)
                                 .setMessage("Ya existe un registro con el identificador ingresado " + ip_registro_empleado_id.getText().toString())
@@ -460,16 +341,12 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     }
 
     private boolean validaCampos() {
-
         listaCamposValidos = new ArrayList<>();
         boolean valida = true;
 
         String nombre = ip_registro_empleado_nombre.getText().toString();
-
         String contrasenia = ip_registro_empleado_contrasenia.getText().toString();
-
         String confirmar = ip_registro_empleado_contrasenia_valida.getText().toString();
-
 
         if (nombre.isEmpty()) {
             valida = false;
@@ -496,32 +373,16 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
     private boolean validaEmpleado() {
-
-        boolean valida = true;
-
         EmployeeDao dao = new EmployeeDao();
         EmpleadoBean bean = dao.getEmployeeByIdentifier(ip_registro_empleado_id.getText().toString());
-
-        if (bean == null) {
-            valida = false;
-        } else {
-            valida = true;
-        }
-        return valida;
+        return bean != null;
     }
 
-
-    /**
-     * uploadfoto-------------start.
-     */
     private boolean check_ReadStoragepermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -565,14 +426,11 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         return result;
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-
             if (requestCode == 2) {
                 Uri selectedImage = data.getData();
                 InputStream imageStream = null;
@@ -626,169 +484,81 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     String idEmpleado;
     private void saveEmpleado() {
         EmployeeDao employeeDao = new EmployeeDao();
-        EmpleadoBean empleado = new EmpleadoBean();
-        empleado.setNombre(ip_registro_empleado_nombre.getText().toString());
-        empleado.setDireccion(ip_registro_empleado_direccion.getText().toString());
-        empleado.setEmail(ip_registro_empleado_email.getText().toString());
-        empleado.setTelefono(ip_registro_empleado_telefono.getText().toString());
-        empleado.setFecha_nacimiento(ip_registro_empleado_fechaNacimiento.getText().toString());
-        empleado.setFecha_ingreso(ip_registro_empleado_fecha_ingreso.getText().toString());
-        empleado.setFecha_egreso(ip_registro_empleado_fecha_egreso.getText().toString());
-        empleado.setContrasenia(ip_registro_empleado_contrasenia.getText().toString());
-        empleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-        empleado.setNss(ip_registro_empleado_nss.getText().toString());
-        empleado.setRfc(ip_registro_empleado_rfc.getText().toString());
-        empleado.setCurp(ip_registro_empleado_curp.getText().toString());
-        empleado.setPuesto(ip_registro_empleado_puesto.getText().toString());
-        empleado.setArea_depto(ip_registro_empleado_departamento.getText().toString());
-        empleado.setTipo_contrato(tipo_contrato_seleccionado);
-        empleado.setRegion(region_seleccionada);
-        empleado.setHora_entrada(ip_registro_empleado_hora_entrada.getText().toString());
-        empleado.setHora_salida(ip_registro_empleado_hora_salida.getText().toString());
-        empleado.setSalida_comer(ip_registro_empleado_salida_comida.getText().toString());
-        empleado.setEntrada_comer(ip_registro_empleado_entrada_comida.getText().toString());
-        String sueldo = ip_registro_empleado_sueldo.getText().toString();
-        if (sueldo.isEmpty()) {
-            empleado.setSueldo_diario(0);
-        } else {
-            empleado.setSueldo_diario(Double.parseDouble(sueldo));
-        }
-        empleado.setTurno(ip_registro_empleado_turno.getText().toString());
-        if (status_seleccionado.compareToIgnoreCase("Activo") == 0) {
-            empleado.setStatus(true);
-        } else {
-            empleado.setStatus(false);
-        }
+        EmpleadoBean employee = new EmpleadoBean();
+        employee.setNombre(ip_registro_empleado_nombre.getText().toString());
+        employee.setDireccion(ip_registro_empleado_direccion.getText().toString());
+        employee.setEmail(ip_registro_empleado_email.getText().toString());
+        employee.setTelefono(ip_registro_empleado_telefono.getText().toString());
+        employee.setFecha_nacimiento(ip_registro_empleado_fechaNacimiento.getText().toString());
+        employee.setFecha_ingreso(ip_registro_empleado_fecha_ingreso.getText().toString());
+        employee.setContrasenia(ip_registro_empleado_contrasenia.getText().toString());
+        employee.setIdentificador(ip_registro_empleado_id.getText().toString());
+        employee.setStatus(status_seleccionado.compareToIgnoreCase("Activo") == 0);
+        employee.setRute(ruta_seleccionado);
+        employee.setUpdatedAt(Utils.fechaActualHMS());
+        if (decoded != null) employee.setPath_image(getStringImage(decoded));
 
-        if (decoded != null) {
-            empleado.setPath_image(getStringImage(decoded));
-        }
+        employeeDao.insert(employee);
 
-        employeeDao.insert(empleado);
+        RolesDao rolEmployeeDao = new RolesDao();
+        RolesBean rolRoutes = new RolesBean();
+        rolRoutes.setEmpleado(employee);
+        rolRoutes.setModulo("Rutas");
+        rolRoutes.setActive(checkbox_edit_rute.isChecked());
+        rolRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolRoutes);
 
-        //Insera el registro de los modulos
-        if (checkbor_clientes_registro_empleado.isChecked()) {
-            RolesBean rolCliente = new RolesBean();
-            RolesDao rolClienteDao = new RolesDao();
-            rolCliente.setEmpleado(empleado);
-            rolCliente.setModulo("Clientes");
-            rolCliente.setActive(true);
-            rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolClienteDao.insert(rolCliente);
-        }else {
-            RolesBean rolCliente = new RolesBean();
-            RolesDao rolClienteDao = new RolesDao();
-            rolCliente.setEmpleado(empleado);
-            rolCliente.setModulo("Clientes");
-            rolCliente.setActive(false);
-            rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolClienteDao.insert(rolCliente);
-        }
+        RolesBean rolCliente = new RolesBean();
+        rolCliente.setEmpleado(employee);
+        rolCliente.setModulo("Clientes");
+        rolCliente.setActive(checkbox_clientes_registro_empleado.isChecked());
+        rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolCliente);
 
-        if (checkbor_productos_registro_empleado.isChecked()) {
-            RolesBean rolProducto = new RolesBean();
-            RolesDao rolProductoDao = new RolesDao();
-            rolProducto.setEmpleado(empleado);
-            rolProducto.setModulo("Productos");
-            rolProducto.setActive(true);
-            rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolProductoDao.insert(rolProducto);
-        }else{
-            RolesBean rolProducto = new RolesBean();
-            RolesDao rolProductoDao = new RolesDao();
-            rolProducto.setEmpleado(empleado);
-            rolProducto.setModulo("Productos");
-            rolProducto.setActive(false);
-            rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolProductoDao.insert(rolProducto);
-        }
+        RolesBean rolProducto = new RolesBean();
+        rolProducto.setEmpleado(employee);
+        rolProducto.setModulo("Productos");
+        rolProducto.setActive(checkbox_productos_registro_empleado.isChecked());
+        rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolProducto);
 
-        if (checkbor_ventas_registro_empleado.isChecked()) {
-            RolesBean rolVentas = new RolesBean();
-            RolesDao rolVentasDao = new RolesDao();
-            rolVentas.setEmpleado(empleado);
-            rolVentas.setModulo("Ventas");
-            rolVentas.setActive(true);
-            rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolVentasDao.insert(rolVentas);
-        }else{
-            RolesBean rolVentas = new RolesBean();
-            RolesDao rolVentasDao = new RolesDao();
-            rolVentas.setEmpleado(empleado);
-            rolVentas.setModulo("Ventas");
-            rolVentas.setActive(false);
-            rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolVentasDao.insert(rolVentas);
-        }
+        RolesBean rolVentas = new RolesBean();
+        rolVentas.setEmpleado(employee);
+        rolVentas.setModulo("Ventas");
+        rolVentas.setActive(checkbox_ventas_registro_empleado.isChecked());
+        rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolVentas);
 
-        if (checkbor_empleados_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Empleados");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Empleados");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
+        RolesBean rolEmpleado = new RolesBean();
+        rolEmpleado.setEmpleado(employee);
+        rolEmpleado.setModulo("Empleados");
+        rolEmpleado.setActive(checkbox_empleados_registro_empleado.isChecked());
+        rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolEmpleado);
 
-        if (checkbor_inventarios_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Inventarios");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Inventarios");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
+        RolesBean rolStock = new RolesBean();
+        rolStock.setEmpleado(employee);
+        rolStock.setModulo("Inventarios");
+        rolStock.setActive(checkbox_inventarios_registro_empleado.isChecked());
+        rolStock.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolStock);
 
+        RolesBean rolCharge = new RolesBean();
+        rolCharge.setEmpleado(employee);
+        rolCharge.setModulo("Cobranza");
+        rolCharge.setActive(checkbox_cobranza_registro_empleado.isChecked());
+        rolCharge.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insert(rolCharge);
 
-        if (checkbor_cobranza_registro_empleado.isChecked()) {
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Cobranza");
-            rolEmpleado.setActive(true);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }else{
-            RolesBean rolEmpleado = new RolesBean();
-            RolesDao rolEmpleadoDao = new RolesDao();
-            rolEmpleado.setEmpleado(empleado);
-            rolEmpleado.setModulo("Cobranza");
-            rolEmpleado.setActive(false);
-            rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-            rolEmpleadoDao.insert(rolEmpleado);
-        }
-
-
-
-
-        idEmpleado = String.valueOf(empleado.getId());
+        idEmpleado = String.valueOf(employee.getId());
 
         if (!Utils.isNetworkAvailable(getApplication())){
-            showDialogNotConnectionInternet();
+            //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
-            enviaRolsServidor(empleado.identificador);
+            enviaRolsServidor(employee.identificador);
         }
     }
-
 
     private void showDialogNotConnectionInternet() {
         final Dialog dialog = new Dialog(this);
@@ -801,12 +571,9 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                testLoadEmpleado(idEmpleado);
-                dialog.dismiss();
-            }
+        ((AppCompatButton) dialog.findViewById(R.id.bt_close)).setOnClickListener(v -> {
+            testLoadEmpleado(idEmpleado);
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -816,21 +583,15 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private void enviaRolsServidor(String id){
         progressshow();
 
-        final RolesDao rolesDao = new RolesDao();
-        List<RolesBean> listaRolDB = new ArrayList<>();
-        listaRolDB = rolesDao.getListaRolesByEmpleado(id);
-
+        RolesDao rolesDao = new RolesDao();
+        List<RolesBean> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
         List<Role> listaRoles = new ArrayList<>();
-        for (RolesBean items : listaRolDB){
-            final Role role = new Role();
 
-            role.setEmpleado(items.getEmpleado().identificador);
+        for (RolesBean items : listaRolDB){
+            Role role = new Role();
+            role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
-            if (items.getActive()== true){
-                role.setActivo(1);
-            }else {
-                role.setActivo(0);
-            }
+            role.setActivo(items.getActive()? 1 : 0);
             listaRoles.add(role);
         }
 
@@ -848,11 +609,9 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     }
 
     private void testLoadEmpleado(String id){
-
         progressshow();
-        final EmployeeDao employeeDao = new EmployeeDao();
-        List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
-        listaEmpleadosDB =  employeeDao.getEmployeeById(id);
+        EmployeeDao employeeDao = new EmployeeDao();
+        List<EmpleadoBean> listaEmpleadosDB = employeeDao.getEmployeeById(id);
 
         List<Employee> listEmpleados = new ArrayList<>();
         for (EmpleadoBean item : listaEmpleadosDB){
@@ -882,77 +641,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setFechaIngreso(item.getFecha_ingreso());
             }
 
-            if (item.getFecha_egreso().isEmpty()){
-                empleado.setFechaEgreso("-");
-            }else{
-                empleado.setFechaEgreso(item.getFecha_egreso());
-            }
-
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
-            if (item.getNss().isEmpty()){
-                empleado.setNss("-");
-            }else{
-                empleado.setNss(item.getNss());
-            }
-
-            if (item.getRfc().isEmpty()){
-                empleado.setRfc("-");
-            }else{
-                empleado.setRfc(item.getRfc());
-            }
-
-            if (item.getCurp().isEmpty()){
-                empleado.setCurp("-");
-            }else{
-                empleado.setCurp(item.getCurp());
-            }
-
-            if (item.getPuesto().isEmpty()){
-                empleado.setPuesto("-");
-            }else{
-                empleado.setPuesto(item.getPuesto());
-            }
-
-            if (item.getArea_depto().isEmpty()){
-                empleado.setAreaDepto("--");
-            }else{
-                empleado.setAreaDepto(item.getArea_depto());
-            }
-
-            empleado.setTipoContrato(item.getTipo_contrato());
-            empleado.setRegion(item.getRegion());
-
-            if (item.getHora_entrada().isEmpty()){
-                empleado.setHoraEntrada("");
-            }else{
-                empleado.setHoraEntrada(item.getHora_entrada());
-            }
-
-            if (item.getHora_salida().isEmpty()){
-                empleado.setHoraSalida("");
-            }else{
-                empleado.setHoraSalida(item.getHora_salida());
-            }
-
-            if (item.getSalida_comer().isEmpty()){
-                empleado.setSalidaComer("");
-            }else{
-                empleado.setSalidaComer(item.getSalida_comer());
-            }
-
-            if (item.getEntrada_comer().isEmpty()){
-                empleado.setEntradaComer("");
-            }else{
-                empleado.setEntradaComer(item.getEntrada_comer());
-            }
-
-            empleado.setSueldoDiario(0);
-            if (item.getStatus() == false){
-                empleado.setStatus(0);
-            }else {
-                empleado.setStatus(1);
-            }
+            empleado.setStatus(item.getStatus()? 1 : 0);
+            empleado.setUpdatedAt(item.updatedAt);
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -960,10 +652,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (item.getTurno().isEmpty()){
-                empleado.setTurno("--");
-            }else{
-                empleado.setTurno(item.getEntrada_comer());
+            if (!item.rute.isEmpty()) {
+                empleado.setRute(item.rute);
+            } else  {
+                empleado.setRute("");
             }
 
             listEmpleados.add(empleado);
@@ -989,7 +681,6 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     public void progressshow() {
         rlprogress.setVisibility(View.VISIBLE);
     }
-
     public void progresshide() {
         rlprogress.setVisibility(View.GONE);
     }

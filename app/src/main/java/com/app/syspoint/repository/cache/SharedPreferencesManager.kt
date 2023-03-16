@@ -1,30 +1,58 @@
 package com.app.syspoint.repository.cache
 
 import android.content.Context
+import com.app.syspoint.App
+import com.app.syspoint.repository.database.bean.EmpleadoBean
+import com.app.syspoint.utils.JsonParser
 
 class SharedPreferencesManager(context: Context) {
     /*
      * tags to save data
      */
-    private val SHARED_PREFERENCES_NAME : String = "local_shared_preferences"
-    private val JSON_SELLERS : String = "json_sellers"
-    private val JSON_SELLS : String = "json_sells"
+    private val SHARED_PREFERENCES_NAME: String = "local_shared_preferences"
+    private val JSON_SELLERS: String = "json_sellers"
+    private val JSON_SELLS: String = "json_sells"
+    private val DATA_STATUS: String = "data_status"
+    private val APP_TOKEN: String = "app_token"
+    private val STOCK_ID: String = "stock_id"
+
 
     /*
      * Objects
      */
-    private val mContext : Context = context
+    private val mContext: Context = context
 
     /**
      * This method removes all sharedPreferences session data
      */
     fun removeSessionData() {
-        mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit().clear().apply()
+        mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit().clear()
+            .apply()
     }
 
-    fun storeJsonSeller(json : String) {
-        val editor = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+    fun storeLocalSession(updated: Boolean) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putBoolean(DATA_STATUS, updated)
+        editor.apply()
+    }
+
+    fun isSessionUpdated(): Boolean {
+        val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(DATA_STATUS, false)
+    }
+
+    fun storeJsonSeller(json: String?) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
         editor.putString(JSON_SELLERS, json)
+        editor.apply()
+    }
+
+    fun removeSellerFromCache() {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.remove(JSON_SELLERS)
         editor.apply()
     }
 
@@ -32,13 +60,14 @@ class SharedPreferencesManager(context: Context) {
      * @return
      *      A json string that contains user object
      */
-    fun getJsonSeller() : String? {
+    fun getJsonSeller(): String? {
         val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         return prefs.getString(JSON_SELLERS, null)
     }
 
-    fun storeJsonSells(json : String) {
-        val editor = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+    fun storeJsonSells(json: String) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
         editor.putString(JSON_SELLS, json)
         editor.apply()
     }
@@ -47,8 +76,39 @@ class SharedPreferencesManager(context: Context) {
      * @return
      *      A json string that contains user object
      */
-    fun getJsonSells() : String? {
+    fun getJsonSells(): String? {
         val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         return prefs.getString(JSON_SELLS, null)
+    }
+
+    fun getToken(): String? {
+        val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(APP_TOKEN, null)
+    }
+
+    fun storeToken(token: String?) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putString(APP_TOKEN, token)
+        editor.apply()
+    }
+
+    fun removeToken() {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.remove(APP_TOKEN)
+        editor.apply()
+    }
+
+    fun saveCurrentStockId(stockId: Int) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putInt(STOCK_ID, stockId)
+        editor.apply()
+    }
+
+    fun getCurrentStockId(): Int {
+        val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(STOCK_ID, 0)
     }
 }

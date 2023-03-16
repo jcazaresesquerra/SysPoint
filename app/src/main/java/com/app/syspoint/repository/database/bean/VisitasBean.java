@@ -23,16 +23,16 @@ public class VisitasBean extends Bean{
     private String latidud;
     private String longitud;
     private String motivo_visita;
+    private String updatedAt;
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
     /** Used for active entity operations. */
     @Generated(hash = 452171996)
     private transient VisitasBeanDao myDao;
-    @Generated(hash = 1406771150)
-    public VisitasBean(Long id, String fecha, String hora, Long clienteId,
-            Long empleadoId, String latidud, String longitud,
-            String motivo_visita) {
+    @Generated(hash = 1729411266)
+    public VisitasBean(Long id, String fecha, String hora, Long clienteId, Long empleadoId,
+            String latidud, String longitud, String motivo_visita, String updatedAt) {
         this.id = id;
         this.fecha = fecha;
         this.hora = hora;
@@ -41,6 +41,7 @@ public class VisitasBean extends Bean{
         this.latidud = latidud;
         this.longitud = longitud;
         this.motivo_visita = motivo_visita;
+        this.updatedAt = updatedAt;
     }
     @Generated(hash = 1785176600)
     public VisitasBean() {
@@ -87,6 +88,15 @@ public class VisitasBean extends Bean{
     public void setLongitud(String longitud) {
         this.longitud = longitud;
     }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public String getMotivo_visita() {
         return this.motivo_visita;
     }

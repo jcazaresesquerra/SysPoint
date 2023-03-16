@@ -28,6 +28,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.R;
+import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.database.bean.InventarioBean;
@@ -146,10 +147,8 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
 
         aplicaInventario();
 
@@ -157,9 +156,9 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
 
     private void aplicaInventario(){
 
-        List<InventarioBean> mData;
-        mData = new ArrayList<>();
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(this);
+        int currentStockId = sharedPreferencesManager.getCurrentStockId();
 
         for (InventarioBean item : mData){
 
@@ -176,6 +175,7 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
                 final StockDao stockDao = new StockDao();
                 final InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
                 inventarioBean.setEstado("CO");
+                inventarioBean.setStockId(currentStockId);
                 stockDao.save(inventarioBean);
 
             }

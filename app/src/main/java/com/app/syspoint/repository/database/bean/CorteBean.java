@@ -38,6 +38,9 @@ public class CorteBean extends Bean{
     @NotNull
     private double impuesto;
 
+    @NotNull
+    private String tipoVenta;
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -46,10 +49,9 @@ public class CorteBean extends Bean{
     @Generated(hash = 299982043)
     private transient CorteBeanDao myDao;
 
-    @Generated(hash = 430953120)
-    public CorteBean(Long id, @NotNull String nombre, long clienteId,
-            long productoId, int cantidad, double precio,
-            @NotNull String descripcion, double impuesto) {
+    @Generated(hash = 322356137)
+    public CorteBean(Long id, @NotNull String nombre, long clienteId, long productoId, int cantidad,
+            double precio, @NotNull String descripcion, double impuesto, @NotNull String tipoVenta) {
         this.id = id;
         this.nombre = nombre;
         this.clienteId = clienteId;
@@ -58,6 +60,7 @@ public class CorteBean extends Bean{
         this.precio = precio;
         this.descripcion = descripcion;
         this.impuesto = impuesto;
+        this.tipoVenta = tipoVenta;
     }
 
     @Generated(hash = 1838407668)
@@ -126,6 +129,14 @@ public class CorteBean extends Bean{
 
     public void setImpuesto(double impuesto) {
         this.impuesto = impuesto;
+    }
+
+    public void setTipoVenta(String tipoVenta) {
+        this.tipoVenta = tipoVenta;
+    }
+
+    public String getTipoVenta() {
+        return tipoVenta;
     }
 
     @Generated(hash = 1910965194)

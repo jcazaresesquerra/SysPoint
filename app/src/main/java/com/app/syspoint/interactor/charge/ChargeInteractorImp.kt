@@ -6,7 +6,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ChargeInteractorImp: ChargeInteractor() {
-
+    @Synchronized
     override fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {
         super.executeGetCharge(onGetChargeListener)
         GlobalScope.launch {
@@ -14,6 +14,15 @@ class ChargeInteractorImp: ChargeInteractor() {
         }
     }
 
+    @Synchronized
+    override fun executeGetChargeByEmployee(id: String, onGetChargeByEmployeeListener: OnGetChargeByEmployeeListener) {
+        super.executeGetChargeByEmployee(id, onGetChargeByEmployeeListener)
+        GlobalScope.launch {
+            RequestCharge.requestGetChargeByEmployee(id, onGetChargeByEmployeeListener)
+        }
+    }
+
+    @Synchronized
     override fun executeGetChargeByClient(account: String, onGetChargeByClientListener: OnGetChargeByClientListener) {
         super.executeGetChargeByClient(account, onGetChargeByClientListener)
         GlobalScope.launch {
@@ -21,6 +30,7 @@ class ChargeInteractorImp: ChargeInteractor() {
         }
     }
 
+    @Synchronized
     override fun executeSaveCharge(charges: List<Payment>, onSaveChargeListener: OnSaveChargeListener) {
         super.executeSaveCharge(charges, onSaveChargeListener)
         GlobalScope.launch {
@@ -28,6 +38,7 @@ class ChargeInteractorImp: ChargeInteractor() {
         }
     }
 
+    @Synchronized
     override fun executeUpdateCharge(charges: List<Payment>, onUpdateChargeListener: OnUpdateChargeListener) {
         super.executeUpdateCharge(charges, onUpdateChargeListener)
         GlobalScope.launch {

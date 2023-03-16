@@ -3,6 +3,7 @@ package com.app.syspoint.ui.stock.activities;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,17 +17,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.repository.database.bean.InventarioBean;
 import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.documents.StockTicket;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
+import com.app.syspoint.utils.PrettyDialog;
+import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import libs.mjn.prettydialog.PrettyDialog;
-import libs.mjn.prettydialog.PrettyDialogCallback;
 
 public class ConfirmaInventarioActivity extends AppCompatActivity {
 
@@ -51,10 +52,8 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        getWindow().setStatusBarColor(getResources().getColor(R.color.purple_700));
     }
 
 
@@ -89,53 +88,38 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
-
             case android.R.id.home:
                 finish();
                 return true;
 
             case R.id.item_menu_confirma_inventario:
-
-
                 final PrettyDialog dialog = new PrettyDialog(ConfirmaInventarioActivity.this);
                 dialog.setTitle("Confirmar")
                         .setTitleColor(R.color.purple_500)
                         .setMessage("Desea confirmar la entrada al inventario ")
                         .setMessageColor(R.color.purple_700)
                         .setAnimationEnabled(false)
-                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-                            }
+                        .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500, () -> dialog.dismiss())
+                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, () -> {
+
+                            Utils.addActivity2Stack(ConfirmaInventarioActivity.this);
+
+                            final InventarioBean inventarioBean = new InventarioBean();
+
+                            StockTicket stockTicket = new StockTicket();
+                            stockTicket.setBean(inventarioBean);
+                            stockTicket.template();
+
+                            String ticket = stockTicket.getDocument();
+                            Log.d("ConfirmarInventarioActivity", ticket);
+
+                            Intent intent = new Intent(ConfirmaInventarioActivity.this, FinalizaInventarioActivity.class);
+                            intent.putExtra("ticket", ticket);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            dialog.dismiss();
                         })
-                        .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-
-                                Utils.addActivity2Stack(ConfirmaInventarioActivity.this);
-
-                                final InventarioBean inventarioBean = new InventarioBean();
-
-                                StockTicket stockTicket = new StockTicket();
-                                stockTicket.setBean(inventarioBean);
-                                stockTicket.template();
-
-                                String ticket = stockTicket.getDocument();
-                                Intent intent = new Intent(ConfirmaInventarioActivity.this, FinalizaInventarioActivity.class);
-                                intent.putExtra("ticket", ticket);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                                dialog.dismiss();
-                            }
-                        })
-                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, new PrettyDialogCallback() {
-                            @Override
-                            public void onClick() {
-                                dialog.dismiss();
-
-                            }
-                        });
+                        .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, () -> dialog.dismiss());
                 dialog.setCancelable(false);
                 dialog.show();
 

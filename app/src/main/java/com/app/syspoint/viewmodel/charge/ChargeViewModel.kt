@@ -1,8 +1,10 @@
 package com.app.syspoint.viewmodel.charge
 
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.app.syspoint.documents.DepositTicket
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.charge.ChargeInteractor.OnGetChargeByClientListener
@@ -15,15 +17,15 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Payment
 import com.app.syspoint.models.sealed.ChargeViewState
 import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.ChargesDao
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.PaymentDao
-import com.app.syspoint.repository.database.dao.PaymentModelDao
+import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.ui.cobranza.CobranzaModel
 import com.app.syspoint.ui.cobranza.ListaDocumentosCobranzaActivity
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+private const val TAG = "ChargeViewModel"
 class ChargeViewModel: ViewModel() {
 
     val chargeViewState = MutableLiveData<ChargeViewState>()
@@ -33,19 +35,74 @@ class ChargeViewModel: ViewModel() {
         chargeViewState.value = ChargeViewState.ChargeListLoaded(partidas)
     }
 
-    fun downloadCharge(clientId: String) {
-        if (clientId.isNotEmpty()) {
-            chargeViewState.value = ChargeViewState.LoadingStart
-            ChargeInteractorImp().executeGetChargeByClient(clientId,
-                object : OnGetChargeByClientListener {
-                    override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
-                        chargeViewState.value = ChargeViewState.LoadingFinish
-                    }
+    fun loadClientData(clientId: String) {
+        viewModelScope.launch(Dispatchers.Default) {
+            try {
+                val clientesDao = ClientDao()
+                val clientesBean = clientesDao.getClientByAccount(clientId)
+                val paymentDao = PaymentDao()
+                if (clientesBean != null) {
+                    chargeViewState.postValue(ChargeViewState.LoadingStart)
+                    ChargeInteractorImp().executeGetChargeByClient(clientesBean.cuenta, object : OnGetChargeByClientListener {
+                        override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
+                            val paymentDao1 = PaymentDao()
+                            val saldoCliente = paymentDao1.getSaldoByCliente(clientesBean.cuenta)
+                            //chargeViewState.postValue(ChargeViewState.LoadingFinish)
+                            chargeViewState.postValue(ChargeViewState.ChargeLoaded(clientId, saldoCliente))
+                            Log.d(TAG, "ChargeViewState.ChargeLoaded(clientId, saldoCliente)")
+                            downloadCharge(clientId)
+                        }
 
-                    override fun onGetChargeByClientError() {
-                        chargeViewState.value = ChargeViewState.LoadingFinish
-                    }
-                })
+                        override fun onGetChargeByClientError() {
+                            Log.d(TAG, "downloadCharge(clientId) onGetChargeByClientError")
+                            downloadCharge(clientId)
+                            //chargeViewState.postValue(ChargeViewState.LoadingFinish)
+                        }
+                    })
+
+                    val saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.cuenta)
+                    clientesBean.saldo_credito = saldoDocumentos
+                    clientesDao.save(clientesBean)
+                    testLoadClientes(clientesBean.id.toString())
+                    chargeViewState.postValue(ChargeViewState.ClientLoaded(clientesBean))
+                    Log.d(TAG, "ChargeViewState.ClientLoaded(clientesBean)")
+                } else {
+                    Log.d(TAG, "downloadCharge(clientId)")
+                    downloadCharge(clientId)
+                    //dialogo = new Dialogo(activityGlobal);
+                    //dialogo.setAceptar(true);
+                    //dialogo.setOnAceptarDissmis(true);
+                    //dialogo.setMensaje("Cliente no encontrado");
+                    //dialogo.show();
+                    //return ;
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun downloadCharge(clientId: String) {
+        viewModelScope.launch {
+            if (clientId.isNotEmpty()) {
+                //chargeViewState.value = ChargeViewState.LoadingStart
+                ChargeInteractorImp().executeGetChargeByClient(clientId,
+                    object : OnGetChargeByClientListener {
+                        override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
+                            Log.d(TAG, "hideLoading onGetChargeByClientSuccess")
+                            chargeViewState.value = ChargeViewState.LoadingFinish
+                        }
+
+                        override fun onGetChargeByClientError() {
+                            Log.d(TAG, "hideLoading onGetChargeByClientError")
+
+                            chargeViewState.value = ChargeViewState.LoadingFinish
+                        }
+                    })
+            } else {
+                Log.d(TAG, "hideLoading !clientId.isNotEmpty()")
+                chargeViewState.value = ChargeViewState.LoadingFinish
+            }
         }
     }
 
@@ -96,15 +153,19 @@ class ChargeViewModel: ViewModel() {
                         cobranzaBean.estado = "CO"
                         cobranzaBean.saldo = 0.0
                         cobranzaBean.abono = true
+                        cobranzaBean.acuenta = charge.acuenta
                     } else {
                         cobranzaBean.saldo = cobranzaBean.saldo - charge.acuenta
                         cobranzaBean.abono = true
+                        cobranzaBean.acuenta = charge.acuenta
+
                     }
                     cobranzaBean.fecha = Utils.fechaActual()
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
                     paymentDao.save(cobranzaBean)
                 }
                 val cobdetBean = CobdetBean()
-                cobdetBean.cobranza = charge.getCobranza()
+                cobdetBean.cobranza = charge.cobranza
                 cobdetBean.cliente = clienteBean
                 cobdetBean.fecha = Utils.fechaActual()
                 cobdetBean.importe = charge.acuenta
@@ -180,44 +241,8 @@ class ChargeViewModel: ViewModel() {
         chargeViewState.value = ChargeViewState.ClientSaved(ticket, ventaID, clienteBean.id.toString())
     }
 
-    fun loadClientData(clientId: String) {
-        try {
-            val clientesDao = ClientDao()
-            val clientesBean = clientesDao.getClientByAccount(clientId)
-            val paymentDao = PaymentDao()
-            if (clientesBean != null) {
-                ChargeInteractorImp().executeGetChargeByClient(clientesBean.cuenta, object : OnGetChargeByClientListener {
-                    override fun onGetChargeByClientSuccess(chargeByClientList: List<CobranzaBean>) {
-                        val paymentDao1 = PaymentDao()
-                        val saldoCliente = paymentDao1.getSaldoByCliente(clientesBean.cuenta)
-                        chargeViewState.postValue(ChargeViewState.ChargeLoaded(clientId, saldoCliente))
-                    }
-
-                    override fun onGetChargeByClientError() {
-
-                    }
-                })
-
-                val saldoDocumentos = paymentDao.getTotalSaldoDocumentosCliente(clientesBean.cuenta)
-                clientesBean.saldo_credito = saldoDocumentos
-                clientesDao.save(clientesBean)
-                testLoadClientes(clientesBean.id.toString())
-                chargeViewState.value = ChargeViewState.ClientLoaded(clientesBean)
-            } else {
-
-                //dialogo = new Dialogo(activityGlobal);
-                //dialogo.setAceptar(true);
-                //dialogo.setOnAceptarDissmis(true);
-                //dialogo.setMensaje("Cliente no encontrado");
-                //dialogo.show();
-                //return ;
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     fun getTaxes(clientId: String) {
+        Log.d(TAG, "getTaxes start")
         val dao = PaymentModelDao()
         val charges = dao.list() as List<CobranzaModel?>
 
@@ -230,26 +255,34 @@ class ChargeViewModel: ViewModel() {
         val totalAmount = clientBean?.saldo_credito ?: 0.0
 
         chargeViewState.value = ChargeViewState.ComputedTaxes(totalAmount, acuenta, charges.isEmpty())
+        Log.d(TAG, "getTaxes finish")
     }
 
     fun deletePartida(charge: CobranzaModel?){
+        Log.d(TAG, "deletePartida start")
         val dao = PaymentModelDao()
         dao.delete(charge)
         val charges = dao.list() as List<CobranzaModel?>
         chargeViewState.value = ChargeViewState.ChargeListRefresh(charges)
+        Log.d(TAG, "deletePartida finish ChargeViewState.ChargeListRefresh(charges)")
+
     }
 
     fun deletePartidas(clientId: String) {
-        val paymentDao = PaymentDao()
-        val selectedDocumentList = paymentDao.getDocumentosSeleccionados(clientId)
-        for (chargeItems in selectedDocumentList) {
-            val chargeBean = paymentDao.getByCobranza(chargeItems.cobranza)
-            chargeBean!!.isCheck = false
-            paymentDao.save(chargeBean)
-        }
+        viewModelScope.launch {
+            Log.d(TAG, "deletePartidas start")
+            val paymentDao = PaymentDao()
+            val selectedDocumentList = paymentDao.getDocumentosSeleccionados(clientId)
+            for (chargeItems in selectedDocumentList) {
+                val chargeBean = paymentDao.getByCobranza(chargeItems.cobranza)
+                chargeBean!!.isCheck = false
+                paymentDao.save(chargeBean)
+            }
 
-        val dao = PaymentModelDao()
-        dao.clear()
+            val dao = PaymentModelDao()
+            dao.clear()
+            Log.d(TAG, "deletePartidas finish")
+        }
     }
 
     fun validaDocumentoRepetido(): Boolean {
@@ -281,22 +314,10 @@ class ChargeViewModel: ViewModel() {
             cliente.ciudad = item.ciudad
             cliente.codigoPostal = item.codigo_postal
             cliente.fechaRegistro = item.fecha_registro
-            cliente.fechaBaja = item.fecha_baja
             cliente.cuenta = item.cuenta
-            cliente.grupo = item.grupo
-            cliente.categoria = item.categoria
-            if (item.status) {
-                cliente.status = 1
-            } else {
-                cliente.status = 0
-            }
+            cliente.status = if (item.status) 1 else 0
             cliente.consec = item.consec
-            cliente.region = item.region
-            cliente.sector = item.sector
             cliente.rango = item.rango
-            cliente.secuencia = item.secuencia
-            cliente.periodo = item.periodo
-            cliente.ruta = item.ruta
             cliente.lun = item.lun
             cliente.mar = item.mar
             cliente.mie = item.mie
@@ -309,11 +330,7 @@ class ChargeViewModel: ViewModel() {
             cliente.phone_contacto = "" + item.contacto_phone
             cliente.recordatorio = "" + item.recordatorio
             cliente.visitas = item.visitasNoefectivas
-            if (item.is_credito) {
-                cliente.isCredito = 1
-            } else {
-                cliente.isCredito = 0
-            }
+            cliente.isCredito = if (item.is_credito) 1 else 0
             cliente.saldo_credito = item.saldo_credito
             cliente.limite_credito = item.limite_credito
             if (item.matriz === "null" && item.matriz == null) {
@@ -332,10 +349,16 @@ class ChargeViewModel: ViewModel() {
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
             }
         })
-        ClientInteractorImp().executeGetAllClients(object : GetAllClientsListener {
-            override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {}
-            override fun onGetAllClientsError() {}
-        })
+
+        val routingDao = RoutingDao()
+        val ruteoBean = routingDao.getRutaEstablecida()
+
+        if (ruteoBean != null) {
+            ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.ruta, ruteoBean.dia, object : GetAllClientsListener {
+                override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {}
+                override fun onGetAllClientsError() {}
+            })
+        }
     }
 
     private fun saveAbono() {
@@ -354,6 +377,7 @@ class ChargeViewModel: ViewModel() {
             cobranza.fecha = item.fecha
             cobranza.hora = item.hora
             cobranza.identificador = item.empleado
+            cobranza.updatedAt = item.updatedAt
             listaCobranza.add(cobranza)
         }
         ChargeInteractorImp().executeUpdateCharge(listaCobranza, object : OnUpdateChargeListener {
@@ -368,11 +392,12 @@ class ChargeViewModel: ViewModel() {
     }
 
     fun createCharge(cobranzaSeleccionada: String?, importeAcuenta: String?, clientId: String) {
+        Log.d(TAG, "createCharge start")
         if (cobranzaSeleccionada != null && importeAcuenta != null) {
             val paymentDao = PaymentDao();
             val cobranzaBean = paymentDao.getByCobranza(cobranzaSeleccionada);
 
-            val venta = cobranzaBean?.venta ?: 0
+            val venta = cobranzaBean?.venta ?: 0L
             val cobranza = cobranzaBean?.cobranza ?: ""
             val importe = cobranzaBean?.importe ?: 0.0
             val saldo = cobranzaBean?.saldo ?: 0.0
@@ -395,5 +420,6 @@ class ChargeViewModel: ViewModel() {
             chargeViewState.value = ChargeViewState.ChargeListRefresh(partidas)
             getTaxes(clientId)
         }
+        Log.d(TAG, "createCharge finish")
     }
 }

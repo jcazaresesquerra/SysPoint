@@ -12,8 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityConfigPrinterBinding
 import com.app.syspoint.models.sealed.ConfigurePrinterViewState
+import com.app.syspoint.utils.PrettyDialog
 import com.app.syspoint.viewmodel.printer.ConfigurePrinterViewModel
-import libs.mjn.prettydialog.PrettyDialog
 
 class ConfigurePrinterFragment: Fragment() {
 

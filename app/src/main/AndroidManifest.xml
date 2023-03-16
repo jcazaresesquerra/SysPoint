@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -20,6 +21,10 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 
 
     <uses-feature android:name="android.hardware.camera" />
@@ -27,6 +32,7 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
 
     <queries>
         <package android:name="com.google.android.apps.maps" />
@@ -39,7 +45,19 @@
         android:roundIcon="${appIconRound}"
         android:supportsRtl="true"
         android:theme="@style/Theme.SisVentasPoint"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        >
+
+        <service android:name=".repository.service.UpdateDataService"
+            android:exported="false"/>
+
+        <receiver android:name="com.app.syspoint.ui.login.LoginActivity$NetworkChangeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".ui.ventas.CApturaComprobanteActivity"
@@ -119,7 +137,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.clientes.ActualizaClienteActivity"
+            android:name=".ui.clientes.UpdateClientActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -163,6 +181,12 @@
             android:name=".ui.employees.activities.RegistarEmpleadoActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.stock.activities.CashCloseActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".ui.bluetooth.BluetoothActivity"
             android:exported="true"
@@ -190,12 +214,12 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.app.syspoint.fileprovider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/provider_paths" />
         </provider>
     </application>
 

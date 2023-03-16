@@ -8,5 +8,4 @@ data class VisitJson(
     @SerializedName("Visitas")
     @Expose
     var visits: List<Visit?>? = null
-
 )
