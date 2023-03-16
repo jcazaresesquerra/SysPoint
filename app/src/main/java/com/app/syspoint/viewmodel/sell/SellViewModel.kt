@@ -493,6 +493,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Se realiza la venta a crédito para sucursal ${clienteBean1.cuenta} ${clienteBean1.nombre_comercial} con cargo a Matriz ${clienteMatriz?.cuenta} ${clienteMatriz?.nombre_comercial} ${ventasBean.fecha} hora ${ventasBean.hora}"
                     cobranzaBean.fecha = ventasBean.fecha
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
                     cobranzaBean.hora = ventasBean.hora
                     cobranzaBean.stockId = stockId
                     if (vendedoresBean != null) {
@@ -524,6 +525,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Venta a crédito " + ventasBean.fecha + " hora " + ventasBean.hora
                     cobranzaBean.fecha = ventasBean.fecha
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
                     cobranzaBean.hora = ventasBean.hora
                     cobranzaBean.stockId = stockId
 

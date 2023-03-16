@@ -295,7 +295,7 @@ class LoginViewModel: BaseViewModel() {
                     })
                 } else {
                     viewModelScope.launch {
-                        removeLocalSync()
+                        //removeLocalSync()
                         delay(300)
                         loginViewState.postValue(LoginViewState.LoadingDataFinish)
                         delay(300)

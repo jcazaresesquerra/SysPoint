@@ -161,6 +161,7 @@ class ChargeViewModel: ViewModel() {
 
                     }
                     cobranzaBean.fecha = Utils.fechaActual()
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
                     paymentDao.save(cobranzaBean)
                 }
                 val cobdetBean = CobdetBean()

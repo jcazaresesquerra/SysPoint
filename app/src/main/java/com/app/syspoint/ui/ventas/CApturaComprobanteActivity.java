@@ -142,7 +142,7 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
 
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.app.syspoint.fileprovider",
+                        "com.app.syspoint.provider",
                         photoFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);

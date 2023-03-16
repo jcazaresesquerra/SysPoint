@@ -86,20 +86,30 @@ class CloseTicket: BaseTicket() {
         ticket += "VENTAS A CRÉDITO ($creditoCount)" + Constants.newLine
         ticket += Utils.FDinero(totalCredito) + Constants.newLine+ Constants.newLine
 
-        ticket += "            COBRANZAS           " + Constants.newLine +
-                  "================================" + Constants.newLine
-        ticket += "CLIENTE    TICKET      TOTAL    " + Constants.newLine
-        mListCharge.map { charge ->
-            ticket += String.format(
-                "%1$-5s  %2$11s  %3$10s",
-                charge.comertialName,
-                charge.ticket,
-                charge.abono
-            ) + Constants.newLine
+        if (!mListCharge.isNullOrEmpty()) {
+
+            ticket += "            COBRANZAS           " + Constants.newLine +
+                    "================================" + Constants.newLine
+            ticket += "CLIENTE    TICKET      TOTAL    " + Constants.newLine
+            var totalChargeAmount = 0.0
+            mListCharge.map { charge ->
+                totalChargeAmount += charge.abono
+                ticket += String.format(
+                    "%1$-5s  %2$11s  %3$10s",
+                    charge.comertialName,
+                    charge.ticket,
+                    charge.abono
+                ) + Constants.newLine
+            }
+
+            ticket += "================================" + Constants.newLine
+
+            ticket += " Cobranza (${mListCharge.size}) " + Constants.newLine +
+                    String.format(" %1$-5s", Utils.FDinero(totalChargeAmount))
         }
 
-        ticket += "================================" + Constants.newLine +
-        "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+
 
         ticket += "FIRMA DEL VENDEDOR:           " + Constants.newLine +
                 "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine +

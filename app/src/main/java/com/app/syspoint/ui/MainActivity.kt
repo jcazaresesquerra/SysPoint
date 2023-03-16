@@ -137,7 +137,8 @@ class MainActivity: BaseActivity() {
         NavigationUI.setupWithNavController(binding.navView, navController)
         apikey = getString(R.string.google_maps_key)
 
-        validateToken()
+        getUpdates()
+        //validateToken()
         registerNetworkBroadcastForNougat()
         //startForegroundService(Intent(this, UpdateDataService::class.java))
 

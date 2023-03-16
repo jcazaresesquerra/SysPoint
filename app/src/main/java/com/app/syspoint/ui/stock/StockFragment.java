@@ -81,7 +81,7 @@ public class StockFragment extends Fragment {
     private Handler mHandler; // Our main handler that will receive callback notifications
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
     private BluetoothSocket mBTSocket = null; // bi-directional client-to-client data path
-    private boolean isConnectada = false;
+    private boolean isConnected = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -166,7 +166,7 @@ public class StockFragment extends Fragment {
             case R.id.item_menu_inventario_finish:
 
                 if (mData.size() > 0){
-                    if (isConnectada) {
+                    if (isConnected) {
                         Actividades.getSingleton(getActivity(), ConfirmaInventarioActivity.class).muestraActividad();
                     } else {
                         Toast.makeText(getActivity(),
@@ -242,7 +242,7 @@ public class StockFragment extends Fragment {
                 }
 
 
-                if (isConnectada) {
+                if (isConnected) {
                     final PrettyDialog dialogo = new PrettyDialog(getContext());
                     dialogo.setTitle("Cierre")
                             .setTitleColor(R.color.purple_500)
@@ -402,7 +402,7 @@ public class StockFragment extends Fragment {
             final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
-                isConnectada = true;
+                isConnected = true;
                 if (establecida != null) {
                     if(!mBTAdapter.isEnabled()) {
                         Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();

@@ -102,7 +102,7 @@ class PaymentDao: Dao("CobranzaBean") {
                     " FROM cobranza AS c "+
                     " INNER JOIN clientes AS cli ON c.CLIENTE = cli.CUENTA " +
                     " WHERE c.UPDATED_AT BETWEEN '${Utils.fechaActualHMSStartDay()}' AND '${Utils.fechaActualHMSEndDay()}' " +
-                    " AND c.STOCK_ID = $stockId and c.EMPLEADO = '$identificador' AND c.ACUENTA > 0.0 "
+                    " AND c.STOCK_ID = $stockId AND c.ACUENTA > 0.0 "
             ,null
         )
         while (cursor.moveToNext()) {

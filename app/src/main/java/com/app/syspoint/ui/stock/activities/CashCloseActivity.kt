@@ -55,7 +55,7 @@ class CashCloseActivity: AppCompatActivity() {
     private var mHandler: Handler? = null // Our main handler that will receive callback notifications
     private var mConnectedThread: ConnectedThread? = null // bluetooth background worker thread to send and receive data
     private var mBTSocket: BluetoothSocket? = null // bi-directional client-to-client data path
-    private var isConnectada = false
+    private var isConnected = false
     private var templateTicket = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,7 +132,7 @@ class CashCloseActivity: AppCompatActivity() {
         val id = item.itemId
         when (id) {
             R.id.action_print -> {
-                if (!isConnectada) {
+                if (!isConnected) {
                     initPrinter()
                     return false
                 }
@@ -178,7 +178,7 @@ class CashCloseActivity: AppCompatActivity() {
         if (existe > 0) {
             val establecida = existeImpresora.getImpresoraEstablecida()
             if (establecida != null) {
-                isConnectada = true
+                isConnected = true
                 if (establecida != null) {
                     if (!mBTAdapter!!.isEnabled) {
                         Toast.makeText(applicationContext, "Bluetooth no encendido", Toast.LENGTH_SHORT)
