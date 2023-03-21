@@ -1,9 +1,5 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 package com.app.syspoint.utils;
+
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -19,7 +15,7 @@ import android.widget.TextView;
 
 import com.app.syspoint.R;
 
-class PrettyDialogButton extends LinearLayout {
+class OldApkVerionDialogButton extends LinearLayout {
     Context context;
     Resources resources;
     PrettyDialogCallback callback;
@@ -32,7 +28,7 @@ class PrettyDialogButton extends LinearLayout {
     ImageView iv;
     Typeface tf;
 
-    public PrettyDialogButton(Context context, String text, int textColor, int background_color, Typeface tf, PrettyDialogCallback callback) {
+    public OldApkVerionDialogButton(Context context, String text, int textColor, int background_color, Typeface tf, PrettyDialogCallback callback) {
         super(context);
         this.default_background_color = R.color.pdlg_color_blue;
         this.default_text_color = R.color.white;
@@ -63,8 +59,8 @@ class PrettyDialogButton extends LinearLayout {
         this.setOnClickListener(v -> {
             this.setEnabled(false);
             this.setOnClickListener(null);
-            if (PrettyDialogButton.this.callback != null) {
-                v.postDelayed(() -> PrettyDialogButton.this.callback.onClick(), 150L);
+            if (OldApkVerionDialogButton.this.callback != null) {
+                v.postDelayed(() -> OldApkVerionDialogButton.this.callback.onClick(), 150L);
             }
             this.setEnabled(true);
         });

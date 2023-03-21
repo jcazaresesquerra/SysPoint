@@ -74,7 +74,7 @@ class EmployeeDao: Dao("EmpleadoBean") {
         if (empleadoBean != null) {
             folio = empleadoBean.identificador.replace("E","").toInt()
         }
-        ++folio
+        folio++
         return folio
     }
 

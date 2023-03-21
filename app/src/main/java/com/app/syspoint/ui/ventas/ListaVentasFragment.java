@@ -239,7 +239,7 @@ public class ListaVentasFragment extends Fragment {
 
                 if (strName == null ||  strName.compareToIgnoreCase("Subir comprobante") == 0 ) {
                     HashMap<String, String> parametros = new HashMap<>();
-                    parametros.put(Actividades.PARAM_1, String.valueOf(venta.getCobranza()));
+                    parametros.put(Actividades.PARAM_1, String.valueOf(venta.getTicket()));
                     Actividades.getSingleton(getContext(), CApturaComprobanteActivity.class).muestraActividad(parametros);
                     return;
                 }

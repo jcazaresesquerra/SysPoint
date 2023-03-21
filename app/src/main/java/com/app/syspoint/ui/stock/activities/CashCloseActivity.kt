@@ -113,7 +113,7 @@ class CashCloseActivity: AppCompatActivity() {
 
     private fun initToolBar() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar_finaliza_inventario)
-        toolbar.title = "Venta exitosa"
+        toolbar.title = "Corte de caja exitoso"
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
@@ -173,6 +173,7 @@ class CashCloseActivity: AppCompatActivity() {
     }
 
     private fun initPrinter() {
+        binding.tvConnect.text = "Connectando..."
         val existeImpresora = PrinterDao()
         val existe = existeImpresora.existeConfiguracionImpresora()
         if (existe > 0) {
@@ -224,6 +225,8 @@ class CashCloseActivity: AppCompatActivity() {
                                 }
                             }
                             if (!fail) {
+                                binding.tvConnect.text = "Puede imprimir el documento dando click en la parte superior"
+
                                 mConnectedThread = ConnectedThread(mBTSocket, mHandler)
                                 mConnectedThread!!.start()
                                 mHandler!!.obtainMessage(

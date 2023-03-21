@@ -32,7 +32,6 @@ class RequestEmployees {
 
                             //Validamos si existe el empleado en la base de datos en base al identificador
                             val employeeBean = dao.getEmployeeByIdentifier(item!!.identificador)
-
                             //NO existe entonces lo creamos
                             if (employeeBean == null) {
                                 val employee = EmpleadoBean()

@@ -96,7 +96,7 @@ class SellsDao: Dao("VentasBean") {
         val partidaVentaBeanDao = daoSession.partidasBeanDao
         val stockId = StockDao().getCurrentStockId()
         cursor = partidaVentaBeanDao.database.rawQuery(
-            "SELECT  " + ClienteBeanDao.TABLENAME + "." + ClienteBeanDao.Properties.Id.columnName + " AS idcliente," + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName + " AS idProducto, SUM(partidas.CANTIDAD) AS cantidad, SUM(partidas.PRECIO) AS precio, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Descripcion.columnName + " AS descripcion, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Impuesto.columnName + " AS iva, "+ VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Tipo_venta.columnName + " AS tipoVenta" +
+            "SELECT  " + ClienteBeanDao.TABLENAME + "." + ClienteBeanDao.Properties.Id.columnName + " AS idcliente," + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName + " AS idProducto, SUM(partidas.CANTIDAD) AS cantidad, partidas.PRECIO AS precio, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Descripcion.columnName + " AS descripcion, " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Impuesto.columnName + " AS iva, "+ VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Tipo_venta.columnName + " AS tipoVenta, "+ VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Estado.columnName + " AS estado" +
                     " FROM " + PartidasBeanDao.TABLENAME +
                     " INNER JOIN " + ProductoBeanDao.TABLENAME + " ON " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.ArticuloId.columnName + " = " + ProductoBeanDao.TABLENAME + "." + ProductoBeanDao.Properties.Id.columnName +
                     " INNER JOIN " + VentasBeanDao.TABLENAME + " ON " + PartidasBeanDao.TABLENAME + "." + PartidasBeanDao.Properties.Venta.columnName + " = " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.Id.columnName + " AND " + VentasBeanDao.TABLENAME + "." + VentasBeanDao.Properties.StockId.columnName + "=" + stockId +
@@ -120,6 +120,7 @@ class SellsDao: Dao("VentasBean") {
             corteBean.descripcion = cursor.getString(cursor.getColumnIndex("descripcion"))
             corteBean.impuesto = cursor.getDouble(cursor.getColumnIndex("iva"))
             corteBean.tipoVenta = cursor.getString(cursor.getColumnIndex("tipoVenta"))
+            corteBean.estado = cursor.getInt(cursor.getColumnIndex("estado"))
             lista_corte.add(corteBean)
         }
         return lista_corte

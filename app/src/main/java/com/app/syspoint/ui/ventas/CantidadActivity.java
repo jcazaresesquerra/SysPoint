@@ -100,5 +100,4 @@ public class CantidadActivity extends AppCompatActivity {
                     .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package com.app.syspoint.viewmodel.employee
 
+import androidx.core.util.Predicate
 import androidx.lifecycle.MutableLiveData
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
@@ -69,8 +70,10 @@ class EmployeeViewModel: BaseViewModel() {
         employeeViewState.value = EmployeeViewState.LoadingStartState
         GetEmployeesInteractorImp().executeGetEmployees(object: GetEmployeeInteractor.GetEmployeesListener {
             override fun onGetEmployeesSuccess(employees: List<EmpleadoBean?>) {
+                employees.toMutableList().removeIf { item -> !item!!.status}
                 employeeViewState.value = EmployeeViewState.LoadingFinishState
                 employeeViewState.value = EmployeeViewState.GetEmployeesState(employees)
+
             }
 
             override fun onGetEmployeesError() {

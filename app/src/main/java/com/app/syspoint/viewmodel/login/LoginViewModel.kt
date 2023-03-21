@@ -297,9 +297,14 @@ class LoginViewModel: BaseViewModel() {
                     viewModelScope.launch {
                         //removeLocalSync()
                         delay(300)
-                        loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                        delay(300)
-                        loginViewState.postValue(LoginViewState.NotInternetConnection)
+                        val existSession = existUserSession()
+                        if (existSession) {
+                            loginViewState.postValue(LoginViewState.LoadingDataFinish)
+                            delay(300)
+                            loginViewState.postValue(LoginViewState.NotInternetConnection)
+                        } else {
+                            loginViewState.postValue(LoginViewState.NoSessionExists)
+                        }
                     }
                 }
             }.execute()
@@ -344,6 +349,10 @@ class LoginViewModel: BaseViewModel() {
                 }.execute()
             }, 100)
         }
+    }
+
+    private fun existUserSession(): Boolean {
+        return CacheInteractor().getSeller() != null
     }
 
     fun isSync(): Boolean {

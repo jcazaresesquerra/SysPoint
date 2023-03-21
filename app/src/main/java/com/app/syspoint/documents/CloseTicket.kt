@@ -10,7 +10,6 @@ import com.app.syspoint.repository.database.dao.*
 
 class CloseTicket: BaseTicket() {
 
-
     override fun template() {
         super.template()
         val stockId = StockDao().getCurrentStockId()
@@ -20,7 +19,7 @@ class CloseTicket: BaseTicket() {
         val mListCharge: List<CloseCash> = PaymentDao().getAllConfirmedChargesToday(stockId)
 
         var ticket : String = when(BuildConfig.FLAVOR) {
-            "donaqui" -> {
+            Constants.DON_AQUI_FLAVOR_TAG -> {
                 buildDonAquiHeader()
             }
             else -> { // default SysPoint
@@ -32,14 +31,14 @@ class CloseTicket: BaseTicket() {
         var creditoCount = 0
         var totalContado = 0.0
         var contadoCount = 0
-        var cliente = ""
+        var cliente = Constants.EMPTY_STRING
 
         listaCorte.map { partida ->
             if (partida.clienteBean.cuenta.compareTo(cliente, ignoreCase = true) != 0) {
                 cliente = partida.clienteBean.cuenta
-                ticket += "$cliente ${partida.clienteBean.nombre_comercial}" + Constants.newLine
+                ticket += "$cliente ${partida.clienteBean.nombre_comercial}" + Constants.NEW_LINE
             }
-            if (partida.tipoVenta == "Contado") {
+            if (partida.tipoVenta == Constants.CONTADO) {
                 totalContado += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
                 contadoCount++
             } else {
@@ -47,20 +46,20 @@ class CloseTicket: BaseTicket() {
                 creditoCount++
             }
 
-            ticket += partida.descripcion + Constants.newLine
+            ticket += partida.descripcion + Constants.NEW_LINE
             ticket += String.format(
                 "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
                 partida.cantidad,
                 Utils.FDinero(partida.cantidad * partida.precio * (1 + partida.impuesto / 100))
-            ) + Constants.newLine
+            ) + Constants.NEW_LINE
         }
 
-        ticket += "           INVENTARIOS          " + Constants.newLine +
-                  "================================" + Constants.newLine +
-                  "PRODUCTO             " + Constants.newLine +
-                  "INICIAL    VENTA    FINAL  " + Constants.newLine +
-                  "================================" + Constants.newLine
+        ticket += "           INVENTARIOS          " + Constants.NEW_LINE +
+                  "================================" + Constants.NEW_LINE +
+                  "PRODUCTO             " + Constants.NEW_LINE +
+                  "INICIAL    VENTA    FINAL  " + Constants.NEW_LINE +
+                  "================================" + Constants.NEW_LINE
 
         mLidata.map { inventory ->
             val stockHistoryDao = StockHistoryDao()
@@ -69,28 +68,27 @@ class CloseTicket: BaseTicket() {
             val vendido = inventarioHistorialBean?.cantidad ?: 0
             val inicial = inventory.totalCantidad
             val final = inicial - vendido
-            ticket += inventory.articulo.descripcion + Constants.newLine +
+            ticket += inventory.articulo.descripcion + Constants.NEW_LINE +
                     String.format(
                         "%1$-5s  %2$11s  %3$10s",
                         inicial,
                         vendido,
                         final
-                    ) + Constants.newLine
+                    ) + Constants.NEW_LINE
         }
 
-        ticket += "          VENTAS TOTALES        " + Constants.newLine +
-                  "================================" + Constants.newLine
-        ticket += "VENTAS DE CONTADO ($contadoCount)" + Constants.newLine
-        ticket += Utils.FDinero(totalContado) + Constants.newLine + Constants.newLine
+        ticket += "          VENTAS TOTALES        " + Constants.NEW_LINE +
+                  "================================" + Constants.NEW_LINE
+        ticket += "VENTAS DE CONTADO ($contadoCount)" + Constants.NEW_LINE
+        ticket += Utils.FDinero(totalContado) + Constants.NEW_LINE + Constants.NEW_LINE
 
-        ticket += "VENTAS A CRÉDITO ($creditoCount)" + Constants.newLine
-        ticket += Utils.FDinero(totalCredito) + Constants.newLine+ Constants.newLine
+        ticket += "VENTAS A CRÉDITO ($creditoCount)" + Constants.NEW_LINE
+        ticket += Utils.FDinero(totalCredito) + Constants.NEW_LINE+ Constants.NEW_LINE
 
-        if (!mListCharge.isNullOrEmpty()) {
-
-            ticket += "            COBRANZAS           " + Constants.newLine +
-                    "================================" + Constants.newLine
-            ticket += "CLIENTE    TICKET      TOTAL    " + Constants.newLine
+        if (mListCharge.isNotEmpty()) {
+            ticket += "            COBRANZAS           " + Constants.NEW_LINE +
+                    "================================" + Constants.NEW_LINE
+            ticket += "CLIENTE    TICKET      TOTAL    " + Constants.NEW_LINE
             var totalChargeAmount = 0.0
             mListCharge.map { charge ->
                 totalChargeAmount += charge.abono
@@ -99,86 +97,83 @@ class CloseTicket: BaseTicket() {
                     charge.comertialName,
                     charge.ticket,
                     charge.abono
-                ) + Constants.newLine
+                ) + Constants.NEW_LINE
             }
 
-            ticket += "================================" + Constants.newLine
+            ticket += "================================" + Constants.NEW_LINE
 
-            ticket += " Cobranza (${mListCharge.size}) " + Constants.newLine +
+            ticket += " Cobranza (${mListCharge.size}) " + Constants.NEW_LINE +
                     String.format(" %1$-5s", Utils.FDinero(totalChargeAmount))
         }
 
-        ticket += Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
 
 
-        ticket += "FIRMA DEL VENDEDOR:           " + Constants.newLine +
-                "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine +
-                "                                " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += "FIRMA DEL VENDEDOR:           " + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                "                                " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
 
-        ticket += "FIRMA DEL SUPERVISOR:           " + Constants.newLine +
-                "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine +
-                "                                " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += "FIRMA DEL SUPERVISOR:           " + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                "                                " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
         document = ticket
     }
 
     override fun buildSyspointHeader(): String {
         var vendedoresBean = AppBundle.getUserBean()
 
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
-        val sellers = if (vendedoresBean != null) "" + vendedoresBean.getNombre() + Constants.newLine else ""
+        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
 
-        return  "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
-                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
-                "      San Rafael C.P. 80150     " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "           APO170818QR6         " + Constants.newLine +
-                "          (667) 744-9350        " + Constants.newLine +
-                "        info@aguapoint.com      " + Constants.newLine +
-                "         www.aguapoint.com      " + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
+        val sellers = if (vendedoresBean != null)
+            vendedoresBean.getNombre() + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
+
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+                "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "           APO170818QR6         " + Constants.NEW_LINE +
+                "          (667) 744-9350        " + Constants.NEW_LINE +
+                "        info@aguapoint.com      " + Constants.NEW_LINE +
+                "         www.aguapoint.com      " + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE +
                 sellers +
-                "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "          CORTE DE CAJA         " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "CLIENTE / PRODUCTO             " + Constants.newLine +
-                "PRECIO    CANTIDAD    IMPORTE  " + Constants.newLine +
-                "================================" + Constants.newLine
+                Utils.fechaActual() + " " + Utils.getHoraActual() + Constants.EMPTY_STRING +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                "          CORTE DE CAJA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CLIENTE / PRODUCTO             " + Constants.NEW_LINE +
+                "PRECIO    CANTIDAD    IMPORTE  " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
     }
 
     override fun buildDonAquiHeader(): String {
         var vendedoresBean = AppBundle.getUserBean()
 
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
+        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
 
-        val sellers = if (vendedoresBean != null) "" + vendedoresBean.getNombre() + Constants.newLine else ""
+        val sellers = if (vendedoresBean != null)
+            vendedoresBean.getNombre() + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
 
-        return "         AGUAS DON AQUI         " + Constants.newLine +
-                " Blvd. Manuel J. Clouthier 2755 " + Constants.newLine +
-                "     Buenos Aires C.P. 80199    " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "          HIMA9801022T8         " + Constants.newLine +
-                "    Adalberto Higuera Mendez    " + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
+        return "         AGUAS DON AQUI         " + Constants.NEW_LINE +
+                " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
+                "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "          HIMA9801022T8         " + Constants.NEW_LINE +
+                "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE +
                 sellers +
-                "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "          CORTE DE CAJA         " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "CLIENTE / PRODUCTO             " + Constants.newLine +
-                "PRECIO    CANTIDAD    IMPORTE  " + Constants.newLine +
-                "================================" + Constants.newLine
+                Utils.fechaActual() + " " + Utils.getHoraActual() + Constants.EMPTY_STRING +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                "          CORTE DE CAJA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CLIENTE / PRODUCTO             " + Constants.NEW_LINE +
+                "PRECIO    CANTIDAD    IMPORTE  " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
     }
 }

@@ -90,6 +90,9 @@ class LoginActivity: AppCompatActivity() {
                 binding.rlprogressLogin.setInvisible()
                 showNotInternetConnectionError()
             }
+            is NoSessionExists -> {
+                showNotDataInApp()
+            }
         }
     }
 
@@ -208,7 +211,7 @@ class LoginActivity: AppCompatActivity() {
 
         if (!isOldApkVersionDialogShowing) {
             isOldApkVersionDialogShowing = true
-            val oldApkVersionDialog = PrettyDialog(this)
+            val oldApkVersionDialog = OldApkVersionDialog(this)
             oldApkVersionDialog.setTitle("Error")
                 .setTitleColor(R.color.purple_500)
                 .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
@@ -288,6 +291,16 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showNotInternetConnectionError() {
+        showError("No tiene conexión a internet")
+        binding.etLoginEmail.isEnabled = true
+        binding.etLoginPassword.isEnabled = true
+        binding.btnSignIn.isEnabled = true
+        binding.errorLogin.setVisible()
+        //binding.etLoginEmail.inputType = InputType.TYPE_NULL
+        //binding.etLoginPassword.inputType = InputType.TYPE_NULL
+    }
+
+    private fun showNotDataInApp() {
         showError("No hay regitros en la base de datos, verifique su conexion a internet y vuelva a intentar.")
         binding.etLoginEmail.isEnabled = false
         binding.etLoginPassword.isEnabled = false

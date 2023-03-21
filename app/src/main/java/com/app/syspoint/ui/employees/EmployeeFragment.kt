@@ -30,6 +30,7 @@ import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.employee.EmployeeViewModel
 import kotlinx.android.synthetic.main.fragment_employee.*
 import java.util.function.Predicate
+import kotlin.streams.toList
 
 class EmployeeFragment: Fragment() {
 
