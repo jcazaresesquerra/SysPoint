@@ -1,7 +1,6 @@
 package com.app.syspoint.ui.stock.activities;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,13 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.cache.SharedPreferencesManager;
+
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.database.bean.InventarioBean;
 import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.documents.StockTicket;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
 import com.app.syspoint.utils.PrettyDialog;
-import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
@@ -112,6 +111,9 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
                             String ticket = stockTicket.getDocument();
                             Log.d("ConfirmarInventarioActivity", ticket);
+
+                            int loadId = new CacheInteractor().getCurrentLoadId() + 1;
+                            new CacheInteractor().setLoadId(loadId);
 
                             Intent intent = new Intent(ConfirmaInventarioActivity.this, FinalizaInventarioActivity.class);
                             intent.putExtra("ticket", ticket);

@@ -74,5 +74,4 @@ public class CobranzaModel extends Bean {
         this.id = id;
     }
 
-
 }

@@ -403,22 +403,25 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     }
 
     private boolean check_ReadStoragepermission() {
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            return true;
+        int permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                        Constants.permission_Read_data);
+                return false;
+            }
         } else {
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            Constants.permission_Read_data);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        Constants.permission_Read_data);
+                return false;
             }
         }
-        return false;
+
+        return true;
+
     }
 
     private void selectImage() {

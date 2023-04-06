@@ -127,7 +127,7 @@ public class ListaProductosActivity extends AppCompatActivity {
                     bean1.setMostrar("all");
                     dao1.save(bean1);
                 }
-                mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
+                mData = new ProductDao().getActiveProducts();
                 refreshData(mData);
                 return true;
 
@@ -172,9 +172,9 @@ public class ListaProductosActivity extends AppCompatActivity {
         mData = new ArrayList<>();
 
         if (persistencia.compareToIgnoreCase("all") == 0){
-            mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
+            mData = new ProductDao().getActiveProducts();
         }else {
-            mData = (List<ProductoBean>) new ProductDao().getProductosInventario();
+            mData = new ProductDao().getProductosInventario();
         }
 
         if (mData.size() > 0) {

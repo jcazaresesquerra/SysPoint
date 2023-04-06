@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.androidnetworking.error.ANError;
 import com.app.syspoint.interactor.charge.ChargeInteractor;
@@ -56,7 +57,9 @@ import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
+import com.app.syspoint.viewmodel.viewPDF.ViewPDFViewModel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -97,6 +100,9 @@ public class ViewPDFActivity extends AppCompatActivity {
     String account;
     public String templateTicket;
     private boolean isConnectada = false;
+
+    private ViewPDFViewModel viewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +110,7 @@ public class ViewPDFActivity extends AppCompatActivity {
 
         initToolBar();
 
+        viewModel = new ViewModelProvider(this).get(ViewPDFViewModel.class);
 
         textViewStatus = findViewById(R.id.tvStatusPrinter);
 
@@ -116,9 +123,7 @@ public class ViewPDFActivity extends AppCompatActivity {
             account = bundle.getString("account");
         }
 
-        addProductosInventori();
-        upadteExistencias();
-
+        viewModel.addProductosInventori(venta);
 
         ClientDao clientDao = new ClientDao();
         ClienteBean clienteBean = clientDao.getClientByAccount(String.valueOf(account));
@@ -175,11 +180,12 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
 
         //Sincroniza la venta con el servidor
-        if (Utils.isNetworkAvailable(getApplication())){
-            syncCloudVenta(venta);
-            sincronizaCliente(clienteID);
-            loadCobranza();
-        }
+
+        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+            if (!connected) {
+               viewModel.sync(venta, clienteID);
+            }
+        }).execute(), 100);
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -236,42 +242,34 @@ public class ViewPDFActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mConnectedThread != null)
+            mConnectedThread.cancel();
 
-    public void loadCobranza() {
-
-            final PaymentDao paymentDao = new PaymentDao();
-            List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-            cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
-
-            List<Payment> listaCobranza = new ArrayList<>();
-            for (CobranzaBean item : cobranzaBeanList) {
-                Payment cobranza = new Payment();
-                cobranza.setCobranza(item.getCobranza());
-                cobranza.setCuenta(item.getCliente());
-                cobranza.setImporte(item.getImporte());
-                cobranza.setSaldo(item.getSaldo());
-                cobranza.setVenta(item.getVenta());
-                cobranza.setEstado(item.getEstado());
-                cobranza.setObservaciones(item.getObservaciones());
-                cobranza.setFecha(item.getFecha());
-                cobranza.setHora(item.getHora());
-                cobranza.setIdentificador(item.getEmpleado());
-                listaCobranza.add(cobranza);
-            }
-
-            new ChargeInteractorImp().executeSaveCharge(listaCobranza, new ChargeInteractor.OnSaveChargeListener() {
-                @Override
-                public void onSaveChargeSuccess() {
-                    //Toast.makeText(getApplicationContext(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onSaveChargeError() {
-                    //Toast.makeText(getApplicationContext(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
-                }
-            });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        boolean isAutomatico = BluetoothActivity.isPrimeraVez;
+
+        if (isAutomatico) {
+            if (isConfigPrinter()) {
+                if (!isBluetoothEnabled()) {
+                    //Pregunta si queremos activar el bluetooth
+                    Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBluetooth, 0);
+                } else {
+                    initPrinter();
+                }
+            } else {
+                Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
+            }
+        }
+    }
 
     private void initToolBar() {
 
@@ -317,63 +315,6 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    private void sincronizaCliente(String idCliente) {
-
-
-
-        final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getByIDClient(idCliente);
-
-        List<Client> listaClientes = new ArrayList<>();
-
-        for (ClienteBean item : listaClientesDB) {
-            Client client = new Client();
-            client.setNombreComercial(item.getNombre_comercial());
-            client.setCalle(item.getCalle());
-            client.setNumero(item.getNumero());
-            client.setColonia(item.getColonia());
-            client.setCiudad(item.getCiudad());
-            client.setCodigoPostal(item.getCodigo_postal());
-            client.setFechaRegistro(item.getFecha_registro());
-            client.setCuenta(item.getCuenta());
-            client.setStatus(item.getStatus()? 1 : 0);
-            client.setConsec(item.getConsec());
-            client.setRango(item.getRango());
-            client.setLun(item.getLun());
-            client.setMar(item.getMar());
-            client.setMie(item.getMie());
-            client.setJue(item.getJue());
-            client.setVie(item.getVie());
-            client.setSab(item.getSab());
-            client.setDom(item.getDom());
-            client.setLatitud(item.getLatitud());
-            client.setLongitud(item.getLongitud());
-            client.setPhone_contacto(""+item.getContacto_phone());
-            client.setRecordatorio(""+item.getRecordatorio());
-            client.setVisitas(item.getVisitasNoefectivas());
-            if (item.getMatriz()== "null" && item.getMatriz() == null && item.getMatriz().length() == 0) {
-                client.setMatriz("");
-            }else{
-                client.setMatriz(item.getMatriz());
-            }
-            listaClientes.add(client);
-        }
-
-        new ClientInteractorImp().executeSaveClient(listaClientes, new ClientInteractor.SaveClientListener() {
-            @Override
-            public void onSaveClientSuccess() {
-                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onSaveClientError() {
-                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
     private void initPrinter() {
@@ -463,162 +404,5 @@ public class ViewPDFActivity extends AppCompatActivity {
 
     public boolean isBluetoothEnabled() {
         return mBTAdapter != null && mBTAdapter.isEnabled();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(mConnectedThread != null)
-            mConnectedThread.cancel();
-
-    }
-
-    private void syncCloudVenta(Integer venta){
-
-        try{
-            final SincVentasByID sincVentasByID = new SincVentasByID(Long.parseLong(String.valueOf(venta)));
-
-            sincVentasByID.setOnSuccess(new Servicio.ResponseOnSuccess() {
-                @Override
-                public void onSuccess(JSONArray response) throws JSONException {
-                }
-
-                @Override
-                public void onSuccessObject(JSONObject response) throws Exception {
-                }
-            });
-
-            sincVentasByID.setOnError(new Servicio.ResponseOnError() {
-                @Override
-                public void onError(ANError error) {
-
-                }
-
-                @Override
-                public void onError(String error) {
-
-                }
-            });
-
-            sincVentasByID.postObject();
-
-        }catch (Exception e){
-
-        }
-    }
-
-    //Actualiza las existencias del producto
-    private void upadteExistencias(){
-
-        final SellsDao sellsDao = new SellsDao();
-        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
-
-        for (PartidasBean item : ventasBean.getListaPartidas()){
-
-            final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
-
-            if (productoBean != null){
-                productoBean.setExistencia(productoBean.getExistencia() - item.getCantidad());
-                productDao.save(productoBean);
-            }
-
-        }
-
-    }
-    private void addProductosInventori(){
-
-        final SellsDao sellsDao = new SellsDao();
-        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
-
-        if (ventasBean == null) {
-            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente addProductosInventori");
-            return;
-        }
-
-        //Contiene las partidas de la venta
-        for (PartidasBean item : ventasBean.getListaPartidas()){
-
-            //Consultamos a la base de datos si existe el producto
-            final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
-
-            //Si no existe en el inventario creamos el producto
-            if (productoBean != null){
-
-                //Si existe entonces creamos el inser en estado PE
-                StockDao stockDao = new StockDao();
-                InventarioBean inventarioBean = stockDao.getProductoByArticulo(item.getArticulo().getArticulo());
-
-                //Si no existe se deja como pendiente
-                if (inventarioBean == null){
-                    InventarioBean bean = new InventarioBean();
-                    StockDao dao = new StockDao();
-                    bean.setArticulo(productoBean);
-                    bean.setCantidad(0);
-                    bean.setEstado("PE");
-                    bean.setPrecio(item.getPrecio());
-                    bean.setFecha(Utils.fechaActual());
-                    bean.setHora(Utils.getHoraActual());
-                    bean.setImpuesto(item.getImpuesto());
-                    bean.setArticulo_clave(productoBean.getArticulo());
-                    dao.insert(bean);
-
-                    final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
-
-                    if (inventarioHistorialBean != null){
-                        inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        stockHistoryDao.save(inventarioHistorialBean);
-                    }else {
-                        final InventarioHistorialBean invBean = new InventarioHistorialBean();
-                        final StockHistoryDao invDao = new StockHistoryDao();
-                        invBean.setArticulo(productoBean);
-                        invBean.setArticulo_clave(productoBean.getArticulo());
-                        invBean.setCantidad(item.getCantidad());
-                        invDao.insert(invBean);
-                    }
-                }else {
-                    //Si existe entonces actualizamos los datos
-                    final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
-
-                    //Si existe entonces actualizamos las cantidades
-                    if (inventarioHistorialBean != null){
-                        inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        stockHistoryDao.save(inventarioHistorialBean);
-                    }else {
-                        //Creamos el historial del Inventario
-                        final InventarioHistorialBean invBean = new InventarioHistorialBean();
-                        final StockHistoryDao invDao = new StockHistoryDao();
-                        invBean.setArticulo(productoBean);
-                        invBean.setArticulo_clave(productoBean.getArticulo());
-                        invBean.setCantidad(item.getCantidad());
-                        invDao.insert(invBean);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        boolean isAutomatico = BluetoothActivity.isPrimeraVez;
-
-        if (isAutomatico) {
-            if (isConfigPrinter()) {
-                if (!isBluetoothEnabled()) {
-                    //Pregunta si queremos activar el bluetooth
-                    Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBluetooth, 0);
-                } else {
-                    initPrinter();
-                }
-            } else {
-                Actividades.getSingleton(ViewPDFActivity.this, BluetoothActivity.class).muestraActividad();
-            }
-        }
     }
 }

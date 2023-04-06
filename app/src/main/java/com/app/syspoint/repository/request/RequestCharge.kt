@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 
 class RequestCharge {
     companion object {
-        fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener) {
+        fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener): Call<PaymentJson> {
             val appVersion = BuildConfig.VERSION_NAME.split(".")
             val version = appVersion[0]
             val subversion = appVersion[1] + "." + appVersion[2]
@@ -38,7 +38,7 @@ class RequestCharge {
                         val paymentDao = PaymentDao()
                         val chargeList = arrayListOf<CobranzaBean>()
                         val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
+                        response.body()!!.payments!!.map {item ->
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
                                 val chargeBean = CobranzaBean()
@@ -103,6 +103,7 @@ class RequestCharge {
 
             })
 
+            return getCharge
         }
 
         fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {

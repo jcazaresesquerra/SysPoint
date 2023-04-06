@@ -1,19 +1,19 @@
 package com.app.syspoint.documents
 
 import com.app.syspoint.BuildConfig
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.database.bean.AppBundle
 import com.app.syspoint.repository.database.bean.InventarioBean
 import com.app.syspoint.repository.database.dao.StockDao
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
-import com.app.syspoint.interactor.cache.CacheInteractor
 
 class StockTicket: BaseTicket() {
 
     override fun template() {
         super.template()
 
-        val stockData: List<InventarioBean> = StockDao().list() as List<InventarioBean>
+        val stockData: List<InventarioBean> = StockDao().getCurrentStock()
 
         var ticket : String = when(BuildConfig.FLAVOR) {
             "donaqui" -> {

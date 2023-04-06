@@ -55,4 +55,31 @@ class CacheInteractor() {
         }
     }
 
+    fun getCurrentStockId(): Int {
+        App.INSTANCE?.baseContext?.let {
+            return SharedPreferencesManager(it).getCurrentStockId()
+        }
+        return 0
+    }
+
+    fun resetLoadId() {
+        App.INSTANCE?.baseContext?.let {
+            SharedPreferencesManager(it).saveCurrentLoadId(0)
+        }
+    }
+
+
+    fun setLoadId(loadId: Int) {
+        App.INSTANCE?.baseContext?.let {
+            return SharedPreferencesManager(it).saveCurrentLoadId(loadId)
+        }
+    }
+
+    fun getCurrentLoadId(): Int {
+        App.INSTANCE?.baseContext?.let {
+            return SharedPreferencesManager(it).getCurrentLoadId()
+        }
+        return 0
+    }
+
 }

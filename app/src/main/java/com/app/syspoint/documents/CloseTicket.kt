@@ -33,20 +33,29 @@ class CloseTicket: BaseTicket() {
         var contadoCount = 0
         var cliente = Constants.EMPTY_STRING
 
+        listaCorte.distinctBy {
+            it.clienteId
+        }.map { partida ->
+            if (partida.tipoVenta == Constants.CONTADO) {
+                contadoCount++
+            } else {
+                creditoCount++
+            }
+        }
+
         listaCorte.map { partida ->
             if (partida.clienteBean.cuenta.compareTo(cliente, ignoreCase = true) != 0) {
                 cliente = partida.clienteBean.cuenta
-                ticket += "$cliente ${partida.clienteBean.nombre_comercial}" + Constants.NEW_LINE
+                ticket += partida.clienteBean.nombre_comercial + Constants.NEW_LINE
             }
+            ticket += partida.descripcion + Constants.NEW_LINE
+
             if (partida.tipoVenta == Constants.CONTADO) {
                 totalContado += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
-                contadoCount++
             } else {
                 totalCredito += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
-                creditoCount++
             }
 
-            ticket += partida.descripcion + Constants.NEW_LINE
             ticket += String.format(
                 "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
@@ -82,7 +91,7 @@ class CloseTicket: BaseTicket() {
         ticket += "VENTAS DE CONTADO ($contadoCount)" + Constants.NEW_LINE
         ticket += Utils.FDinero(totalContado) + Constants.NEW_LINE + Constants.NEW_LINE
 
-        ticket += "VENTAS A CRÉDITO ($creditoCount)" + Constants.NEW_LINE
+        ticket += "VENTAS A CREDITO ($creditoCount)" + Constants.NEW_LINE
         ticket += Utils.FDinero(totalCredito) + Constants.NEW_LINE+ Constants.NEW_LINE
 
         if (mListCharge.isNotEmpty()) {
@@ -96,7 +105,7 @@ class CloseTicket: BaseTicket() {
                     "%1$-5s  %2$11s  %3$10s",
                     charge.comertialName,
                     charge.ticket,
-                    charge.abono
+                    Utils.FDinero(charge.abono)
                 ) + Constants.NEW_LINE
             }
 

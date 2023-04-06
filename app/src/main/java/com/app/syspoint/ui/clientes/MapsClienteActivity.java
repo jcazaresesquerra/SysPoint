@@ -243,7 +243,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                                      colonia = number3.getString("short_name");
                                      estado = number4.getString("short_name");
                                      pais = number5.getString("short_name");
-                                     cp = number6.getString("short_name");
+                                     cp = number6 != null ? number6.getString("short_name") : "";
                                      address = userdata.getString("formatted_address");
 
                                      String latStr;

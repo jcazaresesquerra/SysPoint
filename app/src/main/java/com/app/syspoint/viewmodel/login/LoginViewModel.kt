@@ -404,6 +404,7 @@ class LoginViewModel: BaseViewModel() {
         val bean = TaskBean()
         CacheInteractor().removeSellerFromCache()
         CacheInteractor().resetStockId()
+        CacheInteractor().resetLoadId()
         bean.date = Utils.fechaActual()
         bean.task = "Sincronización"
         dao.insert(bean)

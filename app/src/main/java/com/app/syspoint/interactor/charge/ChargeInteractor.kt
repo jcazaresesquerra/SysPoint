@@ -31,7 +31,7 @@ abstract class ChargeInteractor {
         fun onUpdateChargeError()
     }
 
-    open fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {}
+    open suspend fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {}
     open fun executeGetChargeByEmployee(id: String, onGetChargeByEmployeeListener: OnGetChargeByEmployeeListener) {}
     open fun executeGetChargeByClient(account: String, onGetChargeByClientListener: OnGetChargeByClientListener) {}
     open fun executeSaveCharge(charges: List<Payment>, onSaveChargeListener: OnSaveChargeListener) {}

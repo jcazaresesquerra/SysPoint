@@ -9,6 +9,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class SincVentas extends Servicio {
@@ -19,12 +22,20 @@ public class SincVentas extends Servicio {
         super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
-        final List<VentasBean> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());
+        List<VentasBean> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());
+
+        HashMap<String, VentasBean> listaVentasHash = new HashMap<>();
+
+        for (VentasBean item : listaVentas) {
+            if (!listaVentasHash.containsKey(item.getTicket())) {
+                listaVentasHash.put(item.getTicket(), item);
+            }
+        }
 
         final JSONArray jsonArrayVentas = new JSONArray();
 
         //Recorremos la lista de ventas
-        for (VentasBean items : listaVentas){
+        for (VentasBean items : listaVentasHash.values()){
 
             JSONObject jsonObjectVenta = new JSONObject();
             jsonObjectVenta.put("venta", ""+ items.getVenta());

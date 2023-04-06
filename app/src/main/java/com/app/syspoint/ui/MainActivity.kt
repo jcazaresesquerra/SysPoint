@@ -19,12 +19,16 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatButton
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable.ProgressDrawableSize
 import com.androidnetworking.error.ANError
+import com.androidnetworking.model.Progress
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
@@ -56,6 +60,8 @@ import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -77,6 +83,8 @@ class MainActivity: BaseActivity() {
 
     private var isConnected = false
     private var isOldApkVersionDialogShowing = false
+
+    private lateinit var progressDialog: ProgressDialog
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -244,7 +252,7 @@ class MainActivity: BaseActivity() {
     }
 
     private fun getUpdates() {
-        val progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Espere un momento")
         progressDialog.setCancelable(false)
         progressDialog.show()
@@ -254,17 +262,8 @@ class MainActivity: BaseActivity() {
                 progressDialog.dismiss()
                 if (connected) {
                     progressDialog.setMessage("Obteniendo actualizaciones...");
-
                     progressDialog.show();
-                    GetAllDataInteractorImp().executeGetAllDataByDate(object:  GetAllDataInteractor.OnGetAllDataByDateListener {
-                        override fun onGetAllDataByDateSuccess() {
-                            progressDialog.dismiss()
-                        }
-
-                        override fun onGetAllDataByDateError() {
-                            progressDialog.dismiss()
-                        }
-                    })
+                    getUpdated()
                 }
             }.execute()}
             ,100)
@@ -279,16 +278,7 @@ class MainActivity: BaseActivity() {
                     Handler().postDelayed({
                         NetworkStateTask { connected: Boolean ->
                             if (connected) {
-                                getClientsByRute()
-                                getCobranzasByEmployee()
-                                getRoles()
-
-                                saveVentas()
-                                //saveCobranza()
-                                //saveAbonos()
-                                saveVisitas()
-                                //saveClientes()
-                                savePreciosEspeciales()
+                                getData()
                             }
                         }.execute()
                     }, 100)
@@ -613,16 +603,20 @@ class MainActivity: BaseActivity() {
     private fun getCobranzasByEmployee() {
         val vendedoresBean = AppBundle.getUserBean()
         if (vendedoresBean != null) {
-            ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
-                override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
-                    saveCobranza()
-                    saveAbonos()                }
+            lifecycleScope.launch(Dispatchers.Default) {
+                ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
+                    override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
+                        saveCobranza()
+                        saveAbonos()
+                    }
 
-                override fun onGetChargeError() {
-                    saveCobranza()
-                    saveAbonos()                }
+                    override fun onGetChargeError() {
+                        saveCobranza()
+                        saveAbonos()
+                    }
+                })
+            }
 
-            });
             /*ChargeInteractorImp().executeGetChargeByEmployee(
                 vendedoresBean.identificador,
                 object : OnGetChargeByEmployeeListener {
@@ -800,5 +794,42 @@ class MainActivity: BaseActivity() {
             oldApkVersionDialog.show()
         }
 
+    }
+
+    fun getLifecycleScope(): LifecycleCoroutineScope {
+        return lifecycleScope
+    }
+
+    private fun getData() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            getClientsByRute()
+            getCobranzasByEmployee()
+            getRoles()
+
+            saveVentas()
+            //saveCobranza()
+            //saveAbonos()
+            saveVisitas()
+            //saveClientes()
+            savePreciosEspeciales()
+        }
+    }
+
+    private fun getUpdated() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            GetAllDataInteractorImp().executeGetAllDataByDate(object:  GetAllDataInteractor.OnGetAllDataByDateListener {
+                override fun onGetAllDataByDateSuccess() {
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                    }
+                }
+
+                override fun onGetAllDataByDateError() {
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                    }
+                }
+            })
+        }
     }
 }

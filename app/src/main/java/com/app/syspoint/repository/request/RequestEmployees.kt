@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat
 
 class RequestEmployees {
     companion object {
-        fun requestEmployees(getEmployeesListener: GetEmployeeInteractor.GetEmployeesListener) {
+        fun requestEmployees(getEmployeesListener: GetEmployeeInteractor.GetEmployeesListener): Call<EmployeeJson> {
             val getEmployees: Call<EmployeeJson> = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
@@ -25,11 +25,10 @@ class RequestEmployees {
             getEmployees.enqueue(object: Callback<EmployeeJson> {
                 override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
                     if (response.isSuccessful){
-                        val employees = arrayListOf<EmpleadoBean?>()
+                        var employees = arrayListOf<EmpleadoBean?>()
                         val dao = EmployeeDao()
 
-                        for (item in response.body()!!.employees!!) {
-
+                        response.body()!!.employees!!.map { item ->
                             //Validamos si existe el empleado en la base de datos en base al identificador
                             val employeeBean = dao.getEmployeeByIdentifier(item!!.identificador)
                             //NO existe entonces lo creamos
@@ -78,16 +77,19 @@ class RequestEmployees {
                                 employees.add(employeeBean)
                             }
                         }
+
                         getEmployeesListener.onGetEmployeesSuccess(employees)
                     } else {
                         getEmployeesListener.onGetEmployeesError()
                     }
+
                 }
 
                 override fun onFailure(call: Call<EmployeeJson>, t: Throwable) {
                     getEmployeesListener.onGetEmployeesError()
                 }
             })
+            return getEmployees
         }
 
 

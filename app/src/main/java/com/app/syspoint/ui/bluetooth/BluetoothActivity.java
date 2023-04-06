@@ -27,6 +27,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +47,7 @@ import com.app.syspoint.repository.database.dao.PrinterDao;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -91,6 +96,23 @@ public class BluetoothActivity extends AppCompatActivity {
         listViewNuevos = (ListView) findViewById(R.id.devices_list_view);
         listViewNuevos.setAdapter(mBTArrayAdapter); // assign model to view
         listViewNuevos.setOnItemClickListener(mDeviceClickListener);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityResultLauncher<Intent> requestBluetooth = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    //granted
+                }else{
+                    //deny
+                }
+            });
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT}, 100);
+            } else{
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                requestBluetooth.launch(enableBtIntent);
+            }
+        }
 
         // [#11] Ensures that the Bluetooth is available on this device before proceeding.
         boolean hasBluetooth = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);

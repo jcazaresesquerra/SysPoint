@@ -99,7 +99,6 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         new PriceInteractorImp().executeGetPricesByClient(cuentaCliente, new PriceInteractor.GetPricesByClientListener() {
             @Override
             public void onGetPricesByClientSuccess(@NonNull List<? extends PreciosEspecialesBean> pricesByClientList) {
-                mData = new ArrayList<>();
                 mData = (List<PreciosEspecialesBean>) pricesByClientList;
 
                 initRecyclerView();

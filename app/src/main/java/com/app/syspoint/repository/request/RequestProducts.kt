@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat
 class RequestProducts {
     companion object {
 
-        fun requestProducts(onGetProductsListener: GetProductInteractor.OnGetProductsListener) {
+        fun requestProducts(onGetProductsListener: GetProductInteractor.OnGetProductsListener): Call<ProductJson> {
             val getProducts = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
@@ -78,6 +78,7 @@ class RequestProducts {
                 }
 
             })
+            return getProducts
         }
 
         fun requestProductById(product: String, onGetProductByIdListener: GetProductInteractor.OnGetProductByIdListener) {

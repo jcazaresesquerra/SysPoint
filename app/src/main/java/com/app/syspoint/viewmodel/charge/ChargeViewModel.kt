@@ -139,11 +139,10 @@ class ChargeViewModel: ViewModel() {
 
         val dao = PaymentModelDao()
         val charges = dao.list() as List<CobranzaModel?>
-
         val lista = ArrayList<CobdetBean>()
-        for (x in charges.indices) {
+        val currentStockId = CacheInteractor().getCurrentStockId()
 
-            val charge = charges[x]
+        charges.map { charge->
             if (charge != null) {
                 //Actualiza la cobranza
                 val paymentDao = PaymentDao()
@@ -162,6 +161,7 @@ class ChargeViewModel: ViewModel() {
                     }
                     cobranzaBean.fecha = Utils.fechaActual()
                     cobranzaBean.updatedAt = Utils.fechaActualHMS()
+                    cobranzaBean.stockId = currentStockId
                     paymentDao.save(cobranzaBean)
                 }
                 val cobdetBean = CobdetBean()

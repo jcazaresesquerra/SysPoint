@@ -225,7 +225,10 @@ class CashCloseActivity: AppCompatActivity() {
                                 }
                             }
                             if (!fail) {
-                                binding.tvConnect.text = "Puede imprimir el documento dando click en la parte superior"
+
+                                binding.tvConnect.post {
+                                    binding.tvConnect.text = "Puede imprimir el documento dando click en la parte superior"
+                                }
 
                                 mConnectedThread = ConnectedThread(mBTSocket, mHandler)
                                 mConnectedThread!!.start()

@@ -51,7 +51,7 @@
                 android:text="El corte de caja se hizo exitosamente"
                 android:layout_marginTop="28dp"
                 android:textStyle="bold"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -61,9 +61,13 @@
                 android:text="Connectando..."
                 android:layout_marginTop="28dp"
                 android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:textSize="20sp"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:layout_marginStart="10dp"/>
 
             <TextView
                 android:id="@+id/tvStatusPrinterInventario"

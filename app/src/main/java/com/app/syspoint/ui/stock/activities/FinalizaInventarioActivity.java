@@ -28,6 +28,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
@@ -80,6 +81,8 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         btnConfirmaInventario.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int loadId = new CacheInteractor().getCurrentLoadId() + 1;
+                new CacheInteractor().setLoadId(loadId);
                 Utils.finishActivitiesFromStack();
                 finish();
             }
@@ -159,6 +162,7 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().list();
         SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(this);
         int currentStockId = sharedPreferencesManager.getCurrentStockId();
+        int currentLoadId = sharedPreferencesManager.getCurrentLoadId();
 
         for (InventarioBean item : mData){
 
@@ -175,7 +179,6 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
                 final StockDao stockDao = new StockDao();
                 final InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
                 inventarioBean.setEstado("CO");
-                inventarioBean.setStockId(currentStockId);
                 stockDao.save(inventarioBean);
 
             }

@@ -25,15 +25,16 @@ public class InventarioBean extends Bean {
     private String hora;
     private String articulo_clave;
     private int stockId;
+    private int loadId;
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
     /** Used for active entity operations. */
     @Generated(hash = 433853614)
     private transient InventarioBeanDao myDao;
-    @Generated(hash = 2020437509)
+    @Generated(hash = 118080743)
     public InventarioBean(Long id, String estado, long articuloId, int cantidad, int lastCantidad, int totalCantidad, double precio,
-            double impuesto, String fecha, String hora, String articulo_clave, int stockId) {
+            double impuesto, String fecha, String hora, String articulo_clave, int stockId, int loadId) {
         this.id = id;
         this.estado = estado;
         this.articuloId = articuloId;
@@ -46,6 +47,7 @@ public class InventarioBean extends Bean {
         this.hora = hora;
         this.articulo_clave = articulo_clave;
         this.stockId = stockId;
+        this.loadId = loadId;
     }
     @Generated(hash = 444504338)
     public InventarioBean() {
@@ -120,6 +122,14 @@ public class InventarioBean extends Bean {
 
     public void setStockId(int stockId) {
         this.stockId = stockId;
+    }
+
+    public void setLoadId(int loadId) {
+        this.loadId = loadId;
+    }
+
+    public int getLoadId() {
+        return loadId;
     }
 
     @Generated(hash = 344637210)

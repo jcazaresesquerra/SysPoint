@@ -48,7 +48,7 @@ class RequestPrice {
             })
         }
 
-        fun requestAllPrices(onGetSpecialPricesListener: PriceInteractor.GetSpecialPricesListener) {
+        fun requestAllPrices(onGetSpecialPricesListener: PriceInteractor.GetSpecialPricesListener): Call<SpecialPriceJson> {
             val specialPrices = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getPricesEspecial()
@@ -57,7 +57,7 @@ class RequestPrice {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
                     if (response.isSuccessful) {
                         val priceList = arrayListOf<PreciosEspecialesBean>()
-                        for (item in response.body()!!.prices!!) {
+                        response.body()!!.prices!!.map {item ->
 
                             //Para obtener los datos del cliente
                             val clientDao = ClientDao()
@@ -102,6 +102,7 @@ class RequestPrice {
                     onGetSpecialPricesListener.onGetSpecialPricesError()
                 }
             })
+            return specialPrices
         }
 
         fun requestPricesByClient(client: String, onGetPricesByClientListener: PriceInteractor.GetPricesByClientListener) {

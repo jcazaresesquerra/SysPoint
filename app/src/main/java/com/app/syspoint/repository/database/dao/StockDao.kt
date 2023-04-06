@@ -1,5 +1,6 @@
 package com.app.syspoint.repository.database.dao
 
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.database.bean.InventarioBean
 import com.app.syspoint.repository.database.bean.InventarioBeanDao
 
@@ -33,4 +34,16 @@ class StockDao: Dao("InventarioBean") {
             .list() as List<InventarioBean>
         return if (inventarioBeans.isNotEmpty()) inventarioBeans[0].stockId else 0
     }
+
+    fun getCurrentStock(): List<InventarioBean> {
+        val stockId = CacheInteractor().getCurrentStockId()
+        val loadId = CacheInteractor().getCurrentLoadId()
+
+        return dao.queryBuilder()
+            .where(InventarioBeanDao.Properties.StockId.eq(stockId))
+            .where(InventarioBeanDao.Properties.LoadId.eq(loadId))
+            .orderAsc(InventarioBeanDao.Properties.Id)
+            .list() as List<InventarioBean>
+    }
+
 }

@@ -243,7 +243,7 @@ class UpdateClientActivity: AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                status_seleccionado = binding.spinnerStatusActualizaCliente.getSelectedItem().toString()
+                status_seleccionado = binding.spinnerStatusActualizaCliente.selectedItem.toString()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}

@@ -130,18 +130,20 @@ class SellViewModel: ViewModel() {
     }
 
     fun setUpPricesByClient(clientId: String) {
-        PriceInteractorImp().executeGetPricesByClient(clientId, object : GetPricesByClientListener {
-            override fun onGetPricesByClientSuccess(pricesByClientList: List<PreciosEspecialesBean>) {
-                partidasEspeciales.value = pricesByClientList
-                //sellViewState.postValue(SellViewState.LoadingFinish)
-                loadClients(clientId)
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            PriceInteractorImp().executeGetPricesByClient(clientId, object : GetPricesByClientListener {
+                override fun onGetPricesByClientSuccess(pricesByClientList: List<PreciosEspecialesBean>) {
+                    partidasEspeciales.value = pricesByClientList
+                    //sellViewState.postValue(SellViewState.LoadingFinish)
+                    loadClients(clientId)
+                }
 
-            override fun onGGetPricesByClientError() {
-                loadClients(clientId)
-                //sellViewState.postValue(SellViewState.LoadingFinish)
-            }
-        })
+                override fun onGGetPricesByClientError() {
+                    loadClients(clientId)
+                    //sellViewState.postValue(SellViewState.LoadingFinish)
+                }
+            })
+        }
     }
 
     @Synchronized

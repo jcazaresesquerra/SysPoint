@@ -588,7 +588,7 @@ public class ListaVentasFragment extends Fragment {
             if (establecida != null) {
 
                 if(!mBTAdapter.isEnabled()) {
-                    Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 //textViewStatus.setText("Conectado....");

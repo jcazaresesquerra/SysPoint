@@ -6,12 +6,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ChargeInteractorImp: ChargeInteractor() {
-    @Synchronized
-    override fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {
+
+    override suspend fun executeGetCharge(onGetChargeListener: OnGetChargeListener) {
         super.executeGetCharge(onGetChargeListener)
-        GlobalScope.launch {
-            RequestCharge.requestGetCharge(onGetChargeListener)
-        }
+        RequestCharge.requestGetCharge(onGetChargeListener)
     }
 
     @Synchronized

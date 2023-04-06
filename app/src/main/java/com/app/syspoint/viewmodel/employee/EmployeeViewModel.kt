@@ -70,7 +70,7 @@ class EmployeeViewModel: BaseViewModel() {
         employeeViewState.value = EmployeeViewState.LoadingStartState
         GetEmployeesInteractorImp().executeGetEmployees(object: GetEmployeeInteractor.GetEmployeesListener {
             override fun onGetEmployeesSuccess(employees: List<EmpleadoBean?>) {
-                employees.toMutableList().removeIf { item -> !item!!.status}
+                employees.toMutableList().removeIf { item -> !item!!.status }
                 employeeViewState.value = EmployeeViewState.LoadingFinishState
                 employeeViewState.value = EmployeeViewState.GetEmployeesState(employees)
 

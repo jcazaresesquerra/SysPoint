@@ -1,9 +1,8 @@
 package com.app.syspoint
 
 import android.app.Application
-import android.os.StrictMode
-import android.os.StrictMode.VmPolicy
 import com.app.syspoint.repository.database.DBHelper
+import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
 
 
 class App: Application() {
@@ -18,5 +17,7 @@ class App: Application() {
         INSTANCE = this
         dbHelper = DBHelper.getSingleton()
         dbHelper.init(INSTANCE, "point3_db")
+
+        System.setProperty(IO_PARALLELISM_PROPERTY_NAME, 1000.toString());
     }
 }
