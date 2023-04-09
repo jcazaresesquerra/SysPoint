@@ -22,10 +22,7 @@ import com.app.syspoint.interactor.roles.RolInteractorImp
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
-import com.app.syspoint.models.sealed.GetChargeViewState
-import com.app.syspoint.models.sealed.GetClientsByRuteViewState
-import com.app.syspoint.models.sealed.HomeViewState
-import com.app.syspoint.models.sealed.SetRuteViewState
+import com.app.syspoint.models.sealed.*
 import com.app.syspoint.repository.database.bean.*
 import com.app.syspoint.repository.database.dao.*
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
@@ -48,17 +45,18 @@ import com.app.syspoint.repository.database.bean.AppBundle
 import com.app.syspoint.repository.database.bean.RuteoBean
 import com.app.syspoint.repository.database.dao.RoutingDao
 
-
 const val TAG = "HomeViewModel"
 
 class HomeViewModel: ViewModel() {
 
     val homeViewState = MutableLiveData<HomeViewState>()
+    val requestingDataViewState = MutableLiveData<RequestingDataViewState>()
+
+    val homeLoadingViewState = MutableLiveData<HomeLoadingViewState>()
 
     private var _getChargeViewState: MutableLiveData<GetChargeViewState> = MutableLiveData()
     val getChargeViewState: LiveData<GetChargeViewState>
         get() = _getChargeViewState
-
 
     private val getClients: MutableLiveData<Boolean> = MutableLiveData()
     private val getCobranzas: MutableLiveData<Boolean> = MutableLiveData()
@@ -79,60 +77,67 @@ class HomeViewModel: ViewModel() {
     val setUpRuteViewState: LiveData<SetRuteViewState>
         get() = _setUpRuteViewState
 
-    fun getCharges() {
-        viewModelScope.launch(Dispatchers.Default) {
-            val vendedoresBean = AppBundle.getUserBean()
-            if (vendedoresBean != null) {
-                GetChargeUseCase().invoke().onEach {
+    init {
+        requestingDataViewState.value = RequestingDataViewState.RequestingDataFinish
+    }
+
+    private suspend fun getCharges() {
+        val vendedoresBean = AppBundle.getUserBean()
+        if (vendedoresBean != null) {
+            GetChargeUseCase().invoke().onEach {
+                if (it is Resource.Success || it is Resource.Error) {
                     getCobranzas.postValue(true)
                     saveCobranza()
                     saveAbonos()
-                    if (it is Resource.Success) {
-                        //_getChargeViewState.postValue(GetChargeViewState.GetChargeSuccess(it.data))
-                    } else if (it is Resource.Error) {
-                        //_getChargeViewState.postValue(GetChargeViewState.GetChargeError(it.message))
-                    }
-
-                }.launchIn(viewModelScope)
-            }
-        }
-    }
-
-    fun getUpdates() {
-        viewModelScope.launch(Dispatchers.Main) {
-            val clientDao = ClientDao()
-            val listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual())
-            val paymentDao = PaymentDao()
-            listaClientesCredito.map {item ->
-                try {
-                    val dao = ClientDao()
-                    item.saldo_credito = paymentDao.getTotalSaldoDocumentosCliente(item.cuenta)
-                    dao.save(item)
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                }
-            }
-
-            update()
-        }
-    }
-
-    fun getData() {
-        viewModelScope.launch(Dispatchers.Default) {
-            homeViewState.postValue(HomeViewState.LoadingStart)
-            GetDataUseCase().invoke().onEach {
-                 if (it is Resource.Loading) {
-                    homeViewState.postValue(HomeViewState.LoadingStart)
-                } else {
-                    homeViewState.postValue(HomeViewState.LoadingFinish)
                 }
             }.launchIn(viewModelScope)
         }
     }
 
+    fun getUpdates() {
+        if (requestingDataViewState.value != RequestingDataViewState.RequestingDataStart) {
+            requestingDataViewState.value = RequestingDataViewState.RequestingDataStart
+
+            viewModelScope.launch(Dispatchers.Main) {
+                val clientDao = ClientDao()
+                val listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual())
+                val paymentDao = PaymentDao()
+                listaClientesCredito.map { item ->
+                    try {
+                        val dao = ClientDao()
+                        item.saldo_credito = paymentDao.getTotalSaldoDocumentosCliente(item.cuenta)
+                        dao.save(item)
+                    } catch (e: java.lang.Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                update()
+            }
+        }
+    }
+
+    fun getData() {
+        if (requestingDataViewState.value != RequestingDataViewState.RequestingDataStart) {
+            requestingDataViewState.value = RequestingDataViewState.RequestingDataStart
+
+            viewModelScope.launch(Dispatchers.Default) {
+                getClientsByRute(false)
+                GetDataUseCase().invoke().onEach {
+                    if (it is Resource.Loading) {
+                        homeLoadingViewState.postValue(HomeLoadingViewState.LoadingStart)
+                    } else {
+                        homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
+                        requestingDataViewState.postValue(RequestingDataViewState.RequestingDataFinish)
+                    }
+                }.launchIn(viewModelScope)
+            }
+        }
+    }
+
     fun getUpdate() {
         viewModelScope.launch(Dispatchers.Default) {
-            homeViewState.postValue(HomeViewState.LoadingStart)
+            homeLoadingViewState.postValue(HomeLoadingViewState.LoadingStart)
 
             val clientDao = ClientDao()
             val listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual())
@@ -148,9 +153,7 @@ class HomeViewModel: ViewModel() {
             }
 
             GetUpdatesUseCase().invoke().onEach {
-
             }.launchIn(viewModelScope)
-
         }
     }
 
@@ -164,7 +167,7 @@ class HomeViewModel: ViewModel() {
         saveVisitas.value = false
         savePreciosEspeciales.value = false
 
-        homeViewState.value = HomeViewState.LoadingStart
+        homeLoadingViewState.value = HomeLoadingViewState.LoadingStart
 
         viewModelScope.launch(Dispatchers.IO) {
             getClientsByRute(true)
@@ -181,7 +184,8 @@ class HomeViewModel: ViewModel() {
 
             Log.d("HomeViewModel", "\ngetCobranzas: ${getCobranzas.value} \n getRoles: ${getRoles.value} \n saveVentas: ${saveVentas.value} \n saveVisitas: ${saveVisitas.value} \n savePreciosEspeciales: ${savePreciosEspeciales.value} \n saveAbono: ${saveAbono.value} \n saveCobranza: ${saveCobranza.value}")
             Log.d("HomeViewModel", "LoadingFinish")
-            homeViewState.postValue(HomeViewState.LoadingFinish)
+            homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
+            requestingDataViewState.postValue(RequestingDataViewState.RequestingDataFinish)
         }
     }
 
@@ -200,7 +204,7 @@ class HomeViewModel: ViewModel() {
                         _getClientsByRuteViewState.postValue(GetClientsByRuteViewState.GetClientsByRuteSuccess(clientList))
                         saveClientes()
                         if (!isUpdate)
-                            homeViewState.postValue(HomeViewState.LoadingFinish)
+                            homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         Log.d(TAG, "Clientes actualizados correctamente")
                     }
 
@@ -210,7 +214,7 @@ class HomeViewModel: ViewModel() {
                         saveClientes()
 
                         if (!isUpdate)
-                            homeViewState.postValue(HomeViewState.LoadingFinish)
+                            homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         Log.d(TAG, "Ha ocurrido un error. Conectate a internet para cambiar de ruta u obtener los clientes")
                     }
                 })
@@ -244,7 +248,7 @@ class HomeViewModel: ViewModel() {
                 vendedoresBean = CacheInteractor().getSeller()
             }
             val visitList: MutableList<Visit> = ArrayList()
-            visitasBeanListBean.map {item ->
+            visitasBeanListBean.map { item ->
                 val visita = Visit()
                 visita.fecha = item.fecha
                 visita.hora = item.hora
@@ -541,7 +545,7 @@ class HomeViewModel: ViewModel() {
     }
 
     private fun testLoadEmpleado(id: String) {
-        homeViewState.postValue(HomeViewState.LoadingStart)
+        homeLoadingViewState.postValue(HomeLoadingViewState.LoadingStart)
         viewModelScope.launch(Dispatchers.IO) {
             val employeeDao = EmployeeDao()
             val listaEmpleadosDB = employeeDao.getEmployeeById(id)
@@ -571,12 +575,12 @@ class HomeViewModel: ViewModel() {
                 listEmpleados,
                 object : SaveEmployeeListener {
                     override fun onSaveEmployeeSuccess() {
-                        homeViewState.postValue(HomeViewState.LoadingFinish)
+                        homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         Log.d(TAG, "Empleados sincronizados")
                     }
 
                     override fun onSaveEmployeeError() {
-                        homeViewState.postValue(HomeViewState.LoadingFinish)
+                        homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         Log.d(TAG, "Ha ocurrido un error al sincronizar los empleados")
                     }
                 })

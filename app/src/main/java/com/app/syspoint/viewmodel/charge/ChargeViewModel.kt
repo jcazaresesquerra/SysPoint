@@ -261,7 +261,7 @@ class ChargeViewModel: ViewModel() {
     fun deletePartida(charge: CobranzaModel?){
         Log.d(TAG, "deletePartida start")
         val dao = PaymentModelDao()
-        dao.delete(charge)
+        dao.delete(charge as Bean)
         val charges = dao.list() as List<CobranzaModel?>
         chargeViewState.value = ChargeViewState.ChargeListRefresh(charges)
         Log.d(TAG, "deletePartida finish ChargeViewState.ChargeListRefresh(charges)")

@@ -10,6 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaEmpleadosBinding
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.utils.click
+import com.github.satoshun.coroutine.autodispose.view.autoDisposeScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.*
 
 class EmployeeListAdapter(
@@ -75,17 +81,28 @@ class EmployeeListAdapter(
 
     class Holder(val binding: ItemListaEmpleadosBinding): RecyclerView.ViewHolder(binding.root) {
 
+        val _stateFlow = MutableStateFlow(-1)
+        val stateFlow = _stateFlow.asStateFlow()
+
         fun bind(empleadoBean: EmpleadoBean?, onItemClickListener: OnItemClickListener) {
             empleadoBean?.let { empleado ->
                 binding.textViewListaEmpleadoNombre.text = empleado.getNombre()
                 binding.textViewListaEmpleadoIdentificador.text = empleado.getIdentificador()
 
                 if (empleado.getPath_image() != null) {
-                    val decodedString: ByteArray =
-                        Base64.decode(empleado.getPath_image(), Base64.DEFAULT)
-                    val decodedByte =
-                        BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-                    binding.imgEmpleado.setImageBitmap(decodedByte)
+                    binding.imgEmpleado.autoDisposeScope.launch(Dispatchers.Default) {
+                        val decodedString: ByteArray =
+                            Base64.decode(empleado.getPath_image(), Base64.DEFAULT)
+                        val decodedByte =
+                            BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            stateFlow.collect { id ->
+                                binding.imgEmpleado.setImageBitmap(decodedByte)
+                            }
+                        }
+
+                    }
                 }
 
                 itemView click { onItemClickListener.onItemClick(empleado) }

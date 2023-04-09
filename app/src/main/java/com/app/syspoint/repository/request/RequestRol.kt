@@ -25,25 +25,23 @@ class RequestRol {
                 override fun onResponse(call: Call<RolJson>, response: Response<RolJson>) {
                     if (response.isSuccessful) {
                         val roles = arrayListOf<RolesBean>()
-                        for (rol in response.body()!!.roles!!) {
-                            val rolesDao = RolesDao()
+                        val rolesDao = RolesDao()
+                        val employeeDao = EmployeeDao()
+
+                        rolesDao.beginTransaction()
+                        response.body()!!.roles!!.map {rol ->
                             val rolesBean = rolesDao.getRolByModule(rol!!.empleado, rol.modulo)
                             if (rolesBean == null) {
                                 val bean = RolesBean()
-                                val dao = RolesDao()
-                                val employeeDao = EmployeeDao()
-                                val empleadoBean =
-                                    employeeDao.getEmployeeByIdentifier(rol.empleado)
+                                val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
                                 bean.empleado = empleadoBean
                                 bean.modulo = rol.modulo
                                 bean.active = rol.activo == 1
                                 bean.identificador = rol.empleado
-                                dao.insert(bean)
+                                rolesDao.insert(bean)
                                 roles.add(bean)
                             } else {
-                                val employeeDao = EmployeeDao()
-                                val empleadoBean =
-                                    employeeDao.getEmployeeByIdentifier(rol.empleado)
+                                val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
                                 rolesBean.empleado = empleadoBean
                                 rolesBean.modulo = rol.modulo
                                 rolesBean.active = rol.activo == 1
@@ -52,6 +50,8 @@ class RequestRol {
                                 roles.add(rolesBean)
                             }
                         }
+                        rolesDao.commmit()
+
                         onGetAllRolesListener.onGetAllRolesSuccess(roles)
                     } else {
                         onGetAllRolesListener.onGetAllRolesError()

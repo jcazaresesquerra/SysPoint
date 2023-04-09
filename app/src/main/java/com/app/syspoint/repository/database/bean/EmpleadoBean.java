@@ -1,5 +1,7 @@
 package com.app.syspoint.repository.database.bean;
 
+import android.graphics.Bitmap;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;

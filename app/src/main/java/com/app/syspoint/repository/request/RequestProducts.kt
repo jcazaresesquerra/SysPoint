@@ -28,8 +28,8 @@ class RequestProducts {
                     if (response.isSuccessful) {
                         val products = arrayListOf<ProductoBean>()
                         val productDao = ProductDao()
-                        for (items in response.body()!!.products!!) {
-
+                        productDao.beginTransaction()
+                        response.body()!!.products!!.map {items ->
                             val productBean = productDao.getProductoByArticulo(items!!.articulo)
                             if (productBean == null) {
                                 //Creamos el producto
@@ -67,6 +67,7 @@ class RequestProducts {
                                 products.add(productBean)
                             }
                         }
+                        productDao.commmit()
                         onGetProductsListener.onGetProductsSuccess(products)
                     } else {
                         onGetProductsListener.onGetProductsError()

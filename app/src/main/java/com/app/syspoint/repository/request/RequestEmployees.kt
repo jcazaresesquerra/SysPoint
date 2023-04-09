@@ -25,16 +25,15 @@ class RequestEmployees {
             getEmployees.enqueue(object: Callback<EmployeeJson> {
                 override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
                     if (response.isSuccessful){
-                        var employees = arrayListOf<EmpleadoBean?>()
-                        val dao = EmployeeDao()
-
+                        val employees = arrayListOf<EmpleadoBean?>()
+                        val employeeDao = EmployeeDao()
+                        employeeDao.beginTransaction()
                         response.body()!!.employees!!.map { item ->
                             //Validamos si existe el empleado en la base de datos en base al identificador
-                            val employeeBean = dao.getEmployeeByIdentifier(item!!.identificador)
+                            val employeeBean = employeeDao.getEmployeeByIdentifier(item!!.identificador)
                             //NO existe entonces lo creamos
                             if (employeeBean == null) {
                                 val employee = EmpleadoBean()
-                                val employeeDao = EmployeeDao()
                                 employee.setNombre(item.nombre)
                                 employee.setDireccion(item.direccion)
                                 employee.setEmail(item.email)
@@ -72,11 +71,12 @@ class RequestEmployees {
                                     employeeBean.setRute(item.rute)
                                     employeeBean.setStatus(item.status == 1)
                                     employeeBean.setUpdatedAt(item.updatedAt)
-                                    dao.save(employeeBean)
+                                    employeeDao.save(employeeBean)
                                 }
                                 employees.add(employeeBean)
                             }
                         }
+                        employeeDao.commmit()
 
                         getEmployeesListener.onGetEmployeesSuccess(employees)
                     } else {

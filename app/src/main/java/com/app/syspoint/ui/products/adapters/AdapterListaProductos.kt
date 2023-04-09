@@ -10,6 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaProductodBinding
 import com.app.syspoint.repository.database.bean.ProductoBean
 import com.app.syspoint.utils.click
+import com.github.satoshun.coroutine.autodispose.view.autoDisposeScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.*
 
 class AdapterListaProductos(
@@ -78,6 +84,9 @@ class AdapterListaProductos(
 
     class Holder(val binding: ItemListaProductodBinding): RecyclerView.ViewHolder(binding.root) {
 
+        val _stateFlow = MutableStateFlow(-1)
+        val stateFlow = _stateFlow.asStateFlow()
+
         fun bind(productoBean: ProductoBean?, onItemClickListener: OnItemClickListener) {
             productoBean?.let { producto ->
                 binding.textViewArticuloList.text = producto.articulo
@@ -89,11 +98,18 @@ class AdapterListaProductos(
                 binding.textViewArticuloCodBarrasList.text = producto.codigo_barras
 
                 if (producto.path_img != null) {
-                    val decodedString: ByteArray =
-                        Base64.decode(producto.path_img, Base64.DEFAULT)
-                    val decodedByte =
-                        BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-                    binding.imageView2.setImageBitmap(decodedByte)
+                    binding.imageView2.autoDisposeScope.launch(Dispatchers.Default) {
+                        val decodedString: ByteArray =
+                            Base64.decode(producto.path_img, Base64.DEFAULT)
+                        val decodedByte =
+                            BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            stateFlow.collect { id ->
+                                binding.imageView2.setImageBitmap(decodedByte)
+                            }
+                        }
+
+                    }
                 }
 
                 itemView click {

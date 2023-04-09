@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.databinding.FragmentEmployeeBinding
+import com.app.syspoint.models.sealed.EmployeeLoadingViewState
 import com.app.syspoint.models.sealed.EmployeeViewState
 import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.database.bean.EmpleadoBean
@@ -50,14 +51,15 @@ class EmployeeFragment: Fragment() {
         setHasOptionsMenu(true)
         viewModel = ViewModelProvider(this)[EmployeeViewModel::class.java]
         viewModel.employeeViewState.observe(viewLifecycleOwner, ::renderViewState)
+        viewModel.employeeProgressViewState.observe(viewLifecycleOwner, ::renderLoadingViewState)
         viewModel.setUpEmployees()
         setUpListeners()
     }
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
         viewModel.refreshEmployees()
-    }
+    }*/
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_empleado_fragment, menu)
@@ -88,6 +90,17 @@ class EmployeeFragment: Fragment() {
             }
             else -> {
                 super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
+    private fun renderLoadingViewState(employeeLoadingViewState: EmployeeLoadingViewState) {
+        when(employeeLoadingViewState) {
+            is EmployeeLoadingViewState.LoadingStartState -> {
+                binding.rlprogressEmpleados.setVisible()
+            }
+            is EmployeeLoadingViewState.LoadingFinishState -> {
+                binding.rlprogressEmpleados.setInvisible()
             }
         }
     }

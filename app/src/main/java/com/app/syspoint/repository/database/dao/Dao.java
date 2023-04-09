@@ -1,4 +1,4 @@
-package com.app.syspoint.repository.database.dao;
+/*package com.app.syspoint.repository.database.dao;
 
 import com.app.syspoint.repository.database.DBHelper;
 import com.app.syspoint.repository.database.bean.Bean;
@@ -27,7 +27,6 @@ public class Dao {
             case "LogSyncGetBean":
                 dao = daoSession.getLogSyncGetBeanDao();
                 break;
-
 
             case "EmpleadoBean":
                 dao = daoSession.getEmpleadoBeanDao();
@@ -165,7 +164,12 @@ public class Dao {
         }
     }
 
+    public void insertOrReplace(Bean bean) {
+        this.dao.insertOrReplace(bean);
+    }
+
     public void save(Bean bean) {
         dao.save(bean);
     }
 }
+*/

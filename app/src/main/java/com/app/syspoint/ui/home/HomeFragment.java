@@ -2,6 +2,8 @@ package com.app.syspoint.ui.home;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -17,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -25,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.models.sealed.GetClientsByRuteViewState;
+import com.app.syspoint.models.sealed.HomeLoadingViewState;
 import com.app.syspoint.models.sealed.HomeViewState;
 import com.app.syspoint.models.sealed.SetRuteViewState;
 import com.app.syspoint.repository.database.bean.AppBundle;
@@ -35,6 +39,7 @@ import com.app.syspoint.repository.database.bean.RuteoBean;
 import com.app.syspoint.repository.database.dao.RolesDao;
 import com.app.syspoint.repository.database.dao.RuteClientDao;
 import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.ui.MainActivity;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.home.activities.MapsRuteoActivity;
 import com.app.syspoint.ui.home.adapter.AdapterRutaClientes;
@@ -68,10 +73,10 @@ public class HomeFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        viewModel.getHomeViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
-            if (o instanceof HomeViewState.LoadingStart) {
+        viewModel.getHomeLoadingViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
+            if (o instanceof HomeLoadingViewState.LoadingStart) {
                 rlprogress.setVisibility(View.VISIBLE);
-            } else if (o instanceof HomeViewState.LoadingFinish) {
+            } else if (o instanceof HomeLoadingViewState.LoadingFinish) {
                 rlprogress.setVisibility(View.GONE);
             }
         });
@@ -105,6 +110,12 @@ public class HomeFragment extends Fragment {
         getData(true);
 
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        registerNetworkBroadcastForNougat();
     }
 
     @Override
@@ -324,7 +335,6 @@ public class HomeFragment extends Fragment {
                     viewModel.getUpdates();
                 } else {
                     viewModel.getData();
-                    viewModel.getClientsByRute(false);
                 }
             } else {
                 showDialogNotConnectionInternet();
@@ -364,5 +374,23 @@ public class HomeFragment extends Fragment {
 
         dialog.show();
         dialog.getWindow().setAttributes(lp);
+    }
+
+    private void registerNetworkBroadcastForNougat() {
+        MainActivity.NetworkChangeReceiver mNetworkChangeReceiver = new MainActivity.NetworkChangeReceiver(new MainActivity.ConnectionNetworkListener() {
+            @Override
+            public void onConnected() {
+                getData(false);
+            }
+
+            @Override
+            public void onDisconnected() {
+
+            }
+        });
+        getActivity().registerReceiver(
+                mNetworkChangeReceiver,
+                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        );
     }
 }

@@ -16,3 +16,8 @@ sealed class EmployeeViewState {
     data class CallEmployeeState(var number: String): EmployeeViewState()
     object SendEmailState: EmployeeViewState()
 }
+
+sealed class EmployeeLoadingViewState {
+    object LoadingStartState: EmployeeLoadingViewState()
+    object LoadingFinishState: EmployeeLoadingViewState()
+}

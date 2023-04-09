@@ -25,13 +25,14 @@ class RequestData {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
                     if (response.isSuccessful) {
                         if (response.code() == 200) {
-                            var dao = EmployeeDao()
+                            var employeeDao = EmployeeDao()
                             var employee = EmpleadoBean()
+                            employeeDao.beginTransaction()
                             response.body()!!.data.empleados.map {
-                                val employeeBean = dao.getEmployeeByIdentifier(it.identificador)
+                                val employeeBean = employeeDao.getEmployeeByIdentifier(it.identificador)
                                 if (employeeBean == null) {
                                     employee = EmpleadoBean()
-                                    dao = EmployeeDao()
+                                    employeeDao = EmployeeDao()
                                     employee.setNombre(it.nombre)
                                     employee.setDireccion(it.direccion)
                                     employee.setEmail(it.email)
@@ -43,7 +44,7 @@ class RequestData {
                                     employee.setPath_image(it.pathImage)
                                     employee.setRute(it.rute)
                                     employee.setStatus(it.status == 1)
-                                    dao.insert(employee)
+                                    employeeDao.insert(employee)
                                 } else {
                                     employeeBean.setNombre(it.nombre)
                                     employeeBean.setDireccion(it.direccion)
@@ -56,15 +57,16 @@ class RequestData {
                                     employeeBean.setPath_image(it.pathImage)
                                     employeeBean.setRute(it.rute)
                                     employeeBean.setStatus(it.status == 1)
-                                    dao.save(employeeBean)
+                                    employeeDao.save(employeeBean)
                                 }
                             }
+                            employeeDao.commmit()
 
                             var rolesDao = RolesDao()
                             var bean = RolesBean()
-                            val employeeDao = EmployeeDao()
                             //Contiene la lista de permidos
 
+                            rolesDao.beginTransaction()
                             response.body()!!.data.roles.map {
                                 val rolesBean = rolesDao.getRolByModule(it.empleado, it.modulo)
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(it.empleado)
@@ -85,11 +87,13 @@ class RequestData {
                                     rolesDao.save(rolesBean)
                                 }
                             }
+                            rolesDao.commmit()
 
                             var productDao = ProductDao()
                             var producto = ProductoBean()
                             //Contiene la lista de productos
 
+                            productDao.beginTransaction()
                             response.body()!!.data.productos.map {
                                 val productoBean = productDao.getProductoByArticulo(it.articulo)
                                 if (productoBean == null) {
@@ -115,10 +119,12 @@ class RequestData {
                                     productDao.save(productoBean)
                                 }
                             }
+                            productDao.commmit()
 
                             var clientDao = ClientDao()
                             var clienteBean = ClienteBean()
 
+                            clientDao.beginTransaction()
                             response.body()!!.data.clientes.map {
                                 val bean = clientDao.getClientByAccount(it.cuenta)
                                 if (bean == null) {
@@ -210,9 +216,11 @@ class RequestData {
                                     }
                                 }
                             }
+                            clientDao.commmit()
 
                             val specialPricesDao = SpecialPricesDao()
 
+                            specialPricesDao.beginTransaction()
                             response.body()!!.data.precios.map { item ->
                                 val preciosEspecialesBean =
                                     specialPricesDao.getPrecioEspeciaPorCliente(
@@ -236,6 +244,7 @@ class RequestData {
                                     specialPricesDao.save(preciosEspecialesBean)
                                 }
                             }
+                            specialPricesDao.commmit()
                         }
                         onGetAllDataListener.onGetAllDataSuccess()
                     } else {
@@ -260,8 +269,10 @@ class RequestData {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
                     if (response.isSuccessful) {
                         if (response.code() == 200) {
+
                             var dao = EmployeeDao()
                             var employee = EmpleadoBean()
+                            dao.beginTransaction()
                             response.body()!!.data.empleados.map {
                                 val employeeBean = dao.getEmployeeByIdentifier(it.identificador)
                                 if (employeeBean == null) {
@@ -294,12 +305,13 @@ class RequestData {
                                     dao.save(employeeBean)
                                 }
                             }
+                            dao.commmit()
 
                             var rolesDao = RolesDao()
                             var bean = RolesBean()
                             val employeeDao = EmployeeDao()
                             //Contiene la lista de permidos
-
+                            rolesDao.beginTransaction()
                             response.body()!!.data.roles.map {
                                 val rolesBean = rolesDao.getRolByModule(it.empleado, it.modulo)
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(it.empleado)
@@ -320,11 +332,12 @@ class RequestData {
                                     rolesDao.save(rolesBean)
                                 }
                             }
+                            rolesDao.commmit()
 
                             var productDao = ProductDao()
                             var producto = ProductoBean()
                             //Contiene la lista de productos
-
+                            productDao.beginTransaction()
                             response.body()!!.data.productos.map {
                                 val productoBean = productDao.getProductoByArticulo(it.articulo)
                                 if (productoBean == null) {
@@ -350,10 +363,12 @@ class RequestData {
                                     productDao.save(productoBean)
                                 }
                             }
+                            productDao.commmit()
 
                             var clientDao = ClientDao()
                             var clienteBean = ClienteBean()
 
+                            clientDao.beginTransaction()
                             response.body()!!.data.clientes.map {
                                 val bean = clientDao.getClientByAccount(it.cuenta)
                                 if (bean == null) {
@@ -445,9 +460,10 @@ class RequestData {
                                     }
                                 }
                             }
+                            clientDao.commmit()
 
                             val specialPricesDao = SpecialPricesDao()
-
+                            specialPricesDao.beginTransaction()
                             response.body()!!.data.precios.map { item ->
                                 val preciosEspecialesBean =
                                     specialPricesDao.getPrecioEspeciaPorCliente(
@@ -471,6 +487,7 @@ class RequestData {
                                     specialPricesDao.save(preciosEspecialesBean)
                                 }
                             }
+                            specialPricesDao.commmit()
                         }
                         onGetAllDataListener.onGetAllDataSuccess()
                     } else {
@@ -499,13 +516,13 @@ class RequestData {
                         }
 
                         if (response.code() == 200) {
-                            for (item in response.body()!!.data.empleados) {
-                                val dao = EmployeeDao()
-                                val empleadoBean = dao.getEmployeeByIdentifier(item.identificador)
+                            val employeeDao = EmployeeDao()
+                            employeeDao.beginTransaction()
+                            response.body()!!.data.empleados.map {item ->
+                                val empleadoBean = employeeDao.getEmployeeByIdentifier(item.identificador)
 
                                 if (empleadoBean == null) {
                                     val empleado = EmpleadoBean()
-                                    val employeeDao = EmployeeDao()
                                     empleado.setNombre(item.nombre)
                                     empleado.setDireccion(item.direccion)
                                     empleado.setEmail(item.email)
@@ -530,26 +547,25 @@ class RequestData {
                                     empleadoBean.setPath_image(item.pathImage)
                                     empleadoBean.setRute(item.rute)
                                     empleadoBean.setStatus(item.status == 1)
-                                    dao.save(empleadoBean)
+                                    employeeDao.save(empleadoBean)
                                 }
                             }
+                            employeeDao.commmit()
 
-                            //Contiene la lista de permidos
-                            for (item in response.body()!!.data.roles) {
-                                val rolesDao = RolesDao()
+
+                            val rolesDao = RolesDao()
+                            rolesDao.beginTransaction()
+                            response.body()!!.data.roles.map {item ->
                                 val rolesBean = rolesDao.getRolByModule(item.empleado, item.modulo)
                                 if (rolesBean == null) {
                                     val bean = RolesBean()
-                                    val dao = RolesDao()
-                                    val employeeDao = EmployeeDao()
                                     val empleadoBean = employeeDao.getEmployeeByIdentifier(item.empleado)
                                     bean.empleado = empleadoBean
                                     bean.modulo = item.modulo
                                     bean.active = item.activo == 1
                                     bean.identificador = item.empleado
-                                    dao.insert(bean)
+                                    rolesDao.insert(bean)
                                 } else {
-                                    val employeeDao = EmployeeDao()
                                     val empleadoBean = employeeDao.getEmployeeByIdentifier(item.empleado)
                                     rolesBean.empleado = empleadoBean
                                     rolesBean.modulo = item.modulo
@@ -558,14 +574,14 @@ class RequestData {
                                     rolesDao.save(rolesBean)
                                 }
                             }
+                            rolesDao.commmit()
 
-                            //Contiene la lista de productos
-                            for (item in response.body()!!.data.productos) {
-                                val productDao = ProductDao()
+                            val productDao = ProductDao()
+                            productDao.beginTransaction()
+                            response.body()!!.data.productos.map {item ->
                                 val productoBean = productDao.getProductoByArticulo(item.articulo)
                                 if (productoBean == null) {
                                     val producto = ProductoBean()
-                                    val dao = ProductDao()
                                     producto.articulo = item.articulo
                                     producto.descripcion = item.descripcion
                                     producto.status = item.status
@@ -573,7 +589,7 @@ class RequestData {
                                     producto.iva = item.iva
                                     producto.codigo_barras = item.codigoBarras
                                     producto.path_img = item.pathImage
-                                    dao.insert(producto)
+                                    productDao.insert(producto)
                                 } else {
                                     productoBean.articulo = item.articulo
                                     productoBean.descripcion = item.descripcion
@@ -585,15 +601,14 @@ class RequestData {
                                     productDao.save(productoBean)
                                 }
                             }
+                            productDao.commmit()
 
-                            for (item in response.body()!!.data.clientes) {
-
-                                //Validamos si existe el cliente
-                                val dao = ClientDao()
-                                val bean = dao.getClientByAccount(item.cuenta)
+                            val clientDao = ClientDao()
+                            clientDao.beginTransaction()
+                            response.body()!!.data.clientes.map {item ->
+                                val bean = clientDao.getClientByAccount(item.cuenta)
                                 if (bean == null) {
                                     val clienteBean = ClienteBean()
-                                    val clientDao = ClientDao()
                                     clienteBean.nombre_comercial = item.nombreComercial
                                     clienteBean.calle = item.calle
                                     clienteBean.numero = item.numero
@@ -662,17 +677,19 @@ class RequestData {
                                         bean.saldo_credito = item.saldo_credito
                                         bean.matriz = item.matriz
                                         bean.updatedAt = item.updatedAt
-                                        dao.save(bean)
+                                        clientDao.save(bean)
                                     }
                                 }
                             }
+                            clientDao.commmit()
 
-                            for (item in response.body()!!.data.cobranzas) {
-                                val paymentDao = PaymentDao()
+
+                            val paymentDao = PaymentDao()
+                            paymentDao.beginTransaction()
+                            response.body()!!.data.cobranzas.map {item ->
                                 val cobranzaBean = paymentDao.getByCobranza(item.cobranza)
                                 if (cobranzaBean == null) {
                                     val cobranzaBean1 = CobranzaBean()
-                                    val paymentDao1 = PaymentDao()
                                     cobranzaBean1.cobranza = item.cobranza
                                     cobranzaBean1.cliente = item.cuenta
                                     cobranzaBean1.importe = item.importe
@@ -684,7 +701,7 @@ class RequestData {
                                     cobranzaBean1.hora = item.hora
                                     cobranzaBean1.empleado = item.identificador
                                     cobranzaBean1.isCheck = false
-                                    paymentDao1.insert(cobranzaBean1)
+                                    paymentDao.insert(cobranzaBean1)
                                 } else {
                                     cobranzaBean.cobranza = item.cobranza
                                     cobranzaBean.cliente = item.cuenta
@@ -700,37 +717,29 @@ class RequestData {
                                     paymentDao.save(cobranzaBean)
                                 }
                             }
+                            paymentDao.commmit()
 
-                            for (item in response.body()!!.data.precios) {
+                            val specialPricesDao = SpecialPricesDao()
+                            specialPricesDao.beginTransaction()
+                            response.body()!!.data.precios.map {item ->
 
-                                //Para obtener los datos del cliente
-                                val clientDao = ClientDao()
                                 val clienteBean = clientDao.getClientByAccount(item.cliente)
-
                                 if (clienteBean != null) {
-                                    //Para obtener los datos del producto
-                                    val productDao = ProductDao()
-                                    val productoBean =
-                                        productDao.getProductoByArticulo(item.articulo)
-
+                                    val productoBean = productDao.getProductoByArticulo(item.articulo)
                                     if (productoBean != null) {
-                                        val specialPricesDao = SpecialPricesDao()
                                         val preciosEspecialesBean =
                                             specialPricesDao.getPrecioEspeciaPorCliente(
                                                 productoBean.articulo,
                                                 clienteBean.cuenta
                                             )
 
-                                        //Si no hay precios especiales entonces crea un precio
                                         if (preciosEspecialesBean == null) {
-                                            val dao = SpecialPricesDao()
                                             val bean = PreciosEspecialesBean()
                                             bean.cliente = clienteBean.cuenta
                                             bean.articulo = productoBean.articulo
                                             bean.precio = item.precio
                                             bean.active = item.active == 1
-                                            dao.insert(bean)
-                                            specialPricesDao.save(bean)
+                                            specialPricesDao.insert(bean)
                                         } else {
                                             preciosEspecialesBean.cliente = clienteBean.cuenta
                                             preciosEspecialesBean.articulo = productoBean.articulo
@@ -741,6 +750,8 @@ class RequestData {
                                     }
                                 }
                             }
+                            specialPricesDao.commmit()
+
                             onGetAllDataByDateListener.onGetAllDataByDateSuccess()
 
                         } else {

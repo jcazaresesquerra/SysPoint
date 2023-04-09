@@ -8,6 +8,7 @@ import com.app.syspoint.models.RequestChargeByRute
 import com.app.syspoint.models.json.PaymentJson
 import com.app.syspoint.models.json.RequestCobranza
 import com.app.syspoint.models.json.RequestTokenBody
+import com.app.syspoint.repository.database.bean.Bean
 import com.app.syspoint.repository.database.bean.CobranzaBean
 import com.app.syspoint.repository.database.dao.ClientDao
 import com.app.syspoint.repository.database.dao.PaymentDao
@@ -35,9 +36,93 @@ class RequestCharge {
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
                     if (response.isSuccessful) {
+
                         val paymentDao = PaymentDao()
                         val chargeList = arrayListOf<CobranzaBean>()
                         val stockId = StockDao().getCurrentStockId()
+
+                        paymentDao.beginTransaction()
+                        response.body()!!.payments!!.map {item ->
+                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
+                            if (cobranzaBean == null) {
+                                val chargeBean = CobranzaBean()
+                                chargeBean.cobranza = item.cobranza
+                                chargeBean.cliente = item.cuenta
+                                chargeBean.importe = item.importe
+                                chargeBean.saldo = item.saldo
+                                chargeBean.venta = item.venta
+                                chargeBean.estado = item.estado
+                                chargeBean.observaciones = item.observaciones
+                                chargeBean.fecha = item.fecha
+                                chargeBean.hora = item.hora
+                                chargeBean.empleado = item.identificador
+                                chargeBean.updatedAt = item.updatedAt
+                                chargeBean.stockId = stockId
+                                paymentDao.insert(chargeBean)
+                                chargeList.add(chargeBean)
+                            } else {
+                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(cobranzaBean.updatedAt)
+                                    } catch (e: Exception) {
+                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    cobranzaBean.cobranza = item.cobranza
+                                    cobranzaBean.cliente = item.cuenta
+                                    cobranzaBean.importe = item.importe
+                                    cobranzaBean.saldo = item.saldo
+                                    cobranzaBean.venta = item.venta
+                                    cobranzaBean.estado = item.estado
+                                    cobranzaBean.observaciones = item.observaciones
+                                    cobranzaBean.fecha = item.fecha
+                                    cobranzaBean.hora = item.hora
+                                    cobranzaBean.empleado = item.identificador
+                                    cobranzaBean.updatedAt = item.updatedAt
+                                    cobranzaBean.stockId = stockId
+                                    paymentDao.save(cobranzaBean)
+                                }
+                                chargeList.add(cobranzaBean)
+                            }
+                        }
+                        paymentDao.commmit()
+                        onGetChargeListener.onGetChargeSuccess(chargeList)
+                    } else {
+                        onGetChargeListener.onGetChargeError()
+                    }
+                }
+
+                override fun onFailure(call: Call<PaymentJson>, t: Throwable) {
+                    onGetChargeListener.onGetChargeError()
+                }
+
+            })
+
+            return getCharge
+        }
+
+        fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {
+            val requestChargesByRute = RequestChargeByRute(id)
+            val getCharge = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getAllCobranzaByEmployee(requestChargesByRute)
+
+            getCharge.enqueue(object: Callback<PaymentJson> {
+                override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    if (response.isSuccessful) {
+                        val paymentDao = PaymentDao()
+                        val chargeList = arrayListOf<CobranzaBean>()
+                        val stockId = StockDao().getCurrentStockId()
+                        paymentDao.beginTransaction()
                         response.body()!!.payments!!.map {item ->
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
@@ -91,86 +176,7 @@ class RequestCharge {
                                 chargeList.add(cobranzaBean)
                             }
                         }
-                        onGetChargeListener.onGetChargeSuccess(chargeList)
-                    } else {
-                        onGetChargeListener.onGetChargeError()
-                    }
-                }
-
-                override fun onFailure(call: Call<PaymentJson>, t: Throwable) {
-                    onGetChargeListener.onGetChargeError()
-                }
-
-            })
-
-            return getCharge
-        }
-
-        fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {
-            val requestChargesByRute = RequestChargeByRute(id)
-            val getCharge = ApiServices.getClientRetrofit().create(
-                PointApi::class.java
-            ).getAllCobranzaByEmployee(requestChargesByRute)
-
-            getCharge.enqueue(object: Callback<PaymentJson> {
-                override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
-                    if (response.isSuccessful) {
-                        val paymentDao = PaymentDao()
-                        val chargeList = arrayListOf<CobranzaBean>()
-                        val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
-                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
-                            if (cobranzaBean == null) {
-                                val chargeBean = CobranzaBean()
-                                val paymentDao1 = PaymentDao()
-                                chargeBean.cobranza = item.cobranza
-                                chargeBean.cliente = item.cuenta
-                                chargeBean.importe = item.importe
-                                chargeBean.saldo = item.saldo
-                                chargeBean.venta = item.venta
-                                chargeBean.estado = item.estado
-                                chargeBean.observaciones = item.observaciones
-                                chargeBean.fecha = item.fecha
-                                chargeBean.hora = item.hora
-                                chargeBean.empleado = item.identificador
-                                chargeBean.updatedAt = item.updatedAt
-                                chargeBean.stockId = stockId
-                                paymentDao1.insert(chargeBean)
-                                chargeList.add(chargeBean)
-                            } else {
-                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
-                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                                    val dateItem = try {
-                                        formatter.parse(item.updatedAt)
-                                    } catch (e: Exception) {
-                                        formatter.parse(item.updatedAt + "00:00:00")
-                                    }
-                                    val dateBean = try {
-                                        formatter.parse(cobranzaBean.updatedAt)
-                                    } catch (e: Exception) {
-                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
-                                    }
-                                    dateItem?.compareTo(dateBean) ?: 1
-                                } else 1
-
-                                if (update > 0) {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.updatedAt = item.updatedAt
-                                    cobranzaBean.stockId = stockId
-                                    paymentDao.save(cobranzaBean)
-                                }
-                                chargeList.add(cobranzaBean)
-                            }
-                        }
+                        paymentDao.commmit()
                         onGetChargeListener.onGetChargeByEmployeeSuccess(chargeList)
                     } else {
                         onGetChargeListener.onGetChargeByEmployeeError()
@@ -202,7 +208,8 @@ class RequestCharge {
                         val paymentDao = PaymentDao()
                         val chargeByClientList = arrayListOf<CobranzaBean>()
                         val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
+                        paymentDao.beginTransaction()
+                        response.body()!!.payments!!.map {item ->
                             val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
                             if (cobranzaBean == null) {
                                 val cobranzaBean1 = CobranzaBean()
@@ -256,6 +263,7 @@ class RequestCharge {
                                 chargeByClientList.add(cobranzaBean)
                             }
                         }
+                        paymentDao.commmit()
                         onGetChargeByClientListener.onGetChargeByClientSuccess(chargeByClientList)
                     } else {
                         onGetChargeByClientListener.onGetChargeByClientError()
@@ -274,7 +282,7 @@ class RequestCharge {
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
             val json = Gson().toJson(chargeJson)
-            Log.d("Sin Cobranza", json)
+            Log.d("saveCharge Sin Cobranza", json)
 
             val saveCharges = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
@@ -300,7 +308,7 @@ class RequestCharge {
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
             val json = Gson().toJson(chargeJson)
-            Log.d("Sin Cobranza", json)
+            Log.d("updateCharge Sin Cobranza", json)
 
             val updateCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java

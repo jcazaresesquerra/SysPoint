@@ -14,10 +14,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.nio.CharBuffer
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class RequestClient {
     companion object {
@@ -29,15 +26,17 @@ class RequestClient {
             getClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
                     if (response.isSuccessful) {
+                        val dao = ClientDao()
+
                         val clientList = arrayListOf<ClienteBean>()
+                        val newClientList: MutableList<ClienteBean> = arrayListOf()
+
                         for (item in response.body()!!.clients!!) {
-                            //Validamos si existe el cliente
-                            val dao = ClientDao()
+
                             val bean = dao.getClientByAccount(item!!.cuenta)
 
                             if (bean == null) {
                                 val clienteBean = ClienteBean()
-                                val clientDao = ClientDao()
                                 clienteBean.nombre_comercial = item.nombreComercial
                                 clienteBean.calle = item.calle
                                 clienteBean.numero = item.numero
@@ -71,8 +70,7 @@ class RequestClient {
                                 clienteBean.saldo_credito = item.saldo_credito
                                 clienteBean.contacto_phone = item.phone_contacto
                                 clienteBean.updatedAt = item.updatedAt
-                                clientDao.insert(clienteBean)
-                                clientList.add(clienteBean)
+                                newClientList.add(clienteBean)
                             } else {
                                 val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -123,6 +121,12 @@ class RequestClient {
                                 clientList.add(bean)
                             }
                         }
+
+                        if (newClientList.isNotEmpty()) {
+                            dao.insertAll(newClientList.toList())
+                            clientList.addAll(newClientList)
+                        }
+
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
                     } else {
                         onGetAllClientsListener.onGetAllClientsError()
@@ -145,17 +149,20 @@ class RequestClient {
             getClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
                     if (response.isSuccessful) {
+
                         val clientList = arrayListOf<ClienteBean>()
+                        val newClientList: MutableList<ClienteBean> = arrayListOf()
                         val dao = ClientDao()
                         val daoRute = RuteClientDao()
 
+                        dao.beginTransaction()
+                        daoRute.beginTransaction()
                         response.body()!!.clients!!.map { item ->
-                            //Validamos si existe el cliente
                             val bean = dao.getClientByAccount(item!!.cuenta)
 
                             if (bean == null) {
                                 val clienteBean = ClienteBean()
-                                val clientDao = ClientDao()
+
                                 clienteBean.nombre_comercial = item.nombreComercial
                                 clienteBean.calle = item.calle
                                 clienteBean.numero = item.numero
@@ -190,7 +197,7 @@ class RequestClient {
                                 clienteBean.contacto_phone = item.phone_contacto
                                 clienteBean.matriz = item.matriz
                                 clienteBean.updatedAt = item.updatedAt
-                                clientDao.insert(clienteBean)
+                                dao.insert(clienteBean)
                                 clientList.add(clienteBean)
                             } else {
 
@@ -257,7 +264,7 @@ class RequestClient {
 
                                 if (beanRute == null) {
                                     val clienteBeanRute = ClientesRutaBean()
-                                    val clientDaoRute = RuteClientDao()
+
                                     clienteBeanRute.nombre_comercial = item.nombreComercial
                                     clienteBeanRute.calle = item.calle
                                     clienteBeanRute.numero = item.numero
@@ -286,7 +293,8 @@ class RequestClient {
                                     clienteBeanRute.recordatorio = item.recordatorio
                                     clienteBeanRute.phone_contact = item.phone_contacto
                                     clienteBeanRute.updatedAt = item.updatedAt
-                                    clientDaoRute.insert(clienteBeanRute)
+
+                                    daoRute.insert(clienteBeanRute)
                                 } else {
                                     val update = if (!beanRute.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -329,6 +337,14 @@ class RequestClient {
                                 }
                             }
                         }
+                        dao.commmit()
+                        daoRute.commmit()
+
+                        if (newClientList.isNotEmpty()) {
+                            //dao.insertAll(newClientList.toList())
+                            clientList.addAll(newClientList)
+                        }
+
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
                     } else {
                         onGetAllClientsListener.onGetAllClientsError()

@@ -78,10 +78,6 @@ class MainActivity: BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    // receiver
-    private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
-
-    private var isConnected = false
     private var isOldApkVersionDialogShowing = false
 
     private lateinit var progressDialog: ProgressDialog
@@ -147,7 +143,7 @@ class MainActivity: BaseActivity() {
 
         getUpdates()
         //validateToken()
-        registerNetworkBroadcastForNougat()
+        //registerNetworkBroadcastForNougat()
         //startForegroundService(Intent(this, UpdateDataService::class.java))
 
     }
@@ -269,31 +265,6 @@ class MainActivity: BaseActivity() {
             ,100)
     }
 
-
-    private fun registerNetworkBroadcastForNougat() {
-        mNetworkChangeReceiver =
-            NetworkChangeReceiver(object : ConnectionNetworkListener {
-                override fun onConnected() {
-                    isConnected = true
-                    Handler().postDelayed({
-                        NetworkStateTask { connected: Boolean ->
-                            if (connected) {
-                                getData()
-                            }
-                        }.execute()
-                    }, 100)
-                }
-
-                override fun onDisconnected() {
-                    isConnected = false
-                }
-            })
-        registerReceiver(
-            mNetworkChangeReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
-    }
-
     /**
      * Connection Listener
      */
@@ -331,194 +302,195 @@ class MainActivity: BaseActivity() {
 
 
     private fun saveVentas() {
-        try {
-            val sincVentas = SincVentas()
-            sincVentas.setOnSuccess(object : ResponseOnSuccess() {
-                @Throws(JSONException::class)
-                override fun onSuccess(response: JSONArray) {
-                }
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val sincVentas = SincVentas()
+                sincVentas.setOnSuccess(object : ResponseOnSuccess() {
+                    @Throws(JSONException::class)
+                    override fun onSuccess(response: JSONArray) {
+                    }
 
-                @Throws(java.lang.Exception::class)
-                override fun onSuccessObject(response: JSONObject) {
-                }
-            })
-            sincVentas.setOnError(object : ResponseOnError() {
-                override fun onError(error: ANError) {}
-                override fun onError(error: String) {}
-            })
-            sincVentas.postObject()
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
+                    @Throws(java.lang.Exception::class)
+                    override fun onSuccessObject(response: JSONObject) {
+                    }
+                })
+                sincVentas.setOnError(object : ResponseOnError() {
+                    override fun onError(error: ANError) {}
+                    override fun onError(error: String) {}
+                })
+                sincVentas.postObject()
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     private fun saveVisitas() {
-        val visitsDao = VisitsDao()
-        val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
-        val clientDao = ClientDao()
-        var vendedoresBean = AppBundle.getUserBean()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
-        val visitList: MutableList<Visit> = ArrayList()
-        for (item in visitasBeanListBean) {
-            val visita = Visit()
-            visita.fecha = item.fecha
-            visita.hora = item.hora
-            val clienteBean = clientDao.getClientByAccount(item.cliente.cuenta)
-            visita.cuenta = clienteBean!!.cuenta
-            visita.latidud = item.latidud
-            visita.longitud = item.longitud
-            visita.motivo_visita = item.motivo_visita
-            if (vendedoresBean != null) {
-                visita.identificador = vendedoresBean.getIdentificador()
-            } else {
-                Log.e("SysPoint", "vendedoresBean is null")
+        lifecycleScope.launch(Dispatchers.IO) {
+            val visitsDao = VisitsDao()
+            val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
+            val clientDao = ClientDao()
+            var vendedoresBean = AppBundle.getUserBean()
+            if (vendedoresBean == null) {
+                vendedoresBean = CacheInteractor().getSeller()
             }
-            visitList.add(visita)
-        }
-        VisitInteractorImp().executeSaveVisit(visitList, object : OnSaveVisitListener {
-            override fun onSaveVisitSuccess() {
-                //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+            val visitList: MutableList<Visit> = ArrayList()
+            visitasBeanListBean.map {item ->
+                val visita = Visit()
+                visita.fecha = item.fecha
+                visita.hora = item.hora
+                val clienteBean = clientDao.getClientByAccount(item.cliente.cuenta)
+                visita.cuenta = clienteBean!!.cuenta
+                visita.latidud = item.latidud
+                visita.longitud = item.longitud
+                visita.motivo_visita = item.motivo_visita
+                if (vendedoresBean != null) {
+                    visita.identificador = vendedoresBean.getIdentificador()
+                } else {
+                    Log.e("SysPoint", "vendedoresBean is null")
+                }
+                visitList.add(visita)
             }
+            VisitInteractorImp().executeSaveVisit(visitList, object : OnSaveVisitListener {
+                override fun onSaveVisitSuccess() {
+                    //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveVisitError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveVisitError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
     fun saveCobranza() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
-        val listaCobranza: MutableList<Payment> = ArrayList()
-        for (item in cobranzaBeanList) {
-            val cobranza = Payment()
-            cobranza.cobranza = item.cobranza
-            cobranza.cuenta = item.cliente
-            cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
-            cobranza.venta = item.venta
-            cobranza.estado = item.estado
-            cobranza.observaciones = item.observaciones
-            cobranza.fecha = item.fecha
-            cobranza.hora = item.hora
-            cobranza.identificador = item.empleado
-            cobranza.updatedAt = item.updatedAt
-            listaCobranza.add(cobranza)
-        }
-        ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
-            override fun onSaveChargeSuccess() {
-                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
+        lifecycleScope.launch(Dispatchers.IO) {
+            val paymentDao = PaymentDao()
+            val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
+            val listaCobranza: MutableList<Payment> = ArrayList()
+            cobranzaBeanList.map {item ->
+                val cobranza = Payment()
+                cobranza.cobranza = item.cobranza
+                cobranza.cuenta = item.cliente
+                cobranza.importe = item.importe
+                cobranza.saldo = item.saldo
+                cobranza.venta = item.venta
+                cobranza.estado = item.estado
+                cobranza.observaciones = item.observaciones
+                cobranza.fecha = item.fecha
+                cobranza.hora = item.hora
+                cobranza.identificador = item.empleado
+                cobranza.updatedAt = item.updatedAt
+                listaCobranza.add(cobranza)
             }
+            ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
+                override fun onSaveChargeSuccess() {
+                    //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveChargeError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveChargeError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
 
     private fun savePreciosEspeciales() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao = SpecialPricesDao()
+            val listaDB = dao.getPreciosBydate(Utils.fechaActual())
+            val listaPreciosServidor: MutableList<Price> = ArrayList()
 
-        //Instancia la base de datos
-        val dao = SpecialPricesDao()
-
-        //Contiene la lista de precios de la db local
-        var listaDB: List<PreciosEspecialesBean> = ArrayList()
-
-        //Obtenemos la lista por id cliente
-        listaDB = dao.getPreciosBydate(Utils.fechaActual())
-
-
-        //Contiene la lista de lo que se envia al servidor
-        val listaPreciosServidor: MutableList<Price> = ArrayList()
-
-        //Contien la lista de precios especiales locales
-        for (items in listaDB) {
-            val precio = Price()
-            if (items.active) {
-                precio.active = 1
-            } else {
-                precio.active = 0
+            //Contien la lista de precios especiales locales
+            listaDB.map {item ->
+                val precio = Price()
+                if (item.active) {
+                    precio.active = 1
+                } else {
+                    precio.active = 0
+                }
+                precio.articulo = item.articulo
+                precio.cliente = item.cliente
+                precio.precio = item.precio
+                listaPreciosServidor.add(precio)
             }
-            precio.articulo = items.articulo
-            precio.cliente = items.cliente
-            precio.precio = items.precio
-            listaPreciosServidor.add(precio)
+            PriceInteractorImp().executeSendPrices(
+                listaPreciosServidor,
+                object : SendPricesListener {
+                    override fun onSendPricesSuccess() {
+                        //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                    }
+
+                    override fun onSendPricesError() {
+                        //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                    }
+                })
         }
-        PriceInteractorImp().executeSendPrices(listaPreciosServidor, object : SendPricesListener {
-            override fun onSendPricesSuccess() {
-                //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
-            }
-
-            override fun onSendPricesError() {
-                //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
-            }
-        })
     }
 
     fun saveClientes() {
-        val clientDao = ClientDao()
-        val clientListDB = clientDao.getClientsByDay(Utils.fechaActual())
-        val clientList: MutableList<Client> = ArrayList()
-        for (item in clientListDB) {
-            val client = Client()
-            client.nombreComercial = item.nombre_comercial
-            client.calle = item.calle
-            client.numero = item.numero
-            client.colonia = item.colonia
-            client.ciudad = item.ciudad
-            client.codigoPostal = item.codigo_postal
-            client.fechaRegistro = item.fecha_registro
-            client.cuenta = item.cuenta
-            client.status = if (item.status) 1 else 0
-            client.consec = item.consec
-            client.rango = item.rango
-            client.lun = item.lun
-            client.mar = item.mar
-            client.mie = item.mie
-            client.jue = item.jue
-            client.vie = item.vie
-            client.sab = item.sab
-            client.dom = item.dom
-            client.latitud = item.latitud
-            client.longitud = item.longitud
-            client.phone_contacto = "" + item.contacto_phone
-            client.recordatorio = "" + item.recordatorio
-            client.visitas = item.visitasNoefectivas
-            client.updatedAt = item.updatedAt
-            if (item.is_credito) {
-                client.isCredito = 1
-            } else {
-                client.isCredito = 0
+        lifecycleScope.launch(Dispatchers.IO) {
+            val clientDao = ClientDao()
+            val clientListDB = clientDao.getClientsByDay(Utils.fechaActual())
+            val clientList: MutableList<Client> = ArrayList()
+            clientListDB.map {item->
+                val client = Client()
+                client.nombreComercial = item.nombre_comercial
+                client.calle = item.calle
+                client.numero = item.numero
+                client.colonia = item.colonia
+                client.ciudad = item.ciudad
+                client.codigoPostal = item.codigo_postal
+                client.fechaRegistro = item.fecha_registro
+                client.cuenta = item.cuenta
+                client.status = if (item.status) 1 else 0
+                client.consec = item.consec
+                client.rango = item.rango
+                client.lun = item.lun
+                client.mar = item.mar
+                client.mie = item.mie
+                client.jue = item.jue
+                client.vie = item.vie
+                client.sab = item.sab
+                client.dom = item.dom
+                client.latitud = item.latitud
+                client.longitud = item.longitud
+                client.phone_contacto = "" + item.contacto_phone
+                client.recordatorio = "" + item.recordatorio
+                client.visitas = item.visitasNoefectivas
+                client.updatedAt = item.updatedAt
+                if (item.is_credito) {
+                    client.isCredito = 1
+                } else {
+                    client.isCredito = 0
+                }
+                client.saldo_credito = item.saldo_credito
+                client.limite_credito = item.limite_credito
+                if (item.matriz == null || item.matriz != null && item.matriz == "null") {
+                    client.matriz = "null"
+                } else {
+                    client.matriz = item.matriz
+                }
+                clientList.add(client)
             }
-            client.saldo_credito = item.saldo_credito
-            client.limite_credito = item.limite_credito
-            if (item.matriz == null || item.matriz != null && item.matriz == "null") {
-                client.matriz = "null"
-            } else {
-                client.matriz = item.matriz
-            }
-            clientList.add(client)
-        }
-        ClientInteractorImp().executeSaveClient(clientList, object : SaveClientListener {
-            override fun onSaveClientSuccess() {
-                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-            }
+            ClientInteractorImp().executeSaveClient(clientList, object : SaveClientListener {
+                override fun onSaveClientSuccess() {
+                    //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveClientError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveClientError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
     private fun testLoadEmpleado(id: String) {
         val employeeDao = EmployeeDao()
-        var listaEmpleadosDB: List<EmpleadoBean> = ArrayList()
-        listaEmpleadosDB = employeeDao.getEmployeeById(id)
+        val listaEmpleadosDB = employeeDao.getEmployeeById(id)
         val listEmpleados: MutableList<Employee> = ArrayList()
-        for (item in listaEmpleadosDB) {
+        listaEmpleadosDB.map {item ->
             val empleado = Employee()
             empleado.nombre = item.getNombre()
             if (item.getDireccion().isEmpty()) {
@@ -571,53 +543,58 @@ class MainActivity: BaseActivity() {
     }
 
     private fun saveAbonos() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual())
-        val listaCobranza: MutableList<Payment> = java.util.ArrayList()
-        for (item in cobranzaBeanList) {
-            val cobranza = Payment()
-            cobranza.cobranza = item.cobranza
-            cobranza.cuenta = item.cliente
-            cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
-            cobranza.venta = item.venta
-            cobranza.estado = item.estado
-            cobranza.observaciones = item.observaciones
-            cobranza.fecha = item.fecha
-            cobranza.hora = item.hora
-            cobranza.identificador = item.empleado
-            cobranza.updatedAt = item.updatedAt
-            listaCobranza.add(cobranza)
-        }
-        ChargeInteractorImp().executeUpdateCharge(listaCobranza, object : OnUpdateChargeListener {
-            override fun onUpdateChargeSuccess() {
-                //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+        lifecycleScope.launch(Dispatchers.IO) {
+            val paymentDao = PaymentDao()
+            val cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual())
+            val listaCobranza: MutableList<Payment> = java.util.ArrayList()
+            cobranzaBeanList.map {item ->
+                val cobranza = Payment()
+                cobranza.cobranza = item.cobranza
+                cobranza.cuenta = item.cliente
+                cobranza.importe = item.importe
+                cobranza.saldo = item.saldo
+                cobranza.venta = item.venta
+                cobranza.estado = item.estado
+                cobranza.observaciones = item.observaciones
+                cobranza.fecha = item.fecha
+                cobranza.hora = item.hora
+                cobranza.identificador = item.empleado
+                cobranza.updatedAt = item.updatedAt
+                listaCobranza.add(cobranza)
             }
+            ChargeInteractorImp().executeUpdateCharge(
+                listaCobranza,
+                object : OnUpdateChargeListener {
+                    override fun onUpdateChargeSuccess() {
+                        //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+                    }
 
-            override fun onUpdateChargeError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
-            }
-        })
+                    override fun onUpdateChargeError() {
+                        //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+                    }
+                })
+        }
     }
 
     private fun getCobranzasByEmployee() {
-        val vendedoresBean = AppBundle.getUserBean()
-        if (vendedoresBean != null) {
-            lifecycleScope.launch(Dispatchers.Default) {
-                ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
-                    override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
-                        saveCobranza()
-                        saveAbonos()
-                    }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val vendedoresBean = AppBundle.getUserBean()
+            if (vendedoresBean != null) {
+                lifecycleScope.launch(Dispatchers.Default) {
+                    ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
+                        override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
+                            saveCobranza()
+                            saveAbonos()
+                        }
 
-                    override fun onGetChargeError() {
-                        saveCobranza()
-                        saveAbonos()
-                    }
-                })
-            }
+                        override fun onGetChargeError() {
+                            saveCobranza()
+                            saveAbonos()
+                        }
+                    })
+                }
 
-            /*ChargeInteractorImp().executeGetChargeByEmployee(
+                /*ChargeInteractorImp().executeGetChargeByEmployee(
                 vendedoresBean.identificador,
                 object : OnGetChargeByEmployeeListener {
                     override fun onGetChargeByEmployeeSuccess(chargeByClientList: List<CobranzaBean>) {
@@ -630,45 +607,49 @@ class MainActivity: BaseActivity() {
                         saveAbonos()
                     }
                 })*/
+            }
         }
     }
 
     private fun getClientsByRute() {
-        val routingDao = RoutingDao()
-        val ruteoBean = routingDao.getRutaEstablecida()
-        if (ruteoBean != null) {
-            val vendedoresBean = AppBundle.getUserBean()
-            val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta.isNotEmpty()
-            ) ruteoBean.ruta else vendedoresBean.getRute()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val routingDao = RoutingDao()
+            val ruteoBean = routingDao.getRutaEstablecida()
+            if (ruteoBean != null) {
+                val vendedoresBean = AppBundle.getUserBean()
+                val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta.isNotEmpty()
+                ) ruteoBean.ruta else vendedoresBean.getRute()
 
-            ClientInteractorImp().executeGetAllClientsByDate(
-                ruta,
-                ruteoBean.dia,
-                object : GetAllClientsListener {
-                    override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
-                        Log.d("SysPoint", "Clients updated")
-                        saveClientes()
-                    }
+                ClientInteractorImp().executeGetAllClientsByDate(
+                    ruta,
+                    ruteoBean.dia,
+                    object : GetAllClientsListener {
+                        override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
+                            Log.d("SysPoint", "Clients updated")
+                            saveClientes()
+                        }
 
-                    override fun onGetAllClientsError() {
-                        Log.d("SysPoint", "Error when update clients")
-                        saveClientes()
-                    }
-                })
+                        override fun onGetAllClientsError() {
+                            Log.d("SysPoint", "Error when update clients")
+                            saveClientes()
+                        }
+                    })
+            }
         }
     }
 
     private fun getRoles() {
-        RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
-            override fun onGetAllRolesSuccess(roles: List<RolesBean>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
+                override fun onGetAllRolesSuccess(roles: List<RolesBean>) {
+                }
 
-            }
-
-            override fun onGetAllRolesError() {
-                //progresshide()
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
-            }
-        })
+                override fun onGetAllRolesError() {
+                    //progresshide()
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
+                }
+            })
+        }
     }
 
     private fun showErrorDialog(message: String) {

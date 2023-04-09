@@ -1,6 +1,5 @@
 package com.app.syspoint.usecases
 
-import android.database.Observable
 import com.app.syspoint.interactor.charge.ChargeInteractor
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor.GetEmployeesListener
 import com.app.syspoint.interactor.prices.PriceInteractor.GetSpecialPricesListener
@@ -95,8 +94,6 @@ class GetDataUseCase {
 
             }
         })
-
-
 
         awaitClose {
             chargeCallback.cancel()

@@ -1,7 +1,5 @@
 package com.app.syspoint.repository.database.dao
 
-import com.app.syspoint.repository.database.bean.ClienteBean
-import com.app.syspoint.repository.database.bean.ClienteBeanDao
 import com.app.syspoint.repository.database.bean.EmpleadoBean
 import com.app.syspoint.repository.database.bean.EmpleadoBeanDao
 
@@ -15,7 +13,7 @@ class EmployeeDao: Dao("EmpleadoBean") {
         return if (employeeBean.isNotEmpty()) employeeBean[0] as EmpleadoBean? else null
     }
 
-    fun getActiveEmployees(): List<EmpleadoBean> {
+    suspend fun getActiveEmployees(): List<EmpleadoBean> {
         return dao.queryBuilder()
             .where(EmpleadoBeanDao.Properties.Status.eq(1))
             .orderAsc(EmpleadoBeanDao.Properties.Id)

@@ -57,31 +57,27 @@ class RequestPrice {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
                     if (response.isSuccessful) {
                         val priceList = arrayListOf<PreciosEspecialesBean>()
+
+                        val clientDao = ClientDao()
+                        val productDao = ProductDao()
+                        val specialPricesDao = SpecialPricesDao()
+
+                        specialPricesDao.beginTransaction()
                         response.body()!!.prices!!.map {item ->
-
-                            //Para obtener los datos del cliente
-                            val clientDao = ClientDao()
                             val clienteBean = clientDao.getClientByAccount(item!!.cliente) ?: return
-
-                            //Para obtener los datos del producto
-                            val productDao = ProductDao()
-                            val productoBean =
-                                productDao.getProductoByArticulo(item.articulo) ?: return
-                            val specialPricesDao = SpecialPricesDao()
+                            val productoBean = productDao.getProductoByArticulo(item.articulo) ?: return
                             val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
                                 productoBean.articulo,
                                 clienteBean.cuenta
                             )
 
-                            //Si no hay precios especiales entonces crea un precio
                             if (preciosEspecialesBean == null) {
-                                val dao = SpecialPricesDao()
                                 val bean = PreciosEspecialesBean()
                                 bean.cliente = clienteBean.cuenta
                                 bean.articulo = productoBean.articulo
                                 bean.precio = item.precio
                                 bean.active = item.active == 1
-                                dao.insert(bean)
+                                specialPricesDao.insert(bean)
                                 priceList.add(bean)
                             } else {
                                 preciosEspecialesBean.cliente = clienteBean.cuenta
@@ -92,6 +88,7 @@ class RequestPrice {
                                 priceList.add(preciosEspecialesBean)
                             }
                         }
+                        specialPricesDao.commmit()
                         onGetSpecialPricesListener.onGetSpecialPricesSuccess(priceList)
                     } else {
                         onGetSpecialPricesListener.onGetSpecialPricesError()
@@ -118,31 +115,28 @@ class RequestPrice {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
                     if (response.isSuccessful) {
                         val pricesByClientList = arrayListOf<PreciosEspecialesBean>()
-                        for (item in response.body()!!.prices!!) {
 
-                            //Para obtener los datos del cliente
-                            val clientDao = ClientDao()
+                        val clientDao = ClientDao()
+                        val productDao = ProductDao()
+                        val specialPricesDao = SpecialPricesDao()
+
+                        specialPricesDao.beginTransaction()
+                        response.body()!!.prices!!.map {item ->
                             val clienteBean = clientDao.getClientByAccount(item!!.cliente) ?: return
 
-                            //Para obtener los datos del producto
-                            val productDao = ProductDao()
-                            val productoBean =
-                                productDao.getProductoByArticulo(item!!.articulo) ?: return
-                            val specialPricesDao = SpecialPricesDao()
+                            val productoBean = productDao.getProductoByArticulo(item.articulo) ?: return
                             val preciosEspecialesBean = specialPricesDao.getPrecioEspeciaPorCliente(
                                 productoBean.articulo,
                                 clienteBean.cuenta
                             )
 
-                            //Si no hay precios especiales entonces crea un precio
                             if (preciosEspecialesBean == null) {
-                                val dao = SpecialPricesDao()
                                 val bean = PreciosEspecialesBean()
                                 bean.cliente = clienteBean.cuenta
                                 bean.articulo = productoBean.articulo
                                 bean.precio = item.precio
                                 bean.active = item.active == 1
-                                dao.insert(bean)
+                                specialPricesDao.insert(bean)
                                 pricesByClientList.add(bean)
                             } else {
                                 preciosEspecialesBean.cliente = clienteBean.cuenta
@@ -153,6 +147,7 @@ class RequestPrice {
                                 pricesByClientList.add(preciosEspecialesBean)
                             }
                         }
+                        specialPricesDao.commmit()
                         onGetPricesByClientListener.onGetPricesByClientSuccess(pricesByClientList)
                     } else {
                         onGetPricesByClientListener.onGGetPricesByClientError()
