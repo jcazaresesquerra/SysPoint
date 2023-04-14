@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.R;
 
 import com.app.syspoint.interactor.cache.CacheInteractor;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.dao.StockDao;
 import com.app.syspoint.documents.StockTicket;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
@@ -30,7 +30,7 @@ import java.util.List;
 
 public class ConfirmaInventarioActivity extends AppCompatActivity {
 
-    private List<InventarioBean> mData;
+    private List<StockBox> mData;
     private AdapterInventario mAdapter;
     private TextView tv_total_inventario_confirmar;
     @Override
@@ -58,7 +58,7 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
     private void initRecyclerView(){
         mData = new ArrayList<>();
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        mData = new StockDao().list();
 
         if (mData.size() > 0){
             // lyt_empleados.setVisibility(View.GONE);
@@ -103,10 +103,10 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
                             Utils.addActivity2Stack(ConfirmaInventarioActivity.this);
 
-                            final InventarioBean inventarioBean = new InventarioBean();
+                            final StockBox inventarioBean = new StockBox();
 
                             StockTicket stockTicket = new StockTicket();
-                            stockTicket.setBean(inventarioBean);
+                            stockTicket.setBox(inventarioBean);
                             stockTicket.template();
 
                             String ticket = stockTicket.getDocument();

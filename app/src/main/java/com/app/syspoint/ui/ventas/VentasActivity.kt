@@ -21,11 +21,10 @@ import com.app.syspoint.R
 import com.app.syspoint.databinding.*
 import com.app.syspoint.models.enum.SellType
 import com.app.syspoint.models.sealed.SellViewState
-import com.app.syspoint.repository.database.bean.VentasModelBean
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.ProductDao
-import com.app.syspoint.repository.database.dao.SellsModelDao
-import com.app.syspoint.repository.database.dao.SpecialPricesDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.SellsModelDao
+import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.ui.precaptura.PrecaptureActivity
 import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
@@ -43,7 +42,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private var isBackPressed = false
     private var confirmPrecaptureClicked = false
-    private lateinit var clientId: String
+    private var clientId: String? = null
     private var sellType: SellType = SellType.SIN_DEFINIR
     private lateinit var geocoder: Geocoder
 
@@ -59,13 +58,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         initToolBar()
         locationStart()
 
-        clientId = intent.getStringExtra(Actividades.PARAM_1) ?: ""
+        clientId = intent.getStringExtra(Actividades.PARAM_1)
 
         //showLoading()
         viewModel.clearSells()
         viewModel.setUpSells()
 
-        val data = SellsModelDao().list() as List<VentasModelBean?>
+        val data = SellsModelDao().list() as List<SellModelBox?>
         initRecyclerView(data)
 
         viewModel.updateSaldo(clientId)
@@ -74,14 +73,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel.setUpChargeByClient(clientId)
 
         val clientDao = ClientDao()
-        val clienteBean = clientDao.getClientByAccount(clientId)
+        val clienteBean = clientDao.getClientByAccount(clientId.toString())
         if (clienteBean != null) {
             if (clienteBean.recordatorio.isNullOrEmpty() || clienteBean.recordatorio == "null") {
-                viewModel.testLoadClientes(clientId)
+                viewModel.testLoadClientes(clientId.toString())
             } else {
                 showScheduleDialog(
-                    clienteBean.id.toString(),
-                    clienteBean.recordatorio
+                    clienteBean.id,
+                    clienteBean.recordatorio!!
                 )
             }
             val saldoClient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
@@ -90,7 +89,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 val clientMatriz = clientDao.getClientByAccount(clienteBean.matriz)
                 Utils.FDinero(clientMatriz?.saldo_credito ?: 0.0)
             }
-            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoClient)
+            showClientInfo(clienteBean.nombre_comercial!!, clienteBean.cuenta!!, saldoClient)
         }
         //viewModel.loadClients(clientId)
 
@@ -115,7 +114,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
 
         //Validamos si existe el producto
-        if (viewModel.validaProducto(productoBean.articulo)) {
+        if (viewModel.validaProducto(productoBean.articulo!!)) {
             showProductExists()
             return
         }
@@ -129,22 +128,22 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         //Validamos los datos del cliente
         val clientDao = ClientDao()
-        val clienteBean = clientDao.getClientByAccount(clientId)
+        val clienteBean = clientDao.getClientByAccount(clientId.toString())
 
         //Validamos si hay precio especial del cliente
-        val specialPricesDao = SpecialPricesDao()
-        val preciosEspecialesBean =
+        val specialPricesDao = com.app.syspoint.repository.objectBox.dao.SpecialPricesDao()
+        val preciosEspecialesBeanspecialPricesBox =
             specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)
 
         val preciosEspeciales = viewModel.partidasEspeciales.value?.filter {
                 precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo
                 && precioEspecialBean?.active == true
         }
-        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBean else preciosEspeciales[0]
+        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBeanspecialPricesBox else preciosEspeciales[0]
 
         val data = viewModel.addItem(
-            productoBean.articulo,
-            productoBean.descripcion,
+            productoBean.articulo!!,
+            productoBean.descripcion!!,
             precioEspacial?.precio ?: productoBean.precio,
             productoBean.iva,
             cantidadVendida
@@ -195,7 +194,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private fun renderViewState(sellViewState: SellViewState) {
         when (sellViewState) {
             is SellViewState.LoadingStart -> {
-                showLoading()
+                //showLoading()
             }
             is SellViewState.LoadingFinish -> {
                 hideLoading()
@@ -281,7 +280,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     } else if (sellType == SellType.CREDITO) {
                         val subtotal = headerBinding.textViewSubtotalVentaView.text.toString()
                         val import = headerBinding.textViewImpuestoVentaView.text.toString()
-                        viewModel.checkUserCredit(clientId, sellType, subtotal, import)
+                        viewModel.checkUserCredit(clientId.toString(), sellType, subtotal, import)
                         //binding.imgBtnFinishSale.isEnabled = true
                     } else if (sellType == SellType.CONTADO) {
                         showFinishPreSell()
@@ -296,7 +295,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         binding.imgBtnFinishVisita click {
             if (binding.imgBtnFinishVisita.isEnabled) {
                 binding.imgBtnFinishVisita.isEnabled = false
-                viewModel.createPrecatureParams(clientId)
+                viewModel.createPrecatureParams(clientId.toString())
             }
         }
 
@@ -310,7 +309,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
     }
 
-    private fun refreshRecyclerView(data: List<VentasModelBean?>) {
+    private fun refreshRecyclerView(data: List<SellModelBox?>) {
         adapter.setData(data)
 
         binding.recyclerViewVentas.adapter = adapter
@@ -325,14 +324,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel.computeImports()
     }
 
-    private fun initRecyclerView(data: List<VentasModelBean?>) {
+    private fun initRecyclerView(data: List<SellModelBox?>) {
         binding.recyclerViewVentas.setHasFixedSize(true)
 
         val manager = LinearLayoutManager(this)
         binding.recyclerViewVentas.layoutManager = manager
 
         adapter = AdapterItemsVenta(data, object: AdapterItemsVenta.OnItemLongClickListener {
-            override fun onItemLongClicked(sell: VentasModelBean): Boolean {
+            override fun onItemLongClicked(sell: SellModelBox): Boolean {
 
                 val dialog = PrettyDialog(this@VentasActivity)
                 dialog.setTitle("Eliminar")
@@ -343,7 +342,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500) { dialog.dismiss() }
                     .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
                         val dao = SellsModelDao()
-                        dao.delete(sell)
+                        dao.delete(sell.id!!)
                         viewModel.refreshSellData()
                         dialog.dismiss()
                     }.addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) { dialog.dismiss() }
@@ -352,7 +351,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 return false
             }
         }, object : AdapterItemsVenta.OnItemClickListener {
-                override fun onItemClick(sell: VentasModelBean) {
+                override fun onItemClick(sell: SellModelBox) {
                     val dialogo = Dialog(this@VentasActivity)
 
                     val dialogBinding = DialogCantidadVentaBinding
@@ -368,7 +367,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                                 } else {
                                     val dao = SellsModelDao()
                                     sell.cantidad = cantidadVenta
-                                    dao.save(sell)
+                                    dao.insert(sell)
                                     viewModel.refreshSellData()
                                     dialogo.dismiss()
                                 }
@@ -662,7 +661,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         dialog.window!!.attributes = lp
     }
 
-    private fun showScheduleDialog(clientId: String, recordatorio: String) {
+    private fun showScheduleDialog(clientId: Long, recordatorio: String) {
         val dialogBinding = DialogRecordatorioBinding.inflate(
             LayoutInflater.from(this@VentasActivity), binding.root, false)
 
@@ -696,7 +695,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             progressDialog = ProgressDialog(this@VentasActivity)
             progressDialog.setMessage("Espere un momento")
             progressDialog.setCancelable(false)
-            progressDialog.show()
+            if (!progressDialog.isShowing)
+                progressDialog.show()
         } catch (e: Exception) {
             e.printStackTrace()
         }

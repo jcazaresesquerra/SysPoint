@@ -1,8 +1,9 @@
 package com.app.syspoint.repository.request.http;
 
-import com.app.syspoint.repository.database.bean.PartidasBean;
-import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.SellsDao;
+
+import com.app.syspoint.repository.objectBox.dao.SellsDao;
+import com.app.syspoint.repository.objectBox.entities.PlayingBox;
+import com.app.syspoint.repository.objectBox.entities.SellBox;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,21 +19,21 @@ public class SincVentasByID extends Servicio {
         super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
-        final List<VentasBean> listaVentas = sellsDao.getSincVentaByID(id);
+        final List<SellBox> listaVentas = sellsDao.getSincVentaByID(id);
 
         final JSONArray jsonArrayVentas = new JSONArray();
 
 
         //Recorremos la lista de ventas
-        for (VentasBean items : listaVentas){
+        for (SellBox items : listaVentas){
 
             final JSONObject jsonObjectVenta = new JSONObject();
             jsonObjectVenta.put("venta", ""+ items.getVenta());
             jsonObjectVenta.put("tipo_doc", ""+ items.getTipo_doc());
             jsonObjectVenta.put("fecha", ""+ items.getFecha());
             jsonObjectVenta.put("hora", "" + items.getHora());
-            jsonObjectVenta.put("cliente", "" + items.getCliente().getCuenta());
-            jsonObjectVenta.put("empleado", "" + items.getEmpleado().identificador);
+            jsonObjectVenta.put("cliente", "" + items.getClient().getTarget().getCuenta());
+            jsonObjectVenta.put("empleado", "" + items.getEmployee().getTarget().getIdentificador());
             jsonObjectVenta.put("importe", "" + items.getImporte());
             jsonObjectVenta.put("impuesto", "" +items.getImpuesto());
             jsonObjectVenta.put("datos", "" + items.getDatos());
@@ -54,11 +55,11 @@ public class SincVentasByID extends Servicio {
             jsonObjectVenta.put("partidas", jsonArrayPartidas);
 
             //Recoremos los items de los productos
-            for(PartidasBean detalle : items.getListaPartidas()){
+            for(PlayingBox detalle : items.getListaPartidas()){
 
             final JSONObject jsonObjectPatidas = new JSONObject();
                 jsonObjectPatidas.put("venta", "" + detalle.getVenta());
-                jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getArticulo());
+                jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getTarget().getArticulo());
                 jsonObjectPatidas.put("cantidad", "" + detalle.getCantidad());
                 jsonObjectPatidas.put("precio", "" + detalle.getPrecio());
                 jsonObjectPatidas.put("impuesto", "" + detalle.getImpuesto());

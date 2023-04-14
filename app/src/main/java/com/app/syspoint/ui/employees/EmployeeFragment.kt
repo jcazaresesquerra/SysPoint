@@ -22,16 +22,13 @@ import com.app.syspoint.R
 import com.app.syspoint.databinding.FragmentEmployeeBinding
 import com.app.syspoint.models.sealed.EmployeeLoadingViewState
 import com.app.syspoint.models.sealed.EmployeeViewState
-import com.app.syspoint.repository.database.bean.ClienteBean
-import com.app.syspoint.repository.database.bean.EmpleadoBean
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.ui.employees.activities.ActualizarEmpleadoActivity
 import com.app.syspoint.ui.employees.activities.RegistarEmpleadoActivity
 import com.app.syspoint.ui.employees.adapters.EmployeeListAdapter
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.employee.EmployeeViewModel
 import kotlinx.android.synthetic.main.fragment_employee.*
-import java.util.function.Predicate
-import kotlin.streams.toList
 
 class EmployeeFragment: Fragment() {
 
@@ -163,7 +160,7 @@ class EmployeeFragment: Fragment() {
         }
     }
 
-    private fun refreshRecyclerView(employees: List<EmpleadoBean?>) {
+    private fun refreshRecyclerView(employees: List<EmployeeBox?>) {
         if (::adapter.isInitialized) {
             adapter.setData(employees)
             if (employees.isNotEmpty()) {
@@ -174,7 +171,7 @@ class EmployeeFragment: Fragment() {
         }
     }
     
-    private fun initRecyclerView(employees: List<EmpleadoBean?>) {
+    private fun initRecyclerView(employees: List<EmployeeBox?>) {
         if (employees.isNotEmpty()) {
             binding.lytEmpleados.setInvisible()
         } else {
@@ -187,14 +184,14 @@ class EmployeeFragment: Fragment() {
         binding.rvListaEmpleados.layoutManager = manager
 
         adapter = EmployeeListAdapter(employees, object : EmployeeListAdapter.OnItemClickListener {
-            override fun onItemClick(employeeBean: EmpleadoBean?) {
+            override fun onItemClick(employeeBean: EmployeeBox?) {
                 showSelectionFunction(employeeBean)
             }
         })
         binding.rvListaEmpleados.adapter = adapter
     }
 
-    private fun showSelectionFunction(employeeBean: EmpleadoBean?) {
+    private fun showSelectionFunction(employeeBean: EmployeeBox?) {
         val builderSingle = AlertDialog.Builder(requireContext())
         builderSingle.setIcon(R.drawable.logo)
         builderSingle.setTitle("Seleccionar opción")

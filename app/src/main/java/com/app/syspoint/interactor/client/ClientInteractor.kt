@@ -1,12 +1,12 @@
 package com.app.syspoint.interactor.client
 
 import com.app.syspoint.models.Client
-import com.app.syspoint.repository.database.bean.ClienteBean
+import com.app.syspoint.repository.objectBox.entities.ClientBox
 
 abstract class ClientInteractor {
 
     interface GetAllClientsListener {
-        fun onGetAllClientsSuccess(clientList: List<ClienteBean>)
+        fun onGetAllClientsSuccess(clientList: List<ClientBox>)
         fun onGetAllClientsError()
     }
 
@@ -21,7 +21,7 @@ abstract class ClientInteractor {
     }
 
     interface FindClientListener {
-        fun onFindClientSuccess(clientList: List<ClienteBean>)
+        fun onFindClientSuccess(clientList: List<ClientBox>)
         fun onFindClientError()
     }
 
@@ -31,7 +31,7 @@ abstract class ClientInteractor {
     }
 
     interface GetLastClient {
-        fun onGetLastClientSuccess(client: ClienteBean)
+        fun onGetLastClientSuccess(client: ClientBox)
         fun onGetLastClientError()
     }
     open fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {}

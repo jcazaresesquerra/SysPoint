@@ -1,10 +1,10 @@
 package com.app.syspoint.models.sealed
 
-import com.app.syspoint.repository.database.bean.ProductoBean
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 
 sealed class ProductViewState {
-    data class SetUpProductsState(val data: List<ProductoBean?>): ProductViewState()
-    data class RefreshProductsState(val data: List<ProductoBean?>): ProductViewState()
+    data class SetUpProductsState(val data: List<ProductBox?>): ProductViewState()
+    data class RefreshProductsState(val data: List<ProductBox?>): ProductViewState()
     object ShowProgressState: ProductViewState()
     object DismissProgressState: ProductViewState()
     object NetworkDisconnectedState: ProductViewState()
@@ -12,6 +12,6 @@ sealed class ProductViewState {
     object CanNotEditProductState: ProductViewState()
     object LoadingStartState: ProductViewState()
     object LoadingFinishState: ProductViewState()
-    data class GetProductsSuccess(val products: List<ProductoBean?>): ProductViewState()
+    data class GetProductsSuccess(val products: List<ProductBox?>): ProductViewState()
     data class GetProductsError(val error: String): ProductViewState()
 }

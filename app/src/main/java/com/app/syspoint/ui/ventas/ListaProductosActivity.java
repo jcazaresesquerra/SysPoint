@@ -2,7 +2,6 @@ package com.app.syspoint.ui.ventas;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,14 +19,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.repository.objectBox.dao.PricePersistenceDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.PersistancePricesBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.ui.products.activities.ScannerActivity;
 import com.app.syspoint.ui.ventas.adapter.AdapterListaProductosVentas;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.PersistenciaPrecioBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.PricePersistenceDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ import java.util.List;
 public class ListaProductosActivity extends AppCompatActivity {
 
     private AdapterListaProductosVentas mAdapter;
-    private List<ProductoBean> mData;
+    private List<ProductBox> mData;
     private LinearLayout lyt_productos;
     public static String articuloSeleccionado;
 
@@ -121,11 +120,11 @@ public class ListaProductosActivity extends AppCompatActivity {
             case R.id.all:
                 mData = new ArrayList<>();
                 final PricePersistenceDao dao1 = new PricePersistenceDao();
-                final PersistenciaPrecioBean bean1 = dao1.getPersistence();
+                final PersistancePricesBox bean1 = dao1.getPersistence();
 
                 if (bean1 != null){
                     bean1.setMostrar("all");
-                    dao1.save(bean1);
+                    dao1.inserBox(bean1);
                 }
                 mData = new ProductDao().getActiveProducts();
                 refreshData(mData);
@@ -134,15 +133,15 @@ public class ListaProductosActivity extends AppCompatActivity {
             case R.id.by_disponibles:
 
                 final PricePersistenceDao dao = new PricePersistenceDao();
-                final PersistenciaPrecioBean bean = dao.getPersistence();
+                final PersistancePricesBox bean = dao.getPersistence();
 
                 if (bean != null){
                     bean.setMostrar("existencia");
-                    dao.save(bean);
+                    dao.inserBox(bean);
                 }
 
                 mData = new ArrayList<>();
-                mData = (List<ProductoBean>) new ProductDao().getProductosInventario();
+                mData = (List<ProductBox>) new ProductDao().getProductosInventario();
                 refreshData(mData);
                 return true;
             default:
@@ -190,14 +189,14 @@ public class ListaProductosActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
 
         mAdapter = new AdapterListaProductosVentas(mData, position -> {
-            ProductoBean producto = mData.get(position);
+            ProductBox producto = mData.get(position);
             articuloSeleccionado = producto.getArticulo();
             Actividades.getSingleton(ListaProductosActivity.this, CantidadActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });
         recyclerView.setAdapter(mAdapter);
     }
 
-    private void refreshData(List<ProductoBean> data){
+    private void refreshData(List<ProductBox> data){
         mAdapter.setData(data);
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -210,7 +209,7 @@ public class ListaProductosActivity extends AppCompatActivity {
         String persistencia = "all";
 
         PricePersistenceDao dao = new PricePersistenceDao();
-        PersistenciaPrecioBean precioBean = dao.getPersistence();
+        PersistancePricesBox precioBean = dao.getPersistence();
         if (precioBean != null){
             if (precioBean.getMostrar().compareToIgnoreCase("all") == 0){
                 persistencia = "all";

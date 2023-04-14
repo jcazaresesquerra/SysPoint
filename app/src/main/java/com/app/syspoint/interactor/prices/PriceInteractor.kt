@@ -2,7 +2,7 @@ package com.app.syspoint.interactor.prices
 
 import com.app.syspoint.models.Price
 import com.app.syspoint.models.json.SpecialPriceJson
-import com.app.syspoint.repository.database.bean.PreciosEspecialesBean
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox
 import retrofit2.Response
 
 abstract class PriceInteractor {
@@ -13,7 +13,7 @@ abstract class PriceInteractor {
     }
 
     interface GetSpecialPricesListener {
-        fun onGetSpecialPricesSuccess(priceList: List<PreciosEspecialesBean>)
+        fun onGetSpecialPricesSuccess(priceList: List<SpecialPricesBox>)
         fun onGetSpecialPricesError()
     }
 
@@ -23,7 +23,7 @@ abstract class PriceInteractor {
     }
 
     interface GetPricesByClientListener {
-        fun onGetPricesByClientSuccess(pricesByClientList: List<PreciosEspecialesBean>)
+        fun onGetPricesByClientSuccess(pricesByClientList: List<SpecialPricesBox>)
         fun onGGetPricesByClientError()
     }
 

@@ -24,8 +24,8 @@ import com.app.syspoint.R
 import com.app.syspoint.bluetooth.ConnectedThread
 import com.app.syspoint.databinding.ActivityCashCloseBinding
 import com.app.syspoint.documents.CloseTicket
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.dao.PrinterDao
+import com.app.syspoint.repository.objectBox.dao.PrinterDao
+import com.app.syspoint.repository.objectBox.entities.StockBox
 import com.app.syspoint.ui.bluetooth.BluetoothActivity
 import com.app.syspoint.ui.stock.StockFragment
 import com.app.syspoint.utils.Actividades
@@ -137,9 +137,9 @@ class CashCloseActivity: AppCompatActivity() {
                     return false
                 }
 
-                val inventarioBean = InventarioBean()
+                val inventarioBean = StockBox()
                 val ticketInventario = CloseTicket()
-                ticketInventario.bean = inventarioBean
+                ticketInventario.box = inventarioBean
                 ticketInventario.template()
                 val ticket = ticketInventario.document
                 templateTicket = ticket

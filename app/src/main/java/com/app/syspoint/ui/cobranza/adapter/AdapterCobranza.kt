@@ -4,12 +4,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemCobranzaCardviewBinding
-import com.app.syspoint.repository.database.dao.PaymentDao
-import com.app.syspoint.ui.cobranza.CobranzaModel
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.entities.ChargeModelBox
 import com.app.syspoint.utils.Utils
 
 class AdapterCobranza(
-    data: List<CobranzaModel?>,
+    data: List<ChargeModelBox?>,
     val onItemLongClickListener: OnItemLongClickListener
     ): RecyclerView.Adapter<AdapterCobranza.Holder>() {
 
@@ -30,7 +30,7 @@ class AdapterCobranza(
 
     override fun getItemCount(): Int =  if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<CobranzaModel?>) {
+    fun setData(data: List<ChargeModelBox?>) {
         mData = data
         notifyDataSetChanged()
     }
@@ -40,7 +40,7 @@ class AdapterCobranza(
         val onItemLongClickListener: OnItemLongClickListener
         ): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: CobranzaModel?) {
+        fun bind(item: ChargeModelBox?) {
             item?.let { charge ->
                 val import = charge.importe
                 val acuenta = charge.acuenta
@@ -50,8 +50,7 @@ class AdapterCobranza(
                 binding.tvImporteCobranzaView.text = Utils.FDinero(charge.importe)
                 binding.tvSaldoCobranzaView.text = Utils.FDinero(charge.saldo)
                 try {
-                    val paymentDao = PaymentDao()
-                    val chargeBean = paymentDao.getByCobranza(charge.cobranza)
+                    val chargeBean = ChargeDao().getByCobranza(charge.cobranza)
                     chargeBean?.let {
                         binding.tvFechaCobranzaView.text = it.fecha
                     }

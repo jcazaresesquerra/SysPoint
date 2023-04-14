@@ -38,25 +38,25 @@ import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.R;
+import com.app.syspoint.repository.objectBox.AppBundle;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.SellsDao;
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.PlayingBox;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.SellBox;
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.AppBundle;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.InventarioHistorialBean;
-import com.app.syspoint.repository.database.bean.PartidasBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.StockHistoryDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.database.dao.SellsDao;
 import com.app.syspoint.documents.SellTicket;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
@@ -99,7 +99,7 @@ public class ListaVentasFragment extends Fragment {
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
     private BluetoothSocket mBTSocket = null; // bi-directional client-to-client data path
 
-    private List<VentasBean> mData;
+    private List<SellBox> mData;
     private AdapterListaVentas mAdapter;
     private LinearLayout lyt_empleados;
 
@@ -192,7 +192,7 @@ public class ListaVentasFragment extends Fragment {
 
     private void showSelecctionFunction(int position) {
 
-        final VentasBean venta = mData.get(position);
+        final SellBox venta = mData.get(position);
 
 
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
@@ -224,7 +224,7 @@ public class ListaVentasFragment extends Fragment {
                 String identificador = "";
 
                 //Obtiene el nombre del vendedor
-                EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+                EmployeeBox vendedoresBean = AppBundle.getUserBox();
 
                 if (vendedoresBean == null && getContext() != null) {
                     vendedoresBean = new CacheInteractor().getSeller();
@@ -234,7 +234,7 @@ public class ListaVentasFragment extends Fragment {
                     identificador = vendedoresBean.getIdentificador();
                 }
                 final RolesDao rolesDao = new RolesDao();
-                final RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Ventas");
+                final RolesBox rolesBean = rolesDao.getRolByEmpleado(identificador, "Ventas");
 
 
                 if (strName == null ||  strName.compareToIgnoreCase("Subir comprobante") == 0 ) {
@@ -296,7 +296,7 @@ public class ListaVentasFragment extends Fragment {
                                 public void onClick() {
                                     if (!cancelSellClicked) {
                                         cancelSellClicked = true;
-                                        EmpleadoBean cancelaUsuario = AppBundle.getUserBean();
+                                        EmployeeBox cancelaUsuario = AppBundle.getUserBox();
 
                                         if (cancelaUsuario == null && getContext() != null) {
                                             cancelaUsuario = new CacheInteractor().getSeller();
@@ -305,9 +305,9 @@ public class ListaVentasFragment extends Fragment {
                                         SellsDao sellsDao = new SellsDao();
                                         venta.setEstado("CA");
                                         venta.setUsuario_cancelo(cancelaUsuario.getNombre());
-                                        sellsDao.save(venta);
+                                        sellsDao.insertBox(venta);
 
-                                        mData = (List<VentasBean>) new SellsDao().getListVentasByDate(Utils.fechaActual());
+                                        mData = (List<SellBox>) new SellsDao().getListVentasByDate(Utils.fechaActual());
                                         mAdapter.setData(mData);
 
                                         ProgressDialog progressDialog = new ProgressDialog(getActivity());
@@ -322,17 +322,17 @@ public class ListaVentasFragment extends Fragment {
 
                                             if (venta.getCobranza() != null) {
                                                 //Actualiza el documento de la cobranza
-                                                final PaymentDao paymentDao = new PaymentDao();
-                                                final CobranzaBean cobranzaBean = paymentDao.getByCobranza(venta.getCobranza());
+                                                ChargeDao chargeDao = new ChargeDao();
+                                                ChargeBox cobranzaBean = chargeDao.getByCobranza(venta.getCobranza());
                                                 if (cobranzaBean != null) {
                                                     cobranzaBean.setEstado("CA");
-                                                    paymentDao.save(cobranzaBean);
+                                                    chargeDao.insertBox(cobranzaBean);
                                                     final ClientDao clientDao = new ClientDao();
-                                                    final ClienteBean clienteBean = clientDao.getClientByAccount(venta.getCliente().getCuenta());
+                                                    final ClientBox clienteBean = clientDao.getClientByAccount(venta.getClient().getTarget().getCuenta());
                                                     if (clienteBean != null) {
                                                         clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
-                                                        clientDao.save(clienteBean);
-                                                        testLoadClientes(String.valueOf(clienteBean.getId()));
+                                                        clientDao.insertBox(clienteBean);
+                                                        testLoadClientes(clienteBean.getId());
                                                         saveCharge();
                                                     }
                                                 }
@@ -342,24 +342,24 @@ public class ListaVentasFragment extends Fragment {
                                             }
 
 
-                                            final VentasBean ventasBean = sellsDao.getVentaByInventario(venta.getVenta());
+                                            final SellBox ventasBean = sellsDao.getVentaByInventario(venta.getVenta());
 
-                                            for (PartidasBean item : ventasBean.getListaPartidas()) {
+                                            for (PlayingBox item : ventasBean.getListaPartidas()) {
                                                 final ProductDao productDao = new ProductDao();
-                                                final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                                                final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
 
                                                 if (productoBean != null) {
 
                                                     productoBean.setExistencia(productoBean.getExistencia() + item.getCantidad());
-                                                    productDao.save(productoBean);
+                                                    productDao.insertBox(productoBean);
 
 
                                                     final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                                                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                                                    final StockHistoryBox inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                                                     if (inventarioHistorialBean != null) {
                                                         inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() - item.getCantidad());
-                                                        stockHistoryDao.save(inventarioHistorialBean);
+                                                        stockHistoryDao.insertBox(inventarioHistorialBean);
 
                                                     }
                                                 }
@@ -381,7 +381,7 @@ public class ListaVentasFragment extends Fragment {
                 } else {
 
                     SellTicket sellTicket = new SellTicket();
-                    sellTicket.setBean(venta);
+                    sellTicket.setBox(venta);
                     sellTicket.template();
 
                     if (mConnectedThread != null) //First check to make sure thread created
@@ -397,10 +397,10 @@ public class ListaVentasFragment extends Fragment {
 
     private void saveCharge() {
 
-        final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> chargeBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
+        ChargeDao chargeDao = new ChargeDao();
+        List<ChargeBox> chargeBoxList = chargeDao.getCobranzaFechaActual(Utils.fechaActual());
         List<Payment> chargeList = new ArrayList<>();
-        for (CobranzaBean item : chargeBeanList) {
+        for (ChargeBox item : chargeBoxList) {
             Payment charge = new Payment();
             charge.setCobranza(item.getCobranza());
             charge.setCuenta(item.getCliente());
@@ -428,14 +428,13 @@ public class ListaVentasFragment extends Fragment {
         });
     }
 
-    private void testLoadClientes(String idCliente) {
+    private void testLoadClientes(Long idCliente) {
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getByIDClient(idCliente);
+        List<ClientBox> listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
+        for (ClientBox item : listaClientesDB) {
             Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
@@ -460,7 +459,7 @@ public class ListaVentasFragment extends Fragment {
             cliente.setPhone_contacto("" + item.getContacto_phone());
             cliente.setRecordatorio("" + item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
-            if (item.getIs_credito()) {
+            if (item.isCredito()) {
                 cliente.setCredito(1);
             } else {
                 cliente.setCredito(0);
@@ -583,7 +582,7 @@ public class ListaVentasFragment extends Fragment {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
 

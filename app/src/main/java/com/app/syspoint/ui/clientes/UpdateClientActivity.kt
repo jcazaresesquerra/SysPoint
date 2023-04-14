@@ -19,8 +19,8 @@ import com.app.syspoint.databinding.ActivityActualizaClienteBinding
 import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.models.Client
-import com.app.syspoint.repository.database.bean.ClienteBean
-import com.app.syspoint.repository.database.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.utils.*
 import java.io.IOException
 import java.util.*
@@ -186,7 +186,7 @@ class UpdateClientActivity: AppCompatActivity() {
             binding.checkborViernesActualizaCliente.isChecked = clienteBean.vie == 1
             binding.checkborSabadoActualizaCliente.isChecked = clienteBean.sab == 1
             binding.checkborDomingoActualizaCliente.isChecked = clienteBean.dom == 1
-            binding.etActualizaCredito.isChecked = clienteBean.is_credito
+            binding.etActualizaCredito.isChecked = clienteBean.isCredito
             binding.etActualizaLatitud.setText(clienteBean.latitud)
             binding.etActualizaLongitud.setText(clienteBean.longitud)
             binding.inpMatrizAsignadaActualizaCliente.setText(clienteBean.matriz)
@@ -338,13 +338,13 @@ class UpdateClientActivity: AppCompatActivity() {
             bean.latitud = binding.etActualizaLatitud.text.toString()
             bean.longitud = binding.etActualizaLongitud.text.toString()
             bean.contacto_phone = binding.inpContactoPhoneActualizaCliente.text.toString()
-            bean.is_credito = binding.etActualizaCredito.isChecked
+            bean.isCredito = binding.etActualizaCredito.isChecked
             bean.limite_credito = binding.etRegistroActualizaLimiteCredito.text.toString().replace("$", "").replace(" ", "").toDouble()
             bean.saldo_credito = binding.etRegistroActualizaCredito.text.toString().replace("$", "").replace(" ", "").toDouble()
             bean.matriz = binding.inpMatrizAsignadaActualizaCliente.text.toString()
             bean.date_sync = Utils.fechaActual()
             bean.updatedAt = Utils.fechaActualHMS()
-            dao.save(bean)
+            dao.insert(bean)
             idCliente = bean.id.toString()
             if (!Utils.isNetworkAvailable(application)) {
                 //showDialogNotConnectionInternet();
@@ -378,7 +378,7 @@ class UpdateClientActivity: AppCompatActivity() {
         dialog.window!!.attributes = lp
     }
 
-    private fun testLoadClientes(client: ClienteBean) {
+    private fun testLoadClientes(client: ClientBox) {
         if (!idCliente.isNullOrEmpty()) {
             binding.rlprogressClienteActualiza.setVisible()
             //val clientDao = ClientDao()
@@ -411,7 +411,7 @@ class UpdateClientActivity: AppCompatActivity() {
                 cliente.phone_contacto = item.contacto_phone
                 cliente.recordatorio = item.recordatorio ?: "null"
                 cliente.visitas = item.visitasNoefectivas
-                cliente.isCredito = if (item.is_credito) 1 else 0
+                cliente.isCredito = if (item.isCredito) 1 else 0
                 cliente.saldo_credito = item.saldo_credito
                 cliente.limite_credito = item.limite_credito
                 if (item.matriz === "null" && item.matriz == null) {

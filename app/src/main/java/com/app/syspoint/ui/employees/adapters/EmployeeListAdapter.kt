@@ -8,7 +8,7 @@ import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaEmpleadosBinding
-import com.app.syspoint.repository.database.bean.EmpleadoBean
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.utils.click
 import com.github.satoshun.coroutine.autodispose.view.autoDisposeScope
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class EmployeeListAdapter(
-    data: List<EmpleadoBean?>,
+    data: List<EmployeeBox?>,
     val onItemClickListener: OnItemClickListener
     ): RecyclerView.Adapter<EmployeeListAdapter.Holder>(), Filterable {
 
@@ -27,7 +27,7 @@ class EmployeeListAdapter(
     private var mDataFilter = data
 
     interface OnItemClickListener {
-        fun onItemClick(employeeBean: EmpleadoBean?)
+        fun onItemClick(employeeBean: EmployeeBox?)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -41,7 +41,7 @@ class EmployeeListAdapter(
 
     override fun getItemCount(): Int = if (mDataFilter.isEmpty()) 0 else mDataFilter.size
 
-    fun setData(data: List<EmpleadoBean?>) {
+    fun setData(data: List<EmployeeBox?>) {
         mDataFilter = data
         mData = data
         notifyDataSetChanged()
@@ -56,11 +56,11 @@ class EmployeeListAdapter(
                 } else {
 
                     //TODO filtro productos
-                    val filtroEmpleados: MutableList<EmpleadoBean?> = ArrayList()
+                    val filtroEmpleados: MutableList<EmployeeBox?> = ArrayList()
                     for (row in mData) {
                         row?.let {
-                            if (row.nombre.lowercase(Locale.getDefault()).contains(filtro)
-                                || row.identificador.lowercase(Locale.getDefault()).contains(filtro)) {
+                            if (row.nombre!!.lowercase(Locale.getDefault()).contains(filtro)
+                                || row.identificador!!.lowercase(Locale.getDefault()).contains(filtro)) {
                                 filtroEmpleados.add(row)
                             }
                         }
@@ -73,7 +73,7 @@ class EmployeeListAdapter(
             }
 
             override fun publishResults(constraint: CharSequence, results: FilterResults) {
-                mDataFilter = results.values as ArrayList<EmpleadoBean?>
+                mDataFilter = results.values as ArrayList<EmployeeBox?>
                 notifyDataSetChanged()
             }
         }
@@ -84,15 +84,15 @@ class EmployeeListAdapter(
         val _stateFlow = MutableStateFlow(-1)
         val stateFlow = _stateFlow.asStateFlow()
 
-        fun bind(empleadoBean: EmpleadoBean?, onItemClickListener: OnItemClickListener) {
+        fun bind(empleadoBean: EmployeeBox?, onItemClickListener: OnItemClickListener) {
             empleadoBean?.let { empleado ->
-                binding.textViewListaEmpleadoNombre.text = empleado.getNombre()
-                binding.textViewListaEmpleadoIdentificador.text = empleado.getIdentificador()
+                binding.textViewListaEmpleadoNombre.text = empleado.nombre
+                binding.textViewListaEmpleadoIdentificador.text = empleado.identificador
 
-                if (empleado.getPath_image() != null) {
+                if (empleado.path_image != null) {
                     binding.imgEmpleado.autoDisposeScope.launch(Dispatchers.Default) {
                         val decodedString: ByteArray =
-                            Base64.decode(empleado.getPath_image(), Base64.DEFAULT)
+                            Base64.decode(empleado.path_image, Base64.DEFAULT)
                         val decodedByte =
                             BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
 

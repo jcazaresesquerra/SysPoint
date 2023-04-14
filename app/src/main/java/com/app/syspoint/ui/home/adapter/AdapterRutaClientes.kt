@@ -9,14 +9,13 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
-import com.app.syspoint.repository.database.bean.ClientesRutaBean
-import com.app.syspoint.repository.database.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
 import java.util.*
 
 class AdapterRutaClientes(
-    data: List<ClientesRutaBean?>,
+    data: List<RuteClientBox?>,
     val onItemClickListener: OnItemClickListener,
     val onItemLongClickListener: OnItemLongClickListener
     ): RecyclerView.Adapter<AdapterRutaClientes.Holder>() {
@@ -42,14 +41,14 @@ class AdapterRutaClientes(
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<ClientesRutaBean?>) {
+    fun setData(data: List<RuteClientBox?>) {
         mData = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaClientesRutaBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clienteBean: ClientesRutaBean?, position: Int, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
+        fun bind(clienteBean: RuteClientBox?, position: Int, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
             clienteBean?.let { clienteBean ->
                 binding.textViewNombreClienteRuta.text = position.toString() + " - " + clienteBean.nombre_comercial
                 binding.textViewDireccionClienteRuta.text = clienteBean.calle + " " + clienteBean.numero

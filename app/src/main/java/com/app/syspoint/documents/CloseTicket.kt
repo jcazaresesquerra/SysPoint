@@ -5,8 +5,10 @@ import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.models.CloseCash
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.CashCloseBox
+import com.app.syspoint.repository.objectBox.entities.StockBox
 
 class CloseTicket: BaseTicket() {
 
@@ -14,9 +16,9 @@ class CloseTicket: BaseTicket() {
         super.template()
         val stockId = StockDao().getCurrentStockId()
 
-        val listaCorte: List<CorteBean> = SellsDao().getAllPartsGroupedClient()
-        val mLidata: List<InventarioBean> = StockDao().list() as List<InventarioBean>
-        val mListCharge: List<CloseCash> = PaymentDao().getAllConfirmedChargesToday(stockId)
+        val listaCorte: List<CashCloseBox> = SellsDao().getAllPartsGroupedClient()
+        val mLidata: List<StockBox> = StockDao().list()
+        val mListCharge: List<CloseCash> = ChargeDao().getAllConfirmedChargesToday(stockId)
 
         var ticket : String = when(BuildConfig.FLAVOR) {
             Constants.DON_AQUI_FLAVOR_TAG -> {
@@ -44,9 +46,9 @@ class CloseTicket: BaseTicket() {
         }
 
         listaCorte.map { partida ->
-            if (partida.clienteBean.cuenta.compareTo(cliente, ignoreCase = true) != 0) {
-                cliente = partida.clienteBean.cuenta
-                ticket += partida.clienteBean.nombre_comercial + Constants.NEW_LINE
+            if (partida.client.target.cuenta!!.compareTo(cliente, ignoreCase = true) != 0) {
+                cliente = partida.client.target.cuenta!!
+                ticket += partida.client.target.nombre_comercial + Constants.NEW_LINE
             }
             ticket += partida.descripcion + Constants.NEW_LINE
 
@@ -73,11 +75,11 @@ class CloseTicket: BaseTicket() {
         mLidata.map { inventory ->
             val stockHistoryDao = StockHistoryDao()
             val inventarioHistorialBean =
-                stockHistoryDao.getInvatarioPorArticulo(inventory.articulo.articulo)
+                stockHistoryDao.getInvatarioPorArticulo(inventory.articulo!!.target.articulo)
             val vendido = inventarioHistorialBean?.cantidad ?: 0
             val inicial = inventory.totalCantidad
             val final = inicial - vendido
-            ticket += inventory.articulo.descripcion + Constants.NEW_LINE +
+            ticket += inventory.articulo!!.target.descripcion + Constants.NEW_LINE +
                     String.format(
                         "%1$-5s  %2$11s  %3$10s",
                         inicial,
@@ -133,12 +135,12 @@ class CloseTicket: BaseTicket() {
     }
 
     override fun buildSyspointHeader(): String {
-        var vendedoresBean = AppBundle.getUserBean()
+        var employeeBox = AppBundle.getUserBox()
 
-        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
+        if (employeeBox == null) employeeBox = CacheInteractor().getSeller()
 
-        val sellers = if (vendedoresBean != null)
-            vendedoresBean.getNombre() + Constants.NEW_LINE
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
         else Constants.EMPTY_STRING + Constants.NEW_LINE
 
         return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
@@ -161,12 +163,12 @@ class CloseTicket: BaseTicket() {
     }
 
     override fun buildDonAquiHeader(): String {
-        var vendedoresBean = AppBundle.getUserBean()
+        var employeeBox = AppBundle.getUserBox()
 
-        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
+        if (employeeBox == null) employeeBox = CacheInteractor().getSeller()
 
-        val sellers = if (vendedoresBean != null)
-            vendedoresBean.getNombre() + Constants.NEW_LINE
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
         else Constants.EMPTY_STRING + Constants.NEW_LINE
 
         return "         AGUAS DON AQUI         " + Constants.NEW_LINE +

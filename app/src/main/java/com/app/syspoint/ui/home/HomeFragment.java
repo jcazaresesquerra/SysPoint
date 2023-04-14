@@ -29,16 +29,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.R;
 import com.app.syspoint.models.sealed.GetClientsByRuteViewState;
 import com.app.syspoint.models.sealed.HomeLoadingViewState;
-import com.app.syspoint.models.sealed.HomeViewState;
 import com.app.syspoint.models.sealed.SetRuteViewState;
-import com.app.syspoint.repository.database.bean.AppBundle;
-import com.app.syspoint.repository.database.bean.ClientesRutaBean;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
-import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.AppBundle;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.app.syspoint.ui.MainActivity;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.home.activities.MapsRuteoActivity;
@@ -59,7 +58,7 @@ import java.util.List;
 public class HomeFragment extends Fragment {
 
     AdapterRutaClientes mAdapter;
-    List<ClientesRutaBean> mData;
+    List<RuteClientBox> mData;
     private RelativeLayout rlprogress;
     private LinearLayout lyt_clientes;
 
@@ -166,7 +165,7 @@ public class HomeFragment extends Fragment {
 
     private void creaRutaSeleccionada() {
         RoutingDao dao = new RoutingDao();
-        RuteoBean bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
+        RoutingBox bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
 
         if (bean != null) {
             PrettyDialog dialog = new PrettyDialog(getContext());
@@ -213,9 +212,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void showDialog() {
-        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
         if (vendedoresBean !=  null) {
-            RolesBean rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.identificador, "Rutas");
+            RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), "Rutas");
 
             boolean editRuta = rutasRol != null && rutasRol.getActive();
 
@@ -278,7 +277,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void setDataList(List<ClientesRutaBean> list) {
+    private void setDataList(List<RuteClientBox> list) {
         mData = list;
         mAdapter.setData(mData);
         showHideImage();
@@ -287,10 +286,10 @@ public class HomeFragment extends Fragment {
     private void loadRuta() {
         mData = new ArrayList<>();
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null && ruteoBean.getDia() > 0) {
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+            EmployeeBox vendedoresBean = AppBundle.getUserBox();
             String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
 
             mData = new RuteClientDao().getAllRutaClientes(ruta, ruteoBean.getDia());
@@ -316,7 +315,7 @@ public class HomeFragment extends Fragment {
 
         mAdapter = new AdapterRutaClientes(mData, position -> {
             if (position >= 0) {
-                ClientesRutaBean clienteBean = mData.get(position);
+                RuteClientBox clienteBean = mData.get(position);
                 HashMap<String, String> parametros = new HashMap<>();
                 parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                 Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);

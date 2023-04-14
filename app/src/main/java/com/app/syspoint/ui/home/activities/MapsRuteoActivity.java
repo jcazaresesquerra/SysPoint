@@ -18,6 +18,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
 import com.google.android.gms.common.ConnectionResult;
@@ -34,12 +40,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.ClientesRutaBean;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
-import com.app.syspoint.repository.database.dao.RoutingDao;
 import com.app.syspoint.ui.dialogs.DialogOptionsClients;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
@@ -50,7 +50,7 @@ import java.util.Objects;
 
 public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMarkerClickListener {
 
-    List<ClientesRutaBean> mData = null;
+    List<RuteClientBox> mData = null;
     private static final int REQUEST_PERMISSION_LOCATION = 991;
     private GoogleMap gMap;
     private GoogleApiClient googleApiClient;
@@ -163,7 +163,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
     private void updateLastLocation(boolean move) {
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
             //if (ruteoBean.getDia() == 1) {
@@ -186,12 +186,12 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             //if (ruteoBean.getDia() == 7) {
             //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
             //}
-            mData = (List<ClientesRutaBean>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
+            mData = (List<RuteClientBox>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
         LatLng position = null;
         int i = 1;
-        for (ClientesRutaBean item : mData) {
+        for (RuteClientBox item : mData) {
             if (item.getLatitud() != null && item.getLongitud() != null) {
                 position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
@@ -266,7 +266,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
     void getDataRuteo(){
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
 
@@ -291,7 +291,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
            //    mData = (List<ClientesRutaBean>) (List<?>) new ClientesRutaDao().getListaClientesRutaDomingo(ruteoBean.getRuta(), 1);
            //}
 
-            mData = (List<ClientesRutaBean>)new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
+            mData = (List<RuteClientBox>)new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
     }
@@ -333,7 +333,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             markerClick = true;
 
             ClientDao clientDao = new ClientDao();
-            ClienteBean clienteBean = clientDao.getClientByAccount(marker.getSnippet());
+            ClientBox clienteBean = clientDao.getClientByAccount(marker.getSnippet());
 
             final PrettyDialog dialog = new PrettyDialog(this);
             dialog.setTitle("" + clienteBean.getNombre_comercial())

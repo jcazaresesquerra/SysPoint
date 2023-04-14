@@ -5,12 +5,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaVentasBinding
-import com.app.syspoint.repository.database.bean.VentasBean
+import com.app.syspoint.repository.objectBox.entities.SellBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 
 class AdapterListaVentas(
-    data: List<VentasBean?>,
+    data: List<SellBox?>,
     val onItemClickListener: OnItemClickListener
 ): RecyclerView.Adapter<AdapterListaVentas.Holder>() {
 
@@ -31,23 +31,23 @@ class AdapterListaVentas(
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<VentasBean?>) {
+    fun setData(data: List<SellBox?>) {
         mData = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaVentasBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(ventasBean: VentasBean?, onItemClickListener: OnItemClickListener) {
+        fun bind(ventasBean: SellBox?, onItemClickListener: OnItemClickListener) {
             ventasBean?.let { venta ->
-                binding.textViewListaVentaClienteView.text = venta.cliente.cuenta
-                binding.textViewListaVentaClienteNombreView.text = venta.cliente.nombre_comercial
+                binding.textViewListaVentaClienteView.text = venta.client!!.target.cuenta
+                binding.textViewListaVentaClienteNombreView.text = venta.client!!.target.nombre_comercial
                 binding.textViewListaVentaFechaView.text = venta.fecha
                 binding.textViewListaVentaEstadoView.text = venta.estado
                 binding.textViewListaVentaImporteView.text = Utils.formatMoneyMX(venta.importe + venta.impuesto)
 
                 binding.textViewListaVentaEstadoView.apply {
-                    if (venta.estado.compareTo("CA", ignoreCase = true) == 0) {
+                    if (venta.estado!!.compareTo("CA", ignoreCase = true) == 0) {
                         setTextColor(Color.RED)
                         text = "CANCELADO"
                     } else {

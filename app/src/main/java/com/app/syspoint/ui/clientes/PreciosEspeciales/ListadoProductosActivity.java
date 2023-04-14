@@ -28,13 +28,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.SpecialPricesDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.models.Price;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
 import com.app.syspoint.ui.products.adapters.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
@@ -49,7 +49,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
     private LinearLayout lyt_productos;
 
     private AdapterListaProductos mAdapter;
-    private List<ProductoBean> mData;
+    private List<ProductBox> mData;
 
     public static String articuloSeleccionado;
     private String idCliente;
@@ -130,7 +130,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
         mData = new ArrayList<>();
-        mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
+        mData = (List<ProductBox>) new ProductDao().getActiveProducts();
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -179,27 +179,27 @@ public class ListadoProductosActivity extends AppCompatActivity {
             final String precio = edittext_precio_especial.getText().toString();
 
             ProductDao productDao = new ProductDao();
-            ProductoBean productoBean = productDao.getProductoByArticulo(articuloSeleccionado);
+            ProductBox productoBean = productDao.getProductoByArticulo(articuloSeleccionado);
 
             ClientDao clientDao = new ClientDao();
-            ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+            ClientBox clienteBean = clientDao.getClientByAccount(idCliente);
 
             if (precio != null ){
                 //Validamos si existe el precio
                 SpecialPricesDao dao = new SpecialPricesDao();
-                PreciosEspecialesBean bean = dao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
+                SpecialPricesBox bean = dao.getPrecioEspeciaPorCliente(productoBean.getArticulo(), clienteBean.getCuenta());
 
                 if (bean == null) {
                     //Crea
                     SpecialPricesDao specialPricesDao = new SpecialPricesDao();
-                    PreciosEspecialesBean preciosEspecialesBean = new PreciosEspecialesBean();
+                    SpecialPricesBox preciosEspecialesBean = new SpecialPricesBox();
 
                     preciosEspecialesBean.setArticulo(productoBean.getArticulo());
                     preciosEspecialesBean.setCliente(clienteBean.getCuenta());
                     preciosEspecialesBean.setPrecio(Double.parseDouble(precio));
                     preciosEspecialesBean.setActive(true);
                     preciosEspecialesBean.setFecha_sync(Utils.fechaActual());
-                    specialPricesDao.save(preciosEspecialesBean);
+                    specialPricesDao.inserBox(preciosEspecialesBean);
                     //Sincroniza la información con el servidor
 
 
@@ -220,7 +220,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
                             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialog.dismiss())
                             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_600, () -> {
                                 bean.setPrecio(Double.parseDouble(precio));
-                                dao.save(bean);
+                                dao.inserBox(bean);
 
                                 if (!Utils.isNetworkAvailable(getApplication())) {
                                     //showDialogNotConnectionInternet();
@@ -278,10 +278,10 @@ public class ListadoProductosActivity extends AppCompatActivity {
         progressshow();
 
         SpecialPricesDao dao =  new SpecialPricesDao();
-        List<PreciosEspecialesBean> listaDB = dao.getListaPrecioPorCliente(idCliente);
+        List<SpecialPricesBox> listaDB = dao.getListaPrecioPorCliente(idCliente);
         List<Price> listaPreciosServidor = new ArrayList<>();
 
-        for (PreciosEspecialesBean items : listaDB){
+        for (SpecialPricesBox items : listaDB){
             Price precio = new Price();
             precio.setActive(items.getActive()? 1 : 0);
             precio.setArticulo(items.getArticulo());

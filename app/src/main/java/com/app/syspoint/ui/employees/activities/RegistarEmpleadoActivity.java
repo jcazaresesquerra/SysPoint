@@ -42,11 +42,10 @@ import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.EmployeeDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
@@ -94,6 +93,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private int no_cuenta = 0;
     byte[] imageByteArray;
     Bitmap decoded;
+    private Long idEmpleado;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -379,7 +380,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
     private boolean validaEmpleado() {
         EmployeeDao dao = new EmployeeDao();
-        EmpleadoBean bean = dao.getEmployeeByIdentifier(ip_registro_empleado_id.getText().toString());
+        EmployeeBox bean = dao.getEmployeeByIdentifier(ip_registro_empleado_id.getText().toString());
         return bean != null;
     }
 
@@ -481,10 +482,9 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }
 
-    String idEmpleado;
     private void saveEmpleado() {
         EmployeeDao employeeDao = new EmployeeDao();
-        EmpleadoBean employee = new EmpleadoBean();
+        EmployeeBox employee = new EmployeeBox();
         employee.setNombre(ip_registro_empleado_nombre.getText().toString());
         employee.setDireccion(ip_registro_empleado_direccion.getText().toString());
         employee.setEmail(ip_registro_empleado_email.getText().toString());
@@ -498,65 +498,65 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         employee.setUpdatedAt(Utils.fechaActualHMS());
         if (decoded != null) employee.setPath_image(getStringImage(decoded));
 
-        employeeDao.insert(employee);
+        employeeDao.insertBox(employee);
 
         RolesDao rolEmployeeDao = new RolesDao();
-        RolesBean rolRoutes = new RolesBean();
-        rolRoutes.setEmpleado(employee);
+        RolesBox rolRoutes = new RolesBox();
+        rolRoutes.getEmpleado().setTarget(employee);
         rolRoutes.setModulo("Rutas");
         rolRoutes.setActive(checkbox_edit_rute.isChecked());
         rolRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolRoutes);
+        rolEmployeeDao.insertBox(rolRoutes);
 
-        RolesBean rolCliente = new RolesBean();
-        rolCliente.setEmpleado(employee);
+        RolesBox rolCliente = new RolesBox();
+        rolCliente.getEmpleado().setTarget(employee);
         rolCliente.setModulo("Clientes");
         rolCliente.setActive(checkbox_clientes_registro_empleado.isChecked());
         rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolCliente);
+        rolEmployeeDao.insertBox(rolCliente);
 
-        RolesBean rolProducto = new RolesBean();
-        rolProducto.setEmpleado(employee);
+        RolesBox rolProducto = new RolesBox();
+        rolProducto.getEmpleado().setTarget(employee);
         rolProducto.setModulo("Productos");
         rolProducto.setActive(checkbox_productos_registro_empleado.isChecked());
         rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolProducto);
+        rolEmployeeDao.insertBox(rolProducto);
 
-        RolesBean rolVentas = new RolesBean();
-        rolVentas.setEmpleado(employee);
+        RolesBox rolVentas = new RolesBox();
+        rolVentas.getEmpleado().setTarget(employee);
         rolVentas.setModulo("Ventas");
         rolVentas.setActive(checkbox_ventas_registro_empleado.isChecked());
         rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolVentas);
+        rolEmployeeDao.insertBox(rolVentas);
 
-        RolesBean rolEmpleado = new RolesBean();
-        rolEmpleado.setEmpleado(employee);
+        RolesBox rolEmpleado = new RolesBox();
+        rolEmpleado.getEmpleado().setTarget(employee);
         rolEmpleado.setModulo("Empleados");
         rolEmpleado.setActive(checkbox_empleados_registro_empleado.isChecked());
         rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolEmpleado);
+        rolEmployeeDao.insertBox(rolEmpleado);
 
-        RolesBean rolStock = new RolesBean();
-        rolStock.setEmpleado(employee);
+        RolesBox rolStock = new RolesBox();
+        rolStock.getEmpleado().setTarget(employee);
         rolStock.setModulo("Inventarios");
         rolStock.setActive(checkbox_inventarios_registro_empleado.isChecked());
         rolStock.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolStock);
+        rolEmployeeDao.insertBox(rolStock);
 
-        RolesBean rolCharge = new RolesBean();
-        rolCharge.setEmpleado(employee);
+        RolesBox rolCharge = new RolesBox();
+        rolCharge.getEmpleado().setTarget(employee);
         rolCharge.setModulo("Cobranza");
         rolCharge.setActive(checkbox_cobranza_registro_empleado.isChecked());
         rolCharge.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolCharge);
+        rolEmployeeDao.insertBox(rolCharge);
 
-        idEmpleado = String.valueOf(employee.getId());
+        idEmpleado = employee.getId();
 
         if (!Utils.isNetworkAvailable(getApplication())){
             //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
-            enviaRolsServidor(employee.identificador);
+            enviaRolsServidor(employee.getIdentificador());
         }
     }
 
@@ -584,10 +584,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         progressshow();
 
         RolesDao rolesDao = new RolesDao();
-        List<RolesBean> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
+        List<RolesBox> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
         List<Role> listaRoles = new ArrayList<>();
 
-        for (RolesBean items : listaRolDB){
+        for (RolesBox items : listaRolDB){
             Role role = new Role();
             role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
@@ -608,13 +608,13 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         });
     }
 
-    private void testLoadEmpleado(String id){
+    private void testLoadEmpleado(Long id){
         progressshow();
         EmployeeDao employeeDao = new EmployeeDao();
-        List<EmpleadoBean> listaEmpleadosDB = employeeDao.getEmployeeById(id);
+        List<EmployeeBox> listaEmpleadosDB = employeeDao.getEmployeeById(id);
 
         List<Employee> listEmpleados = new ArrayList<>();
-        for (EmpleadoBean item : listaEmpleadosDB){
+        for (EmployeeBox item : listaEmpleadosDB){
             Employee empleado = new Employee();
             empleado.setNombre(item.getNombre());
             if (item.getDireccion().isEmpty()){
@@ -644,7 +644,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
             empleado.setStatus(item.getStatus()? 1 : 0);
-            empleado.setUpdatedAt(item.updatedAt);
+            empleado.setUpdatedAt(item.getUpdatedAt());
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -652,8 +652,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (!item.rute.isEmpty()) {
-                empleado.setRute(item.rute);
+            if (!item.getRute().isEmpty()) {
+                empleado.setRute(item.getRute());
             } else  {
                 empleado.setRute("");
             }

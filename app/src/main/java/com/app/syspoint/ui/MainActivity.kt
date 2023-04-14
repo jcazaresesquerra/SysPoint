@@ -26,9 +26,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable.ProgressDrawableSize
 import com.androidnetworking.error.ANError
-import com.androidnetworking.model.Progress
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
@@ -53,8 +51,11 @@ import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.RolesBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
@@ -93,9 +94,9 @@ class MainActivity: BaseActivity() {
 
         val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
 
-        var vendedoresBean = AppBundle.getUserBean()
+        var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
-        val identificador = if (vendedoresBean != null) vendedoresBean.getIdentificador() else ""
+        val identificador = if (vendedoresBean != null) vendedoresBean.identificador else ""
 
         val rolesDao = RolesDao()
         val productsRolesBean = rolesDao.getRolByEmpleado(identificador, "Productos")
@@ -330,7 +331,7 @@ class MainActivity: BaseActivity() {
             val visitsDao = VisitsDao()
             val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
             val clientDao = ClientDao()
-            var vendedoresBean = AppBundle.getUserBean()
+            var vendedoresBean = AppBundle.getUserBox()
             if (vendedoresBean == null) {
                 vendedoresBean = CacheInteractor().getSeller()
             }
@@ -339,13 +340,13 @@ class MainActivity: BaseActivity() {
                 val visita = Visit()
                 visita.fecha = item.fecha
                 visita.hora = item.hora
-                val clienteBean = clientDao.getClientByAccount(item.cliente.cuenta)
+                val clienteBean = clientDao.getClientByAccount(item.cliente!!.target.cuenta)
                 visita.cuenta = clienteBean!!.cuenta
                 visita.latidud = item.latidud
                 visita.longitud = item.longitud
                 visita.motivo_visita = item.motivo_visita
                 if (vendedoresBean != null) {
-                    visita.identificador = vendedoresBean.getIdentificador()
+                    visita.identificador = vendedoresBean.identificador
                 } else {
                     Log.e("SysPoint", "vendedoresBean is null")
                 }
@@ -365,15 +366,14 @@ class MainActivity: BaseActivity() {
 
     fun saveCobranza() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val paymentDao = PaymentDao()
-            val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
+            val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = ArrayList()
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
                 cobranza.cuenta = item.cliente
                 cobranza.importe = item.importe
-                cobranza.saldo = item.saldo
+                cobranza.saldo = item.saldo!!
                 cobranza.venta = item.venta
                 cobranza.estado = item.estado
                 cobranza.observaciones = item.observaciones
@@ -460,7 +460,7 @@ class MainActivity: BaseActivity() {
                 client.recordatorio = "" + item.recordatorio
                 client.visitas = item.visitasNoefectivas
                 client.updatedAt = item.updatedAt
-                if (item.is_credito) {
+                if (item.isCredito) {
                     client.isCredito = 1
                 } else {
                     client.isCredito = 0
@@ -486,43 +486,43 @@ class MainActivity: BaseActivity() {
         }
     }
 
-    private fun testLoadEmpleado(id: String) {
+    private fun testLoadEmpleado(id: Long) {
         val employeeDao = EmployeeDao()
         val listaEmpleadosDB = employeeDao.getEmployeeById(id)
         val listEmpleados: MutableList<Employee> = ArrayList()
         listaEmpleadosDB.map {item ->
             val empleado = Employee()
-            empleado.nombre = item.getNombre()
-            if (item.getDireccion().isEmpty()) {
+            empleado.nombre = item.nombre
+            if (item.direccion!!.isEmpty()) {
                 empleado.direccion = "-"
             } else {
-                empleado.direccion = item.getDireccion()
+                empleado.direccion = item.direccion
             }
-            empleado.email = item.getEmail()
-            if (item.getTelefono().isEmpty()) {
+            empleado.email = item.email
+            if (item.telefono!!.isEmpty()) {
                 empleado.telefono = "-"
             } else {
-                empleado.telefono = item.getTelefono()
+                empleado.telefono = item.telefono
             }
-            if (item.getFecha_nacimiento().isEmpty()) {
+            if (item.fecha_nacimiento!!.isEmpty()) {
                 empleado.fechaNacimiento = "-"
             } else {
-                empleado.fechaNacimiento = item.getFecha_nacimiento()
+                empleado.fechaNacimiento = item.fecha_nacimiento
             }
-            if (item.getFecha_ingreso().isEmpty()) {
+            if (item.fecha_ingreso!!.isEmpty()) {
                 empleado.fechaIngreso = "-"
             } else {
-                empleado.fechaIngreso = item.getFecha_ingreso()
+                empleado.fechaIngreso = item.fecha_ingreso
             }
-            empleado.contrasenia = item.getContrasenia()
-            empleado.identificador = item.getIdentificador()
-            empleado.status = if (item.getStatus()) 1 else 0
-            if (item.getPath_image() == null || item.getPath_image().isEmpty()) {
+            empleado.contrasenia = item.contrasenia
+            empleado.identificador = item.identificador
+            empleado.status = if (item.status) 1 else 0
+            if (item.path_image == null || item.path_image!!.isEmpty()) {
                 empleado.pathImage = ""
             } else {
-                empleado.pathImage = item.getPath_image()
+                empleado.pathImage = item.path_image
             }
-            if (!item.rute.isEmpty()) {
+            if (!item.rute!!.isEmpty()) {
                 empleado.rute = item.rute
             } else {
                 empleado.rute = ""
@@ -544,15 +544,14 @@ class MainActivity: BaseActivity() {
 
     private fun saveAbonos() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val paymentDao = PaymentDao()
-            val cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual())
+            val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = java.util.ArrayList()
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
                 cobranza.cuenta = item.cliente
                 cobranza.importe = item.importe
-                cobranza.saldo = item.saldo
+                cobranza.saldo = item.saldo!!
                 cobranza.venta = item.venta
                 cobranza.estado = item.estado
                 cobranza.observaciones = item.observaciones
@@ -578,11 +577,11 @@ class MainActivity: BaseActivity() {
 
     private fun getCobranzasByEmployee() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val vendedoresBean = AppBundle.getUserBean()
+            val vendedoresBean = AppBundle.getUserBox()
             if (vendedoresBean != null) {
                 lifecycleScope.launch(Dispatchers.Default) {
                     ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
-                        override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
+                        override fun onGetChargeSuccess(chargeList: List<ChargeBox>) {
                             saveCobranza()
                             saveAbonos()
                         }
@@ -616,15 +615,15 @@ class MainActivity: BaseActivity() {
             val routingDao = RoutingDao()
             val ruteoBean = routingDao.getRutaEstablecida()
             if (ruteoBean != null) {
-                val vendedoresBean = AppBundle.getUserBean()
-                val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta.isNotEmpty()
-                ) ruteoBean.ruta else vendedoresBean.getRute()
+                val vendedoresBean = AppBundle.getUserBox()
+                val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()
+                ) ruteoBean.ruta else vendedoresBean.rute
 
                 ClientInteractorImp().executeGetAllClientsByDate(
-                    ruta,
+                    ruta!!,
                     ruteoBean.dia,
                     object : GetAllClientsListener {
-                        override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
+                        override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
                             Log.d("SysPoint", "Clients updated")
                             saveClientes()
                         }
@@ -641,7 +640,7 @@ class MainActivity: BaseActivity() {
     private fun getRoles() {
         lifecycleScope.launch(Dispatchers.IO) {
             RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
-                override fun onGetAllRolesSuccess(roles: List<RolesBean>) {
+                override fun onGetAllRolesSuccess(roles: List<RolesBox>) {
                 }
 
                 override fun onGetAllRolesError() {

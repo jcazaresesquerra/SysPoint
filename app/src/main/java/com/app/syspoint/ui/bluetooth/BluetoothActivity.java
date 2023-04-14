@@ -39,15 +39,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.bluetooth.ConnectedThread;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.dao.PrinterDao;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -277,7 +276,7 @@ public class BluetoothActivity extends AppCompatActivity {
                                 .sendToTarget();
 
 
-                        PrinterBean printerBean = new PrinterBean();
+                        PrinterBox printerBean = new PrinterBox();
                         PrinterDao printerDao = new PrinterDao();
                         printerDao.clear();
 
@@ -285,7 +284,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         printerBean.setAddress(address);
                         printerBean.setName(name);
                         printerBean.setIdPrinter(Long.valueOf(1));
-                        printerDao.insert(printerBean);
+                        printerDao.insertBox(printerBean);
                     }
                 }
             }.start();

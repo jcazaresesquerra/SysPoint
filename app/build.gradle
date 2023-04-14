@@ -1,10 +1,10 @@
 plugins {
     id 'com.android.application'
-    id 'org.greenrobot.greendao'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id 'kotlin-android'
     id 'kotlin-android-extensions'
+    id "io.objectbox" // Apply last.
 }
 
 android {
@@ -27,7 +27,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 33
         versionCode 6
-        versionName "2.0.8"
+        versionName "2.0.9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -94,14 +94,9 @@ android {
 
 
 ext {
-    greenDaoVersion = "3.2.2"
     retrofitVersion = "2.4.0"
 }
 
-
-greendao {
-    schemaVersion 13
-}
 
 dependencies {
 
@@ -129,10 +124,6 @@ dependencies {
 
     //Circular image
     implementation 'de.hdodenhof:circleimageview:2.1.0'
-
-    //Database
-    implementation 'org.greenrobot:greendao:3.3.0'
-    implementation 'org.greenrobot:greendao-generator:3.3.0'
 
     //Lector de codigo de barrar
     implementation 'me.dm7.barcodescanner:zxing:1.9'
@@ -186,8 +177,4 @@ dependencies {
 
     // AUTODISPOSE
     implementation 'com.github.satoshun.coroutine.autodispose:autodispose:0.3.1'
-
-    // ROOM
-    implementation "androidx.room:room-runtime:2.5.1"
-    annotationProcessor "androidx.room:room-compiler:2.5.1"
 }

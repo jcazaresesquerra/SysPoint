@@ -10,14 +10,14 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.AppBundle;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
-import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.AppBundle;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
@@ -36,8 +36,8 @@ public class RutaFragment extends Fragment {
     }
 
     private void showDialog() {
-        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-        RolesBean rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.identificador, "Rutas");
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), "Rutas");
 
         boolean editRuta = rutasRol != null && rutasRol.getActive();
 
@@ -72,7 +72,7 @@ public class RutaFragment extends Fragment {
                                 RoutingDao routingDao = new RoutingDao();
                                 routingDao.clear();
 
-                                RuteoBean ruteoBean = new RuteoBean();
+                                RoutingBox ruteoBean = new RoutingBox();
 
                                 if (dia.compareToIgnoreCase("Lunes") == 0) {
                                     ruteoBean.setDia(1);
@@ -93,7 +93,7 @@ public class RutaFragment extends Fragment {
                                 ruteoBean.setFecha(Utils.fechaActual());
                                 ruteoBean.setRuta(ruta);
 
-                                routingDao.insert(ruteoBean);
+                                routingDao.insertBox(ruteoBean);
                                 Toast.makeText(getActivity(), "Dia: " + dia + " Ruta: " + ruta, Toast.LENGTH_LONG).show();
 
                                 dialog.dismiss();

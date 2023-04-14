@@ -6,8 +6,14 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Data
 import com.app.syspoint.models.RequestClientsByRute
 import com.app.syspoint.models.json.ClientJson
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao
+import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
@@ -28,49 +34,50 @@ class RequestClient {
                     if (response.isSuccessful) {
                         val dao = ClientDao()
 
-                        val clientList = arrayListOf<ClienteBean>()
-                        val newClientList: MutableList<ClienteBean> = arrayListOf()
+                        val clientList = arrayListOf<ClientBox>()
+                        val newClientList: MutableList<ClientBox> = arrayListOf()
 
-                        for (item in response.body()!!.clients!!) {
+                        response.body()!!.clients!!.map {item ->
 
                             val bean = dao.getClientByAccount(item!!.cuenta)
 
                             if (bean == null) {
-                                val clienteBean = ClienteBean()
-                                clienteBean.nombre_comercial = item.nombreComercial
-                                clienteBean.calle = item.calle
-                                clienteBean.numero = item.numero
-                                clienteBean.colonia = item.colonia
-                                clienteBean.ciudad = item.ciudad
-                                clienteBean.codigo_postal = item.codigoPostal
-                                clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.cuenta = item.cuenta
-                                clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: "0"
-                                clienteBean.visitado = 0
-                                clienteBean.rango = item.rango
-                                clienteBean.lun = item.lun
-                                clienteBean.mar = item.mar
-                                clienteBean.mie = item.mie
-                                clienteBean.jue = item.jue
-                                clienteBean.vie = item.vie
-                                clienteBean.sab = item.sab
-                                clienteBean.dom = item.dom
-                                clienteBean.lunOrder = item.lunOrder
-                                clienteBean.marOrder = item.marOrder
-                                clienteBean.mieOrder = item.mieOrder
-                                clienteBean.jueOrder = item.jueOrder
-                                clienteBean.vieOrder = item.vieOrder
-                                clienteBean.sabOrder = item.sabOrder
-                                clienteBean.domOrder = item.domOrder
-                                clienteBean.latitud = item.latitud
-                                clienteBean.longitud = item.longitud
-                                clienteBean.is_credito = item.isCredito == 1
-                                clienteBean.limite_credito = item.limite_credito
-                                clienteBean.saldo_credito = item.saldo_credito
-                                clienteBean.contacto_phone = item.phone_contacto
-                                clienteBean.updatedAt = item.updatedAt
-                                newClientList.add(clienteBean)
+                                val clientBox = ClientBox()
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.lunOrder = item.lunOrder
+                                clientBox.marOrder = item.marOrder
+                                clientBox.mieOrder = item.mieOrder
+                                clientBox.jueOrder = item.jueOrder
+                                clientBox.vieOrder = item.vieOrder
+                                clientBox.sabOrder = item.sabOrder
+                                clientBox.domOrder = item.domOrder
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.updatedAt = item.updatedAt
+                                dao.insert(clientBox)
+                                newClientList.add(clientBox)
                             } else {
                                 val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -111,20 +118,15 @@ class RequestClient {
                                     bean.contacto_phone = item.phone_contacto
                                     bean.recordatorio = item.recordatorio
                                     bean.visitasNoefectivas = item.visitas
-                                    bean.is_credito = item.isCredito == 1
+                                    bean.isCredito = item.isCredito == 1
                                     bean.limite_credito = item.limite_credito
                                     bean.saldo_credito = item.saldo_credito
                                     bean.matriz = item.matriz
                                     bean.updatedAt = item.updatedAt
                                 }
-                                dao.save(bean)
+                                dao.insert(bean)
                                 clientList.add(bean)
                             }
-                        }
-
-                        if (newClientList.isNotEmpty()) {
-                            dao.insertAll(newClientList.toList())
-                            clientList.addAll(newClientList)
                         }
 
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
@@ -150,55 +152,52 @@ class RequestClient {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
                     if (response.isSuccessful) {
 
-                        val clientList = arrayListOf<ClienteBean>()
-                        val newClientList: MutableList<ClienteBean> = arrayListOf()
+                        val clientList = arrayListOf<ClientBox>()
                         val dao = ClientDao()
-                        val daoRute = RuteClientDao()
+                        val daoRute = com.app.syspoint.repository.objectBox.dao.RuteClientDao()
 
-                        dao.beginTransaction()
-                        daoRute.beginTransaction()
                         response.body()!!.clients!!.map { item ->
                             val bean = dao.getClientByAccount(item!!.cuenta)
 
                             if (bean == null) {
-                                val clienteBean = ClienteBean()
+                                val clientBox = ClientBox()
 
-                                clienteBean.nombre_comercial = item.nombreComercial
-                                clienteBean.calle = item.calle
-                                clienteBean.numero = item.numero
-                                clienteBean.colonia = item.colonia
-                                clienteBean.ciudad = item.ciudad
-                                clienteBean.codigo_postal = item.codigoPostal
-                                clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.cuenta = item.cuenta
-                                clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: "0"
-                                clienteBean.visitado = 0
-                                clienteBean.rango = item.rango
-                                clienteBean.lun = item.lun
-                                clienteBean.mar = item.mar
-                                clienteBean.mie = item.mie
-                                clienteBean.jue = item.jue
-                                clienteBean.vie = item.vie
-                                clienteBean.sab = item.sab
-                                clienteBean.dom = item.dom
-                                clienteBean.lunOrder = item.lunOrder
-                                clienteBean.marOrder = item.marOrder
-                                clienteBean.mieOrder = item.mieOrder
-                                clienteBean.jueOrder = item.jueOrder
-                                clienteBean.vieOrder = item.vieOrder
-                                clienteBean.sabOrder = item.sabOrder
-                                clienteBean.domOrder = item.domOrder
-                                clienteBean.latitud = item.latitud
-                                clienteBean.longitud = item.longitud
-                                clienteBean.is_credito = item.isCredito == 1
-                                clienteBean.limite_credito = item.limite_credito
-                                clienteBean.saldo_credito = item.saldo_credito
-                                clienteBean.contacto_phone = item.phone_contacto
-                                clienteBean.matriz = item.matriz
-                                clienteBean.updatedAt = item.updatedAt
-                                dao.insert(clienteBean)
-                                clientList.add(clienteBean)
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.lunOrder = item.lunOrder
+                                clientBox.marOrder = item.marOrder
+                                clientBox.mieOrder = item.mieOrder
+                                clientBox.jueOrder = item.jueOrder
+                                clientBox.vieOrder = item.vieOrder
+                                clientBox.sabOrder = item.sabOrder
+                                clientBox.domOrder = item.domOrder
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.matriz = item.matriz
+                                clientBox.updatedAt = item.updatedAt
+                                dao.insert(clientBox)
+                                clientList.add(clientBox)
                             } else {
 
                                 val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
@@ -248,101 +247,94 @@ class RequestClient {
                                     bean.contacto_phone = item.phone_contacto
                                     bean.recordatorio = item.recordatorio
                                     bean.visitasNoefectivas = item.visitas
-                                    bean.is_credito = item.isCredito == 1
+                                    bean.isCredito = item.isCredito == 1
                                     bean.limite_credito = item.limite_credito
                                     bean.saldo_credito = item.saldo_credito
                                     bean.matriz = item.matriz
                                     bean.updatedAt = item.updatedAt
-                                    dao.save(bean)
+                                    dao.insert(bean)
                                 }
 
                                 clientList.add(bean)
                             }
 
                             if (saveClientWithDay(item, day)) {
-                                val beanRute = daoRute.getClienteByCuentaCliente(item.cuenta)
+                                val ruteClientBox1 = daoRute.getClienteByCuentaCliente(item.cuenta)
 
-                                if (beanRute == null) {
-                                    val clienteBeanRute = ClientesRutaBean()
+                                if (ruteClientBox1 == null) {
+                                    val ruteClientBox = RuteClientBox()
 
-                                    clienteBeanRute.nombre_comercial = item.nombreComercial
-                                    clienteBeanRute.calle = item.calle
-                                    clienteBeanRute.numero = item.numero
-                                    clienteBeanRute.colonia = item.colonia
-                                    clienteBeanRute.cuenta = item.cuenta
-                                    clienteBeanRute.visitado = 0
-                                    clienteBeanRute.rango = item.rango
-                                    clienteBeanRute.status = item.status == 1
-                                    clienteBeanRute.lun = item.lun
-                                    clienteBeanRute.mar = item.mar
-                                    clienteBeanRute.mie = item.mie
-                                    clienteBeanRute.jue = item.jue
-                                    clienteBeanRute.vie = item.vie
-                                    clienteBeanRute.sab = item.sab
-                                    clienteBeanRute.dom = item.dom
-                                    clienteBeanRute.lunOrder = item.lunOrder
-                                    clienteBeanRute.marOrder = item.marOrder
-                                    clienteBeanRute.mieOrder = item.mieOrder
-                                    clienteBeanRute.jueOrder = item.jueOrder
-                                    clienteBeanRute.vieOrder = item.vieOrder
-                                    clienteBeanRute.sabOrder = item.sabOrder
-                                    clienteBeanRute.domOrder = item.domOrder
-                                    clienteBeanRute.latitud = item.latitud
-                                    clienteBeanRute.longitud = item.longitud
-                                    clienteBeanRute.is_credito = item.isCredito == 1
-                                    clienteBeanRute.recordatorio = item.recordatorio
-                                    clienteBeanRute.phone_contact = item.phone_contacto
-                                    clienteBeanRute.updatedAt = item.updatedAt
+                                    ruteClientBox.nombre_comercial = item.nombreComercial
+                                    ruteClientBox.calle = item.calle
+                                    ruteClientBox.numero = item.numero
+                                    ruteClientBox.colonia = item.colonia
+                                    ruteClientBox.cuenta = item.cuenta
+                                    ruteClientBox.visitado = 0
+                                    ruteClientBox.rango = item.rango
+                                    ruteClientBox.status = item.status == 1
+                                    ruteClientBox.lun = item.lun
+                                    ruteClientBox.mar = item.mar
+                                    ruteClientBox.mie = item.mie
+                                    ruteClientBox.jue = item.jue
+                                    ruteClientBox.vie = item.vie
+                                    ruteClientBox.sab = item.sab
+                                    ruteClientBox.dom = item.dom
+                                    ruteClientBox.lunOrder = item.lunOrder
+                                    ruteClientBox.marOrder = item.marOrder
+                                    ruteClientBox.mieOrder = item.mieOrder
+                                    ruteClientBox.jueOrder = item.jueOrder
+                                    ruteClientBox.vieOrder = item.vieOrder
+                                    ruteClientBox.sabOrder = item.sabOrder
+                                    ruteClientBox.domOrder = item.domOrder
+                                    ruteClientBox.latitud = item.latitud
+                                    ruteClientBox.longitud = item.longitud
+                                    ruteClientBox.isCredito = item.isCredito == 1
+                                    ruteClientBox.recordatorio = item.recordatorio
+                                    ruteClientBox.phone_contact = item.phone_contacto
+                                    ruteClientBox.updatedAt = item.updatedAt
 
-                                    daoRute.insert(clienteBeanRute)
+                                    daoRute.insert(ruteClientBox)
                                 } else {
-                                    val update = if (!beanRute.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val update = if (!ruteClientBox1.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                         val dateItem = formatter.parse(item.updatedAt)
-                                        val dateBean = formatter.parse(beanRute.updatedAt)
+                                        val dateBean = formatter.parse(ruteClientBox1.updatedAt)
                                         dateItem?.compareTo(dateBean) ?: 1
                                     } else 1
 
                                     if (update > 0) {
-                                        beanRute.nombre_comercial = item.nombreComercial
-                                        beanRute.calle = item.calle
-                                        beanRute.numero = item.numero
-                                        beanRute.colonia = item.colonia
-                                        beanRute.cuenta = item.cuenta
-                                        beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
-                                        beanRute.rango = item.rango
-                                        beanRute.status = item.status == 1
-                                        beanRute.lun = item.lun
-                                        beanRute.mar = item.mar
-                                        beanRute.mie = item.mie
-                                        beanRute.jue = item.jue
-                                        beanRute.vie = item.vie
-                                        beanRute.sab = item.sab
-                                        beanRute.dom = item.dom
-                                        beanRute.lunOrder = item.lunOrder
-                                        beanRute.marOrder = item.marOrder
-                                        beanRute.mieOrder = item.mieOrder
-                                        beanRute.jueOrder = item.jueOrder
-                                        beanRute.vieOrder = item.vieOrder
-                                        beanRute.sabOrder = item.sabOrder
-                                        beanRute.domOrder = item.domOrder
-                                        beanRute.latitud = item.latitud
-                                        beanRute.longitud = item.longitud
-                                        beanRute.is_credito = item.isCredito == 1
-                                        beanRute.recordatorio = item.recordatorio
-                                        beanRute.phone_contact = item.phone_contacto
-                                        beanRute.updatedAt = item.updatedAt
+                                        ruteClientBox1.nombre_comercial = item.nombreComercial
+                                        ruteClientBox1.calle = item.calle
+                                        ruteClientBox1.numero = item.numero
+                                        ruteClientBox1.colonia = item.colonia
+                                        ruteClientBox1.cuenta = item.cuenta
+                                        ruteClientBox1.visitado = if (ruteClientBox1.visitado == 0) 0 else 1
+                                        ruteClientBox1.rango = item.rango
+                                        ruteClientBox1.status = item.status == 1
+                                        ruteClientBox1.lun = item.lun
+                                        ruteClientBox1.mar = item.mar
+                                        ruteClientBox1.mie = item.mie
+                                        ruteClientBox1.jue = item.jue
+                                        ruteClientBox1.vie = item.vie
+                                        ruteClientBox1.sab = item.sab
+                                        ruteClientBox1.dom = item.dom
+                                        ruteClientBox1.lunOrder = item.lunOrder
+                                        ruteClientBox1.marOrder = item.marOrder
+                                        ruteClientBox1.mieOrder = item.mieOrder
+                                        ruteClientBox1.jueOrder = item.jueOrder
+                                        ruteClientBox1.vieOrder = item.vieOrder
+                                        ruteClientBox1.sabOrder = item.sabOrder
+                                        ruteClientBox1.domOrder = item.domOrder
+                                        ruteClientBox1.latitud = item.latitud
+                                        ruteClientBox1.longitud = item.longitud
+                                        ruteClientBox1.isCredito = item.isCredito == 1
+                                        ruteClientBox1.recordatorio = item.recordatorio
+                                        ruteClientBox1.phone_contact = item.phone_contacto
+                                        ruteClientBox1.updatedAt = item.updatedAt
                                     }
-                                    daoRute.save(beanRute)
+                                    daoRute.insert(ruteClientBox1)
                                 }
                             }
-                        }
-                        dao.commmit()
-                        daoRute.commmit()
-
-                        if (newClientList.isNotEmpty()) {
-                            //dao.insertAll(newClientList.toList())
-                            clientList.addAll(newClientList)
                         }
 
                         onGetAllClientsListener.onGetAllClientsSuccess(clientList)
@@ -371,86 +363,86 @@ class RequestClient {
                     response: Response<ClientJson>
                 ) {
                     if (response.isSuccessful) {
-                        val clientList = arrayListOf<ClienteBean>()
-                        for (item in response.body()!!.clients!!) {
-                            //Validamos si existe el cliente
-                            val dao = ClientDao()
-                            val bean = dao.getClientByAccount(item!!.cuenta)
+                        val dao = ClientDao()
+                        val clientList = arrayListOf<ClientBox>()
 
-                            if (bean == null) {
-                                val clienteBean = ClienteBean()
+                        response.body()!!.clients!!.map {item ->
+                            val clientBox1 = dao.getClientByAccount(item!!.cuenta)
+
+                            if (clientBox1 == null) {
+                                val clientBox = ClientBox()
                                 val clientDao = ClientDao()
-                                clienteBean.nombre_comercial = item.nombreComercial
-                                clienteBean.calle = item.calle
-                                clienteBean.numero = item.numero
-                                clienteBean.colonia = item.colonia
-                                clienteBean.ciudad = item.ciudad
-                                clienteBean.codigo_postal = item.codigoPostal
-                                clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.cuenta = item.cuenta
-                                clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: "0"
-                                clienteBean.visitado = 0
-                                clienteBean.rango = item.rango
-                                clienteBean.lun = item.lun
-                                clienteBean.mar = item.mar
-                                clienteBean.mie = item.mie
-                                clienteBean.jue = item.jue
-                                clienteBean.vie = item.vie
-                                clienteBean.sab = item.sab
-                                clienteBean.dom = item.dom
-                                clienteBean.latitud = item.latitud
-                                clienteBean.longitud = item.longitud
-                                clienteBean.is_credito = item.isCredito == 1
-                                clienteBean.limite_credito = item.limite_credito
-                                clienteBean.saldo_credito = item.saldo_credito
-                                clienteBean.contacto_phone = item.phone_contacto
-                                clienteBean.matriz = item.matriz
-                                clienteBean.updatedAt = item.updatedAt
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.matriz = item.matriz
+                                clientBox.updatedAt = item.updatedAt
 
-                                clientDao.insert(clienteBean)
-                                clientList.add(clienteBean)
+                                clientDao.insert(clientBox)
+                                clientList.add(clientBox)
                             } else {
-                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                val update = if (!clientBox1.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                     val dateItem = formatter.parse(item.updatedAt)
-                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    val dateBean = formatter.parse(clientBox1.updatedAt)
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    bean.nombre_comercial = item.nombreComercial
-                                    bean.calle = item.calle
-                                    bean.numero = item.numero
-                                    bean.colonia = item.colonia
-                                    bean.ciudad = item.ciudad
-                                    bean.codigo_postal = item.codigoPostal
-                                    bean.fecha_registro = item.fechaRegistro
-                                    bean.cuenta = item.cuenta
-                                    bean.status = item.status == 1
-                                    bean.consec = item.consec ?: "0"
-                                    bean.visitado = if (bean.visitado == 1) 1 else 0
-                                    bean.rango = item.rango
-                                    bean.lun = item.lun
-                                    bean.mar = item.mar
-                                    bean.mie = item.mie
-                                    bean.jue = item.jue
-                                    bean.vie = item.vie
-                                    bean.sab = item.sab
-                                    bean.dom = item.dom
-                                    bean.latitud = item.latitud
-                                    bean.longitud = item.longitud
-                                    bean.contacto_phone = item.phone_contacto
-                                    bean.recordatorio = item.recordatorio
-                                    bean.visitasNoefectivas = item.visitas
-                                    bean.is_credito = item.isCredito == 1
-                                    bean.limite_credito = item.limite_credito
-                                    bean.saldo_credito = item.saldo_credito
-                                    bean.matriz = item.matriz
-                                    bean.updatedAt = item.updatedAt
+                                    clientBox1.nombre_comercial = item.nombreComercial
+                                    clientBox1.calle = item.calle
+                                    clientBox1.numero = item.numero
+                                    clientBox1.colonia = item.colonia
+                                    clientBox1.ciudad = item.ciudad
+                                    clientBox1.codigo_postal = item.codigoPostal
+                                    clientBox1.fecha_registro = item.fechaRegistro
+                                    clientBox1.cuenta = item.cuenta
+                                    clientBox1.status = item.status == 1
+                                    clientBox1.consec = item.consec ?: "0"
+                                    clientBox1.visitado = if (clientBox1.visitado == 1) 1 else 0
+                                    clientBox1.rango = item.rango
+                                    clientBox1.lun = item.lun
+                                    clientBox1.mar = item.mar
+                                    clientBox1.mie = item.mie
+                                    clientBox1.jue = item.jue
+                                    clientBox1.vie = item.vie
+                                    clientBox1.sab = item.sab
+                                    clientBox1.dom = item.dom
+                                    clientBox1.latitud = item.latitud
+                                    clientBox1.longitud = item.longitud
+                                    clientBox1.contacto_phone = item.phone_contacto
+                                    clientBox1.recordatorio = item.recordatorio
+                                    clientBox1.visitasNoefectivas = item.visitas
+                                    clientBox1.isCredito = item.isCredito == 1
+                                    clientBox1.limite_credito = item.limite_credito
+                                    clientBox1.saldo_credito = item.saldo_credito
+                                    clientBox1.matriz = item.matriz
+                                    clientBox1.updatedAt = item.updatedAt
                                 }
-                                dao.save(bean)
-                                clientList.add(bean)
+                                dao.insert(clientBox1)
+                                clientList.add(clientBox1)
                             }
                         }
                         onGetClientByIdListener.onGetClientByIdSuccess()
@@ -500,87 +492,87 @@ class RequestClient {
             saveClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
                     if (response.isSuccessful) {
-                        val clientList = arrayListOf<ClienteBean>()
-                        for (item in response.body()!!.clients!!) {
-                            //Validamos si existe el cliente
-                            val dao = ClientDao()
-                            val bean = dao.getClientByAccount(item!!.cuenta)
+                        val clientDao = ClientDao()
+                        val clientList = arrayListOf<ClientBox>()
 
-                            if (bean == null) {
-                                val clienteBean = ClienteBean()
-                                val clientDao = ClientDao()
-                                clienteBean.nombre_comercial = item.nombreComercial
-                                clienteBean.calle = item.calle
-                                clienteBean.numero = item.numero
-                                clienteBean.colonia = item.colonia
-                                clienteBean.ciudad = item.ciudad
-                                clienteBean.codigo_postal = item.codigoPostal
-                                clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.cuenta = item.cuenta
-                                clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: "0"
-                                clienteBean.visitado = 0
-                                clienteBean.rango = item.rango
-                                clienteBean.lun = item.lun
-                                clienteBean.mar = item.mar
-                                clienteBean.mie = item.mie
-                                clienteBean.jue = item.jue
-                                clienteBean.vie = item.vie
-                                clienteBean.sab = item.sab
-                                clienteBean.dom = item.dom
-                                clienteBean.latitud = item.latitud
-                                clienteBean.longitud = item.longitud
-                                clienteBean.is_credito = item.isCredito == 1
-                                clienteBean.limite_credito = item.limite_credito
-                                clienteBean.saldo_credito = item.saldo_credito
-                                clienteBean.contacto_phone = item.phone_contacto
-                                clienteBean.matriz = item.matriz
-                                clienteBean.updatedAt = item.updatedAt
+                        response.body()!!.clients!!.map {item ->
+                            val clientBox1 = clientDao.getClientByAccount(item!!.cuenta)
 
-                                clientDao.insert(clienteBean)
-                                clientList.add(clienteBean)
+                            if (clientBox1 == null) {
+                                val clientBox = ClientBox()
+
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.matriz = item.matriz
+                                clientBox.updatedAt = item.updatedAt
+
+                                clientDao.insert(clientBox)
+                                clientList.add(clientBox)
                             } else {
 
-                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                val update = if (!clientBox1.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                     val dateItem = formatter.parse(item.updatedAt)
-                                    val dateBean = formatter.parse(bean.updatedAt)
+                                    val dateBean = formatter.parse(clientBox1.updatedAt)
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    bean.nombre_comercial = item.nombreComercial
-                                    bean.calle = item.calle
-                                    bean.numero = item.numero
-                                    bean.colonia = item.colonia
-                                    bean.ciudad = item.ciudad
-                                    bean.codigo_postal = item.codigoPostal
-                                    bean.fecha_registro = item.fechaRegistro
-                                    bean.cuenta = item.cuenta
-                                    bean.status = item.status == 1
-                                    bean.consec = item.consec ?: "0"
-                                    bean.visitado = if (bean.visitado == 1) 1 else 0
-                                    bean.rango = item.rango
-                                    bean.lun = item.lun
-                                    bean.mar = item.mar
-                                    bean.mie = item.mie
-                                    bean.jue = item.jue
-                                    bean.vie = item.vie
-                                    bean.sab = item.sab
-                                    bean.dom = item.dom
-                                    bean.latitud = item.latitud
-                                    bean.longitud = item.longitud
-                                    bean.contacto_phone = item.phone_contacto
-                                    bean.recordatorio = item.recordatorio
-                                    bean.visitasNoefectivas = item.visitas
-                                    bean.is_credito = item.isCredito == 1
-                                    bean.limite_credito = item.limite_credito
-                                    bean.saldo_credito = item.saldo_credito
-                                    bean.matriz = item.matriz
-                                    bean.updatedAt = item.updatedAt
+                                    clientBox1.nombre_comercial = item.nombreComercial
+                                    clientBox1.calle = item.calle
+                                    clientBox1.numero = item.numero
+                                    clientBox1.colonia = item.colonia
+                                    clientBox1.ciudad = item.ciudad
+                                    clientBox1.codigo_postal = item.codigoPostal
+                                    clientBox1.fecha_registro = item.fechaRegistro
+                                    clientBox1.cuenta = item.cuenta
+                                    clientBox1.status = item.status == 1
+                                    clientBox1.consec = item.consec ?: "0"
+                                    clientBox1.visitado = if (clientBox1.visitado == 1) 1 else 0
+                                    clientBox1.rango = item.rango
+                                    clientBox1.lun = item.lun
+                                    clientBox1.mar = item.mar
+                                    clientBox1.mie = item.mie
+                                    clientBox1.jue = item.jue
+                                    clientBox1.vie = item.vie
+                                    clientBox1.sab = item.sab
+                                    clientBox1.dom = item.dom
+                                    clientBox1.latitud = item.latitud
+                                    clientBox1.longitud = item.longitud
+                                    clientBox1.contacto_phone = item.phone_contacto
+                                    clientBox1.recordatorio = item.recordatorio
+                                    clientBox1.visitasNoefectivas = item.visitas
+                                    clientBox1.isCredito = item.isCredito == 1
+                                    clientBox1.limite_credito = item.limite_credito
+                                    clientBox1.saldo_credito = item.saldo_credito
+                                    clientBox1.matriz = item.matriz
+                                    clientBox1.updatedAt = item.updatedAt
                                 }
-                                dao.save(bean)
-                                clientList.add(bean)
+                                clientDao.insert(clientBox1)
+                                clientList.add(clientBox1)
                             }
                         }
                         onFindClientListener.onFindClientSuccess(clientList)
@@ -605,107 +597,104 @@ class RequestClient {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
                     if (response.isSuccessful) {
                         if (response.code() == 200) {
-                            var clientDao = ClientDao()
-                            val daoRute = RuteClientDao()
-                            var clienteBean = ClienteBean()
+                            val clientDao = ClientDao()
+                            val ruteClientDao = RuteClientDao()
 
                             response.body()!!.data.clientes.map {
-                                val bean = clientDao.getClientByAccount(it.cuenta)
-                                val beanRute = daoRute.getClienteByCuentaCliente(it.cuenta)
+                                val clientBox1 = clientDao.getClientByAccount(it.cuenta)
+                                val ruteClientBox = ruteClientDao.getClienteByCuentaCliente(it.cuenta)
 
-                                if (bean == null) {
-                                    clienteBean = ClienteBean()
-                                    clientDao = ClientDao()
-                                    clienteBean.nombre_comercial = it.nombreComercial
-                                    clienteBean.calle = it.calle
-                                    clienteBean.numero = it.numero
-                                    clienteBean.colonia = it.colonia
-                                    clienteBean.ciudad = it.ciudad
-                                    clienteBean.codigo_postal = it.codigoPostal
-                                    clienteBean.fecha_registro = it.fechaRegistro
-                                    clienteBean.cuenta = it.cuenta
-                                    clienteBean.status = it.status == 1
-                                    clienteBean.consec = it.consec ?: "0"
-                                    clienteBean.visitado = 0
-                                    clienteBean.rango = it.rango
-                                    clienteBean.lun = it.lun
-                                    clienteBean.mar = it.mar
-                                    clienteBean.mie = it.mie
-                                    clienteBean.jue = it.jue
-                                    clienteBean.vie = it.vie
-                                    clienteBean.sab = it.sab
-                                    clienteBean.dom = it.dom
-                                    clienteBean.lunOrder = it.lunOrder
-                                    clienteBean.marOrder = it.marOrder
-                                    clienteBean.mieOrder = it.mieOrder
-                                    clienteBean.jueOrder = it.jueOrder
-                                    clienteBean.vieOrder = it.vieOrder
-                                    clienteBean.sabOrder = it.sabOrder
-                                    clienteBean.domOrder = it.domOrder
-                                    clienteBean.latitud = it.latitud
-                                    clienteBean.longitud = it.longitud
-                                    clienteBean.contacto_phone = it.phone_contacto
-                                    clienteBean.recordatorio = it.recordatorio
-                                    clienteBean.visitasNoefectivas = it.visitas
-                                    clienteBean.is_credito = it.isCredito == 1
-                                    clienteBean.limite_credito = it.limite_credito
-                                    clienteBean.saldo_credito = it.saldo_credito
-                                    clienteBean.matriz = it.matriz
-                                    clienteBean.updatedAt = it.updatedAt
-                                    clientDao.insert(clienteBean)
+                                if (clientBox1 == null) {
+                                    val clientBox = ClientBox()
+                                    clientBox.nombre_comercial = it.nombreComercial
+                                    clientBox.calle = it.calle
+                                    clientBox.numero = it.numero
+                                    clientBox.colonia = it.colonia
+                                    clientBox.ciudad = it.ciudad
+                                    clientBox.codigo_postal = it.codigoPostal
+                                    clientBox.fecha_registro = it.fechaRegistro
+                                    clientBox.cuenta = it.cuenta
+                                    clientBox.status = it.status == 1
+                                    clientBox.consec = it.consec ?: "0"
+                                    clientBox.visitado = 0
+                                    clientBox.rango = it.rango
+                                    clientBox.lun = it.lun
+                                    clientBox.mar = it.mar
+                                    clientBox.mie = it.mie
+                                    clientBox.jue = it.jue
+                                    clientBox.vie = it.vie
+                                    clientBox.sab = it.sab
+                                    clientBox.dom = it.dom
+                                    clientBox.lunOrder = it.lunOrder
+                                    clientBox.marOrder = it.marOrder
+                                    clientBox.mieOrder = it.mieOrder
+                                    clientBox.jueOrder = it.jueOrder
+                                    clientBox.vieOrder = it.vieOrder
+                                    clientBox.sabOrder = it.sabOrder
+                                    clientBox.domOrder = it.domOrder
+                                    clientBox.latitud = it.latitud
+                                    clientBox.longitud = it.longitud
+                                    clientBox.contacto_phone = it.phone_contacto
+                                    clientBox.recordatorio = it.recordatorio
+                                    clientBox.visitasNoefectivas = it.visitas
+                                    clientBox.isCredito = it.isCredito == 1
+                                    clientBox.limite_credito = it.limite_credito
+                                    clientBox.saldo_credito = it.saldo_credito
+                                    clientBox.matriz = it.matriz
+                                    clientBox.updatedAt = it.updatedAt
+                                    clientDao.insert(clientBox)
                                 } else {
-                                    val update = if (!bean.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
+                                    val update = if (!clientBox1.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
                                         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                         val dateItem = formatter.parse(it.updatedAt)
-                                        val dateBean = formatter.parse(bean.updatedAt)
+                                        val dateBean = formatter.parse(clientBox1.updatedAt)
                                         dateItem?.compareTo(dateBean) ?: 1
                                     } else 1
 
                                     if (update > 0) {
-                                        bean.nombre_comercial = it.nombreComercial
-                                        bean.calle = it.calle
-                                        bean.numero = it.numero
-                                        bean.colonia = it.colonia
-                                        bean.ciudad = it.ciudad
-                                        bean.codigo_postal = it.codigoPostal
-                                        bean.fecha_registro = it.fechaRegistro
-                                        bean.cuenta = it.cuenta
-                                        bean.status = it.status == 1
-                                        bean.consec = it.consec ?: "0"
-                                        bean.visitado = if (bean.visitado == 1) 1 else 0
-                                        bean.rango = it.rango
-                                        bean.lun = it.lun
-                                        bean.mar = it.mar
-                                        bean.mie = it.mie
-                                        bean.jue = it.jue
-                                        bean.vie = it.vie
-                                        bean.sab = it.sab
-                                        bean.dom = it.dom
-                                        bean.lunOrder = it.lunOrder
-                                        bean.marOrder = it.marOrder
-                                        bean.mieOrder = it.mieOrder
-                                        bean.jueOrder = it.jueOrder
-                                        bean.vieOrder = it.vieOrder
-                                        bean.sabOrder = it.sabOrder
-                                        bean.domOrder = it.domOrder
-                                        bean.latitud = it.latitud
-                                        bean.longitud = it.longitud
-                                        bean.contacto_phone = it.phone_contacto
-                                        bean.recordatorio = it.recordatorio
-                                        bean.visitasNoefectivas = it.visitas
-                                        bean.is_credito = it.isCredito == 1
-                                        bean.limite_credito = it.limite_credito
-                                        bean.saldo_credito = it.saldo_credito
-                                        bean.matriz = it.matriz
-                                        bean.updatedAt = it.updatedAt
+                                        clientBox1.nombre_comercial = it.nombreComercial
+                                        clientBox1.calle = it.calle
+                                        clientBox1.numero = it.numero
+                                        clientBox1.colonia = it.colonia
+                                        clientBox1.ciudad = it.ciudad
+                                        clientBox1.codigo_postal = it.codigoPostal
+                                        clientBox1.fecha_registro = it.fechaRegistro
+                                        clientBox1.cuenta = it.cuenta
+                                        clientBox1.status = it.status == 1
+                                        clientBox1.consec = it.consec ?: "0"
+                                        clientBox1.visitado = if (clientBox1.visitado == 1) 1 else 0
+                                        clientBox1.rango = it.rango
+                                        clientBox1.lun = it.lun
+                                        clientBox1.mar = it.mar
+                                        clientBox1.mie = it.mie
+                                        clientBox1.jue = it.jue
+                                        clientBox1.vie = it.vie
+                                        clientBox1.sab = it.sab
+                                        clientBox1.dom = it.dom
+                                        clientBox1.lunOrder = it.lunOrder
+                                        clientBox1.marOrder = it.marOrder
+                                        clientBox1.mieOrder = it.mieOrder
+                                        clientBox1.jueOrder = it.jueOrder
+                                        clientBox1.vieOrder = it.vieOrder
+                                        clientBox1.sabOrder = it.sabOrder
+                                        clientBox1.domOrder = it.domOrder
+                                        clientBox1.latitud = it.latitud
+                                        clientBox1.longitud = it.longitud
+                                        clientBox1.contacto_phone = it.phone_contacto
+                                        clientBox1.recordatorio = it.recordatorio
+                                        clientBox1.visitasNoefectivas = it.visitas
+                                        clientBox1.isCredito = it.isCredito == 1
+                                        clientBox1.limite_credito = it.limite_credito
+                                        clientBox1.saldo_credito = it.saldo_credito
+                                        clientBox1.matriz = it.matriz
+                                        clientBox1.updatedAt = it.updatedAt
                                     }
-                                    clientDao.save(bean)
+                                    clientDao.insert(clientBox1)
                                 }
 
 
-                                if (beanRute == null) {
-                                    val clienteBeanRute = ClientesRutaBean()
-                                    val clientDaoRute = RuteClientDao()
+                                if (ruteClientBox == null) {
+                                    val clienteBeanRute = RuteClientBox()
                                     clienteBeanRute.nombre_comercial = it.nombreComercial
                                     clienteBeanRute.calle = it.calle
                                     clienteBeanRute.numero = it.numero
@@ -730,51 +719,51 @@ class RequestClient {
                                     clienteBeanRute.domOrder = it.domOrder
                                     clienteBeanRute.latitud = it.latitud
                                     clienteBeanRute.longitud = it.longitud
-                                    clienteBeanRute.is_credito = it.isCredito == 1
+                                    clienteBeanRute.isCredito = it.isCredito == 1
                                     clienteBeanRute.recordatorio = it.recordatorio
                                     clienteBeanRute.phone_contact = it.phone_contacto
                                     clienteBeanRute.updatedAt = it.updatedAt
-                                    clientDaoRute.insert(clienteBeanRute)
+                                    ruteClientDao.insert(clienteBeanRute)
                                 } else {
 
-                                    val update = if (!beanRute.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
+                                    val update = if (!ruteClientBox.updatedAt.isNullOrEmpty() && !it.updatedAt.isNullOrEmpty()) {
                                         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                         val dateItem = formatter.parse(it.updatedAt)
-                                        val dateBean = formatter.parse(beanRute.updatedAt)
+                                        val dateBean = formatter.parse(ruteClientBox.updatedAt)
                                         dateItem?.compareTo(dateBean) ?: 1
                                     } else 1
 
                                     if (update > 0) {
-                                        beanRute.nombre_comercial = it.nombreComercial
-                                        beanRute.calle = it.calle
-                                        beanRute.numero = it.numero
-                                        beanRute.colonia = it.colonia
-                                        beanRute.cuenta = it.cuenta
-                                        beanRute.visitado = if (beanRute.visitado == 0) 0 else 1
-                                        beanRute.rango = it.rango
-                                        beanRute.status = it.status == 1
-                                        beanRute.lun = it.lun
-                                        beanRute.mar = it.mar
-                                        beanRute.mie = it.mie
-                                        beanRute.jue = it.jue
-                                        beanRute.vie = it.vie
-                                        beanRute.sab = it.sab
-                                        beanRute.dom = it.dom
-                                        beanRute.lunOrder = it.lunOrder
-                                        beanRute.marOrder = it.marOrder
-                                        beanRute.mieOrder = it.mieOrder
-                                        beanRute.jueOrder = it.jueOrder
-                                        beanRute.vieOrder = it.vieOrder
-                                        beanRute.sabOrder = it.sabOrder
-                                        beanRute.domOrder = it.domOrder
-                                        beanRute.latitud = it.latitud
-                                        beanRute.longitud = it.longitud
-                                        beanRute.is_credito = it.isCredito == 1
-                                        beanRute.recordatorio = it.recordatorio
-                                        beanRute.phone_contact = it.phone_contacto
-                                        beanRute.updatedAt = it.updatedAt
+                                        ruteClientBox.nombre_comercial = it.nombreComercial
+                                        ruteClientBox.calle = it.calle
+                                        ruteClientBox.numero = it.numero
+                                        ruteClientBox.colonia = it.colonia
+                                        ruteClientBox.cuenta = it.cuenta
+                                        ruteClientBox.visitado = if (ruteClientBox.visitado == 0) 0 else 1
+                                        ruteClientBox.rango = it.rango
+                                        ruteClientBox.status = it.status == 1
+                                        ruteClientBox.lun = it.lun
+                                        ruteClientBox.mar = it.mar
+                                        ruteClientBox.mie = it.mie
+                                        ruteClientBox.jue = it.jue
+                                        ruteClientBox.vie = it.vie
+                                        ruteClientBox.sab = it.sab
+                                        ruteClientBox.dom = it.dom
+                                        ruteClientBox.lunOrder = it.lunOrder
+                                        ruteClientBox.marOrder = it.marOrder
+                                        ruteClientBox.mieOrder = it.mieOrder
+                                        ruteClientBox.jueOrder = it.jueOrder
+                                        ruteClientBox.vieOrder = it.vieOrder
+                                        ruteClientBox.sabOrder = it.sabOrder
+                                        ruteClientBox.domOrder = it.domOrder
+                                        ruteClientBox.latitud = it.latitud
+                                        ruteClientBox.longitud = it.longitud
+                                        ruteClientBox.isCredito = it.isCredito == 1
+                                        ruteClientBox.recordatorio = it.recordatorio
+                                        ruteClientBox.phone_contact = it.phone_contacto
+                                        ruteClientBox.updatedAt = it.updatedAt
                                     }
-                                    daoRute.save(beanRute)
+                                    ruteClientDao.insert(ruteClientBox)
                                 }
                             }
 
@@ -789,52 +778,51 @@ class RequestClient {
 
                                 //Si no hay precios especiales entonces crea un precio
                                 if (preciosEspecialesBean == null) {
-                                    val bean = PreciosEspecialesBean()
-                                    bean.cliente = item.cliente
-                                    bean.articulo = item.articulo
-                                    bean.precio = item.precio
-                                    bean.active = item.active == 1
-                                    specialPricesDao.insert(bean)
+                                    val specialPricesBox = SpecialPricesBox()
+                                    specialPricesBox.cliente = item.cliente
+                                    specialPricesBox.articulo = item.articulo
+                                    specialPricesBox.precio = item.precio
+                                    specialPricesBox.active = item.active == 1
+                                    specialPricesDao.insert(specialPricesBox)
                                 } else {
                                     preciosEspecialesBean.cliente = item.cliente
                                     preciosEspecialesBean.articulo = item.articulo
                                     preciosEspecialesBean.precio = item.precio
                                     preciosEspecialesBean.active = item.active == 1
-                                    specialPricesDao.save(preciosEspecialesBean)
+                                    specialPricesDao.insert(preciosEspecialesBean)
                                 }
                             }
 
-                            val paymentDao = PaymentDao()
+                            val chargeDao = ChargeDao()
                             response.body()!!.data.cobranzas.map { item ->
-                                val cobranzaBean = paymentDao.getByCobranza(item.cobranza)
-                                if (cobranzaBean == null) {
-                                    val cobranzaBean1 = CobranzaBean()
-                                    val paymentDao1 = PaymentDao()
-                                    cobranzaBean1.cobranza = item.cobranza
-                                    cobranzaBean1.cliente = item.cuenta
-                                    cobranzaBean1.importe = item.importe
-                                    cobranzaBean1.saldo = item.saldo
-                                    cobranzaBean1.venta = item.venta
-                                    cobranzaBean1.estado = item.estado
-                                    cobranzaBean1.observaciones = item.observaciones
-                                    cobranzaBean1.fecha = item.fecha
-                                    cobranzaBean1.hora = item.hora
-                                    cobranzaBean1.empleado = item.identificador
-                                    cobranzaBean1.isCheck = false
-                                    paymentDao1.insert(cobranzaBean1)
+                                val chargeBox1 = chargeDao.getByCobranza(item.cobranza)
+                                if (chargeBox1 == null) {
+                                    val chargeBox = ChargeBox()
+                                    chargeBox.cobranza = item.cobranza
+                                    chargeBox.cliente = item.cuenta
+                                    chargeBox.importe = item.importe
+                                    chargeBox.saldo = item.saldo
+                                    chargeBox.venta = item.venta
+                                    chargeBox.estado = item.estado
+                                    chargeBox.observaciones = item.observaciones
+                                    chargeBox.fecha = item.fecha
+                                    chargeBox.hora = item.hora
+                                    chargeBox.empleado = item.identificador
+                                    chargeBox.isCheck = false
+                                    chargeDao.insert(chargeBox)
                                 } else {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.isCheck = false
-                                    paymentDao.save(cobranzaBean)
+                                    chargeBox1.cobranza = item.cobranza
+                                    chargeBox1.cliente = item.cuenta
+                                    chargeBox1.importe = item.importe
+                                    chargeBox1.saldo = item.saldo
+                                    chargeBox1.venta = item.venta
+                                    chargeBox1.estado = item.estado
+                                    chargeBox1.observaciones = item.observaciones
+                                    chargeBox1.fecha = item.fecha
+                                    chargeBox1.hora = item.hora
+                                    chargeBox1.empleado = item.identificador
+                                    chargeBox1.isCheck = false
+                                    chargeDao.insert(chargeBox1)
                                 }
                             }
                         }
@@ -861,50 +849,48 @@ class RequestClient {
                     if (response.isSuccessful) {
 
                         if (!response.body()!!.clients.isNullOrEmpty()) {
-                            val client: ClienteBean
+                            val client: ClientBox
                             val item = response.body()!!.clients!![0]
-                            //Validamos si existe el cliente
-                            val dao = ClientDao()
-                            val bean = dao.getClientByAccount(item!!.cuenta)
+                            val clientDao = ClientDao()
+                            val bean = clientDao.getClientByAccount(item!!.cuenta)
 
                             if (bean == null) {
-                                val clienteBean = ClienteBean()
-                                val clientDao = ClientDao()
-                                clienteBean.nombre_comercial = item.nombreComercial
-                                clienteBean.calle = item.calle
-                                clienteBean.numero = item.numero
-                                clienteBean.colonia = item.colonia
-                                clienteBean.ciudad = item.ciudad
-                                clienteBean.codigo_postal = item.codigoPostal
-                                clienteBean.fecha_registro = item.fechaRegistro
-                                clienteBean.cuenta = item.cuenta
-                                clienteBean.status = item.status == 1
-                                clienteBean.consec = item.consec ?: "0"
-                                clienteBean.visitado = 0
-                                clienteBean.rango = item.rango
-                                clienteBean.lun = item.lun
-                                clienteBean.mar = item.mar
-                                clienteBean.mie = item.mie
-                                clienteBean.jue = item.jue
-                                clienteBean.vie = item.vie
-                                clienteBean.sab = item.sab
-                                clienteBean.dom = item.dom
-                                clienteBean.lunOrder = item.lunOrder
-                                clienteBean.marOrder = item.marOrder
-                                clienteBean.mieOrder = item.mieOrder
-                                clienteBean.jueOrder = item.jueOrder
-                                clienteBean.vieOrder = item.vieOrder
-                                clienteBean.sabOrder = item.sabOrder
-                                clienteBean.domOrder = item.domOrder
-                                clienteBean.latitud = item.latitud
-                                clienteBean.longitud = item.longitud
-                                clienteBean.is_credito = item.isCredito == 1
-                                clienteBean.limite_credito = item.limite_credito
-                                clienteBean.saldo_credito = item.saldo_credito
-                                clienteBean.contacto_phone = item.phone_contacto
-                                clienteBean.updatedAt = item.updatedAt
-                                clientDao.insert(clienteBean)
-                                client = clienteBean
+                                val clientBox = ClientBox()
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.lunOrder = item.lunOrder
+                                clientBox.marOrder = item.marOrder
+                                clientBox.mieOrder = item.mieOrder
+                                clientBox.jueOrder = item.jueOrder
+                                clientBox.vieOrder = item.vieOrder
+                                clientBox.sabOrder = item.sabOrder
+                                clientBox.domOrder = item.domOrder
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.updatedAt = item.updatedAt
+                                clientDao.insert(clientBox)
+                                client = clientBox
                             } else {
                                 val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -945,13 +931,13 @@ class RequestClient {
                                     bean.contacto_phone = item.phone_contacto
                                     bean.recordatorio = item.recordatorio
                                     bean.visitasNoefectivas = item.visitas
-                                    bean.is_credito = item.isCredito == 1
+                                    bean.isCredito = item.isCredito == 1
                                     bean.limite_credito = item.limite_credito
                                     bean.saldo_credito = item.saldo_credito
                                     bean.matriz = item.matriz
                                     bean.updatedAt = item.updatedAt
                                 }
-                                dao.save(bean)
+                                clientDao.insert(bean)
                                 client = bean
                             }
                             onGetLastClient.onGetLastClientSuccess(client)
@@ -970,20 +956,20 @@ class RequestClient {
             })
         }
 
-        fun saveClientWithDay(clienteBean: Client, day: Int): Boolean {
-            return if (day == 1 && clienteBean.lun == 1)
+        fun saveClientWithDay(client: Client, day: Int): Boolean {
+            return if (day == 1 && client.lun == 1)
                 true
-            else if (day == 2 && clienteBean.mar == 1)
+            else if (day == 2 && client.mar == 1)
                 true
-            else if (day == 3 && clienteBean.mie == 1)
+            else if (day == 3 && client.mie == 1)
                 true
-            else if (day == 4 && clienteBean.jue == 1)
+            else if (day == 4 && client.jue == 1)
                 true
-            else if (day == 5 && clienteBean.vie == 1)
+            else if (day == 5 && client.vie == 1)
                 true
-            else if (day == 6 && clienteBean.sab == 1)
+            else if (day == 6 && client.sab == 1)
                 true
-            else if (day == 7 && clienteBean.dom == 1)
+            else if (day == 7 && client.dom == 1)
                 true
             else false
         }

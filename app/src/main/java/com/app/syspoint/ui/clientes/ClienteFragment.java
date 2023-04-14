@@ -34,20 +34,20 @@ import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.AppBundle;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.ClientesRutaBean;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.AppBundle;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.ui.clientes.PreciosEspeciales.PreciosEspecialesActivity;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
@@ -57,7 +57,6 @@ import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -68,7 +67,7 @@ import java.util.Locale;
 public class ClienteFragment extends Fragment {
 
     AdapterListaClientes mAdapter;
-    List<ClienteBean> mData;
+    List<ClientBox> mData;
     private RelativeLayout rlprogress;
     private LinearLayout lyt_clientes;
 
@@ -85,9 +84,9 @@ public class ClienteFragment extends Fragment {
         generalPublic.setOnClickListener(v -> {
 
             ClientDao clientDao = new ClientDao();
-            ClienteBean client = clientDao.getClientGeneralPublic();
+            ClientBox client = clientDao.getClientGeneralPublic();
             if (client == null) {
-                client = new ClienteBean(1L, "Publico General",
+                client = new ClientBox(1L, "Publico General",
                         "Industrias del Valle", "1", "Parque Canacintra",
                         "Culiacán Rosales", 80150, "22-08-2021",
                         "000000", true, "000001", "01", 0,0,0,0,
@@ -97,7 +96,7 @@ public class ClienteFragment extends Fragment {
                         false, 0, false, 0.0,
                         0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS());
                 try {
-                    clientDao.insert(client);
+                    clientDao.insertBox(client);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -141,8 +140,8 @@ public class ClienteFragment extends Fragment {
                 //mAdapter.getFilter().filter(arg0);
                 new ClientInteractorImp().executeFindClient(arg0, new ClientInteractor.FindClientListener() {
                     @Override
-                    public void onFindClientSuccess(List<? extends ClienteBean> clientList) {
-                        List<ClienteBean> clientBeanList = (List<ClienteBean> ) clientList;
+                    public void onFindClientSuccess(List<ClientBox> clientList) {
+                        List<ClientBox> clientBeanList = (List<ClientBox> ) clientList;
                         mAdapter.setClients(clientBeanList);
 
                         if (clientBeanList.size() > 0) {
@@ -224,10 +223,10 @@ public class ClienteFragment extends Fragment {
     private void initRecyclerView(View root) {
         mData = new ArrayList<>();
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-            mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
+            mData = (List<ClientBox>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
         } else {
             //mData = (List<ClientesRutaBean>) new RuteClientDao().list();
         }
@@ -275,9 +274,7 @@ public class ClienteFragment extends Fragment {
 
     }
 
-    private void showGeneralPublicDialog(ClienteBean cliente) {
-        final ClienteBean clienteBean = cliente;
-
+    private void showGeneralPublicDialog(ClientBox cliente) {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
         builderSingle.setIcon(R.drawable.logo);
         builderSingle.setTitle("Seleccionar opción");
@@ -299,10 +296,10 @@ public class ClienteFragment extends Fragment {
                 new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
                     progressDialog.dismiss();
                     if (connected) {
-                        downloadCharge(clienteBean.getCuenta());
+                        downloadCharge(cliente.getCuenta());
                     } else {
                         HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        parametros.put(Actividades.PARAM_1, cliente.getCuenta());
                         Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                     }
                 }).execute(), 100);
@@ -314,10 +311,7 @@ public class ClienteFragment extends Fragment {
 
     }
 
-    private void showDialogList(ClienteBean cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
-
-        final ClienteBean clienteBean = cliente;
-
+    private void showDialogList(ClientBox cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
         builderSingle.setIcon(R.drawable.logo);
         builderSingle.setTitle("Seleccionar opción");
@@ -329,7 +323,7 @@ public class ClienteFragment extends Fragment {
         arrayAdapter.add("Editar precios especiales");
         arrayAdapter.add("Agregar a ruta");
         arrayAdapter.add(("Recordatorio"));
-        if (clienteBean.getIs_credito()) {
+        if (cliente.isCredito()) {
             arrayAdapter.add(("Cobranza"));
         }
 
@@ -341,7 +335,7 @@ public class ClienteFragment extends Fragment {
             String identificador = "";
 
             //Obtiene el nombre del vendedor
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+            EmployeeBox vendedoresBean = AppBundle.getUserBox();
 
             if (vendedoresBean == null) {
                 vendedoresBean = new CacheInteractor().getSeller();
@@ -351,12 +345,12 @@ public class ClienteFragment extends Fragment {
                 identificador = vendedoresBean.getIdentificador();
             }
             final RolesDao rolesDao = new RolesDao();
-            RolesBean rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
+            RolesBox rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
 
             if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
                 if (rolesBean != null) {
                     if (rolesBean.getActive()) {
-                        editCliente(clienteBean.getCuenta());
+                        editCliente(cliente.getCuenta());
                     } else {
 
                         Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
@@ -373,23 +367,23 @@ public class ClienteFragment extends Fragment {
                 new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
                     progressDialog.dismiss();
                     if (connected) {
-                        downloadCharge(clienteBean.getCuenta());
+                        downloadCharge(cliente.getCuenta());
                     }else {
                         HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        parametros.put(Actividades.PARAM_1, cliente.getCuenta());
                         Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                     }
                 }).execute(), 100);
             } else if (strName.compareToIgnoreCase("Ver Mapa") == 0) {
                 Intent intent = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
+                        Uri.parse("http://maps.google.com/maps?daddr=" + cliente.getLatitud() + "," + cliente.getLongitud()));
                 startActivity(intent);
             } else if (strName.compareToIgnoreCase("Editar precios especiales") == 0) {
 
                 if (rolesBean != null) {
                     if (rolesBean.getActive() == true) {
                         HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        parametros.put(Actividades.PARAM_1, cliente.getCuenta());
                         Actividades.getSingleton(getActivity(), PreciosEspecialesActivity.class).muestraActividad(parametros);
                     } else {
                         Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
@@ -399,10 +393,10 @@ public class ClienteFragment extends Fragment {
             } else if (strName.compareToIgnoreCase("Agregar a ruta") == 0) {
 
                 RoutingDao routingDao = new RoutingDao();
-                RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+                RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
                 if (ruteoBean == null) {
-                    ruteoBean = new RuteoBean();
+                    ruteoBean = new RoutingBox();
                     routingDao.clear();
                     Calendar calendar = Calendar.getInstance();
                     Date date = calendar.getTime();
@@ -427,17 +421,17 @@ public class ClienteFragment extends Fragment {
                     ruteoBean.setRuta("0");
 
                     try {
-                        routingDao.insert(ruteoBean);
+                        routingDao.insertBox(ruteoBean);
                     } catch (Exception e) {
-                        routingDao.save(ruteoBean);
+                        routingDao.insertBox(ruteoBean);
                     }
                 }
 
                 final RuteClientDao ruteClientDao = new RuteClientDao();
-                final ClientesRutaBean bean = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta(), ruteoBean.getDia(), ruteoBean.getRuta());
+                final RuteClientBox bean = ruteClientDao.getClienteByCuentaCliente(cliente.getCuenta(), ruteoBean.getDia(), ruteoBean.getRuta());
 
                     if (bean == null) {
-                        ClientesRutaBean beanCliente = ruteClientDao.getClienteByCuentaCliente(clienteBean.getCuenta());
+                        RuteClientBox beanCliente = ruteClientDao.getClienteByCuentaCliente(cliente.getCuenta());
 
                         if (beanCliente == null) beanCliente = ruteClientDao.getClienteFirts();
 
@@ -445,62 +439,62 @@ public class ClienteFragment extends Fragment {
                         int lastOrder = ruteClientDao.getLastClientInOrder(ruteoBean.getDia(), ruteoBean.getRuta());
 
                         if (beanCliente != null){
-                            final ClientesRutaBean clientesRutaBean = new ClientesRutaBean();
+                            RuteClientBox ruteClientBox = new RuteClientBox();
 
-                            clientesRutaBean.setId(id);
-                            clientesRutaBean.setNombre_comercial(clienteBean.getNombre_comercial());
-                            clientesRutaBean.setCalle(clienteBean.getCalle());
-                            clientesRutaBean.setNumero(clienteBean.getNumero());
-                            clientesRutaBean.setColonia(clienteBean.getColonia());
-                            clientesRutaBean.setCuenta(clienteBean.getCuenta());
-                            clientesRutaBean.setRango(ruteoBean.getRuta());
-                            clientesRutaBean.setStatus(clienteBean.getStatus());
+                            ruteClientBox.setId(id);
+                            ruteClientBox.setNombre_comercial(cliente.getNombre_comercial());
+                            ruteClientBox.setCalle(cliente.getCalle());
+                            ruteClientBox.setNumero(cliente.getNumero());
+                            ruteClientBox.setColonia(cliente.getColonia());
+                            ruteClientBox.setCuenta(cliente.getCuenta());
+                            ruteClientBox.setRango(ruteoBean.getRuta());
+                            ruteClientBox.setStatus(cliente.getStatus());
 
                             if (ruteoBean.getDia() == 1)
-                                clientesRutaBean.setLun(1);
+                                ruteClientBox.setLun(1);
                             else if (ruteoBean.getDia() == 2)
-                                clientesRutaBean.setMar(1);
+                                ruteClientBox.setMar(1);
                             else if (ruteoBean.getDia() == 3)
-                                clientesRutaBean.setMie(1);
+                                ruteClientBox.setMie(1);
                             else if (ruteoBean.getDia() == 4)
-                                clientesRutaBean.setJue(1);
+                                ruteClientBox.setJue(1);
                             else if (ruteoBean.getDia() == 5)
-                                clientesRutaBean.setVie(1);
+                                ruteClientBox.setVie(1);
                             else if (ruteoBean.getDia() == 6)
-                                clientesRutaBean.setSab(1);
+                                ruteClientBox.setSab(1);
                             else if (ruteoBean.getDia() == 7)
-                                clientesRutaBean.setDom(1);
+                                ruteClientBox.setDom(1);
 
-                            clientesRutaBean.setOrder(beanCliente.getOrder());
+                            ruteClientBox.setOrder(beanCliente.getOrder());
 
                             if (ruteoBean.getDia() == 1) {
-                                clientesRutaBean.setLunOrder(lastOrder);
+                                ruteClientBox.setLunOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 2) {
-                                clientesRutaBean.setMarOrder(lastOrder);
+                                ruteClientBox.setMarOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 3) {
-                                clientesRutaBean.setMieOrder(lastOrder);
+                                ruteClientBox.setMieOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 4) {
-                                clientesRutaBean.setJueOrder(lastOrder);
+                                ruteClientBox.setJueOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 5) {
-                                clientesRutaBean.setVieOrder(lastOrder);
+                                ruteClientBox.setVieOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 6) {
-                                clientesRutaBean.setSabOrder(lastOrder);
+                                ruteClientBox.setSabOrder(lastOrder);
                             } else if (ruteoBean.getDia() == 7) {
-                                clientesRutaBean.setDomOrder(lastOrder);
+                                ruteClientBox.setDomOrder(lastOrder);
                             } else {
-                                clientesRutaBean.setLun(beanCliente.getLun());
-                                clientesRutaBean.setMar(beanCliente.getMar());
-                                clientesRutaBean.setMie(beanCliente.getMie());
-                                clientesRutaBean.setJue(beanCliente.getJue());
-                                clientesRutaBean.setVie(beanCliente.getVie());
-                                clientesRutaBean.setSab(beanCliente.getSab());
-                                clientesRutaBean.setDom(beanCliente.getDom());
+                                ruteClientBox.setLun(beanCliente.getLun());
+                                ruteClientBox.setMar(beanCliente.getMar());
+                                ruteClientBox.setMie(beanCliente.getMie());
+                                ruteClientBox.setJue(beanCliente.getJue());
+                                ruteClientBox.setVie(beanCliente.getVie());
+                                ruteClientBox.setSab(beanCliente.getSab());
+                                ruteClientBox.setDom(beanCliente.getDom());
                             }
 
-                            clientesRutaBean.setVisitado(0);
-                            clientesRutaBean.setLatitud(clienteBean.getLatitud());
-                            clientesRutaBean.setLongitud(clienteBean.getLongitud());
-                            ruteClientDao.insert(clientesRutaBean);
+                            ruteClientBox.setVisitado(0);
+                            ruteClientBox.setLatitud(cliente.getLatitud());
+                            ruteClientBox.setLongitud(cliente.getLongitud());
+                            ruteClientDao.insertBox(ruteClientBox);
 
                             Toast.makeText(getContext(), "El cliente se agrego exitosamente", Toast.LENGTH_LONG).show();
                         }
@@ -508,14 +502,14 @@ public class ClienteFragment extends Fragment {
                         Toast.makeText(getContext(), "El cliente ya existe en ruta", Toast.LENGTH_LONG).show();
                     }
             }else if (strName.compareToIgnoreCase("Recordatorio") == 0) {
-                showCustomDialog(clienteBean);
+                showCustomDialog(cliente);
             }else if (strName.compareToIgnoreCase("Cobranza") == 0 ){
                 rolesBean = rolesDao.getRolByEmpleado(identificador, "Cobranza");
 
                 if (rolesBean != null && rolesBean.getActive()) {
 
                         HashMap<String, String> parametros = new HashMap<>();
-                        parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                        parametros.put(Actividades.PARAM_1, cliente.getCuenta());
                         Actividades.getSingleton(getContext(), CobranzaActivity.class).muestraActividad(parametros);
 
                 } else {
@@ -534,12 +528,12 @@ public class ClienteFragment extends Fragment {
 
     private void downloadCharge(String cuenta) {
 
-        final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-        cobranzaBeanList = paymentDao.getDocumentsByCliente(cuenta);
-        for(CobranzaBean cob : cobranzaBeanList){
+        ChargeDao chargeDao = new ChargeDao();
+        List<ChargeBox> chargeBoxList = new ArrayList<>();
+        chargeBoxList = chargeDao.getDocumentsByCliente(cuenta);
+        for(ChargeBox cob : chargeBoxList){
             if (cob.getCliente().compareToIgnoreCase(cuenta) == 0 && cob.getFecha().compareToIgnoreCase(Utils.fechaActual())!=0){
-                paymentDao.delete(cob);
+                chargeDao.removeBox(cob.getId());
             }
         }
 
@@ -550,7 +544,7 @@ public class ClienteFragment extends Fragment {
 
         new ChargeInteractorImp().executeGetChargeByClient(cuenta, new ChargeInteractor.OnGetChargeByClientListener() {
             @Override
-            public void onGetChargeByClientSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
+            public void onGetChargeByClientSuccess(@NonNull List<ChargeBox> chargeByClientList) {
                 progressDialog.dismiss();
                 HashMap<String, String> parametros = new HashMap<>();
                 parametros.put(Actividades.PARAM_1, cuenta);
@@ -567,7 +561,7 @@ public class ClienteFragment extends Fragment {
         });
     }
 
-    private void showCustomDialog(ClienteBean clienteBean) {
+    private void showCustomDialog(ClientBox clientBox) {
         final Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
         dialog.setContentView(R.layout.dialog_recordatorio);
@@ -579,9 +573,9 @@ public class ClienteFragment extends Fragment {
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
         final EditText et_post = (EditText) dialog.findViewById(R.id.et_recordatorio);
-        if (clienteBean.getRecordatorio() == null ||  clienteBean.getRecordatorio() == "null" || clienteBean.getRecordatorio().isEmpty()  ){
+        if (clientBox.getRecordatorio() == null ||  clientBox.getRecordatorio() == "null" || clientBox.getRecordatorio().isEmpty()  ){
         }else {
-            et_post.setText(clienteBean.getRecordatorio());
+            et_post.setText(clientBox.getRecordatorio());
 
         }
         ((AppCompatButton) dialog.findViewById(R.id.bt_cancel)).setOnClickListener(new View.OnClickListener() {
@@ -599,10 +593,10 @@ public class ClienteFragment extends Fragment {
                     Toast.makeText(getContext(), "Ingrese un recordatorio", Toast.LENGTH_SHORT).show();
                 } else {
                     ClientDao clientDao = new ClientDao();
-                    clienteBean.setRecordatorio(review);
-                    clienteBean.setDate_sync(Utils.fechaActual());
-                    clientDao.save(clienteBean);
-                    testLoadClientes(String.valueOf(clienteBean.getId()));
+                    clientBox.setRecordatorio(review);
+                    clientBox.setDate_sync(Utils.fechaActual());
+                    clientDao.insertBox(clientBox);
+                    testLoadClientes(clientBox.getId());
                 }
 
                 dialog.dismiss();
@@ -615,15 +609,13 @@ public class ClienteFragment extends Fragment {
     }
 
 
-    private void testLoadClientes(String idCliente) {
+    private void testLoadClientes(Long idCliente) {
 
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getByIDClient(idCliente);
-
+        List<ClientBox> listaClientesDB = clientDao.getByIDClient(idCliente);
         List<Client> listaClientes = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
+        for (ClientBox item : listaClientesDB) {
             Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
@@ -648,7 +640,7 @@ public class ClienteFragment extends Fragment {
             cliente.setPhone_contacto(""+item.getContacto_phone());
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
-            if (item.getIs_credito()){
+            if (item.isCredito()){
                 cliente.setCredito(1);
             }else{
                 cliente.setCredito(0);
@@ -688,13 +680,13 @@ public class ClienteFragment extends Fragment {
     private void getData() {
 
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
             progressshow();
             new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
-                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                public void onGetAllClientsSuccess(@NonNull List<ClientBox> clientList) {
                     mData = new ClientDao().getClientsByRute(ruteoBean.getRuta());
 
                     // remove inactive users
@@ -732,10 +724,10 @@ public class ClienteFragment extends Fragment {
     public void onResume() {
         super.onResume();
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
-            mData = (List<ClienteBean>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
+            mData = (List<ClientBox>) new ClientDao().getClientsByRute(ruteoBean.getRuta());
         } else {
             //mData = (List<ClientesRutaBean>) new RuteClientDao().list();
         }

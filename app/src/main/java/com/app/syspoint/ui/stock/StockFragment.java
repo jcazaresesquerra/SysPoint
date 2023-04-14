@@ -31,15 +31,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.StockHistoryDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.ui.stock.activities.CashCloseActivity;
 import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;
@@ -58,7 +58,7 @@ import java.util.UUID;
 
 public class StockFragment extends Fragment {
 
-    private List<InventarioBean> mData;
+    private List<StockBox> mData;
     private AdapterInventario mAdapter;
     View root;
 
@@ -296,15 +296,15 @@ public class StockFragment extends Fragment {
     }
 
     private void closeInventory(){
-        List<InventarioBean> mList = (List<InventarioBean>) (List<?>) new StockDao().list();
+        List<StockBox> mList =  new StockDao().list();
+        final ProductDao productDao = new ProductDao();
+        for (StockBox item : mList){
 
-        for (InventarioBean item : mList){
-            final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
             if (productoBean != null){
                 //Actualiza la existencia del articulo
                 productoBean.setExistencia(0);
-                productDao.save(productoBean);
+                productDao.insertBox(productoBean);
             }
             item.setTotalCantidad(0);
         }
@@ -315,7 +315,7 @@ public class StockFragment extends Fragment {
         final StockHistoryDao historialDao = new StockHistoryDao();
         historialDao.clear();
 
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        mData = new StockDao().list();
         mAdapter.setData(mData);
 
         SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(getActivity());
@@ -327,7 +327,7 @@ public class StockFragment extends Fragment {
 
     private void initRecyclerView(){
         mData = new ArrayList<>();
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        mData = new StockDao().list();
 
         ocultaLinearLayouth();
 
@@ -338,7 +338,7 @@ public class StockFragment extends Fragment {
         recyclerView.setLayoutManager(manager);
 
         mAdapter = new AdapterInventario(mData, position -> {
-            InventarioBean inventarioBean = mData.get(position);
+            StockBox inventarioBean = mData.get(position);
 
             if (inventarioBean.getEstado().compareToIgnoreCase("CO") == 0){
 
@@ -365,7 +365,7 @@ public class StockFragment extends Fragment {
                 return false;
             }else {
                 StockDao stockDao = new StockDao();
-                stockDao.delete(inventarioBean);
+                stockDao.delete(inventarioBean.getId());
                 refreshList();
             }
 
@@ -379,7 +379,7 @@ public class StockFragment extends Fragment {
     }
 
     private void setDataInventory(){
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        mData = new StockDao().list();
         mAdapter.setData(mData);
         ocultaLinearLayouth();
     }
@@ -399,7 +399,7 @@ public class StockFragment extends Fragment {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
                 isConnected = true;

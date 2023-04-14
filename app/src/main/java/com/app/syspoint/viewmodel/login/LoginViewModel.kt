@@ -1,9 +1,7 @@
 package com.app.syspoint.viewmodel.login
 
-import android.net.Uri
 import android.os.Environment
 import android.os.Handler
-import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.app.syspoint.App
@@ -11,15 +9,14 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
-import com.app.syspoint.interactor.token.TokenInteractor
-import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.cache.SharedPreferencesManager
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
-import com.app.syspoint.utils.Constants
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.models.UserSession
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.viewmodel.BaseViewModel
@@ -47,7 +44,7 @@ class LoginViewModel: BaseViewModel() {
 
     fun login(email: String, password: String) {
         val employeeDao = EmployeeDao()
-        val employeeBean = employeeDao.validateLogin(email, password)
+        val employeeBox = employeeDao.validateLogin(email, password)
 
         val sessionDao = SessionDao()
         sessionDao.clear()
@@ -55,7 +52,7 @@ class LoginViewModel: BaseViewModel() {
         val userSession = UserSession(email, password, false)
         val lastUserSession = CacheInteractor().getSeller()
 
-        if (employeeBean != null) {
+        if (employeeBox != null) {
 
 
             if (lastUserSession != null && !lastUserSession.email.isNullOrEmpty() && lastUserSession.email != userSession.usuario) {
@@ -74,41 +71,41 @@ class LoginViewModel: BaseViewModel() {
                 }*/
             }
 
-            val sessionBean = SesionBean()
-            sessionBean.empleado = employeeBean
-            sessionBean.empleadoId = employeeBean.id
+            val sessionBean = SessionBox()
+            sessionBean.employee!!.target = employeeBox
+            sessionBean.empleadoId = employeeBox.id
             sessionBean.remember = false
             sessionDao.saveSession(sessionBean)
             AppBundle.setUserSession(userSession)
         }
 
         loginViewState.postValue(
-            if (employeeBean != null) LoginViewState.LoggedIn
+            if (employeeBox != null) LoginViewState.LoggedIn
             else LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
         )
     }
 
-    private fun setRuteByEmployeeIfExists(employeeBean: EmpleadoBean) {
+    private fun setRuteByEmployeeIfExists(employeeBox: EmployeeBox) {
         val routingDao = RoutingDao()
         val ruteoBean = routingDao.getRutaEstablecida()
 
         if (ruteoBean != null) {
             ruteoBean.id = 1L
             ruteoBean.fecha = Utils.fechaActual()
-            if (!employeeBean.getRute().isNullOrEmpty()) {
-                ruteoBean.ruta = employeeBean.getRute()
+            if (!employeeBox.rute.isNullOrEmpty()) {
+                ruteoBean.ruta = employeeBox.rute
             } else {
                 ruteoBean.ruta = ""
             }
-            routingDao.save(ruteoBean)
+            routingDao.insert(ruteoBean)
             getClientsByRute(ruteoBean)
         } else {
-            val ruteo = RuteoBean()
+            val ruteo = RoutingBox()
             ruteo.id = 1L
             ruteo.fecha = Utils.fechaActual()
 
-            if (!employeeBean.getRute().isNullOrEmpty()) {
-                ruteo.ruta = employeeBean.getRute()
+            if (!employeeBox.rute.isNullOrEmpty()) {
+                ruteo.ruta = employeeBox.rute
             } else {
                 ruteo.ruta = ""
             }
@@ -118,7 +115,7 @@ class LoginViewModel: BaseViewModel() {
         }
     }
 
-    private fun getClientsByRute(ruteoBean: RuteoBean) {
+    private fun getClientsByRute(ruteoBean: RoutingBox) {
         if (ruteoBean.dia == 1) {
             saveData(ClientDao().getClientsByMondayRute(ruteoBean.ruta, 1), 1)
         } else if (ruteoBean.dia == 2) {
@@ -141,7 +138,7 @@ class LoginViewModel: BaseViewModel() {
         }
     }
 
-    private fun saveData(listaClientes: List<ClienteBean>, day: Int) {
+    private fun saveData(listaClientes: List<ClientBox>, day: Int) {
         var count = 0
         for (item in listaClientes) {
             count += 1
@@ -149,7 +146,7 @@ class LoginViewModel: BaseViewModel() {
             val clientesRutaBean = ruteClientDao.getClienteByCuentaCliente(item.cuenta)
             //Guardamos al clientes en la ruta actual
             if (clientesRutaBean == null) {
-                val bean = ClientesRutaBean()
+                val bean = RuteClientBox()
                 val dao = RuteClientDao()
                 bean.id = java.lang.Long.valueOf(count.toLong())
                 bean.nombre_comercial = item.nombre_comercial
@@ -178,18 +175,14 @@ class LoginViewModel: BaseViewModel() {
                 bean.latitud = item.latitud
                 bean.longitud = item.longitud
                 bean.phone_contact = item.contacto_phone
-                try {
-                    dao.insert(bean)
-                } catch (e: Exception) {
-                    dao.save(bean)
-                }
+                dao.insert(bean)
             }
         }
     }
 
     fun isUserAdmin(): Boolean {
         // get seller
-        val sellerBean = AppBundle.getUserBean()
+        val sellerBean = AppBundle.getUserBox()
 
         // save seller in cache
         val cacheInteractor = CacheInteractor()
@@ -197,7 +190,7 @@ class LoginViewModel: BaseViewModel() {
 
         var identificador: String? = ""
         if (sellerBean != null) {
-            identificador = sellerBean.getIdentificador()
+            identificador = sellerBean.identificador
         }
         val rolesDao = RolesDao()
         val rolesBean = rolesDao.getRolByEmpleado(identificador, "Inventarios")
@@ -209,55 +202,55 @@ class LoginViewModel: BaseViewModel() {
         val employeeDao = EmployeeDao()
         val count = employeeDao.getTotalEmployees()
         if (count == 0) {
-            val employee = EmpleadoBean()
+            val employee = EmployeeBox()
             val dao = EmployeeDao()
-            employee.setNombre("Osvaldo Cazares")
-            employee.setDireccion("Conocida")
-            employee.setEmail("dev@gmail.com")
-            employee.setTelefono("6672081920")
-            employee.setFecha_nacimiento("00/00/0000")
-            employee.setFecha_ingreso("00/00/0000")
-            employee.setContrasenia("123")
-            employee.setIdentificador("E001")
+            employee.nombre = "Osvaldo Cazares"
+            employee.direccion = "Conocida"
+            employee.email = "dev@gmail.com"
+            employee.telefono = "6672081920"
+            employee.fecha_nacimiento =  "00/00/0000"
+            employee.fecha_ingreso = "00/00/0000"
+            employee.contrasenia = "123"
+            employee.identificador = "E001"
             dao.insert(employee)
-            val rolCliente = RolesBean()
+            val rolCliente = RolesBox()
             val rolClienteDao =
                 RolesDao()
-            rolCliente.empleado = employee
+            rolCliente.empleado!!.target = employee
             rolCliente.modulo = "Clientes"
             rolCliente.active = true
-            rolCliente.identificador = employee.getIdentificador()
+            rolCliente.identificador = employee.identificador
             rolClienteDao.insert(rolCliente)
-            val rolProducto = RolesBean()
+            val rolProducto = RolesBox()
             val rolProductoDao =
                 RolesDao()
-            rolProducto.empleado = employee
+            rolProducto.empleado!!.target = employee
             rolProducto.modulo = "Productos"
             rolProducto.active = true
-            rolProducto.identificador = employee.getIdentificador()
+            rolProducto.identificador = employee.identificador
             rolProductoDao.insert(rolProducto)
-            val rolVentas = RolesBean()
+            val rolVentas = RolesBox()
             val rolVentasDao = RolesDao()
-            rolVentas.empleado = employee
+            rolVentas.empleado!!.target = employee
             rolVentas.modulo = "Ventas"
             rolVentas.active = true
-            rolVentas.identificador = employee.getIdentificador()
+            rolVentas.identificador = employee.identificador
             rolVentasDao.insert(rolVentas)
-            val rolEmpleado = RolesBean()
+            val rolEmpleado = RolesBox()
             val rolEmpleadoDao =
                 RolesDao()
-            rolEmpleado.empleado = employee
+            rolEmpleado.empleado!!.target = employee
             rolEmpleado.modulo = "Empleados"
             rolEmpleado.active = true
-            rolEmpleado.identificador = employee.getIdentificador()
+            rolEmpleado.identificador = employee.identificador
             rolEmpleadoDao.insert(rolEmpleado)
-            val rolCobranza = RolesBean()
+            val rolCobranza = RolesBox()
             val rolCobranzaDao =
                 RolesDao()
-            rolCobranza.empleado = employee
+            rolCobranza.empleado!!.target = employee
             rolCobranza.modulo = "Cobranza"
             rolCobranza.active = true
-            rolCobranza.identificador = employee.getIdentificador()
+            rolCobranza.identificador = employee.identificador
             rolCobranzaDao.insert(rolCobranza)
         }
     }
@@ -267,7 +260,7 @@ class LoginViewModel: BaseViewModel() {
             PricePersistenceDao()
         val exists = persistenceDao.existePersistencia()
         if (exists == 0) {
-            val persistencePriceBean = PersistenciaPrecioBean()
+            val persistencePriceBean = PersistancePricesBox()
             val persistencePriceDao =
                 PricePersistenceDao()
             persistencePriceBean.id = java.lang.Long.valueOf(1)
@@ -278,6 +271,8 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun validateToken() {
+        sync()
+        /*
         Handler().postDelayed({
             NetworkStateTask { connected ->
                 if (connected) {
@@ -308,7 +303,7 @@ class LoginViewModel: BaseViewModel() {
                     }
                 }
             }.execute()
-        }, 100)
+        }, 100)*/
     }
 
     fun sync() {
@@ -373,19 +368,20 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun forceUpdate() {
+
         val stockDao = StockDao()
         stockDao.clear()
         val historialDao = StockHistoryDao()
         historialDao.clear()
         val ventasDao = SellsDao()
         ventasDao.clear()
-        val itemDao = ItemDao()
+        val itemDao = PlayingDao()
         itemDao.clear()
         val visitasDao = VisitsDao()
         visitasDao.clear()
-        val cobranzaDao = PaymentDao()
+        val cobranzaDao = CobrosDao()
         cobranzaDao.clear()
-        val chargesDao = ChargesDao()
+        val chargesDao = ChargeDao()
         chargesDao.clear()
         val routingDao = RoutingDao()
         routingDao.clear()
@@ -401,7 +397,7 @@ class LoginViewModel: BaseViewModel() {
         specialPricesDao.clear()
         val dao = TaskDao()
         dao.clear()
-        val bean = TaskBean()
+        val bean = TaskBox()
         CacheInteractor().removeSellerFromCache()
         CacheInteractor().resetStockId()
         CacheInteractor().resetLoadId()

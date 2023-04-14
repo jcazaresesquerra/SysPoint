@@ -1,7 +1,6 @@
 package com.app.syspoint.interactor.client
 
 import com.app.syspoint.models.Client
-import com.app.syspoint.repository.database.bean.ClienteBean
 import com.app.syspoint.repository.request.RequestClient
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

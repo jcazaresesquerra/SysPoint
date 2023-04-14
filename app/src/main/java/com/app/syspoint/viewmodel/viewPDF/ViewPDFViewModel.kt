@@ -9,9 +9,9 @@ import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.models.Client
 import com.app.syspoint.models.Payment
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.bean.InventarioHistorialBean
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.StockBox
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentasByID
@@ -22,11 +22,10 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-
 class ViewPDFViewModel: ViewModel() {
 
 
-    fun addProductosInventori(venta: Int) {
+    fun addProductosInventori(venta: Long) {
         viewModelScope.launch(Dispatchers.Default) {
             val sellsDao = SellsDao()
             val ventasBean = sellsDao.getVentaByInventario(venta)
@@ -34,24 +33,24 @@ class ViewPDFViewModel: ViewModel() {
             if (ventasBean != null) {
 
                 //Contiene las partidas de la venta
-                for (item in ventasBean.listaPartidas) {
+                for (item in ventasBean.listaPartidas!!) {
 
                     //Consultamos a la base de datos si existe el producto
                     val productDao = ProductDao()
-                    val productoBean = productDao.getProductoByArticulo(item.articulo.articulo)
+                    val productoBean = productDao.getProductoByArticulo(item.articulo!!.target.articulo)
 
                     //Si no existe en el inventario creamos el producto
                     if (productoBean != null) {
 
                         //Si existe entonces creamos el inser en estado PE
                         val stockDao = StockDao()
-                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo.articulo)
+                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo!!.target.articulo)
 
                         //Si no existe se deja como pendiente
                         if (inventarioBean == null) {
-                            val bean = InventarioBean()
+                            val bean = StockBox()
                             val dao = StockDao()
-                            bean.articulo = productoBean
+                            bean.articulo!!.target = productoBean
                             bean.cantidad = 0
                             bean.estado = "PE"
                             bean.precio = item.precio
@@ -66,11 +65,11 @@ class ViewPDFViewModel: ViewModel() {
                             if (inventarioHistorialBean != null) {
                                 inventarioHistorialBean.cantidad =
                                     inventarioHistorialBean.cantidad + item.cantidad
-                                stockHistoryDao.save(inventarioHistorialBean)
+                                stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
-                                val invBean = InventarioHistorialBean()
+                                val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo = productoBean
+                                invBean.articulo!!.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
@@ -85,12 +84,12 @@ class ViewPDFViewModel: ViewModel() {
                             if (inventarioHistorialBean != null) {
                                 inventarioHistorialBean.cantidad =
                                     inventarioHistorialBean.cantidad + item.cantidad
-                                stockHistoryDao.save(inventarioHistorialBean)
+                                stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
                                 //Creamos el historial del Inventario
-                                val invBean = InventarioHistorialBean()
+                                val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo = productoBean
+                                invBean.articulo!!.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
@@ -105,20 +104,20 @@ class ViewPDFViewModel: ViewModel() {
     }
 
     //Actualiza las existencias del producto
-    private fun upadteExistencias(venta: Int) {
+    private fun upadteExistencias(venta: Long) {
         val sellsDao = SellsDao()
         val ventasBean = sellsDao.getVentaByInventario(venta)
-        for (item in ventasBean!!.listaPartidas) {
+        for (item in ventasBean!!.listaPartidas!!) {
             val productDao = ProductDao()
-            val productoBean = productDao.getProductoByArticulo(item.articulo.articulo)
+            val productoBean = productDao.getProductoByArticulo(item.articulo!!.target.articulo)
             if (productoBean != null) {
                 productoBean.existencia = productoBean.existencia - item.cantidad
-                productDao.save(productoBean)
+                productDao.insert(productoBean)
             }
         }
     }
 
-    fun sync(venta: Int, clienteID: String) {
+    fun sync(venta: Long, clienteID: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             syncCloudVenta(venta)
             sincronizaCliente(clienteID)
@@ -127,15 +126,14 @@ class ViewPDFViewModel: ViewModel() {
     }
 
     private fun loadCobranza() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
+        val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
         val listaCobranza: MutableList<Payment> = ArrayList()
         for (item in cobranzaBeanList) {
             val cobranza = Payment()
             cobranza.cobranza = item.cobranza
             cobranza.cuenta = item.cliente
             cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
+            cobranza.saldo = item.saldo!!
             cobranza.venta = item.venta
             cobranza.estado = item.estado
             cobranza.observaciones = item.observaciones
@@ -155,7 +153,7 @@ class ViewPDFViewModel: ViewModel() {
         })
     }
 
-    private fun sincronizaCliente(idCliente: String) {
+    private fun sincronizaCliente(idCliente: Long) {
         val clientDao = ClientDao()
         val listaClientesDB = clientDao.getByIDClient(idCliente)
         val listaClientes: MutableList<Client> = ArrayList()
@@ -184,7 +182,7 @@ class ViewPDFViewModel: ViewModel() {
             client.phone_contacto = item.contacto_phone
             client.recordatorio = item.recordatorio
             client.visitas = item.visitasNoefectivas
-            if (item.matriz === "null" && item.matriz == null && item.matriz.isEmpty()) {
+            if (item.matriz === "null" && item.matriz == null && item.matriz!!.isEmpty()) {
                 client.matriz = ""
             } else {
                 client.matriz = item.matriz
@@ -202,9 +200,9 @@ class ViewPDFViewModel: ViewModel() {
         })
     }
 
-    private fun syncCloudVenta(venta: Int) {
+    private fun syncCloudVenta(venta: Long) {
         try {
-            val sincVentasByID = SincVentasByID(venta.toString().toLong())
+            val sincVentasByID = SincVentasByID(venta)
             sincVentasByID.setOnSuccess(object : ResponseOnSuccess() {
                 @Throws(JSONException::class)
                 override fun onSuccess(response: JSONArray) {

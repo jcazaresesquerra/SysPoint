@@ -10,6 +10,7 @@ import com.app.syspoint.BuildConfig;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -115,6 +116,34 @@ public class Utils {
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final String fecha = format.format(calendarFechaFin.getTime());
         return fecha + " 23:59:59";
+    }
+
+    public static Date fechaActualHMSStartDay_(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        final SimpleDateFormat formatHMS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        String stringFecha =  fecha + " 00:00:00";
+        try {
+            return formatHMS.parse(stringFecha);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
+    }
+
+    public static Date fechaActualHMSEndDay_(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        final SimpleDateFormat formatHMS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        String stringFecha =  fecha + " 23:59:59";
+        try {
+            return formatHMS.parse(stringFecha);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
     }
 
     public static String fechaActualPicker(){

@@ -39,9 +39,9 @@ import androidx.core.content.ContextCompat;
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.models.Product;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
@@ -70,7 +70,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
 
     private List<String> listaCamposValidos;
     private String status_seleccionado;
-    private String idProducto;
+    private Long idProducto;
     byte[] imageByteArray;
     Bitmap decoded;
 
@@ -309,12 +309,12 @@ public class RegistrarProductoActivity extends AppCompatActivity {
 
     private boolean exitProduct(){
         ProductDao dao = new ProductDao();
-        ProductoBean producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
+        ProductBox producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
         return producto != null;
     }
 
     private void saveProducto(){
-        ProductoBean producto = new ProductoBean();
+        ProductBox producto = new ProductBox();
         ProductDao dao = new ProductDao();
         producto.setArticulo(editTextArticulo.getText().toString());
         producto.setDescripcion(editTextDescripcion.getText().toString());
@@ -337,8 +337,8 @@ public class RegistrarProductoActivity extends AppCompatActivity {
         if (decoded != null){
             producto.setPath_img(getStringImage(decoded));
         }
-        dao.insert(producto);
-        idProducto = String.valueOf(producto.getId());
+        dao.insertBox(producto);
+        idProducto = producto.getId();
 
         if (!Utils.isNetworkAvailable(getApplication())){
             //showDialogNotConnectionInternet();
@@ -377,13 +377,13 @@ public class RegistrarProductoActivity extends AppCompatActivity {
     }
 
 
-    private void testLoadProductos(String idProducto){
+    private void testLoadProductos(Long idProducto){
         progressshow();
         ProductDao productDao = new ProductDao();
-        List<ProductoBean> listaProductosDB =  productDao.getProductoByID(idProducto);
+        List<ProductBox> listaProductosDB =  productDao.getProductoByID(idProducto);
         List<Product> listaProductos = new ArrayList<>();
 
-        for (ProductoBean item : listaProductosDB){
+        for (ProductBox item : listaProductosDB){
             Product producto = new Product();
             producto.setArticulo(item.getArticulo());
             producto.setDescripcion(item.getDescripcion());

@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.databinding.FragmentProductoBinding
 import com.app.syspoint.models.sealed.ProductViewState
-import com.app.syspoint.repository.database.bean.ProductoBean
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.ui.products.activities.ActualizaProductoActivity
 import com.app.syspoint.ui.products.activities.RegistrarProductoActivity
 import com.app.syspoint.ui.products.adapters.AdapterListaProductos
@@ -148,7 +148,7 @@ class ProductFragment: Fragment() {
         }
     }
 
-    private fun refreshRecyclerView(data: List<ProductoBean?>) {
+    private fun refreshRecyclerView(data: List<ProductBox?>) {
         if (::adapter.isInitialized) {
             adapter.setData(data)
             if (data.isNotEmpty()) {
@@ -159,7 +159,7 @@ class ProductFragment: Fragment() {
         }
     }
 
-    private fun initRecyclerView(data: List<ProductoBean?>) {
+    private fun initRecyclerView(data: List<ProductBox?>) {
         if (data.isNotEmpty()) {
             binding.lytProductos.setInvisible()
         } else {
@@ -172,14 +172,14 @@ class ProductFragment: Fragment() {
         binding.rvListaProductos.layoutManager = manager
 
         adapter = AdapterListaProductos(data, object : AdapterListaProductos.OnItemClickListener {
-            override fun onItemClick(productoBean: ProductoBean?) {
+            override fun onItemClick(productoBean: ProductBox?) {
                 showSelectionFunction(productoBean)
             }
         })
         binding.rvListaProductos.adapter = adapter
     }
 
-    private fun showSelectionFunction(productBean: ProductoBean?) {
+    private fun showSelectionFunction(productBean: ProductBox?) {
 
         val builderSingle = AlertDialog.Builder(requireContext())
         builderSingle.setIcon(R.drawable.logo)

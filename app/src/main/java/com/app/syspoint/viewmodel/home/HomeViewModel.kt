@@ -1,5 +1,7 @@
 package com.app.syspoint.viewmodel.home
 
+import android.os.Build
+import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,14 +19,11 @@ import com.app.syspoint.interactor.employee.GetEmployeeInteractor.SaveEmployeeLi
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
 import com.app.syspoint.interactor.prices.PriceInteractor.SendPricesListener
 import com.app.syspoint.interactor.prices.PriceInteractorImp
-import com.app.syspoint.interactor.roles.RolInteractor.OnGetAllRolesListener
-import com.app.syspoint.interactor.roles.RolInteractorImp
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
 import com.app.syspoint.models.sealed.*
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
@@ -40,10 +39,10 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-import com.app.syspoint.repository.database.dao.RuteClientDao
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.RuteoBean
-import com.app.syspoint.repository.database.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.RoutingBox
+import com.app.syspoint.usecases.GetRolesUseCase
 
 const val TAG = "HomeViewModel"
 
@@ -82,15 +81,24 @@ class HomeViewModel: ViewModel() {
     }
 
     private suspend fun getCharges() {
-        val vendedoresBean = AppBundle.getUserBean()
+        val vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean != null) {
-            GetChargeUseCase().invoke().onEach {
-                if (it is Resource.Success || it is Resource.Error) {
-                    getCobranzas.postValue(true)
-                    saveCobranza()
-                    saveAbonos()
-                }
-            }.launchIn(viewModelScope)
+            val isUiThread =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "HomeViewModel getCharges request isUIThread: $isUiThread")
+
+            viewModelScope.launch(Dispatchers.IO) {
+                GetChargeUseCase().invoke().onEach {
+                    if (it is Resource.Success || it is Resource.Error) {
+                        val isUiThread =
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                        Log.d("RuestCharge", "HomeViewModel getCharges response isUIThread: $isUiThread")
+                        getCobranzas.postValue(true)
+                        saveCobranza()
+                        saveAbonos()
+                    }
+                }.launchIn(this)
+            }
         }
     }
 
@@ -101,12 +109,12 @@ class HomeViewModel: ViewModel() {
             viewModelScope.launch(Dispatchers.Main) {
                 val clientDao = ClientDao()
                 val listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual())
-                val paymentDao = PaymentDao()
+                val chargeDao = ChargeDao()
                 listaClientesCredito.map { item ->
                     try {
                         val dao = ClientDao()
-                        item.saldo_credito = paymentDao.getTotalSaldoDocumentosCliente(item.cuenta)
-                        dao.save(item)
+                        item.saldo_credito = chargeDao.getSaldoByCliente(item.cuenta!!)
+                        dao.insert(item)
                     } catch (e: java.lang.Exception) {
                         e.printStackTrace()
                     }
@@ -121,7 +129,10 @@ class HomeViewModel: ViewModel() {
         if (requestingDataViewState.value != RequestingDataViewState.RequestingDataStart) {
             requestingDataViewState.value = RequestingDataViewState.RequestingDataStart
 
-            viewModelScope.launch(Dispatchers.Default) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val isUiThread =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                Log.d("getData", "HomeViewModel getData request isUIThread: $isUiThread")
                 getClientsByRute(false)
                 GetDataUseCase().invoke().onEach {
                     if (it is Resource.Loading) {
@@ -130,7 +141,7 @@ class HomeViewModel: ViewModel() {
                         homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         requestingDataViewState.postValue(RequestingDataViewState.RequestingDataFinish)
                     }
-                }.launchIn(viewModelScope)
+                }.launchIn(this)
             }
         }
     }
@@ -141,12 +152,12 @@ class HomeViewModel: ViewModel() {
 
             val clientDao = ClientDao()
             val listaClientesCredito = clientDao.getClientsByDay(Utils.fechaActual())
-            val paymentDao = PaymentDao()
+            val chargeDao = ChargeDao()
             listaClientesCredito.map { item ->
                 try {
                     val dao = ClientDao()
-                    item.saldo_credito = paymentDao.getTotalSaldoDocumentosCliente(item.cuenta)
-                    dao.save(item)
+                    item.saldo_credito = chargeDao.getSaldoByCliente(item.cuenta!!)
+                    dao.insert(item)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -196,10 +207,10 @@ class HomeViewModel: ViewModel() {
             val routingDao = RoutingDao()
             val ruteoBean = routingDao.getRutaEstablecida()
             if (ruteoBean != null) {
-                val vendedoresBean = AppBundle.getUserBean()
-                val ruta = if (ruteoBean.ruta != null && !ruteoBean.ruta.isEmpty()) ruteoBean.ruta else vendedoresBean.getRute()
-                ClientInteractorImp().executeGetAllClientsByDate(ruta, ruteoBean.dia, object : GetAllClientsListener {
-                    override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
+                val vendedoresBean = AppBundle.getUserBox()
+                val ruta = if (ruteoBean.ruta != null && !ruteoBean.ruta!!.isEmpty()) ruteoBean.ruta else vendedoresBean.rute
+                ClientInteractorImp().executeGetAllClientsByDate(ruta!!, ruteoBean.dia, object : GetAllClientsListener {
+                    override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
                         getClientsByRute.postValue(true)
                         _getClientsByRuteViewState.postValue(GetClientsByRuteViewState.GetClientsByRuteSuccess(clientList))
                         saveClientes()
@@ -224,17 +235,13 @@ class HomeViewModel: ViewModel() {
 
     private fun getRoles() {
         viewModelScope.launch(Dispatchers.IO) {
-            RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
-                override fun onGetAllRolesSuccess(roles: List<RolesBean>) {
+            GetRolesUseCase().invoke().onEach {
+                if (it is Resource.Success || it is Resource.Error) {
                     getRoles.postValue(true)
-                    Log.d(TAG, "Roles actualizados")
+                    saveCobranza()
+                    saveAbonos()
                 }
-
-                override fun onGetAllRolesError() {
-                    getRoles.postValue(true)
-                    Log.d(TAG, "Ha ocurrido un error al obtener roles")
-                }
-            })
+            }.launchIn(this)
         }
     }
 
@@ -243,7 +250,7 @@ class HomeViewModel: ViewModel() {
             val visitsDao = VisitsDao()
             val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
             val clientDao = ClientDao()
-            var vendedoresBean = AppBundle.getUserBean()
+            var vendedoresBean = AppBundle.getUserBox()
             if (vendedoresBean == null) {
                 vendedoresBean = CacheInteractor().getSeller()
             }
@@ -252,18 +259,22 @@ class HomeViewModel: ViewModel() {
                 val visita = Visit()
                 visita.fecha = item.fecha
                 visita.hora = item.hora
-                val clienteBean = clientDao.getClientByAccount(item.cliente.cuenta)
+                val clienteBean = clientDao.getClientByAccount(item.cliente!!.target.cuenta)
                 visita.cuenta = clienteBean!!.cuenta
                 visita.latidud = item.latidud
                 visita.longitud = item.longitud
                 visita.motivo_visita = item.motivo_visita
                 if (vendedoresBean != null) {
-                    visita.identificador = vendedoresBean.getIdentificador()
+                    visita.identificador = vendedoresBean.identificador
                 } else {
                     Log.e(TAG, "vendedoresBean is null")
                 }
                 visitList.add(visita)
             }
+
+            val isUiThread =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("SAVE", "HomeViewModel saveVisitas request isUIThread: $isUiThread")
             VisitInteractorImp().executeSaveVisit(visitList, object : OnSaveVisitListener {
                 override fun onSaveVisitSuccess() {
                     saveVisitas.postValue(true)
@@ -340,15 +351,14 @@ class HomeViewModel: ViewModel() {
 
     fun saveCobranza() {
         viewModelScope.launch(Dispatchers.IO) {
-            val paymentDao = PaymentDao()
-            val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
+            val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = ArrayList()
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
                 cobranza.cuenta = item.cliente
                 cobranza.importe = item.importe
-                cobranza.saldo = item.saldo
+                cobranza.saldo = item.saldo!!
                 cobranza.venta = item.venta
                 cobranza.estado = item.estado
                 cobranza.observaciones = item.observaciones
@@ -357,6 +367,9 @@ class HomeViewModel: ViewModel() {
                 cobranza.identificador = item.empleado
                 listaCobranza.add(cobranza)
             }
+            val isUiThread =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("SAVE", "HomeViewModel saveCobranza request isUIThread: $isUiThread")
             ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
                 override fun onSaveChargeSuccess() {
                     saveCobranza.postValue(true)
@@ -373,15 +386,14 @@ class HomeViewModel: ViewModel() {
 
     private fun saveAbonos() {
         viewModelScope.launch(Dispatchers.IO) {
-            val paymentDao = PaymentDao()
-            val cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual())
+            val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = ArrayList()
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
                 cobranza.cuenta = item.cliente
                 cobranza.importe = item.importe
-                cobranza.saldo = item.saldo
+                cobranza.saldo = item.saldo!!
                 cobranza.venta = item.venta
                 cobranza.estado = item.estado
                 cobranza.observaciones = item.observaciones
@@ -391,6 +403,9 @@ class HomeViewModel: ViewModel() {
                 cobranza.updatedAt = item.updatedAt
                 listaCobranza.add(cobranza)
             }
+            val isUiThread =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("SAVE", "HomeViewModel saveAbono request isUIThread: $isUiThread")
             ChargeInteractorImp().executeUpdateCharge(
                 listaCobranza,
                 object : OnUpdateChargeListener {
@@ -452,7 +467,7 @@ class HomeViewModel: ViewModel() {
                 client.phone_contacto = item.contacto_phone
                 client.recordatorio = item.recordatorio
                 client.visitas = item.visitasNoefectivas
-                client.isCredito = if (item.is_credito) 1 else 0
+                client.isCredito = if (item.isCredito) 1 else 0
                 client.saldo_credito = (item.saldo_credito)
                 client.limite_credito = (item.limite_credito)
                 if (item.matriz == null || item.matriz != null && item.matriz == "null") {
@@ -479,13 +494,18 @@ class HomeViewModel: ViewModel() {
 
     fun setUpRute(dia: String, ruta: String) {
         viewModelScope.launch(Dispatchers.Default) {
+
+            val isUiThread =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("SAVE_DB", "HomeViewModel setUpRute request isUIThread: $isUiThread")
+
             val clientDao = ClientDao()
             clientDao.updateVisited()
 
             val routingDao = RoutingDao()
             routingDao.clear()
 
-            val ruteoBean = RuteoBean()
+            val ruteoBean = RoutingBox()
 
             if (dia == "Lunes") {
                 ruteoBean.dia = 1
@@ -505,8 +525,8 @@ class HomeViewModel: ViewModel() {
             ruteoBean.id = 1L
             ruteoBean.fecha = Utils.fechaActual()
 
-            val vendedoresBean1 = AppBundle.getUserBean()
-            var ruta_ = ruta.ifEmpty { vendedoresBean1.getRute() }
+            val vendedoresBean1 = AppBundle.getUserBox()
+            var ruta_ = ruta.ifEmpty { vendedoresBean1.rute }
 
             if (ruta_ == "0") {
                 val vendedoresBean = CacheInteractor().getSeller()
@@ -518,25 +538,25 @@ class HomeViewModel: ViewModel() {
             try {
                 routingDao.insert(ruteoBean)
             } catch (e: java.lang.Exception) {
-                routingDao.save(ruteoBean)
+                routingDao.insert(ruteoBean)
             }
 
             setRute(ruteoBean)
 
-            vendedoresBean1.setRute(ruta_)
-            vendedoresBean1.setUpdatedAt(Utils.fechaActualHMS())
+            vendedoresBean1.rute = ruta_
+            vendedoresBean1.updatedAt = Utils.fechaActualHMS()
 
-            EmployeeDao().save(vendedoresBean1)
-            val idEmpleado = vendedoresBean1.id.toString()
+            EmployeeDao().insert(vendedoresBean1)
+            val idEmpleado = vendedoresBean1.id
             testLoadEmpleado(idEmpleado)
         }
     }
 
-    private fun setRute(ruteoBean: RuteoBean) {
+    private fun setRute(ruteoBean: RoutingBox) {
         _setUpRuteViewState.postValue(SetRuteViewState.Loading)
-        val vendedoresBean = AppBundle.getUserBean()
-        val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta.isNotEmpty()) ruteoBean.ruta else vendedoresBean.getRute()
-        val clients = RuteClientDao().getAllRutaClientes(ruta, ruteoBean.dia)
+        val vendedoresBean = AppBundle.getUserBox()
+        val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()) ruteoBean.ruta else vendedoresBean.rute
+        val clients = RuteClientDao().getAllRutaClientes(ruta!!, ruteoBean.dia)
         if (clients != null && clients.isNotEmpty()) {
             _setUpRuteViewState.postValue(SetRuteViewState.RuteDefined(clients))
         } else {
@@ -544,7 +564,7 @@ class HomeViewModel: ViewModel() {
         }
     }
 
-    private fun testLoadEmpleado(id: String) {
+    private fun testLoadEmpleado(id: Long) {
         homeLoadingViewState.postValue(HomeLoadingViewState.LoadingStart)
         viewModelScope.launch(Dispatchers.IO) {
             val employeeDao = EmployeeDao()
@@ -552,21 +572,21 @@ class HomeViewModel: ViewModel() {
             val listEmpleados: MutableList<Employee> = ArrayList()
             listaEmpleadosDB.map {item ->
                 val empleado = Employee()
-                empleado.nombre = item.getNombre()
-                empleado.direccion = item.getDireccion().ifEmpty { "-" }
-                empleado.email = item.getEmail()
-                empleado.telefono = item.getTelefono().ifEmpty { "-" }
-                empleado.fechaNacimiento = item.getFecha_nacimiento().ifEmpty { "-" }
-                empleado.fechaIngreso = item.getFecha_ingreso().ifEmpty {"-"}
-                empleado.contrasenia = item.getContrasenia()
-                empleado.identificador = item.getIdentificador()
-                empleado.status = if (item.getStatus()) 1 else 0
-                empleado.updatedAt = item.getUpdatedAt()
-                empleado.rute = item.rute.ifEmpty { "" }
-                if (item.getPath_image() == null || item.getPath_image().isEmpty()) {
+                empleado.nombre = item.nombre
+                empleado.direccion = item.direccion!!.ifEmpty { "-" }
+                empleado.email = item.email
+                empleado.telefono = item.telefono!!.ifEmpty { "-" }
+                empleado.fechaNacimiento = item.fecha_nacimiento!!.ifEmpty { "-" }
+                empleado.fechaIngreso = item.fecha_ingreso!!.ifEmpty {"-"}
+                empleado.contrasenia = item.contrasenia
+                empleado.identificador = item.identificador
+                empleado.status = if (item.status) 1 else 0
+                empleado.updatedAt = item.updatedAt
+                empleado.rute = item.rute!!.ifEmpty { "" }
+                if (item.path_image == null || item.path_image!!.isEmpty()) {
                     empleado.pathImage = ""
                 } else {
-                    empleado.pathImage = item.getPath_image()
+                    empleado.pathImage = item.path_image
                 }
 
                 listEmpleados.add(empleado)
