@@ -2,6 +2,7 @@ package com.app.syspoint.repository.objectBox.entities
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import java.util.*
 
 @Entity
 data class ChargeBox(
@@ -20,6 +21,6 @@ data class ChargeBox(
     var empleado: String? = null,
     var isCheck: Boolean = false,
     var abono: Boolean = false,
-    var updatedAt: String? = null,
+    var updatedAt: Date? = null,
     var stockId: Int = 0
 )

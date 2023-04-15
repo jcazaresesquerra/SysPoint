@@ -18,6 +18,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -66,6 +67,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 
 class MainActivity: BaseActivity() {
 
@@ -368,6 +370,7 @@ class MainActivity: BaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = ArrayList()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
@@ -380,7 +383,7 @@ class MainActivity: BaseActivity() {
                 cobranza.fecha = item.fecha
                 cobranza.hora = item.hora
                 cobranza.identificador = item.empleado
-                cobranza.updatedAt = item.updatedAt
+                cobranza.updatedAt = formatter.format(item.updatedAt)
                 listaCobranza.add(cobranza)
             }
             ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
@@ -546,6 +549,7 @@ class MainActivity: BaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = java.util.ArrayList()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
@@ -558,7 +562,7 @@ class MainActivity: BaseActivity() {
                 cobranza.fecha = item.fecha
                 cobranza.hora = item.hora
                 cobranza.identificador = item.empleado
-                cobranza.updatedAt = item.updatedAt
+                cobranza.updatedAt = formatter.format(item.updatedAt)
                 listaCobranza.add(cobranza)
             }
             ChargeInteractorImp().executeUpdateCharge(
@@ -811,5 +815,15 @@ class MainActivity: BaseActivity() {
                 }
             })
         }
+    }
+
+    fun blockInput() {
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+    }
+
+    fun unblockInput() {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
     }
 }

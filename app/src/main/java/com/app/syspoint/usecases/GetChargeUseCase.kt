@@ -27,7 +27,7 @@ class GetChargeUseCase {
 
             response.body()!!.payments!!.map {item ->
                 val charge = chargeDao.getByCobranza(item!!.cobranza)
-
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                 if (charge == null) {
                     val chargeBox = ChargeBox()
                     chargeBox.cobranza = item.cobranza
@@ -40,23 +40,22 @@ class GetChargeUseCase {
                     chargeBox.fecha = item.fecha
                     chargeBox.hora = item.hora
                     chargeBox.empleado = item.identificador
-                    chargeBox.updatedAt = item.updatedAt
+                    chargeBox.updatedAt = formatter.parse(item.updatedAt)
                     chargeBox.stockId = stockId
                     chargeDao.insert(chargeBox)
                     chargeList.add(chargeBox)
                 } else {
 
-                    val update = if (!charge.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
-                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                    val update = if (charge.updatedAt != null && !formatter.format(charge.updatedAt).isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                         val dateItem = try {
                             formatter.parse(item.updatedAt)
                         } catch (e: Exception) {
                             formatter.parse(item.updatedAt + "00:00:00")
                         }
                         val dateBean = try {
-                            formatter.parse(charge.updatedAt)
+                            charge.updatedAt
                         } catch (e: Exception) {
-                            formatter.parse(charge.updatedAt + "00:00:00")
+                            formatter.parse(formatter.format(charge.updatedAt) + "00:00:00")
                         }
                         dateItem?.compareTo(dateBean) ?: 1
                     } else 1
@@ -72,7 +71,7 @@ class GetChargeUseCase {
                         charge.fecha = item.fecha
                         charge.hora = item.hora
                         charge.empleado = item.identificador
-                        charge.updatedAt = item.updatedAt
+                        charge.updatedAt = formatter.parse(item.updatedAt)
                         charge.stockId = stockId
                         chargeDao.insert(charge)
                     }

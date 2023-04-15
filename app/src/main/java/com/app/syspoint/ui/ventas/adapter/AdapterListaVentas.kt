@@ -40,8 +40,8 @@ class AdapterListaVentas(
 
         fun bind(ventasBean: SellBox?, onItemClickListener: OnItemClickListener) {
             ventasBean?.let { venta ->
-                binding.textViewListaVentaClienteView.text = venta.client!!.target.cuenta
-                binding.textViewListaVentaClienteNombreView.text = venta.client!!.target.nombre_comercial
+                binding.textViewListaVentaClienteView.text = venta.client.target.cuenta
+                binding.textViewListaVentaClienteNombreView.text = venta.client.target.nombre_comercial
                 binding.textViewListaVentaFechaView.text = venta.fecha
                 binding.textViewListaVentaEstadoView.text = venta.estado
                 binding.textViewListaVentaImporteView.text = Utils.formatMoneyMX(venta.importe + venta.impuesto)

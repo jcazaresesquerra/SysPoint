@@ -30,6 +30,8 @@ import com.app.syspoint.ui.bluetooth.BluetoothActivity
 import com.app.syspoint.ui.stock.StockFragment
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
+import com.app.syspoint.utils.setVisible
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -227,7 +229,10 @@ class CashCloseActivity: AppCompatActivity() {
                             if (!fail) {
 
                                 binding.tvConnect.post {
-                                    binding.tvConnect.text = "Puede imprimir el documento dando click en la parte superior"
+                                    binding.tvConnect.setGone()
+                                }
+                                binding.tvPrintTicket.post {
+                                    binding.tvPrintTicket.setVisible()
                                 }
 
                                 mConnectedThread = ConnectedThread(mBTSocket, mHandler)

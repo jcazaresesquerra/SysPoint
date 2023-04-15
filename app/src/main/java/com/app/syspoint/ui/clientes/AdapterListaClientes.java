@@ -59,8 +59,6 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
                 if (filtro.isEmpty()){
                     mDataFiltrable = mData;
                 }else {
-
-                    //TODO filtro productos
                     List<ClientBox> filtroEmpleados = new ArrayList<>();
 
                     for (ClientBox row : mData){

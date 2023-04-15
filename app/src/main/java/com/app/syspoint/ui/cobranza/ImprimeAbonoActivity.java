@@ -64,6 +64,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -176,7 +177,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     private void loadAbonos() {
         final ChargeDao chargeDao = new ChargeDao();
         List<ChargeBox> chargeBoxList = chargeDao.getAbonosFechaActual(Utils.fechaActual());
-
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<Payment> listaCobranza = new ArrayList<>();
         for (ChargeBox item : chargeBoxList) {
             Payment cobranza = new Payment();
@@ -190,7 +191,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             cobranza.setFecha(item.getFecha());
             cobranza.setHora(item.getHora());
             cobranza.setIdentificador(item.getEmpleado());
-            cobranza.setUpdatedAt(item.getUpdatedAt());
+            cobranza.setUpdatedAt(formatter.format(item.getUpdatedAt()));
             listaCobranza.add(cobranza);
         }
 

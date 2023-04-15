@@ -567,7 +567,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             }
 
         dialog.setCancelable(false)
-        dialog.show()
+        try {
+            dialog.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun showProductNotSelected() {

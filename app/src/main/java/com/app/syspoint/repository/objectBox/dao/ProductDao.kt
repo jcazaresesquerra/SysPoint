@@ -35,7 +35,7 @@ class ProductDao: AbstractDao<ProductBox>() {
 
     fun getProductosInventario(): List<ProductBox> {
         val query = abstractBox<ProductBox>().query()
-            .equal(ProductBox_.existencia, 1)
+            .greaterOrEqual(ProductBox_.existencia, 1)
             .equal(ProductBox_.status, "Activo", QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .order(ProductBox_.id)
             .build()

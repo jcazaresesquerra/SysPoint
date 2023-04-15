@@ -69,6 +69,13 @@ class AdapterRutaClientes(
                                 Toast.LENGTH_LONG
                             ).show()
                             return@setOnMenuItemClickListener false
+                        } else if (clienteBean.phone_contact?.length != 10) {
+                            Toast.makeText(
+                                itemView.context,
+                                "El número del cliente es erroneo ${clienteBean.phone_contact}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@setOnMenuItemClickListener false
                         } else {
                             val intent = Intent(
                                 Intent.ACTION_CALL,

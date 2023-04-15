@@ -43,6 +43,7 @@ import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.RoutingBox
 import com.app.syspoint.usecases.GetRolesUseCase
+import java.text.SimpleDateFormat
 
 const val TAG = "HomeViewModel"
 
@@ -388,6 +389,7 @@ class HomeViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
             val listaCobranza: MutableList<Payment> = ArrayList()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             cobranzaBeanList.map {item ->
                 val cobranza = Payment()
                 cobranza.cobranza = item.cobranza
@@ -400,7 +402,7 @@ class HomeViewModel: ViewModel() {
                 cobranza.fecha = item.fecha
                 cobranza.hora = item.hora
                 cobranza.identificador = item.empleado
-                cobranza.updatedAt = item.updatedAt
+                cobranza.updatedAt = formatter.format(item.updatedAt)
                 listaCobranza.add(cobranza)
             }
             val isUiThread =
@@ -492,7 +494,7 @@ class HomeViewModel: ViewModel() {
         }
     }
 
-    fun setUpRute(dia: String, ruta: String) {
+    fun setUpRute(dia: String, ruta: String?) {
         viewModelScope.launch(Dispatchers.Default) {
 
             val isUiThread =
@@ -526,7 +528,7 @@ class HomeViewModel: ViewModel() {
             ruteoBean.fecha = Utils.fechaActual()
 
             val vendedoresBean1 = AppBundle.getUserBox()
-            var ruta_ = ruta.ifEmpty { vendedoresBean1.rute }
+            var ruta_ = if (ruta.isNullOrEmpty()) vendedoresBean1.rute else ruta
 
             if (ruta_ == "0") {
                 val vendedoresBean = CacheInteractor().getSeller()

@@ -1,6 +1,7 @@
 package com.app.syspoint.viewmodel.sell
 
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,7 @@ import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -77,48 +79,54 @@ class SellViewModel: ViewModel() {
     fun setUpChargeByClient(clientId: String?) {
         sellViewState.value = SellViewState.LoadingStart
 
-        viewModelScope.launch(Dispatchers.Default) {
             NetworkStateTask { connected: Boolean ->
                 if (connected) {
-                    val clientDao = ClientDao()
-                    val clienteBean = clientDao.getClientByAccount(clientId.toString())
+                    viewModelScope.launch(Dispatchers.IO) {
+                        val clientDao = ClientDao()
+                        val clienteBean = clientDao.getClientByAccount(clientId.toString())
 
-                    ChargeInteractorImp().executeGetChargeByClient(
-                        clienteBean!!.cuenta!!,
-                        object : OnGetChargeByClientListener {
-                            override fun onGetChargeByClientSuccess(chargeByClientList: List<ChargeBox>) {
-                                val saldoCliente = ChargeDao().getSaldoByCliente(clienteBean.cuenta!!)
-                                clienteBean.saldo_credito = saldoCliente
-                                clienteBean.date_sync = Utils.fechaActual()
-                                clientDao.insertBox(clienteBean)
-                                val saldo: Double =
-                                    if (clienteBean.matriz == null || (clienteBean.matriz != null && clienteBean.matriz!!.compareTo("null", ignoreCase = true) == 0)) {
-                                        clienteBean.saldo_credito
-                                    } else {
-                                        val client =
-                                            clientDao.getClientByAccount(clienteBean.matriz)
-                                        client?.saldo_credito ?: 0.0
-                                    }
-                                //sellViewState.postValue(SellViewState.LoadingFinish)
-                                sellViewState.postValue(
-                                    SellViewState.ChargeByClientLoaded(
-                                        clienteBean.cuenta!!,
-                                        saldo
+                        ChargeInteractorImp().executeGetChargeByClient(
+                            clienteBean!!.cuenta!!,
+                            object : OnGetChargeByClientListener {
+                                override fun onGetChargeByClientSuccess(chargeByClientList: List<ChargeBox>) {
+                                    val saldoCliente =
+                                        ChargeDao().getSaldoByCliente(clienteBean.cuenta!!)
+                                    clienteBean.saldo_credito = saldoCliente
+                                    clienteBean.date_sync = Utils.fechaActual()
+                                    clientDao.insertBox(clienteBean)
+                                    val saldo: Double =
+                                        if (clienteBean.matriz == null || (clienteBean.matriz != null && clienteBean.matriz!!.compareTo(
+                                                "null",
+                                                ignoreCase = true
+                                            ) == 0)
+                                        ) {
+                                            clienteBean.saldo_credito
+                                        } else {
+                                            val client =
+                                                clientDao.getClientByAccount(clienteBean.matriz)
+                                            client?.saldo_credito ?: 0.0
+                                        }
+                                    //sellViewState.postValue(SellViewState.LoadingFinish)
+                                    sellViewState.postValue(
+                                        SellViewState.ChargeByClientLoaded(
+                                            clienteBean.cuenta!!,
+                                            saldo
+                                        )
                                     )
-                                )
-                                setUpPricesByClient(clientId)
-                            }
+                                    setUpPricesByClient(clientId)
+                                }
 
-                            override fun onGetChargeByClientError() {
-                                //sellViewState.postValue(SellViewState.LoadingFinish)
-                                setUpPricesByClient(clientId)
-                            }
-                        })
+                                override fun onGetChargeByClientError() {
+                                    //sellViewState.postValue(SellViewState.LoadingFinish)
+                                    setUpPricesByClient(clientId)
+                                }
+                            })
+                    }
                 } else {
                     proceedWithoutInternet(clientId)
                 }
             }.execute()
-        }
+
     }
 
     fun setUpPricesByClient(clientId: String?) {
@@ -378,7 +386,7 @@ class SellViewModel: ViewModel() {
     fun finishPrecature(clientId: String?, sellType: SellType, subtota: String, import: String) {
         sellViewState.value = SellViewState.LoadingStart
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val lista = ArrayList<PlayingBox>()
             val sellsDao = SellsDao()
             val sellBox = SellBox()
@@ -391,7 +399,7 @@ class SellViewModel: ViewModel() {
                     partida?.let {
                         val productsBox = productDao.getProductoByArticulo(partida.articulo)
                         val partidaBean = PlayingBox()
-                        partidaBean.articulo!!.target = productsBox
+                        partidaBean.articulo.target = productsBox
                         partidaBean.cantidad = partida.cantidad
                         partidaBean.precio = partida.precio
                         partidaBean.impuesto = partida.impuesto
@@ -435,8 +443,9 @@ class SellViewModel: ViewModel() {
             sellBox.tipo_doc = "TIK"
             sellBox.fecha = Utils.fechaActual()
             sellBox.hora = Utils.getHoraActual()
-            sellBox.client!!.target = clienteBean1
-            sellBox.employee!!.target = employeeBox
+            sellBox.clienteId = clienteID
+            sellBox.client.target = clienteBean1
+            sellBox.employee.target = employeeBox
             sellBox.importe = subtota.replace(",", "").toDouble()
             sellBox.impuesto = import.replace(",", "").toDouble()
             sellBox.datos = clienteBean1.nombre_comercial
@@ -449,6 +458,7 @@ class SellViewModel: ViewModel() {
             sellBox.sync = 0
             sellBox.tipo_venta = sellType.value
             sellBox.usuario_cancelo = ""
+            sellBox.listaPartidas.addAll(lista)
 
             var clienteMatriz: ClientBox? = null
             if (!clienteBean1.matriz.isNullOrEmpty()) {
@@ -486,7 +496,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Se realiza la venta a crédito para sucursal ${clienteBean1.cuenta} ${clienteBean1.nombre_comercial} con cargo a Matriz ${clienteMatriz?.cuenta} ${clienteMatriz?.nombre_comercial} ${sellBox.fecha} hora ${sellBox.hora}"
                     cobranzaBean.fecha = sellBox.fecha
-                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS_()
                     cobranzaBean.hora = sellBox.hora
                     cobranzaBean.stockId = stockId
                     if (employeeBox != null) {
@@ -517,7 +527,7 @@ class SellViewModel: ViewModel() {
                     cobranzaBean.estado = "PE"
                     cobranzaBean.observaciones = "Venta a crédito " + sellBox.fecha + " hora " + sellBox.hora
                     cobranzaBean.fecha = sellBox.fecha
-                    cobranzaBean.updatedAt = Utils.fechaActualHMS()
+                    cobranzaBean.updatedAt = Utils.fechaActualHMS_()
                     cobranzaBean.hora = sellBox.hora
                     cobranzaBean.stockId = stockId
 
@@ -548,13 +558,14 @@ class SellViewModel: ViewModel() {
 
             //Creamos la venta
             sellsDao.creaVenta(sellBox, lista)
-            val ventaID = sellBox.venta.toString()
+            val ventaID = sellBox.venta
 
             //Creamos el template del timbre
             val sellTicket = SellTicket()
             sellTicket.box = sellBox
             sellTicket.template()
             val ticket = sellTicket.document
+            Log.d("SellViewModel", ticket)
 
             sellViewState.postValue(SellViewState.LoadingFinish)
             sellViewState.postValue(SellViewState.PrecatureFinished(ticket, ventaID, clienteID, account))
@@ -563,8 +574,8 @@ class SellViewModel: ViewModel() {
 
     @Synchronized
     fun testLoadClientes(idCliente: String) {
-        sellViewState.value = SellViewState.LoadingStart
-        viewModelScope.launch {
+        sellViewState.postValue(SellViewState.LoadingStart)
+        viewModelScope.launch(Dispatchers.IO) {
             val clientDao = ClientDao()
             val listaClientesDB = clientDao.getByIDClient(idCliente.toLong())
             val listaClientes: MutableList<Client> = ArrayList()

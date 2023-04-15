@@ -1,10 +1,7 @@
 package com.app.syspoint.repository.objectBox.dao
 
 import com.app.syspoint.App
-import com.app.syspoint.repository.objectBox.entities.CashCloseBox
-import com.app.syspoint.repository.objectBox.entities.PlayingBox
-import com.app.syspoint.repository.objectBox.entities.SellBox
-import com.app.syspoint.repository.objectBox.entities.SellBox_
+import com.app.syspoint.repository.objectBox.entities.*
 import io.objectbox.query.QueryBuilder
 
 class SellsDao: AbstractDao<SellBox>() {
@@ -128,18 +125,18 @@ class SellsDao: AbstractDao<SellBox>() {
             val client = clientsDao.getByIDClient(sellItem.clienteId)
             sellItem.listaPartidas.map { playingBox ->
                 val product = productsDao.getProductoByID(playingBox.articuloId)
-                val corteBean = CashCloseBox()
-                corteBean.clienteId = sellItem.clienteId
-                corteBean.product.target = product[0]
-                corteBean.productoId = playingBox.articuloId
-                corteBean.client.target = client[0]
-                corteBean.cantidad = playingBox.cantidad
-                corteBean.precio = playingBox.precio
-                corteBean.descripcion = playingBox.descripcion
-                corteBean.impuesto = sellItem.impuesto
-                corteBean.tipoVenta = sellItem.tipo_venta
-                corteBean.estado = sellItem.estado
-                lista_corte.add(corteBean)
+                val cashCloseBox = CashCloseBox()
+                cashCloseBox.clienteId = sellItem.clienteId
+                cashCloseBox.product.target = product[0]
+                cashCloseBox.productoId = playingBox.articuloId
+                cashCloseBox.client.target = if (client.isNotEmpty()) client[0] else ClientBox()
+                cashCloseBox.cantidad = playingBox.cantidad
+                cashCloseBox.precio = playingBox.precio
+                cashCloseBox.descripcion = playingBox.descripcion
+                cashCloseBox.impuesto = sellItem.impuesto
+                cashCloseBox.tipoVenta = sellItem.tipo_venta
+                cashCloseBox.estado = sellItem.estado
+                lista_corte.add(cashCloseBox)
             }
         }
 

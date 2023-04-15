@@ -104,6 +104,18 @@ public class Utils {
         return  fecha;
     }
 
+    public static Date fechaActualHMS_(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        try {
+            return format.parse(fecha);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
+    }
+
     public static String fechaActualHMSStartDay(){
         final Calendar calendarFechaFin = Calendar.getInstance();
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");

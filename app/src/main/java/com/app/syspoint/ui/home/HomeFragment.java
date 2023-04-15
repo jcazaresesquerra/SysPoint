@@ -75,8 +75,12 @@ public class HomeFragment extends Fragment {
         viewModel.getHomeLoadingViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
             if (o instanceof HomeLoadingViewState.LoadingStart) {
                 rlprogress.setVisibility(View.VISIBLE);
+                if (getActivity() != null)
+                    ((MainActivity) getActivity()).blockInput();
             } else if (o instanceof HomeLoadingViewState.LoadingFinish) {
                 rlprogress.setVisibility(View.GONE);
+                if (getActivity() != null)
+                    ((MainActivity) getActivity()).unblockInput();
             }
         });
         viewModel.getGetClientsByRuteViewState().observe(getViewLifecycleOwner(), (Observer) o -> {

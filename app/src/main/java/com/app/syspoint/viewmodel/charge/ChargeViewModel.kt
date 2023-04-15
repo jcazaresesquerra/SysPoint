@@ -24,6 +24,7 @@ import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 
 private const val TAG = "ChargeViewModel"
 class ChargeViewModel: ViewModel() {
@@ -159,7 +160,7 @@ class ChargeViewModel: ViewModel() {
 
                     }
                     chargeBox.fecha = Utils.fechaActual()
-                    chargeBox.updatedAt = Utils.fechaActualHMS()
+                    chargeBox.updatedAt = Utils.fechaActualHMS_()
                     chargeBox.stockId = currentStockId
                     chargeDao.insert(chargeBox)
                 }
@@ -276,7 +277,7 @@ class ChargeViewModel: ViewModel() {
                 chargeBean!!.isCheck = false
                 chargeDao.insert(chargeBean)
             }
-
+1
             val dao = ChargeModelDao()
             dao.clear()
             Log.d(TAG, "deletePartidas finish")
@@ -362,6 +363,7 @@ class ChargeViewModel: ViewModel() {
     private fun saveAbono() {
         val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
         val listaCobranza: MutableList<Payment> = java.util.ArrayList()
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         for (item in cobranzaBeanList) {
             val cobranza = Payment()
             cobranza.cobranza = item.cobranza
@@ -374,7 +376,7 @@ class ChargeViewModel: ViewModel() {
             cobranza.fecha = item.fecha
             cobranza.hora = item.hora
             cobranza.identificador = item.empleado
-            cobranza.updatedAt = item.updatedAt
+            cobranza.updatedAt = formatter.format(item.updatedAt)
             listaCobranza.add(cobranza)
         }
         ChargeInteractorImp().executeUpdateCharge(listaCobranza, object : OnUpdateChargeListener {
