@@ -33,24 +33,24 @@ class ViewPDFViewModel: ViewModel() {
             if (ventasBean != null) {
 
                 //Contiene las partidas de la venta
-                for (item in ventasBean.listaPartidas!!) {
+                for (item in ventasBean.listaPartidas) {
 
                     //Consultamos a la base de datos si existe el producto
                     val productDao = ProductDao()
-                    val productoBean = productDao.getProductoByArticulo(item.articulo!!.target.articulo)
+                    val productoBean = productDao.getProductoByArticulo(item.articulo.target.articulo)
 
                     //Si no existe en el inventario creamos el producto
                     if (productoBean != null) {
 
                         //Si existe entonces creamos el inser en estado PE
                         val stockDao = StockDao()
-                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo!!.target.articulo)
+                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo.target.articulo)
 
                         //Si no existe se deja como pendiente
                         if (inventarioBean == null) {
                             val bean = StockBox()
                             val dao = StockDao()
-                            bean.articulo!!.target = productoBean
+                            bean.articulo.target = productoBean
                             bean.cantidad = 0
                             bean.estado = "PE"
                             bean.precio = item.precio
@@ -60,16 +60,14 @@ class ViewPDFViewModel: ViewModel() {
                             bean.articulo_clave = productoBean.articulo
                             dao.insert(bean)
                             val stockHistoryDao = StockHistoryDao()
-                            val inventarioHistorialBean =
-                                stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
+                            val inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
                             if (inventarioHistorialBean != null) {
-                                inventarioHistorialBean.cantidad =
-                                    inventarioHistorialBean.cantidad + item.cantidad
+                                inventarioHistorialBean.cantidad = inventarioHistorialBean.cantidad + item.cantidad
                                 stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
                                 val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo!!.target = productoBean
+                                invBean.articulo.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
@@ -77,19 +75,17 @@ class ViewPDFViewModel: ViewModel() {
                         } else {
                             //Si existe entonces actualizamos los datos
                             val stockHistoryDao = StockHistoryDao()
-                            val inventarioHistorialBean =
-                                stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
+                            val inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
 
                             //Si existe entonces actualizamos las cantidades
                             if (inventarioHistorialBean != null) {
-                                inventarioHistorialBean.cantidad =
-                                    inventarioHistorialBean.cantidad + item.cantidad
+                                inventarioHistorialBean.cantidad = inventarioHistorialBean.cantidad + item.cantidad
                                 stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
                                 //Creamos el historial del Inventario
                                 val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo!!.target = productoBean
+                                invBean.articulo.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
@@ -107,9 +103,9 @@ class ViewPDFViewModel: ViewModel() {
     private fun upadteExistencias(venta: Long) {
         val sellsDao = SellsDao()
         val ventasBean = sellsDao.getVentaByInventario(venta)
-        for (item in ventasBean!!.listaPartidas!!) {
+        for (item in ventasBean!!.listaPartidas) {
             val productDao = ProductDao()
-            val productoBean = productDao.getProductoByArticulo(item.articulo!!.target.articulo)
+            val productoBean = productDao.getProductoByArticulo(item.articulo.target.articulo)
             if (productoBean != null) {
                 productoBean.existencia = productoBean.existencia - item.cantidad
                 productDao.insert(productoBean)

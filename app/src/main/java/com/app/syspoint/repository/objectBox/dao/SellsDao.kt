@@ -41,7 +41,7 @@ class SellsDao: AbstractDao<SellBox>() {
 
     private fun getUltimaVenta(): SellBox? {
         val query = abstractBox<SellBox>().query()
-            .order(SellBox_.id)
+            .orderDesc(SellBox_.id)
             .build()
         val results = query.find()
         query.close()

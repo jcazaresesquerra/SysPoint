@@ -323,16 +323,16 @@ public class ListaVentasFragment extends Fragment {
                                             if (venta.getCobranza() != null) {
                                                 //Actualiza el documento de la cobranza
                                                 ChargeDao chargeDao = new ChargeDao();
-                                                ChargeBox cobranzaBean = chargeDao.getByCobranza(venta.getCobranza());
-                                                if (cobranzaBean != null) {
-                                                    cobranzaBean.setEstado("CA");
-                                                    chargeDao.insertBox(cobranzaBean);
+                                                ChargeBox chargeBox = chargeDao.getByCobranza(venta.getCobranza());
+                                                if (chargeBox != null) {
+                                                    chargeBox.setEstado("CA");
+                                                    chargeDao.insertBox(chargeBox);
                                                     final ClientDao clientDao = new ClientDao();
-                                                    final ClientBox clienteBean = clientDao.getClientByAccount(venta.getClient().getTarget().getCuenta());
-                                                    if (clienteBean != null) {
-                                                        clienteBean.setSaldo_credito(clienteBean.getSaldo_credito() - cobranzaBean.getImporte());
-                                                        clientDao.insertBox(clienteBean);
-                                                        testLoadClientes(clienteBean.getId());
+                                                    final ClientBox clientBox = clientDao.getClientByAccount(venta.getClient().getTarget().getCuenta());
+                                                    if (clientBox != null) {
+                                                        clientBox.setSaldo_credito(clientBox.getSaldo_credito() - chargeBox.getImporte());
+                                                        clientDao.insertBox(clientBox);
+                                                        testLoadClientes(clientBox.getId());
                                                         saveCharge();
                                                     }
                                                 }
