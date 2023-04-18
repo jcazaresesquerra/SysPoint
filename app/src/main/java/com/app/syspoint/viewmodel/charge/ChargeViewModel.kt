@@ -177,25 +177,26 @@ class ChargeViewModel: ViewModel() {
                 lista.add(cobdetBox)
             }
         }
-        val cobrosBean = CobrosBox()
+        val cobrosBox = CobrosBox()
         val folioCobranza = chargesDao.getUltimoFolio()
-        cobrosBean.cobro = folioCobranza
+        cobrosBox.cobro = folioCobranza
 
         //Creamos el encabezado de la venta
-        cobrosBean.fecha = Utils.fechaActual()
-        cobrosBean.hora = Utils.getHoraActual()
-        cobrosBean.cliente!!.target = clienteBean
-        cobrosBean.empleado!!.target = vendedoresBean
-        cobrosBean.importe = import.replace("$", "")
+        cobrosBox.fecha = Utils.fechaActual()
+        cobrosBox.hora = Utils.getHoraActual()
+        cobrosBox.cliente.target = clienteBean
+        cobrosBox.empleado.target = vendedoresBean
+        cobrosBox.importe = import.replace("$", "")
                 .replace(",", "")
                 .trim { it <= ' ' }
                 .toDouble()
-        cobrosBean.estado = "CO"
-        cobrosBean.temporal = 0
-        cobrosBean.sinc = 0
+        cobrosBox.estado = "CO"
+        cobrosBox.temporal = 0
+        cobrosBox.sinc = 0
+        cobrosBox.listaPartidas.addAll(lista)
 
         //Creamos el documento con la relacion de sus documentos
-        chargesDao.createCharge(cobrosBean, lista)
+        chargesDao.createCharge(cobrosBox, lista)
 
         chargeViewState.value = ChargeViewState.LoadingStart
         Handler().postDelayed({
@@ -203,7 +204,7 @@ class ChargeViewModel: ViewModel() {
                 chargeViewState.postValue(ChargeViewState.LoadingFinish)
                 try {
                     if (connected) {
-                        saveClientAbono(clientId, cobrosBean)
+                        saveClientAbono(clientId, cobrosBox)
                     } else {
                         chargeViewState.postValue(ChargeViewState.NotInternetConnection)
                     }
@@ -214,11 +215,11 @@ class ChargeViewModel: ViewModel() {
         }, 100)
     }
 
-    private fun saveClientAbono(clientId: String, cobrosBean: CobrosBox) {
+    private fun saveClientAbono(clientId: String, cobrosBox: CobrosBox) {
         val clientesDao = ClientDao()
         val clienteBean = clientesDao.getClientByAccount(clientId)
         saveAbono()
-        val ventaID = cobrosBean.id
+        val ventaID = cobrosBox.id
         val nuevoSaldo = ChargeDao().getSaldoByCliente(clienteBean!!.cuenta!!)
 
         //Actualizamos el saldo del cliente
@@ -228,16 +229,17 @@ class ChargeViewModel: ViewModel() {
 
         //Creamos el template del timbre
         val depositTicket = DepositTicket()
-        depositTicket.box = cobrosBean
+        depositTicket.box = cobrosBox
         depositTicket.template()
         val ticket = depositTicket.document
+        Log.d(TAG, ticket)
         testLoadClientes(clienteBean.id)
 
         //Elimina las partidas
         val dao = ChargeModelDao()
         dao.clear()
 
-        chargeViewState.value = ChargeViewState.ClientSaved(ticket, ventaID!!, clienteBean.id.toString())
+        chargeViewState.value = ChargeViewState.ClientSaved(ticket, ventaID, clienteBean.id.toString())
     }
 
     fun getTaxes(clientId: String) {

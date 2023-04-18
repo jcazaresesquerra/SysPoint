@@ -75,11 +75,11 @@ class CloseTicket: BaseTicket() {
         mLidata.map { inventory ->
             val stockHistoryDao = StockHistoryDao()
             val inventarioHistorialBean =
-                stockHistoryDao.getInvatarioPorArticulo(inventory.articulo!!.target.articulo)
+                stockHistoryDao.getInvatarioPorArticulo(inventory.articulo.target.articulo)
             val vendido = inventarioHistorialBean?.cantidad ?: 0
             val inicial = inventory.totalCantidad
             val final = inicial - vendido
-            ticket += inventory.articulo!!.target.descripcion + Constants.NEW_LINE +
+            ticket += inventory.articulo.target.descripcion + Constants.NEW_LINE +
                     String.format(
                         "%1$-5s  %2$11s  %3$10s",
                         inicial,

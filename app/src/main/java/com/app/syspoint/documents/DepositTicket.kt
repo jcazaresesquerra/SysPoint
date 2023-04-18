@@ -25,7 +25,7 @@ class DepositTicket: BaseTicket() {
 
             var importeAbono = 0.0
 
-            for (item in cobrosBean.listaPartidas!!) {
+            for (item in cobrosBean.listaPartidas) {
                 importeAbono += item.importe
                 ticket += "ABONO TICKET " + item.venta + Constants.NEW_LINE +
                         "" + Utils.formatMoneyMX(item.saldo) + "    " + Utils.formatMoneyMX(item.importe) + Constants.NEW_LINE
