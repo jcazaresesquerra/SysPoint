@@ -269,6 +269,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     }
 
     private fun initControls() {
+        if (viewModel.existenPartidas()) {
+            binding.imgBtnFinishSale.setVisible()
+            binding.imgBtnFinishVisita.setGone()
+        } else {
+            binding.imgBtnFinishSale.setGone()
+            binding.imgBtnFinishVisita.setVisible()
+        }
+
         binding.imgBtnFinishSale click {
             if (binding.imgBtnFinishSale.isEnabled) {
                 binding.imgBtnFinishSale.isEnabled = false
