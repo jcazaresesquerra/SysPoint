@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.models.enums.RoleType;
 import com.app.syspoint.models.sealed.GetClientsByRuteViewState;
 import com.app.syspoint.models.sealed.HomeLoadingViewState;
 import com.app.syspoint.models.sealed.SetRuteViewState;
@@ -218,7 +219,7 @@ public class HomeFragment extends Fragment {
     private void showDialog() {
         EmployeeBox vendedoresBean = AppBundle.getUserBox();
         if (vendedoresBean !=  null) {
-            RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), "Rutas");
+            RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.RUTES.getValue());
 
             boolean editRuta = rutasRol != null && rutasRol.getActive();
 
@@ -317,12 +318,30 @@ public class HomeFragment extends Fragment {
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
 
+        boolean isOrderRute = false;
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean !=  null) {
+            RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.ORDER_RUTES.getValue());
+            isOrderRute = rutasRol != null && rutasRol.getActive();
+        }
+
+        boolean finalIsOrderRute = isOrderRute;
         mAdapter = new AdapterRutaClientes(mData, position -> {
             if (position >= 0) {
-                RuteClientBox clienteBean = mData.get(position);
-                HashMap<String, String> parametros = new HashMap<>();
-                parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
-                Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+                boolean canSell = true;
+                if (finalIsOrderRute) {
+                    if (position != 0) {
+                        canSell = false;
+                        showOrderRuteMessage();
+                    }
+                }
+
+                if (canSell) {
+                    RuteClientBox clienteBean = mData.get(position);
+                    HashMap<String, String> parametros = new HashMap<>();
+                    parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                    Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
+                }
             }
         }, position -> false);
 
@@ -357,6 +376,10 @@ public class HomeFragment extends Fragment {
                 .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900, dialog::dismiss);
         dialog.setCancelable(false);
         dialog.show();
+    }
+
+    private void showOrderRuteMessage() {
+        Toast.makeText(getActivity(), "Es obligatorio seguir la secuencia del listado", Toast.LENGTH_SHORT).show();
     }
 
     private void showDialogNotConnectionInternet() {

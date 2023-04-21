@@ -123,7 +123,7 @@ class SellsDao: AbstractDao<SellBox>() {
 
         results.map { sellItem ->
             val client = clientsDao.getByIDClient(sellItem.clienteId)
-            sellItem.listaPartidas.map { playingBox ->
+            sellItem.listaPartidas.distinct().map { playingBox ->
                 val product = productsDao.getProductoByID(playingBox.articuloId)
                 val cashCloseBox = CashCloseBox()
                 cashCloseBox.clienteId = sellItem.clienteId

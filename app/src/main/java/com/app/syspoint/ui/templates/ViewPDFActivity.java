@@ -152,9 +152,8 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
 
         //Sincroniza la venta con el servidor
-
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-            if (!connected) {
+            if (connected) {
                viewModel.sync(venta, clienteID);
             }
         }).execute(), 100);
@@ -179,12 +178,9 @@ public class ViewPDFActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
         Button button = findViewById(R.id.btnConfirmaVenta);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+        button.setOnClickListener(v -> {
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mHandler = new Handler(Looper.myLooper()){

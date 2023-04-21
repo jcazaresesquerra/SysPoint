@@ -38,13 +38,23 @@ class RuteClientDao: AbstractDao<RuteClientBox>() {
         var folio: Long = 0
         val clienteBean = getUltimoRegistro()
         if (clienteBean != null) {
-            folio = clienteBean.id!!
+            folio = clienteBean.id
         }
         ++folio
         return folio
     }
 
     private fun getUltimoRegistro(): RuteClientBox? {
+        val query = abstractBox<RuteClientBox>().query()
+            .orderDesc(RuteClientBox_.id)
+            .build()
+        val results = query.find()
+        query.close()
+
+        return if (results.isEmpty()) null else results[0]
+    }
+
+    private fun getConsecAccount(): RuteClientBox? {
         val query = abstractBox<RuteClientBox>().query()
             .order(RuteClientBox_.id)
             .build()

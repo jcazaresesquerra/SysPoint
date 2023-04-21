@@ -18,7 +18,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -52,6 +51,7 @@ import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
+import com.app.syspoint.models.enums.RoleType
 import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.ChargeBox
@@ -101,21 +101,23 @@ class MainActivity: BaseActivity() {
         val identificador = if (vendedoresBean != null) vendedoresBean.identificador else ""
 
         val rolesDao = RolesDao()
-        val productsRolesBean = rolesDao.getRolByEmpleado(identificador, "Productos")
-        val employeesRolesBean = rolesDao.getRolByEmpleado(identificador, "Empleados")
+        val productsRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.PRODUCTS.value)
+        val employeesRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.EMPLOYEES.value)
+        val clientsRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.CLIENTS.value)
 
-        val productsActive = productsRolesBean?.active ?: false
-        val employeesActive = employeesRolesBean?.active ?: false
+        val productsActive = productsRolesBox?.active ?: false
+        val employeesActive = employeesRolesBox?.active ?: false
+        val clientsActive = clientsRolesBox?.active ?: false
 
         binding.navView.apply {
             menu.clear()
             inflateMenu(R.menu.activity_main_drawer)
         }
 
-        configureMenu(isAdmin, employeesActive, productsActive)
+        configureMenu(isAdmin, employeesActive, productsActive, clientsActive)
 
         mAppBarConfiguration =
-            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive))
+            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive, clientsActive))
            .setDrawerLayout(binding.drawerLayout)
                 .build()
 
@@ -214,26 +216,26 @@ class MainActivity: BaseActivity() {
         }
     }
 
-    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean) {
+    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean) {
         val menu = binding.navView.menu
         menu.findItem(R.id.nav_home).isVisible = true
         menu.findItem(R.id.nav_producto).isVisible = true
         menu.findItem(R.id.nav_empleado).isVisible = employeesActive
         menu.findItem(R.id.nav_producto).isVisible = productsActive
-        menu.findItem(R.id.nav_cliente).isVisible = true
+        menu.findItem(R.id.nav_cliente).isVisible = clientsActive
         menu.findItem(R.id.nav_historial).isVisible = true
         menu.findItem(R.id.nav_inventario).isVisible = isAdmin
         menu.findItem(R.id.nav_cobranza).isVisible = isAdmin
     }
 
-    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean): Set<Int> {
+    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean): Set<Int> {
         //Obtiene el nombre del vendedor
         val menuSet = mutableSetOf(R.id.nav_home, R.id.nav_ruta)
 
         if (employeesActive) menuSet.add(R.id.nav_empleado)
         if (productsActive) menuSet.add(R.id.nav_producto)
+        if (clientsActive) menuSet.add(R.id.nav_cliente)
 
-        menuSet.add(R.id.nav_cliente)
         menuSet.add(R.id.nav_historial)
 
         if (isAdmin) {
@@ -818,12 +820,12 @@ class MainActivity: BaseActivity() {
     }
 
     fun blockInput() {
-        window.setFlags(
+        /*window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
     }
 
     fun unblockInput() {
-        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        //window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
     }
 }

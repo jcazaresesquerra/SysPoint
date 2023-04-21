@@ -15,7 +15,7 @@ import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.interactor.prices.PriceInteractor.GetPricesByClientListener
 import com.app.syspoint.interactor.prices.PriceInteractorImp
 import com.app.syspoint.models.Client
-import com.app.syspoint.models.enum.SellType
+import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
 import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.*
@@ -23,7 +23,6 @@ import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex

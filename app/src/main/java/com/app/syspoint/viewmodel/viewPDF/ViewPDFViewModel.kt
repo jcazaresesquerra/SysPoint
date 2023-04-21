@@ -26,7 +26,7 @@ class ViewPDFViewModel: ViewModel() {
 
 
     fun addProductosInventori(venta: Long) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.IO) {
             val sellsDao = SellsDao()
             val ventasBean = sellsDao.getVentaByInventario(venta)
 

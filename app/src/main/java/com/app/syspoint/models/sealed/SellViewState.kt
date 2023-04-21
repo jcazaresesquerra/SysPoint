@@ -1,6 +1,6 @@
 package com.app.syspoint.models.sealed
 
-import com.app.syspoint.models.enum.SellType
+import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import java.util.HashMap
 

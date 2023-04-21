@@ -42,6 +42,7 @@ import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.models.enums.RoleType;
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
@@ -83,6 +84,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private SwitchCompat checkbox_inventarios_registro_empleado;
     private SwitchCompat checkbox_cobranza_registro_empleado;
     private SwitchCompat checkbox_edit_rute;
+    private SwitchCompat checkbox_edit_rute_order;
     private CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
@@ -133,6 +135,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         checkbox_inventarios_registro_empleado = findViewById(R.id.checkbox_inventario_registro_empleado);
         checkbox_cobranza_registro_empleado = findViewById(R.id.checkbox_cobranza_registro_empleado);
         checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
+        checkbox_edit_rute_order = findViewById(R.id.checkbox_edit_rute_order);
 
         loadSpinnerStatus();
         loadSpinnerRuteAndDay();
@@ -503,49 +506,56 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         RolesDao rolEmployeeDao = new RolesDao();
         RolesBox rolRoutes = new RolesBox();
         rolRoutes.getEmpleado().setTarget(employee);
-        rolRoutes.setModulo("Rutas");
+        rolRoutes.setModulo(RoleType.RUTES.getValue());
         rolRoutes.setActive(checkbox_edit_rute.isChecked());
         rolRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolRoutes);
 
+        RolesBox rolOrderRoutes = new RolesBox();
+        rolOrderRoutes.getEmpleado().setTarget(employee);
+        rolOrderRoutes.setModulo(RoleType.ORDER_RUTES.getValue());
+        rolOrderRoutes.setActive(checkbox_edit_rute_order.isChecked());
+        rolOrderRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insertBox(rolOrderRoutes);
+
         RolesBox rolCliente = new RolesBox();
         rolCliente.getEmpleado().setTarget(employee);
-        rolCliente.setModulo("Clientes");
+        rolCliente.setModulo(RoleType.CLIENTS.getValue());
         rolCliente.setActive(checkbox_clientes_registro_empleado.isChecked());
         rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolCliente);
 
         RolesBox rolProducto = new RolesBox();
         rolProducto.getEmpleado().setTarget(employee);
-        rolProducto.setModulo("Productos");
+        rolProducto.setModulo(RoleType.PRODUCTS.getValue());
         rolProducto.setActive(checkbox_productos_registro_empleado.isChecked());
         rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolProducto);
 
         RolesBox rolVentas = new RolesBox();
         rolVentas.getEmpleado().setTarget(employee);
-        rolVentas.setModulo("Ventas");
+        rolVentas.setModulo(RoleType.SELLS.getValue());
         rolVentas.setActive(checkbox_ventas_registro_empleado.isChecked());
         rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolVentas);
 
         RolesBox rolEmpleado = new RolesBox();
         rolEmpleado.getEmpleado().setTarget(employee);
-        rolEmpleado.setModulo("Empleados");
+        rolEmpleado.setModulo(RoleType.EMPLOYEES.getValue());
         rolEmpleado.setActive(checkbox_empleados_registro_empleado.isChecked());
         rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolEmpleado);
 
         RolesBox rolStock = new RolesBox();
         rolStock.getEmpleado().setTarget(employee);
-        rolStock.setModulo("Inventarios");
+        rolStock.setModulo(RoleType.STOCK.getValue());
         rolStock.setActive(checkbox_inventarios_registro_empleado.isChecked());
         rolStock.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolStock);
 
         RolesBox rolCharge = new RolesBox();
         rolCharge.getEmpleado().setTarget(employee);
-        rolCharge.setModulo("Cobranza");
+        rolCharge.setModulo(RoleType.CHARGE.getValue());
         rolCharge.setActive(checkbox_cobranza_registro_empleado.isChecked());
         rolCharge.setIdentificador(ip_registro_empleado_id.getText().toString());
         rolEmployeeDao.insertBox(rolCharge);

@@ -19,7 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.databinding.*
-import com.app.syspoint.models.enum.SellType
+import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
 import com.app.syspoint.repository.objectBox.dao.ClientDao
 import com.app.syspoint.repository.objectBox.dao.ProductDao

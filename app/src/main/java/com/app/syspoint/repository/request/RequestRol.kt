@@ -40,7 +40,7 @@ class RequestRol {
                             if (rolesBean == null) {
                                 val bean = RolesBox()
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
-                                bean.empleado!!.target = empleadoBean
+                                bean.empleado.target = empleadoBean
                                 bean.modulo = rol.modulo
                                 bean.active = rol.activo == 1
                                 bean.identificador = rol.empleado
@@ -48,7 +48,7 @@ class RequestRol {
                                 roles.add(bean)
                             } else {
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
-                                rolesBean.empleado!!.target = empleadoBean
+                                rolesBean.empleado.target = empleadoBean
                                 rolesBean.modulo = rol.modulo
                                 rolesBean.active = rol.activo == 1
                                 rolesBean.identificador = rol.empleado

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,10 +19,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.models.enums.RoleType;
+import com.app.syspoint.repository.objectBox.AppBundle;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.dao.RoutingDao;
 import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.app.syspoint.utils.PrettyDialog;
@@ -334,6 +340,28 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
             ClientDao clientDao = new ClientDao();
             ClientBox clienteBean = clientDao.getClientByAccount(marker.getSnippet());
+            RoutingDao routingDao = new RoutingDao();
+            RoutingBox ruteoBean = routingDao.getRutaEstablecida();
+
+            boolean isOrderRute = false;
+            EmployeeBox vendedoresBean = AppBundle.getUserBox();
+            String consecAccount = "";
+            if (vendedoresBean !=  null) {
+                RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.ORDER_RUTES.getValue());
+                isOrderRute = rutasRol != null && rutasRol.getActive();
+                if (ruteoBean != null && ruteoBean.getDia() > 0) {
+                    String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
+
+                    List<RuteClientBox> clients = new RuteClientDao().getAllRutaClientes(ruta, ruteoBean.getDia());
+                    if (clients != null && !clients.isEmpty()) {
+                        consecAccount = clients.get(0).getCuenta();
+                    }
+                }
+            }
+
+
+            boolean finalIsOrderRute = isOrderRute;
+            String finalConsecAccount = consecAccount;
 
             final PrettyDialog dialog = new PrettyDialog(this);
             dialog.setTitle("" + clienteBean.getNombre_comercial())
@@ -351,12 +379,24 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                     .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
                         @Override
                         public void onClick() {
-                            HashMap<String, String> parametros = new HashMap<>();
-                            parametros.put(Actividades.PARAM_1, marker.getSnippet());
-                            Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
-                            dialog.dismiss();
+                            boolean canSell = true;
+                            if (finalIsOrderRute) {
+                                if (!clienteBean.getCuenta().equals(finalConsecAccount)) {
+                                    canSell = false;
+                                    showOrderRuteMessage();
+                                }
+                            }
+
+                            if (canSell) {
+                                HashMap<String, String> parametros = new HashMap<>();
+                                parametros.put(Actividades.PARAM_1, marker.getSnippet());
+                                Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
+                                dialog.dismiss();
+                                markerClick = false;
+                                lastKnownPosition = marker.getPosition();
+                            }
                             markerClick = false;
-                            lastKnownPosition = marker.getPosition();
+                            dialog.dismiss();
                         }
                     })
                     .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, () -> {
@@ -395,5 +435,9 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         tv.buildDrawingCache();
         Bitmap bm = tv.getDrawingCache();
         return bm;
+    }
+
+    private void showOrderRuteMessage() {
+        Toast.makeText(this, "Es obligatorio seguir la secuencia del listado", Toast.LENGTH_SHORT).show();
     }
 }

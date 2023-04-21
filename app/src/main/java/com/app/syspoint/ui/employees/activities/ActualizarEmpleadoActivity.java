@@ -42,6 +42,7 @@ import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.R;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
+import com.app.syspoint.models.enums.RoleType;
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
@@ -84,6 +85,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
     private SwitchCompat checkbox_inventario_actualiza_empleado;
     private SwitchCompat checkbox_cobranza_actualiza_empleado;
     private SwitchCompat checkbox_edit_rute;
+    private SwitchCompat checkbox_edit_rute_order;
     private CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
@@ -141,26 +143,29 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
                 //Contiene la lista de roles
                 for(RolesBox item: listRoles){
-                    if (item.getModulo().compareToIgnoreCase("Clientes") == 0){
+                    if (item.getModulo().compareToIgnoreCase(RoleType.CLIENTS.getValue()) == 0){
                         checkbox_clientes_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if (item.getModulo().compareToIgnoreCase("Productos") == 0){
+                    if (item.getModulo().compareToIgnoreCase(RoleType.PRODUCTS.getValue()) == 0){
                         checkbox_productos_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if (item.getModulo().compareToIgnoreCase("Ventas") == 0){
+                    if (item.getModulo().compareToIgnoreCase(RoleType.SELLS.getValue()) == 0){
                         checkbox_ventas_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if (item.getModulo().compareToIgnoreCase("Empleados") == 0){
+                    if (item.getModulo().compareToIgnoreCase(RoleType.EMPLOYEES.getValue()) == 0){
                         checkbox_empleados_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if (item.getModulo().compareToIgnoreCase("Inventarios") == 0){
+                    if (item.getModulo().compareToIgnoreCase(RoleType.STOCK.getValue()) == 0){
                         checkbox_inventario_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if(item.getModulo().compareToIgnoreCase("Cobranza") == 0){
+                    if(item.getModulo().compareToIgnoreCase(RoleType.CHARGE.getValue()) == 0){
                         checkbox_cobranza_actualiza_empleado.setChecked(item.getActive());
                     }
-                    if(item.getModulo().compareToIgnoreCase("Rutas") == 0){
+                    if(item.getModulo().compareToIgnoreCase(RoleType.RUTES.getValue()) == 0){
                         checkbox_edit_rute.setChecked(item.getActive());
+                    }
+                    if(item.getModulo().compareToIgnoreCase(RoleType.ORDER_RUTES.getValue()) == 0){
+                        checkbox_edit_rute_order.setChecked(item.getActive());
                     }
                 }
 
@@ -199,6 +204,7 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
         checkbox_inventario_actualiza_empleado = findViewById(R.id.checkbox_inventarios_actualiza_empleado);
         checkbox_cobranza_actualiza_empleado = findViewById(R.id.checkbox_cobranza_actualiza_empleado);
         checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
+        checkbox_edit_rute_order = findViewById(R.id.checkbox_edit_rute_order);
     }
 
     private void loadSpinnerStatus() {
@@ -526,92 +532,105 @@ public class ActualizarEmpleadoActivity extends AppCompatActivity {
 
         final RolesDao rolesDao = new RolesDao();
 
-        RolesBox moduloRuta = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Rutas");
-        if (moduloRuta != null){
-            moduloRuta.setActive(checkbox_edit_rute.isChecked());
-            rolesDao.insertBox(moduloRuta);
+        RolesBox rutesRolBox = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.RUTES.getValue());
+        if (rutesRolBox != null){
+            rutesRolBox.setActive(checkbox_edit_rute.isChecked());
+            rolesDao.insertBox(rutesRolBox);
         } else {
-            moduloRuta = new RolesBox();
-            moduloRuta.getEmpleado().setTarget(bean);
-            moduloRuta.setModulo("Rutas");
-            moduloRuta.setActive(checkbox_edit_rute.isChecked());
-            moduloRuta.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-            rolesDao.insertBox(moduloRuta);
+            rutesRolBox = new RolesBox();
+            rutesRolBox.getEmpleado().setTarget(bean);
+            rutesRolBox.setModulo(RoleType.RUTES.getValue());
+            rutesRolBox.setActive(checkbox_edit_rute.isChecked());
+            rutesRolBox.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insertBox(rutesRolBox);
         }
 
-        RolesBox moduloClientes = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Clientes");
-        if (moduloClientes != null){
-            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
-            rolesDao.insertBox(moduloClientes);
+        RolesBox orderRutesRolBox = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.ORDER_RUTES.getValue());
+        if (orderRutesRolBox != null){
+            orderRutesRolBox.setActive(checkbox_edit_rute_order.isChecked());
+            rolesDao.insertBox(orderRutesRolBox);
         } else {
-            moduloClientes = new RolesBox();
-            moduloClientes.getEmpleado().setTarget(bean);
-            moduloClientes.setModulo("Clientes");
-            moduloClientes.setActive(checkbox_clientes_actualiza_empleado.isChecked());
-            moduloClientes.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-            rolesDao.insertBox(moduloClientes);
+            orderRutesRolBox = new RolesBox();
+            orderRutesRolBox.getEmpleado().setTarget(bean);
+            orderRutesRolBox.setModulo(RoleType.ORDER_RUTES.getValue());
+            orderRutesRolBox.setActive(checkbox_edit_rute_order.isChecked());
+            orderRutesRolBox.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insertBox(orderRutesRolBox);
         }
 
-        RolesBox moduloProductos = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Productos");
-        if (moduloProductos != null){
-            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
-            rolesDao.insertBox(moduloProductos);
+        RolesBox employeesRolBox = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.CLIENTS.getValue());
+        if (employeesRolBox != null){
+            employeesRolBox.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            rolesDao.insertBox(employeesRolBox);
         } else {
-            moduloProductos = new RolesBox();
-            moduloProductos.getEmpleado().setTarget(bean);
-            moduloProductos.setModulo("Productos");
-            moduloProductos.setActive(checkbox_productos_actualiza_empleado.isChecked());
-            moduloProductos.setIdentificador(ip_actualiza_empleado_id.getText().toString());
-            rolesDao.insertBox(moduloProductos);
+            employeesRolBox = new RolesBox();
+            employeesRolBox.getEmpleado().setTarget(bean);
+            employeesRolBox.setModulo(RoleType.CLIENTS.getValue());
+            employeesRolBox.setActive(checkbox_clientes_actualiza_empleado.isChecked());
+            employeesRolBox.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insertBox(employeesRolBox);
         }
 
-        RolesBox moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Ventas");
+        RolesBox productsRolBox = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.PRODUCTS.getValue());
+        if (productsRolBox != null){
+            productsRolBox.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            rolesDao.insertBox(productsRolBox);
+        } else {
+            productsRolBox = new RolesBox();
+            productsRolBox.getEmpleado().setTarget(bean);
+            productsRolBox.setModulo(RoleType.PRODUCTS.getValue());
+            productsRolBox.setActive(checkbox_productos_actualiza_empleado.isChecked());
+            productsRolBox.setIdentificador(ip_actualiza_empleado_id.getText().toString());
+            rolesDao.insertBox(productsRolBox);
+        }
+
+        RolesBox moduloVentas = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.SELLS.getValue());
         if (moduloVentas != null){
             moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
             rolesDao.insertBox(moduloVentas);
         } else {
             moduloVentas = new RolesBox();
             moduloVentas.getEmpleado().setTarget(bean);
-            moduloVentas.setModulo("Ventas");
+            moduloVentas.setModulo(RoleType.SELLS.getValue());
             moduloVentas.setActive(checkbox_ventas_actualiza_empleado.isChecked());
             moduloVentas.setIdentificador(ip_actualiza_empleado_id.getText().toString());
             rolesDao.insertBox(moduloVentas);
         }
 
-        RolesBox moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Empleados");
+        RolesBox moduloEmpleado = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.EMPLOYEES.getValue());
         if (moduloEmpleado != null){
             moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
             rolesDao.insertBox(moduloEmpleado);
         } else {
             moduloEmpleado = new RolesBox();
             moduloEmpleado.getEmpleado().setTarget(bean);
-            moduloEmpleado.setModulo("Empleados");
+            moduloEmpleado.setModulo(RoleType.EMPLOYEES.getValue());
             moduloEmpleado.setActive(checkbox_empleados_actualiza_empleado.isChecked());
             moduloEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
             rolesDao.insertBox(moduloEmpleado);
         }
 
-        RolesBox moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Inventarios");
+        RolesBox moduloInventario = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.STOCK.getValue());
         if (moduloInventario != null){
             moduloInventario.setActive(checkbox_inventario_actualiza_empleado.isChecked());
             rolesDao.insertBox(moduloInventario);
         }else{
             RolesBox rolEmpleado = new RolesBox();
             rolEmpleado.getEmpleado().setTarget(bean);
-            rolEmpleado.setModulo("Inventarios");
+            rolEmpleado.setModulo(RoleType.STOCK.getValue());
             rolEmpleado.setActive(checkbox_inventario_actualiza_empleado.isChecked());
             rolEmpleado.setIdentificador(ip_actualiza_empleado_id.getText().toString());
             rolesDao.insertBox(rolEmpleado);
         }
 
-        RolesBox moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), "Cobranza");
+        RolesBox moduloCobranza = rolesDao.getRolByEmpleado(ip_actualiza_empleado_id.getText().toString(), RoleType.CHARGE.getValue());
         if (moduloCobranza != null){
             moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
             rolesDao.insertBox(moduloCobranza);
         }else{
             moduloCobranza = new RolesBox();
             moduloCobranza.getEmpleado().setTarget(bean);
-            moduloCobranza.setModulo("Cobranza");
+            moduloCobranza.setModulo(RoleType.CHARGE.getValue());
             moduloCobranza.setActive(checkbox_cobranza_actualiza_empleado.isChecked());
             moduloCobranza.setIdentificador(ip_actualiza_empleado_id.getText().toString());
             rolesDao.insertBox(moduloCobranza);
