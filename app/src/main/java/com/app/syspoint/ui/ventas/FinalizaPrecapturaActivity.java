@@ -134,25 +134,22 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
 
         Button button = findViewById(R.id.btnConfirmaVisita);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                    if (connected) {
-                        getClientsByRute();
+        button.setOnClickListener(v -> {
+            new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                if (connected) {
+                    getClientsByRute();
 
-                        saveVentas();
-                        saveCobranza();
-                        saveAbonos();
-                        saveVisitas();
-                        //saveClientes();
-                        savePreciosEspeciales();
-                    }
-                }).execute(), 100);
+                    saveVentas();
+                    saveCobranza();
+                    saveAbonos();
+                    saveVisitas();
 
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+                    savePreciosEspeciales();
+                }
+            }).execute(), 100);
+
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -199,6 +196,11 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
     }
 
     private void initToolBar() {
@@ -647,11 +649,9 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void savePreciosEspeciales() {
-
         final SpecialPricesDao dao = new SpecialPricesDao();
 
         List<SpecialPricesBox> listaDB = dao.getPreciosBydate(Utils.fechaActual());
-
 
         //Contiene la lista de lo que se envia al servidor
         final List<Price> listaPreciosServidor = new ArrayList<>();
@@ -670,7 +670,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             precio.setCliente(items.getCliente());
             precio.setPrecio(items.getPrecio());
             listaPreciosServidor.add(precio);
-
         }
 
         new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
@@ -687,7 +686,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     public void saveClientes() {
-
         final ClientDao clientDao = new ClientDao();
         List<ClientBox> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
 

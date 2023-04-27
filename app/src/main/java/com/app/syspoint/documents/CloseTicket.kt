@@ -53,9 +53,9 @@ class CloseTicket: BaseTicket() {
             ticket += partida.descripcion + Constants.NEW_LINE
 
             if (partida.tipoVenta == Constants.CONTADO) {
-                totalContado += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
+                totalContado += (partida.cantidad * partida.precio)  + partida.impuesto
             } else {
-                totalCredito += partida.cantidad * partida.precio * (1 + partida.impuesto / 100)
+                totalCredito += (partida.cantidad * partida.precio) + partida.impuesto
             }
 
             ticket += String.format(

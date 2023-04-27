@@ -239,6 +239,11 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+    }
+
     private void initToolBar() {
 
         Toolbar toolbar = findViewById(R.id.toolbar_preview);

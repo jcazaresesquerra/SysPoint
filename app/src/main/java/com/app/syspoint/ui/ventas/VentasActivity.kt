@@ -18,6 +18,8 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
+import com.app.syspoint.analytics.EVENT
+import com.app.syspoint.analytics.PARAM
 import com.app.syspoint.databinding.*
 import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
@@ -30,7 +32,13 @@ import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.sell.SellViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
 import java.util.*
+
+const val TAG = "VentasActivity"
 
 class VentasActivity: AppCompatActivity(), LocationListener {
 
@@ -46,6 +54,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private var sellType: SellType = SellType.SIN_DEFINIR
     private lateinit var geocoder: Geocoder
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -54,6 +64,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel = ViewModelProvider(this)[SellViewModel::class.java]
         viewModel.sellViewState.observe(this, ::renderViewState)
         geocoder = Geocoder(this, Locale.getDefault())
+        val myTrace = Firebase.performance.newTrace("init_ventas")
+        myTrace.start()
+
+        firebaseAnalytics = Firebase.analytics
+
         setContentView(binding.root)
         initToolBar()
         locationStart()
@@ -95,6 +110,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         //viewModel.load(clientId)
         initControls()
+        myTrace.stop()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -279,6 +295,12 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         binding.imgBtnFinishSale click {
             if (binding.imgBtnFinishSale.isEnabled) {
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_FINISH_SELL_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 binding.imgBtnFinishSale.isEnabled = false
                 if (viewModel.existenPartidas()) {
                     // Not selected sell type
@@ -302,17 +324,39 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         binding.imgBtnFinishVisita click {
             if (binding.imgBtnFinishVisita.isEnabled) {
+
+                val myTrace = Firebase.performance.newTrace(TAG)
+                myTrace.start()
+                myTrace.incrementMetric(PARAM.BUTTON_FINISH_SELL_CLICK.value, 1)
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_FINISH_VISIT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 binding.imgBtnFinishVisita.isEnabled = false
                 viewModel.createPrecatureParams(clientId.toString())
+                myTrace.stop()
             }
         }
 
         headerBinding.fbAddProductos click {
             if (headerBinding.fbAddProductos.isEnabled) {
                 headerBinding.fbAddProductos.isEnabled = false
+
+                val myTrace = Firebase.performance.newTrace(TAG)
+                myTrace.start()
+                myTrace.incrementMetric(PARAM.BUTTON_FINISH_VISIT_CLICK.value, 1)
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_ADD_PRODUCT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 Actividades.getSingleton(this@VentasActivity, ListaProductosActivity::class.java)
                     .muestraActividadForResult(Actividades.PARAM_INT_1)
                 headerBinding.fbAddProductos.isEnabled = true
+                myTrace.stop()
             }
         }
     }
@@ -341,6 +385,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         adapter = AdapterItemsVenta(data, object: AdapterItemsVenta.OnItemLongClickListener {
             override fun onItemLongClicked(sell: SellModelBox): Boolean {
 
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.DELETE_PRODUCT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 val dialog = PrettyDialog(this@VentasActivity)
                 dialog.setTitle("Eliminar")
                     .setTitleColor(R.color.purple_500)
@@ -349,8 +398,15 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     .setAnimationEnabled(false)
                     .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500) { dialog.dismiss() }
                     .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
+
+                        val params = Bundle()
+                        params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                        params.putString(FirebaseAnalytics.Param.VALUE, PARAM.DELETE_PRODUCT_SUCCESS_CLICK.value)
+                        params.putString(FirebaseAnalytics.Param.ITEM_ID, sell.articulo)
+                        firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                         val dao = SellsModelDao()
-                        dao.delete(sell.id!!)
+                        dao.delete(sell.id)
                         viewModel.refreshSellData()
                         dialog.dismiss()
                     }.addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) { dialog.dismiss() }
@@ -369,17 +425,24 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     dialogBinding.buttonSeleccionarCantidadVentaDialog click {
                         val cantidad = dialogBinding.edittextCantidadVentaSeleccionadaDialog.text.toString()
                         if (cantidad.isNotEmpty()) {
-                                val cantidadVenta = cantidad.toInt()
-                                if (cantidadVenta == 0) {
-                                    showQuantityErrorDialog()
-                                } else {
-                                    val dao = SellsModelDao()
-                                    sell.cantidad = cantidadVenta
-                                    dao.insert(sell)
-                                    viewModel.refreshSellData()
-                                    dialogo.dismiss()
-                                }
+                            val params = Bundle()
+                            params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                            params.putString(FirebaseAnalytics.Param.VALUE, PARAM.ADD_PRODUCT_SUCCESS_CLICK.value)
+                            params.putString(FirebaseAnalytics.Param.ITEM_ID, sell.articulo)
+                            params.putString(FirebaseAnalytics.Param.QUANTITY, cantidad)
+                            firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
+                            val cantidadVenta = cantidad.toInt()
+                            if (cantidadVenta == 0) {
+                                showQuantityErrorDialog()
+                            } else {
+                                val dao = SellsModelDao()
+                                sell.cantidad = cantidadVenta
+                                dao.insert(sell)
+                                viewModel.refreshSellData()
+                                dialogo.dismiss()
                             }
+                        }
                     }
                     dialogo.show()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
@@ -562,6 +625,12 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 binding.imgBtnFinishSale.isEnabled = true
                 if (!confirmPrecaptureClicked) {
                     confirmPrecaptureClicked = true
+
+                    val params = Bundle()
+                    params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                    params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_CONFIRM_FINISH_SELL_CLICK.value)
+                    firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                     Utils.addActivity2Stack(this@VentasActivity)
 
                     val subtotal = headerBinding.textViewSubtotalVentaView.text.toString()
@@ -629,6 +698,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 isBackPressed = false
             }.addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
                 viewModel.clearSells()
+
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_EXIT_SELL_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 finish()
                 dialog.dismiss()
                 isBackPressed = false
@@ -694,6 +770,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             dialog.dismiss()
         }
         dialogBinding.btSubmit click {
+            val params = Bundle()
+            params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+            params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_SUBMIT_SCHEDULE.value)
+            firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
             viewModel.submitSchedule(clientId)
             dialog.dismiss()
         }

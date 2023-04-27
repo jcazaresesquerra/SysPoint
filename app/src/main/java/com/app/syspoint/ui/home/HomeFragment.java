@@ -1,5 +1,8 @@
 package com.app.syspoint.ui.home;
 
+import static com.app.syspoint.utils.Constants.REQUEST_PERMISSION_LOCATION;
+
+import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.IntentFilter;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -343,7 +347,10 @@ public class HomeFragment extends Fragment {
                     Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                 }
             }
-        }, position -> false);
+        }, position -> false, () ->
+                ActivityCompat.requestPermissions(HomeFragment.this.requireActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.REQUEST_PERMISSION_CALL)
+        );
+
 
         recyclerView.setAdapter(mAdapter);
 

@@ -5,7 +5,9 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-android-extensions'
     id "io.objectbox" // Apply last.
+    id 'com.google.firebase.firebase-perf'
 }
+
 
 android {
     signingConfigs {
@@ -50,13 +52,9 @@ android {
         }
         debug {
             debuggable true
+            buildConfigField "boolean", "LOG", "true"
         }
 
-        /**
-         * The `initWith` property allows you to copy configurations from other build types,
-         * then configure only the settings you want to change. This one copies the debug build
-         * type, and then changes the manifest placeholder and application ID.
-         */
         staging {
             initWith debug
             manifestPlaceholders = [hostName:"internal.example.com"]
@@ -76,6 +74,7 @@ android {
                     appIcon: "@drawable/logo",
                     appIconRound: "@drawable/logo"
             ]
+            buildConfigField "boolean", "REMOTE_LOG_ENABLED", "true"
         }
         donaqui {
             dimension "version"
@@ -163,6 +162,7 @@ dependencies {
     // FIREBASE STORAGE
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-storage:20.1.0'
+    implementation 'com.google.firebase:firebase-database-ktx:20.2.0'
 
     // Import the BoM for the Firebase platform
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
@@ -171,10 +171,15 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-perf-ktx'
 
     // KOTLIN
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.10'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.20'
 
     // AUTODISPOSE
     implementation 'com.github.satoshun.coroutine.autodispose:autodispose:0.3.1'
+
+    // TIMBER
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 }

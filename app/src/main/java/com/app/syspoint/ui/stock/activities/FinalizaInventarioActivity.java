@@ -32,9 +32,11 @@ import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
 import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
 import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.StockBox;
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.utils.Actividades;
@@ -170,7 +172,15 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
             if (productoBean != null){
 
                 //Actualiza la existencia del articulo
-                productoBean.setExistencia(item.getCantidad());
+                StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                StockHistoryBox inventarioHistorialBean =
+                        stockHistoryDao.getInvatarioPorArticulo(item.articulo.getTarget().getArticulo());
+
+                int vendido = inventarioHistorialBean != null ? inventarioHistorialBean.getCantidad() : 0;
+                int inicial = item.getTotalCantidad();
+                int total = inicial - vendido;
+
+                productoBean.setExistencia(total);
                 productDao.insertBox(productoBean);
 
                 //Cambia el status a confirmado

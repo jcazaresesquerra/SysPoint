@@ -89,6 +89,7 @@ class AdapterListaProductos(
 
         fun bind(productoBean: ProductBox?, onItemClickListener: OnItemClickListener) {
             productoBean?.let { producto ->
+
                 binding.textViewArticuloList.text = producto.articulo
                 binding.textViewDescripcionProductoList.text = producto.descripcion
                 binding.textViewPreciosArticuloList.text = "$" + producto.precio

@@ -52,8 +52,8 @@ class PrecaptureViewModel: ViewModel() {
         val visitBean = VisitsBox()
         val visitsDao = VisitsDao()
         visitBean.motivo_visita = conceptSelectedView
-        visitBean.empleado!!.target = vendedoresBean
-        visitBean.cliente!!.target = clienteBean
+        visitBean.empleado.target = vendedoresBean
+        visitBean.cliente.target = clienteBean
         visitBean.hora = Utils.getHoraActual()
         visitBean.fecha = Utils.fechaActual()
         visitBean.latidud = clienteBean.latitud

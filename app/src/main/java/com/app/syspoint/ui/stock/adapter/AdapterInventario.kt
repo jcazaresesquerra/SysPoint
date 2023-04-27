@@ -44,22 +44,22 @@ class AdapterInventario(
             inventarioBean?.let { item ->
                 val stockHistoryDao = StockHistoryDao()
                 val inventarioHistorialBean =
-                    stockHistoryDao.getInvatarioPorArticulo(item.articulo!!.target.articulo)
+                    stockHistoryDao.getInvatarioPorArticulo(item.articulo.target.articulo)
 
                 val vendido = inventarioHistorialBean?.cantidad ?: 0
                 val inicial = item.totalCantidad
 
                 binding.tvInventarioTotal.text = Utils.FDinero(item.cantidad * item.precio)
                 binding.tvInventarioCantidad.text = inicial.toString()
-                binding.tvInventarioDescripcion.text = item.articulo!!.target.descripcion
-                binding.tvInventarioArticulo.text = item.articulo!!.target.articulo
+                binding.tvInventarioDescripcion.text = item.articulo.target.descripcion
+                binding.tvInventarioArticulo.text = item.articulo.target.articulo
                 binding.tvInventarioVendido.text = vendido.toString()
                 val total = inicial - vendido
 
                 binding.tvInventarioTotalInventario.text = total.toString()
-                if (item.articulo!!.target.path_img != null) {
+                if (item.articulo.target.path_img != null) {
                     val decodedString: ByteArray =
-                        Base64.decode(item.articulo!!.target.path_img, Base64.DEFAULT)
+                        Base64.decode(item.articulo.target.path_img, Base64.DEFAULT)
                     val decodedByte =
                         BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
                     binding.imageView4Inv.setImageBitmap(decodedByte)

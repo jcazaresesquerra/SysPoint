@@ -91,27 +91,16 @@ class ViewPDFViewModel: ViewModel() {
                                 invDao.insert(invBean)
                             }
                         }
+
+                        productoBean.existencia = productoBean.existencia - item.cantidad
+                        productDao.insert(productoBean)
                     }
                 }
 
-                upadteExistencias(venta)
             }
         }
     }
 
-    //Actualiza las existencias del producto
-    private fun upadteExistencias(venta: Long) {
-        val sellsDao = SellsDao()
-        val ventasBean = sellsDao.getVentaByInventario(venta)
-        for (item in ventasBean!!.listaPartidas) {
-            val productDao = ProductDao()
-            val productoBean = productDao.getProductoByArticulo(item.articulo.target.articulo)
-            if (productoBean != null) {
-                productoBean.existencia = productoBean.existencia - item.cantidad
-                productDao.insert(productoBean)
-            }
-        }
-    }
 
     fun sync(venta: Long, clienteID: Long) {
         viewModelScope.launch(Dispatchers.IO) {
