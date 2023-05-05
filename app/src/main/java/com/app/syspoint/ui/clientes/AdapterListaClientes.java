@@ -83,9 +83,14 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
     }
 
     public void setClients(List<ClientBox> data) {
+
+        //tell the recycler view that all the old items are gone
+        notifyItemRangeRemoved(0, mData.size());
         this.mDataFiltrable  = data;
         this.mData = data;
-        notifyDataSetChanged();
+        //tell the recycler view how many new items we added
+        notifyItemRangeInserted(0, data.size());
+        //notifyDataSetChanged();
     }
 
     public void setListaRuta(List<ClientBox> mData) {

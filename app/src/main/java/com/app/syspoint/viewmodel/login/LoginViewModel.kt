@@ -25,10 +25,11 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream as FileOutputStream1
 
-
+private const val TAG = "LoginViewModel"
 class LoginViewModel: BaseViewModel() {
 
     val loginViewState = MutableLiveData<LoginViewState>()
@@ -72,7 +73,7 @@ class LoginViewModel: BaseViewModel() {
             }
 
             val sessionBean = SessionBox()
-            sessionBean.employee!!.target = employeeBox
+            sessionBean.employee.target = employeeBox
             sessionBean.empleadoId = employeeBox.id
             sessionBean.remember = false
             sessionDao.saveSession(sessionBean)
@@ -80,8 +81,13 @@ class LoginViewModel: BaseViewModel() {
         }
 
         loginViewState.postValue(
-            if (employeeBox != null) LoginViewState.LoggedIn
-            else LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+            if (employeeBox != null) {
+                Timber.tag(TAG).d("loggedIn $email")
+                LoginViewState.LoggedIn
+            } else {
+                Timber.tag(TAG).d("Usuario no encontrado verifique los datos de acceso $email")
+                LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+            }
         )
     }
 

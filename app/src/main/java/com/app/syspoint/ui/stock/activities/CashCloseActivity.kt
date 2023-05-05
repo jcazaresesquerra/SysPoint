@@ -32,6 +32,7 @@ import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.setGone
 import com.app.syspoint.utils.setVisible
+import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -134,6 +135,8 @@ class CashCloseActivity: AppCompatActivity() {
         val id = item.itemId
         when (id) {
             R.id.action_print -> {
+                Timber.tag(TAG).d("action print")
+
                 if (!isConnected) {
                     initPrinter()
                     return false
@@ -145,7 +148,7 @@ class CashCloseActivity: AppCompatActivity() {
                 ticketInventario.template()
                 val ticket = ticketInventario.document
                 templateTicket = ticket
-                Log.d(TAG, ticket)
+                Timber.tag(TAG).d(ticket)
 
                 if (mConnectedThread != null) //First check to make sure thread created
                     mConnectedThread!!.write(ticket)
@@ -153,9 +156,11 @@ class CashCloseActivity: AppCompatActivity() {
                 return true
             }
             R.id.home -> {
+                Timber.tag(TAG).d("action home")
                 return true
             }
             R.id.action_settings -> {
+                Timber.tag(TAG).d("action settings")
                 Actividades.getSingleton(this, BluetoothActivity::class.java)
                     .muestraActividad()
             }

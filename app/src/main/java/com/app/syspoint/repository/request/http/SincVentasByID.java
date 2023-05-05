@@ -1,6 +1,8 @@
 package com.app.syspoint.repository.request.http;
 
 
+import android.util.Log;
+
 import com.app.syspoint.repository.objectBox.dao.SellsDao;
 import com.app.syspoint.repository.objectBox.entities.PlayingBox;
 import com.app.syspoint.repository.objectBox.entities.SellBox;
@@ -79,7 +81,7 @@ public class SincVentasByID extends Servicio {
         onSuccess = new ResponseOnSuccess() {
             @Override
             public void onSuccess(JSONArray response) throws JSONException {
-
+                Log.d("SincVentas", "Send sell success");
             }
 
             @Override

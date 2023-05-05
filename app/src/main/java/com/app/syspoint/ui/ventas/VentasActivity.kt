@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.location.*
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
@@ -36,6 +35,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
+import timber.log.Timber
 import java.util.*
 
 const val TAG = "VentasActivity"
@@ -125,7 +125,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         val productoBean = productDao.getProductoByArticulo(articulo)
 
         if (productoBean == null) {
-            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
+            Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
@@ -136,7 +136,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
 
         if (cantidad.isNullOrEmpty()) {
-            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
+            Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
@@ -478,7 +478,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-            Log.d("SysPoint", "Error, Location permissions not granted, Ventas")
+            Timber.tag(TAG).d("Error, Location permissions not granted, Ventas")
             return
         }
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
@@ -499,8 +499,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         }
                     } catch (e: Exception) {
                         runOnUiThread {
-                            Log.d(
-                                "SysPoint",
+                            Timber.tag(TAG).d(
                                 "Ha ocurrido un error, intente nuevamente onLocationChanged"
                             )
                         }
@@ -525,10 +524,9 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
         when (status) {
-            LocationProvider.AVAILABLE -> Log.d("debug", "LocationProvider.AVAILABLE")
-            LocationProvider.OUT_OF_SERVICE -> Log.d("debug", "LocationProvider.OUT_OF_SERVICE")
-            LocationProvider.TEMPORARILY_UNAVAILABLE -> Log.d(
-                "debug",
+            LocationProvider.AVAILABLE -> Timber.tag(TAG).d( "LocationProvider.AVAILABLE")
+            LocationProvider.OUT_OF_SERVICE -> Timber.tag(TAG).d( "LocationProvider.OUT_OF_SERVICE")
+            LocationProvider.TEMPORARILY_UNAVAILABLE -> Timber.tag(TAG).d(
                 "LocationProvider.TEMPORARILY_UNAVAILABLE"
             )
         }

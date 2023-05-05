@@ -47,6 +47,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.UUID;
 
+import timber.log.Timber;
+
 
 public class ViewPDFActivity extends AppCompatActivity {
 
@@ -362,7 +364,7 @@ public class ViewPDFActivity extends AppCompatActivity {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            Timber.tag(TAG).e("Could not create Insecure RFComm Connection" + e);
         }
         return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }

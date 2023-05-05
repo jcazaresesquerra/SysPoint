@@ -79,6 +79,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import timber.log.Timber;
+
 public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
 
@@ -367,7 +369,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            Timber.tag(TAG).e("Could not create Insecure RFComm Connection" + e);
         }
         return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }
@@ -468,11 +470,11 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             new ChargeInteractorImp().executeGetChargeByEmployee(employeeBox.getIdentificador(), new ChargeInteractor.OnGetChargeByEmployeeListener() {
                 @Override
                 public void onGetChargeByEmployeeSuccess(@NonNull List<ChargeBox> chargeByClientList) {
-                    Log.d("SysPoint", "charge updated");
+                    Timber.tag(TAG).d( "charge updated");
                 }
                 @Override
                 public void onGetChargeByEmployeeError() {
-                    Log.d("SysPoint", "error when charge update");
+                    Timber.tag(TAG).d( "error when charge update");
                 }
             });
         }
@@ -560,7 +562,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             if (employeeBox != null) {
                 visita.setIdentificador(employeeBox.getIdentificador());
             } else {
-                Log.e(TAG, "employeeBox is null");
+                Timber.tag(TAG).e("employeeBox is null");
             }
 
             visitList.add(visita);

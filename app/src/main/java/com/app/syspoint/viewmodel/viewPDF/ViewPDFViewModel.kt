@@ -1,5 +1,6 @@
 package com.app.syspoint.viewmodel.viewPDF
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.androidnetworking.error.ANError
@@ -110,6 +111,7 @@ class ViewPDFViewModel: ViewModel() {
         }
     }
 
+
     private fun loadCobranza() {
         val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
         val listaCobranza: MutableList<Payment> = ArrayList()
@@ -191,15 +193,21 @@ class ViewPDFViewModel: ViewModel() {
             sincVentasByID.setOnSuccess(object : ResponseOnSuccess() {
                 @Throws(JSONException::class)
                 override fun onSuccess(response: JSONArray) {
+                    Log.d("SincVentas", "Send sell success");
                 }
 
                 @Throws(Exception::class)
                 override fun onSuccessObject(response: JSONObject) {
+                    Log.d("SincVentas", "Send sell successObject");
                 }
             })
             sincVentasByID.setOnError(object : ResponseOnError() {
-                override fun onError(error: ANError) {}
-                override fun onError(error: String) {}
+                override fun onError(error: ANError) {
+                    Log.d("SincVentas", "Send sell error ANR");
+                }
+                override fun onError(error: String) {
+                    Log.d("SincVentas", "Send sell error");
+                }
             })
             sincVentasByID.postObject()
         } catch (e: Exception) {

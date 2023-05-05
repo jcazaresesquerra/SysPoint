@@ -166,7 +166,6 @@ public class ListaClientesActivity extends AppCompatActivity {
                     finish();
                 },
                 position -> false);
-
         recyclerView.setAdapter(mAdapter);
     }
 

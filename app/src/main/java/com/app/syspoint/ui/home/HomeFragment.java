@@ -390,23 +390,25 @@ public class HomeFragment extends Fragment {
     }
 
     private void showDialogNotConnectionInternet() {
-        Dialog dialog = new Dialog(getActivity());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
-        dialog.setContentView(R.layout.dialog_warning);
-        dialog.setCancelable(true);
+        if (getActivity() != null) {
+            Dialog dialog = new Dialog(getActivity());
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
+            dialog.setContentView(R.layout.dialog_warning);
+            dialog.setCancelable(true);
 
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(dialog.getWindow().getAttributes());
+            lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
-        dialog.findViewById(R.id.bt_close).setOnClickListener(v -> {
-            viewModel.getClientsByRute(false);
-            dialog.dismiss();
-        });
+            dialog.findViewById(R.id.bt_close).setOnClickListener(v -> {
+                viewModel.getClientsByRute(false);
+                dialog.dismiss();
+            });
 
-        dialog.show();
-        dialog.getWindow().setAttributes(lp);
+            dialog.show();
+            dialog.getWindow().setAttributes(lp);
+        }
     }
 
     private void registerNetworkBroadcastForNougat() {

@@ -8,7 +8,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
-/*class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugTree() {
+class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugTree() {
 
     private val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     private val timeFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS a zzz", Locale.getDefault())
@@ -38,4 +38,4 @@ import java.util.*
         Log.ASSERT -> "ASSERT"
         else -> priority.toString()
     }
-}*/
+}

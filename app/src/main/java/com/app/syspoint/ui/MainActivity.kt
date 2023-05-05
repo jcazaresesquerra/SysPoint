@@ -260,7 +260,7 @@ class MainActivity: BaseActivity() {
 
         Handler().postDelayed({
             NetworkStateTask { connected: Boolean ->
-                progressDialog.dismiss()
+                dismissProgressDialog()
                 if (connected) {
                     progressDialog.setMessage("Obteniendo actualizaciones...");
                     progressDialog.show();
@@ -344,7 +344,7 @@ class MainActivity: BaseActivity() {
                 val visita = Visit()
                 visita.fecha = item.fecha
                 visita.hora = item.hora
-                val clienteBean = clientDao.getClientByAccount(item.cliente!!.target.cuenta)
+                val clienteBean = clientDao.getClientByAccount(item.cliente.target.cuenta)
                 visita.cuenta = clienteBean!!.cuenta
                 visita.latidud = item.latidud
                 visita.longitud = item.longitud
@@ -751,7 +751,7 @@ class MainActivity: BaseActivity() {
                             id,
                             object : LoginActivity.DownloadListener {
                                 override fun onDownloadSuccess(uri: Uri) {
-                                    progressDialog.dismiss()
+                                    dismissProgressDialog()
                                     showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     ApkInstaller().installApplicationFromCpanel(
                                         applicationContext,
@@ -760,7 +760,7 @@ class MainActivity: BaseActivity() {
                                 }
 
                                 override fun onDownloadError(error: String) {
-                                    progressDialog.dismiss()
+                                    dismissProgressDialog()
                                     showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     showErrorDialog(error)
                                 }
@@ -806,13 +806,13 @@ class MainActivity: BaseActivity() {
             GetAllDataInteractorImp().executeGetAllDataByDate(object:  GetAllDataInteractor.OnGetAllDataByDateListener {
                 override fun onGetAllDataByDateSuccess() {
                     runOnUiThread {
-                        progressDialog.dismiss()
+                        dismissProgressDialog()
                     }
                 }
 
                 override fun onGetAllDataByDateError() {
                     runOnUiThread {
-                        progressDialog.dismiss()
+                        dismissProgressDialog()
                     }
                 }
             })
@@ -827,5 +827,16 @@ class MainActivity: BaseActivity() {
 
     fun unblockInput() {
         //window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+    }
+
+    private fun dismissProgressDialog() {
+        if (::progressDialog.isInitialized && progressDialog.isShowing) {
+            if (window != null) {
+                val decor = window.decorView
+                if (decor.parent != null) {
+                    progressDialog.dismiss()
+                }
+            }
+        }
     }
 }
