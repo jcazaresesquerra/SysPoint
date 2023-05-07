@@ -60,8 +60,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class HomeFragment extends Fragment {
 
+    private static final String TAG = "TAG";
     AdapterRutaClientes mAdapter;
     List<RuteClientBox> mData;
     private RelativeLayout rlprogress;
@@ -79,10 +82,12 @@ public class HomeFragment extends Fragment {
 
         viewModel.getHomeLoadingViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
             if (o instanceof HomeLoadingViewState.LoadingStart) {
+                Timber.tag(TAG).d("LoadingStart");
                 rlprogress.setVisibility(View.VISIBLE);
                 if (getActivity() != null)
                     ((MainActivity) getActivity()).blockInput();
             } else if (o instanceof HomeLoadingViewState.LoadingFinish) {
+                Timber.tag(TAG).d("LoadingFinish");
                 rlprogress.setVisibility(View.GONE);
                 if (getActivity() != null)
                     ((MainActivity) getActivity()).unblockInput();
@@ -90,8 +95,10 @@ public class HomeFragment extends Fragment {
         });
         viewModel.getGetClientsByRuteViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
             if (o instanceof GetClientsByRuteViewState.GetClientsByRuteSuccess) {
+                Timber.tag(TAG).d("GetClientsByRuteSuccess call loadRuta");
                 loadRuta();
             } else if (o instanceof GetClientsByRuteViewState.GetClientsByRuteError) {
+                Timber.tag(TAG).d("GetClientsByRuteError call showDialogNotConnectionInternet");
                 showDialogNotConnectionInternet();
             }
         });
@@ -99,10 +106,12 @@ public class HomeFragment extends Fragment {
         viewModel.getSetUpRuteViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
             if (o instanceof SetRuteViewState.RuteDefined) {
                 loadRuta();
+                Timber.tag(TAG).d("RuteDefined -> called loadRuta and call getClientRute");
                 Toast.makeText(getActivity(), "La ruta se cargo con exito!", Toast.LENGTH_LONG)
                         .show();
                 mData = ((SetRuteViewState.RuteDefined) o).getClientRute();
             } else  if (o instanceof SetRuteViewState.RuteDefinedWithOutClients) {
+                Timber.tag(TAG).d("RuteDefinedWithOutClients call loadRuta");
                 loadRuta();
             }
         });
@@ -145,6 +154,7 @@ public class HomeFragment extends Fragment {
         switch (item.getItemId()) {
 
             case R.id.sinronizaAll:
+                Timber.tag(TAG).d("sinronizaAll Clicked");
                 ProgressDialog progressDialog = new ProgressDialog(getActivity());
                 progressDialog.setMessage("Espere un momento");
                 progressDialog.setCancelable(false);
@@ -154,6 +164,7 @@ public class HomeFragment extends Fragment {
                     if (!connected) {
                         //showDialogNotConnectionInternet();
                     } else {
+                        Timber.tag(TAG).d("sinronizaAll NetworkStateTask connected call getData(false)");
                         getData(false);
                     }
                 }).execute(), 100);
@@ -161,10 +172,12 @@ public class HomeFragment extends Fragment {
                 return true;
 
             case R.id.close_caja:
+                Timber.tag(TAG).d("close_caja clicked call closeBox");
                 closeBox();
                 return true;
 
             case R.id.viewMap:
+                Timber.tag(TAG).d("viewMap clicked call MapsRuteoActivity");
                 Actividades.getSingleton(getActivity(), MapsRuteoActivity.class).muestraActividad();
                 return true;
             default:
@@ -173,6 +186,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void creaRutaSeleccionada() {
+        Timber.tag(TAG).d("creaRutaSeleccionada");
         RoutingDao dao = new RoutingDao();
         RoutingBox bean = dao.getRutaEstablecidaFechaActual(Utils.fechaActual());
 
@@ -221,6 +235,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void showDialog() {
+        Timber.tag(TAG).d("showDialog");
         EmployeeBox vendedoresBean = AppBundle.getUserBox();
         if (vendedoresBean !=  null) {
             RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.RUTES.getValue());
@@ -293,6 +308,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadRuta() {
+        Timber.tag(TAG).d("loadRuta");
         mData = new ArrayList<>();
         RoutingDao routingDao = new RoutingDao();
         RoutingBox ruteoBean = routingDao.getRutaEstablecida();
@@ -308,6 +324,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void initRecyclerView(View root) {
+        Timber.tag(TAG).d("initRecyclerView");
         mData = new ArrayList<>();
 
         if (!mData.isEmpty()) {
@@ -331,6 +348,7 @@ public class HomeFragment extends Fragment {
 
         boolean finalIsOrderRute = isOrderRute;
         mAdapter = new AdapterRutaClientes(mData, position -> {
+            Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> %s -> %s", position, mData);
             if (position >= 0) {
                 boolean canSell = true;
                 if (finalIsOrderRute) {
@@ -344,11 +362,17 @@ public class HomeFragment extends Fragment {
                     RuteClientBox clienteBean = mData.get(position);
                     HashMap<String, String> parametros = new HashMap<>();
                     parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+
+                    Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> open VentasActivity -> %s", clienteBean.getCuenta());
+
                     Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                 }
             }
-        }, position -> false, () ->
-                ActivityCompat.requestPermissions(HomeFragment.this.requireActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.REQUEST_PERMISSION_CALL)
+        }, position -> false, () -> {
+            Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> requestCallPermissions ");
+            ActivityCompat.requestPermissions(HomeFragment.this.requireActivity(), new String[]{Manifest.permission.CALL_PHONE}, Constants.REQUEST_PERMISSION_CALL);
+        }
+
         );
 
 
@@ -358,20 +382,25 @@ public class HomeFragment extends Fragment {
     }
 
     private void getData(Boolean isUpdate) {
+        Timber.tag(TAG).d("getData %s", isUpdate);
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
             if (connected) {
+                Timber.tag(TAG).d("NetworkStateTask connected %s", isUpdate);
                 if (isUpdate){
                     viewModel.getUpdates();
                 } else {
                     viewModel.getData();
                 }
             } else {
+                Timber.tag(TAG).d("NetworkStateTask not connected ");
                 showDialogNotConnectionInternet();
             }
         }).execute(), 100);
     }
 
     private void closeBox() {
+        Timber.tag(TAG).d("closeBox");
+
         final PrettyDialog dialog = new PrettyDialog(requireActivity());
         dialog.setTitle("Corte del día")
                 .setTitleColor(R.color.purple_500)
@@ -386,10 +415,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void showOrderRuteMessage() {
+        Timber.tag(TAG).d("showOrderRuteMessage");
         Toast.makeText(getActivity(), "Es obligatorio seguir la secuencia del listado", Toast.LENGTH_SHORT).show();
     }
 
     private void showDialogNotConnectionInternet() {
+        Timber.tag(TAG).d("showDialogNotConnectionInternet");
         if (getActivity() != null) {
             Dialog dialog = new Dialog(getActivity());
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
@@ -412,9 +443,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void registerNetworkBroadcastForNougat() {
+        Timber.tag(TAG).d("registerNetworkBroadcastForNougat");
         MainActivity.NetworkChangeReceiver mNetworkChangeReceiver = new MainActivity.NetworkChangeReceiver(new MainActivity.ConnectionNetworkListener() {
             @Override
             public void onConnected() {
+                Timber.tag(TAG).d("registerNetworkBroadcastForNougat -> NetworkChangeReceiver -> getData(false)");
                 getData(false);
             }
 

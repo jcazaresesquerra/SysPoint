@@ -3,14 +3,19 @@ package com.app.syspoint.repository.objectBox.dao
 import com.app.syspoint.App
 import com.app.syspoint.repository.objectBox.entities.*
 import io.objectbox.query.QueryBuilder
+import timber.log.Timber
+
+private const val TAG = "SellsDao"
 
 class SellsDao: AbstractDao<SellBox>() {
 
     fun clear() {
+        Timber.tag(TAG).d("clear")
         abstractBox<SellBox>().removeAll()
     }
 
     fun insertBox(box: SellBox) {
+        Timber.tag(TAG).d("insertBox -> %s", box)
         insert(box)
     }
 
@@ -46,6 +51,8 @@ class SellsDao: AbstractDao<SellBox>() {
         val results = query.find()
         query.close()
 
+        Timber.tag(TAG).d("getUltimaVenta -> result: %s", results)
+
         return if (results.isEmpty()) null else results[0]
     }
 
@@ -57,6 +64,8 @@ class SellsDao: AbstractDao<SellBox>() {
         val results = query.find()
         query.close()
 
+        Timber.tag(TAG).d("getSincVentaByID -> id: %s -> result: %s", id, results)
+
         return results
     }
 
@@ -67,6 +76,8 @@ class SellsDao: AbstractDao<SellBox>() {
             .build()
         val results = query.find()
         query.close()
+
+        Timber.tag(TAG).d("getListVentasByDate -> date: %s -> result: %s", fecha, results)
 
         return results
     }
@@ -103,6 +114,8 @@ class SellsDao: AbstractDao<SellBox>() {
             .build()
         val results = query.find()
         query.close()
+
+        Timber.tag(TAG).d("getVentaByInventario -> sell: %s -> result: %s", venta, results)
 
         return if (results.isEmpty()) null else results[0]
     }
@@ -171,6 +184,9 @@ class SellsDao: AbstractDao<SellBox>() {
             lista_corte.add(corteBean)
         }
         return lista_corte*/
+
+        Timber.tag(TAG).d("getAllPartsGroupedClient -> stockId: %s -> result: %s", stockId, lista_corte)
+
         return lista_corte
     }
 

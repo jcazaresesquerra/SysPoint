@@ -48,6 +48,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
+import timber.log.Timber;
+
 public class FinalizaInventarioActivity extends AppCompatActivity {
 
 
@@ -78,14 +80,13 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         textViewStatus = findViewById(R.id.tvStatusPrinterInventario);
         btnConfirmaInventario = findViewById(R.id.btnConfirmaInventario);
 
-        btnConfirmaInventario.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int loadId = new CacheInteractor().getCurrentLoadId() + 1;
-                new CacheInteractor().setLoadId(loadId);
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+        btnConfirmaInventario.setOnClickListener(v -> {
+            Timber.tag(TAG).d("btnConfirmaInventario -> click");
+
+            int loadId = new CacheInteractor().getCurrentLoadId() + 1;
+            new CacheInteractor().setLoadId(loadId);
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -329,6 +330,7 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.imprime_inventario) {
+            Timber.tag(TAG).d("print stock -> click");
 
             if (isConnectada == false) {
                 initPrinter();
@@ -340,8 +342,10 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
 
 
         } else if (id == android.R.id.home) {
+            Timber.tag(TAG).d("home -> click");
             return false;
         }  else if  (id ==  R.id.config_printer){
+            Timber.tag(TAG).d("config printer -> click");
             Actividades.getSingleton(FinalizaInventarioActivity.this, BluetoothActivity.class).muestraActividad();
         }
         return super.onOptionsItemSelected(item);

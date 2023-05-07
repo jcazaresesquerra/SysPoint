@@ -58,8 +58,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import timber.log.Timber;
+
 public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMarkerClickListener {
 
+    private final static String TAG = "MapsRuteoActivity";
     List<RuteClientBox> mData = null;
     private static final int REQUEST_PERMISSION_LOCATION = 991;
     private GoogleMap gMap;
@@ -341,7 +344,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
         if (!markerClick) {
             markerClick = true;
-
+            Timber.tag(TAG).d("onMarkerClick");
             ClientDao clientDao = new ClientDao();
             ClientBox clienteBean = clientDao.getClientByAccount(marker.getSnippet());
             RoutingDao routingDao = new RoutingDao();
@@ -383,6 +386,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                     .addButton("Realizar venta", R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
                         @Override
                         public void onClick() {
+                            Timber.tag(TAG).d("onMarkerClick -> doSell -> click");
                             boolean canSell = true;
                             if (finalIsOrderRute) {
                                 if (!clienteBean.getCuenta().equals(finalConsecAccount)) {
@@ -404,12 +408,16 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                         }
                     })
                     .addButton("Llamar al cliente", R.color.pdlg_color_white, R.color.purple_500, () -> {
+
+                        Timber.tag(TAG).d("onMarkerClick -> call client -> click");
                         Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
                         startActivity(intent);
                         markerClick = false;
                         lastKnownPosition = marker.getPosition();
                     })
                     .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, () -> {
+                        Timber.tag(TAG).d("onMarkerClick -> show rute -> click");
+
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("http://maps.google.com/maps?daddr=" + clienteBean.getLatitud() + "," + clienteBean.getLongitud()));
                         startActivity(intent);
@@ -417,6 +425,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                         markerClick = false;
                     })
                     .addButton("Cancelar", R.color.white, R.color.red_900, () -> {
+                        Timber.tag(TAG).d("onMarkerClick -> cancel -> click");
                         dialog.dismiss();
                         markerClick = false;
                     });
@@ -442,6 +451,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private void showOrderRuteMessage() {
+        Timber.tag(TAG).d("showOrderRuteMessage");
         Toast.makeText(this, "Es obligatorio seguir la secuencia del listado", Toast.LENGTH_SHORT).show();
     }
 }

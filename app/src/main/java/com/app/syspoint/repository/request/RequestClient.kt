@@ -74,6 +74,8 @@ class RequestClient {
                                 clientBox.isCredito = item.isCredito == 1
                                 clientBox.limite_credito = item.limite_credito
                                 clientBox.saldo_credito = item.saldo_credito
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
                                 clientBox.contacto_phone = item.phone_contacto
                                 clientBox.updatedAt = item.updatedAt
                                 dao.insert(clientBox)
@@ -194,6 +196,8 @@ class RequestClient {
                                 clientBox.limite_credito = item.limite_credito
                                 clientBox.saldo_credito = item.saldo_credito
                                 clientBox.contacto_phone = item.phone_contacto
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
                                 clientBox.matriz = item.matriz
                                 clientBox.updatedAt = item.updatedAt
                                 dao.insert(clientBox)
@@ -397,6 +401,8 @@ class RequestClient {
                                 clientBox.limite_credito = item.limite_credito
                                 clientBox.saldo_credito = item.saldo_credito
                                 clientBox.contacto_phone = item.phone_contacto
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
                                 clientBox.matriz = item.matriz
                                 clientBox.updatedAt = item.updatedAt
 
@@ -526,6 +532,8 @@ class RequestClient {
                                 clientBox.limite_credito = item.limite_credito
                                 clientBox.saldo_credito = item.saldo_credito
                                 clientBox.contacto_phone = item.phone_contacto
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
                                 clientBox.matriz = item.matriz
                                 clientBox.updatedAt = item.updatedAt
 
@@ -888,6 +896,8 @@ class RequestClient {
                                 clientBox.limite_credito = item.limite_credito
                                 clientBox.saldo_credito = item.saldo_credito
                                 clientBox.contacto_phone = item.phone_contacto
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
                                 clientBox.updatedAt = item.updatedAt
                                 clientDao.insert(clientBox)
                                 client = clientBox

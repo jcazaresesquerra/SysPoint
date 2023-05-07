@@ -32,8 +32,11 @@ import com.app.syspoint.utils.Utils;
 
 import java.util.List;
 
+import timber.log.Timber;
+
 public class CantidadInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "CantidadInventarioActivity";
     private EditText EditTextCantidad, EditTextPrecio, EditTextTotal;
     private String cantidad;
     private String ariculo;
@@ -119,10 +122,14 @@ public class CantidadInventarioActivity extends AppCompatActivity {
         });
 
         Button buttonCerrar = findViewById(R.id.btn_inventario_cerrar);
-        buttonCerrar.setOnClickListener(v -> finish());
+        buttonCerrar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonCerrar -> click");
+            finish();
+        });
 
         Button buttonConfirmar = findViewById(R.id.btn_inventario_confirmar);
         buttonConfirmar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonConfirmar -> click -> %s", qty);
 
             if (qty == 0) {
                 final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
@@ -188,6 +195,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 intent.putExtra(Actividades.PARAM_1, cantidad);
                 setResult(Activity.RESULT_OK, intent);
+
                 Toast.makeText(CantidadInventarioActivity.this, "La cantidad se actualizo", Toast.LENGTH_LONG).show();
                 finish();
                 return;

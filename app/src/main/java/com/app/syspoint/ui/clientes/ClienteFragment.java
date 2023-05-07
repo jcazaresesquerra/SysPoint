@@ -585,23 +585,20 @@ public class ClienteFragment extends Fragment {
             }
         });
 
-        ((Button) dialog.findViewById(R.id.bt_submit)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String review = et_post.getText().toString().trim();
-                if (review.isEmpty()) {
-                    Toast.makeText(getContext(), "Ingrese un recordatorio", Toast.LENGTH_SHORT).show();
-                } else {
-                    ClientDao clientDao = new ClientDao();
-                    clientBox.setRecordatorio(review);
-                    clientBox.setDate_sync(Utils.fechaActual());
-                    clientDao.insertBox(clientBox);
-                    testLoadClientes(clientBox.getId());
-                }
-
-                dialog.dismiss();
-                Toast.makeText(getContext(), "Recordatorio exitoso", Toast.LENGTH_SHORT).show();
+        ((Button) dialog.findViewById(R.id.bt_submit)).setOnClickListener(v -> {
+            String review = et_post.getText().toString().trim();
+            if (review.isEmpty()) {
+                Toast.makeText(getContext(), "Ingrese un recordatorio", Toast.LENGTH_SHORT).show();
+            } else {
+                ClientDao clientDao = new ClientDao();
+                clientBox.setRecordatorio(review);
+                clientBox.setDate_sync(Utils.fechaActual());
+                clientDao.insertBox(clientBox);
+                testLoadClientes(clientBox.getId());
             }
+
+            dialog.dismiss();
+            Toast.makeText(getContext(), "Recordatorio exitoso", Toast.LENGTH_SHORT).show();
         });
 
         dialog.show();
@@ -637,8 +634,8 @@ public class ClienteFragment extends Fragment {
             cliente.setDom(item.getDom());
             cliente.setLatitud(item.getLatitud());
             cliente.setLongitud(item.getLongitud());
-            cliente.setPhone_contacto(""+item.getContacto_phone());
-            cliente.setRecordatorio(""+item.getRecordatorio());
+            cliente.setPhone_contacto(item.getContacto_phone());
+            cliente.setRecordatorio(item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.isCredito()){
                 cliente.setCredito(1);

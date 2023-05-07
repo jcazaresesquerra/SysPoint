@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import timber.log.Timber;
+
 public class StockFragment extends Fragment {
 
     private List<StockBox> mData;
@@ -160,11 +162,12 @@ public class StockFragment extends Fragment {
         switch (item.getItemId()) {
 
             case R.id.item_menu_inventario_add:
+                Timber.tag(TAG).d("add stock -> click");
                 Actividades.getSingleton(getActivity(), ListaProductosInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
                 return true;
 
             case R.id.item_menu_inventario_finish:
-
+                Timber.tag(TAG).d("finish stock -> click");
                 if (mData.size() > 0){
                     if (isConnected) {
                         Actividades.getSingleton(getActivity(), ConfirmaInventarioActivity.class).muestraActividad();
@@ -217,6 +220,7 @@ public class StockFragment extends Fragment {
                 return true;
 
             case R.id.close_caja:
+                Timber.tag(TAG).d("close stock -> click");
                 if (mData.size() == 0){
                      final PrettyDialog dialogo = new PrettyDialog(getContext());
                     dialogo.setTitle("Sin inventario")

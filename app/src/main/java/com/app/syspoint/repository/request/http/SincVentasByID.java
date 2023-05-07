@@ -1,6 +1,8 @@
 package com.app.syspoint.repository.request.http;
 
 
+import android.os.Build;
+import android.os.Looper;
 import android.util.Log;
 
 import com.app.syspoint.repository.objectBox.dao.SellsDao;
@@ -13,12 +15,16 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+import timber.log.Timber;
+
 public class SincVentasByID extends Servicio {
 
+    private final static String TAG = "TAG";
     private  Response responseVentas;
 
     public SincVentasByID (Long id) throws Exception {
         super("saveSale");
+
 
         final SellsDao sellsDao = new SellsDao();
         final List<SellBox> listaVentas = sellsDao.getSincVentaByID(id);
@@ -75,8 +81,16 @@ public class SincVentasByID extends Servicio {
 
         }
 
+
         this.jsonObject.put("ventas", jsonArrayVentas);
         String json = this.jsonObject.toString();
+
+        boolean isUiThread = false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) isUiThread = Looper.getMainLooper().isCurrentThread();
+        else isUiThread = Thread.currentThread() == Looper.getMainLooper().getThread();
+
+        Timber.tag(TAG).d("SincVentasByID -> json: %s -> isUIThread: %s", json, isUiThread);
 
         onSuccess = new ResponseOnSuccess() {
             @Override

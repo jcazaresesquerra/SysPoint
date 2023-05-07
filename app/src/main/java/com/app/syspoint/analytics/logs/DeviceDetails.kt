@@ -4,6 +4,7 @@ import android.os.Build
 import com.app.syspoint.BuildConfig
 
 data class DeviceDetails(
+    val employeeId: String,
     val deviceId: String,
     val osVersion: String = Build.VERSION.RELEASE,
     val manufacturer: String = Build.MANUFACTURER,

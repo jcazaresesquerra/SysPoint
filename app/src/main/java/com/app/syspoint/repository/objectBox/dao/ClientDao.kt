@@ -3,14 +3,19 @@ package com.app.syspoint.repository.objectBox.dao
 import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.ClientBox_
 import io.objectbox.query.QueryBuilder
+import timber.log.Timber
+
+private const val TAG = "ClientDao"
 
 class ClientDao: AbstractDao<ClientBox>() {
 
     fun clear() {
+        Timber.tag(TAG).d("clear")
         abstractBox<ClientBox>().removeAll()
     }
 
     fun insertBox(box: ClientBox) {
+        Timber.tag(TAG).d("insertBox -> $box")
         insert(box)
     }
 

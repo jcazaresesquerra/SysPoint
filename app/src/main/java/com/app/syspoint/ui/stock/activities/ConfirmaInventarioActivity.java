@@ -28,8 +28,11 @@ import com.app.syspoint.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class ConfirmaInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "ConfirmaInventarioActivity";
     private List<StockBox> mData;
     private AdapterInventario mAdapter;
     private TextView tv_total_inventario_confirmar;
@@ -44,7 +47,6 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
     }
 
     private void initToolBar() {
-
         Toolbar toolbar = findViewById(R.id.toolbar_confirma_inventario);
         toolbar.setTitle("Confirma Inventario");
         setSupportActionBar(toolbar);
@@ -88,10 +90,13 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
+
                 finish();
                 return true;
 
             case R.id.item_menu_confirma_inventario:
+                Timber.tag(TAG).d("confirm stock -> click");
                 final PrettyDialog dialog = new PrettyDialog(ConfirmaInventarioActivity.this);
                 dialog.setTitle("Confirmar")
                         .setTitleColor(R.color.purple_500)
@@ -133,7 +138,6 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
     }
 
     private void calcular(){
-
         double total = 0;
         for (int i = 0; i < mData.size(); i++) {
             total += (mData.get(i).getPrecio() * mData.get(i).getCantidad());

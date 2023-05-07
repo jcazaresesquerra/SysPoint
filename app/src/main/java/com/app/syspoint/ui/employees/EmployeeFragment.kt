@@ -29,6 +29,9 @@ import com.app.syspoint.ui.employees.adapters.EmployeeListAdapter
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.employee.EmployeeViewModel
 import kotlinx.android.synthetic.main.fragment_employee.*
+import timber.log.Timber
+
+private const val TAG = "EmployeeFragment"
 
 class EmployeeFragment: Fragment() {
 
@@ -82,6 +85,7 @@ class EmployeeFragment: Fragment() {
 
         return when(item.itemId) {
             R.id.syncEmpleados -> {
+                Timber.tag(TAG).d("sync employees -> click")
                 viewModel.checkConnectivity()
                 true
             }
@@ -154,6 +158,7 @@ class EmployeeFragment: Fragment() {
 
     private fun setUpListeners() {
         binding.floatingActionButton click {
+            Timber.tag(TAG).d("floatingActionButton -> click")
             binding.floatingActionButton.isEnabled = false
             showRegisterEmployee()
             binding.floatingActionButton.isEnabled = true
@@ -185,6 +190,7 @@ class EmployeeFragment: Fragment() {
 
         adapter = EmployeeListAdapter(employees, object : EmployeeListAdapter.OnItemClickListener {
             override fun onItemClick(employeeBean: EmployeeBox?) {
+                Timber.tag(TAG).d("initRecyclerView -> EmployeeListAdapter -> click")
                 showSelectionFunction(employeeBean)
             }
         })
@@ -201,7 +207,7 @@ class EmployeeFragment: Fragment() {
         arrayAdapter.add("Llamar")
         arrayAdapter.add("Enviar email")
 
-        builderSingle.setNegativeButton("Cancelar") { dialog, _ -> 
+        builderSingle.setNegativeButton("Cancelar") { dialog, _ ->
             dialog.dismiss()
         }
 
@@ -238,12 +244,16 @@ class EmployeeFragment: Fragment() {
     }
     
     private fun showEditEmployee(id: String) {
+        Timber.tag(TAG).d("showEditEmployee -> %s", id)
+
         val params = HashMap<String, String>()
         params[Actividades.PARAM_1] = id
         Actividades.getSingleton(activity, ActualizarEmpleadoActivity::class.java).muestraActividad(params)
     }
     
     private fun call(number: String) {
+        Timber.tag(TAG).d("call -> %s", number)
+
         if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.CALL_PHONE), Constants.REQUEST_PERMISSION_CALL)
             return
@@ -254,6 +264,8 @@ class EmployeeFragment: Fragment() {
     }
     
     private fun sendEmail() {
+        Timber.tag(TAG).d("sendEmail")
+
         val TO = arrayOf("someone@gmail.com")
         val CC = arrayOf("xyz@gmail.com")
         val emailIntent = Intent(Intent.ACTION_SEND)

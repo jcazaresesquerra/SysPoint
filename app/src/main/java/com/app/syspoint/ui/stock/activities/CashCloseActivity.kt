@@ -148,6 +148,7 @@ class CashCloseActivity: AppCompatActivity() {
                 ticketInventario.template()
                 val ticket = ticketInventario.document
                 templateTicket = ticket
+                Log.d(TAG, ticket)
                 Timber.tag(TAG).d(ticket)
 
                 if (mConnectedThread != null) //First check to make sure thread created
@@ -174,6 +175,7 @@ class CashCloseActivity: AppCompatActivity() {
 
     private fun setUpListeners() {
         binding.btnFinishCashClose click {
+            Timber.tag(TAG).d("btnFinishCashClose -> click")
             setResult(StockFragment.CLOSE_INVENTORY)
             finish()
         }

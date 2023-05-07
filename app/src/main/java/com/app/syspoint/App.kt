@@ -4,6 +4,8 @@ import android.app.Application
 import android.provider.Settings
 import com.app.syspoint.analytics.logs.DeviceDetails
 import com.app.syspoint.analytics.logs.TimberRemoteTree
+import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.objectBox.entities.MyObjectBox
 import io.objectbox.BoxStore
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
@@ -24,9 +26,15 @@ class App: Application() {
 
         mBoxStore = MyObjectBox.builder().androidContext(this).build()
 
+        plantTimber()
+    }
+
+    fun plantTimber() {
         if (BuildConfig.DEBUG) {
+            val seller = CacheInteractor().getSeller()
+
             val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-            val deviceDetails = DeviceDetails(deviceId)
+            val deviceDetails = DeviceDetails(seller?.identificador ?: "0", deviceId)
             val remoteTree = TimberRemoteTree(deviceDetails)
 
             Timber.plant(remoteTree)

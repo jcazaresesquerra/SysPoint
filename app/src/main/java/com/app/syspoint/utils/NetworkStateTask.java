@@ -9,39 +9,48 @@ import com.app.syspoint.App;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import timber.log.Timber;
+
 public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
+    private final static String TAG = "NetworkStateTask";
     private final NetworkStateListener mNetworkStateListener;
-    private final ConnectivityManager mConnectivityManager;
+    private ConnectivityManager mConnectivityManager;
 
     public NetworkStateTask(NetworkStateListener networkStateListener) {
         mNetworkStateListener = networkStateListener;
-        mConnectivityManager = (ConnectivityManager)
-                App.Companion.getINSTANCE().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);;
+        try {
+            mConnectivityManager = (ConnectivityManager)
+                    App.Companion.getINSTANCE().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        } catch (Exception e ) {
+            mConnectivityManager = null;
+            Timber.tag(TAG).e("Fail to init mConnectivityManager" + e);
+        }
     }
 
     @Override
     protected Boolean doInBackground(String... strings) {
         if (mConnectivityManager != null) {
-            NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+            try {
+                NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
 
-            if (networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected()) {
-                try {
-                    HttpURLConnection urlc = (HttpURLConnection) (new URL("http://www.google.com").openConnection());
-                    urlc.setRequestProperty("User-Agent", "Test");
-                    urlc.setRequestProperty("Connection", "close");
-                    urlc.setConnectTimeout(1000);
-                    urlc.setReadTimeout(1000);
-                    urlc.connect();
-                    return urlc.getResponseCode() == 200;
-                } catch (Exception e) {
-                    Log.e("TAG", "Error checking internet connection", e);
+                if (networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected()) {
+                        HttpURLConnection urlc = (HttpURLConnection) (new URL("http://www.google.com").openConnection());
+                        urlc.setRequestProperty("User-Agent", "Test");
+                        urlc.setRequestProperty("Connection", "close");
+                        urlc.setConnectTimeout(1000);
+                        urlc.setReadTimeout(1000);
+                        urlc.connect();
+                        return urlc.getResponseCode() == 200;
+                } else {
+                    Timber.tag(TAG).d("No network available!");
                     return false;
                 }
-            } else {
-                Log.d("TAG", "No network available!");
+            } catch (Exception e) {
+                Timber.tag(TAG).e("Error checking internet connection" + e);
                 return false;
             }
-        }
+        } else
+            Timber.tag(TAG).d("mConnectivityManager is null");
         return false;
     }
 

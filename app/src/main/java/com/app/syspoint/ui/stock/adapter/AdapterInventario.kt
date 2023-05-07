@@ -10,6 +10,9 @@ import com.app.syspoint.repository.objectBox.dao.StockHistoryDao
 import com.app.syspoint.repository.objectBox.entities.StockBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.longClick
+import timber.log.Timber
+
+private const val TAG = "AdapterInventario"
 
 class AdapterInventario(
     data: List<StockBox?>,
@@ -66,6 +69,7 @@ class AdapterInventario(
                 }
 
                 itemView longClick  {
+                    Timber.tag(TAG).d("AdapterInventario -> Holder -> bind -> itemView -> click");
                     onItemLongClickListener.onItemLongClicked(adapterPosition)
                     false
                 }

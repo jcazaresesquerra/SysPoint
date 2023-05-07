@@ -28,8 +28,11 @@ import com.app.syspoint.utils.Actividades;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class ListaProductosInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "ListaProductosInventarioActivity";
     private AdapterListaProductosInv mAdapter;
     private List<ProductBox> mData;
     private RelativeLayout rlprogress;
@@ -107,6 +110,7 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
                 finish();
                 return true;
             default:
@@ -144,6 +148,7 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
 
         mAdapter = new AdapterListaProductosInv(mData, productoBean -> {
             articuloSeleccionado = productoBean.getArticulo();
+            Timber.tag(TAG).d("initRecyclerView -> AdapterListaProductosInv -> item click -> %s", productoBean.getArticulo());
             //Muestra el dialogo para seleccion de cantidades
             Actividades.getSingleton(ListaProductosInventarioActivity.this, CantidadInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });

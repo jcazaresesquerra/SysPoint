@@ -22,17 +22,20 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.awaitResponse
+import timber.log.Timber
 import java.text.SimpleDateFormat
 
 
 class RequestCharge {
     companion object {
+        private const val TAG = "RequestCharge"
         fun requestGetCharge2(): Call<PaymentJson> {
             val appVersion = BuildConfig.VERSION_NAME.split(".")
             val version = appVersion[0]
             val subversion = appVersion[1] + "." + appVersion[2]
             val requestTokenBody = RequestTokenBody(version, subversion)
 
+            Timber.tag(TAG).d("requestGetCharge2")
             val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getCobranza()
@@ -53,6 +56,8 @@ class RequestCharge {
             val isUiThread =
                 if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
             Log.d("RuestCharge", "requestGetCharge request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("requestGetCharge -> isUIThread: %s", isUiThread)
 
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
@@ -146,6 +151,7 @@ class RequestCharge {
                 if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
             Log.d("RuestCharge", "requestGetChargeByEmployee request isUIThread: $isUiThread")
 
+            Timber.tag(TAG).d("requestGetChargeByEmployee -> isUIThread: %s", isUiThread)
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
                     val isUiThread =
@@ -236,6 +242,8 @@ class RequestCharge {
             val isUiThread =
                 if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
             Log.d("RuestCharge", "requestGetChargeByClient request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("requestGetChargeByClient -> isUIThread: %s", isUiThread)
 
             getChargeByClient.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
@@ -330,6 +338,8 @@ class RequestCharge {
             val isUiThread =
                 if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
             Log.d("RuestCharge", "save request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("saveCharge -> charges: %s -> isUIThread: %s", chargeJson, isUiThread)
 
             saveCharges.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {

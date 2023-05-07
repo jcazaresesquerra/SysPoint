@@ -16,6 +16,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import com.app.syspoint.App
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
@@ -68,7 +69,10 @@ class LoginActivity: AppCompatActivity() {
 
     private fun loginViewState(viewState: LoginViewState) {
         when(viewState) {
-            is LoggedIn -> showMainActivity()
+            is LoggedIn -> {
+                App.INSTANCE?.plantTimber()
+                showMainActivity()
+            }
             is LoginError -> showErrorDialog(viewState.error)
             is LoginVersionError -> showVersionErrorDialog(viewState.error)
             is LoadingDataStart -> binding.rlprogressLogin.setVisible()

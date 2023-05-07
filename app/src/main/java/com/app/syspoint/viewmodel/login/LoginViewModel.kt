@@ -222,7 +222,7 @@ class LoginViewModel: BaseViewModel() {
             val rolCliente = RolesBox()
             val rolClienteDao =
                 RolesDao()
-            rolCliente.empleado!!.target = employee
+            rolCliente.empleado.target = employee
             rolCliente.modulo = "Clientes"
             rolCliente.active = true
             rolCliente.identificador = employee.identificador
@@ -230,14 +230,14 @@ class LoginViewModel: BaseViewModel() {
             val rolProducto = RolesBox()
             val rolProductoDao =
                 RolesDao()
-            rolProducto.empleado!!.target = employee
+            rolProducto.empleado.target = employee
             rolProducto.modulo = "Productos"
             rolProducto.active = true
             rolProducto.identificador = employee.identificador
             rolProductoDao.insert(rolProducto)
             val rolVentas = RolesBox()
             val rolVentasDao = RolesDao()
-            rolVentas.empleado!!.target = employee
+            rolVentas.empleado.target = employee
             rolVentas.modulo = "Ventas"
             rolVentas.active = true
             rolVentas.identificador = employee.identificador
@@ -245,7 +245,7 @@ class LoginViewModel: BaseViewModel() {
             val rolEmpleado = RolesBox()
             val rolEmpleadoDao =
                 RolesDao()
-            rolEmpleado.empleado!!.target = employee
+            rolEmpleado.empleado.target = employee
             rolEmpleado.modulo = "Empleados"
             rolEmpleado.active = true
             rolEmpleado.identificador = employee.identificador
@@ -253,7 +253,7 @@ class LoginViewModel: BaseViewModel() {
             val rolCobranza = RolesBox()
             val rolCobranzaDao =
                 RolesDao()
-            rolCobranza.empleado!!.target = employee
+            rolCobranza.empleado.target = employee
             rolCobranza.modulo = "Cobranza"
             rolCobranza.active = true
             rolCobranza.identificador = employee.identificador
@@ -313,11 +313,12 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun sync() {
-
+        Timber.tag(TAG).d("sync")
         if (!isSync()) {
             loginViewState.value = LoginViewState.LoadingDataStart
             Handler().postDelayed({
                 NetworkStateTask { connected ->
+                    Timber.tag(TAG).d("sync -> %s", connected)
                     if (connected) {
                         viewModelScope.launch {
                             loginViewState.postValue(LoginViewState.ConnectedToInternet)
@@ -374,6 +375,7 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun forceUpdate() {
+        Timber.tag(TAG).d("sync -> forceUpdate")
 
         val stockDao = StockDao()
         stockDao.clear()
@@ -413,6 +415,7 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun removeLocalSync() {
+        Timber.tag(TAG).d("sync -> removeLocalSync")
         val dao = TaskDao()
         dao.clear()
     }

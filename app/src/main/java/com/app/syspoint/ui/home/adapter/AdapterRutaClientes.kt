@@ -15,7 +15,9 @@ import com.app.syspoint.databinding.ItemListaClientesRutaBinding
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
+import timber.log.Timber
 import java.util.*
+private const val TAG = "AdapterRutaClientes"
 
 class AdapterRutaClientes(
     data: List<RuteClientBox?>,
@@ -63,6 +65,8 @@ class AdapterRutaClientes(
                 binding.textViewColoniaClienteRuta.text = "Col. " + clienteBean.colonia
 
                 binding.imgCall click {
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> click")
+
                     if (ActivityCompat.checkSelfPermission(itemView.context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                         onCallPermissionRequestListener.onCallPermissionRequest()
                     } else {
@@ -74,6 +78,7 @@ class AdapterRutaClientes(
                         //registering popup with OnMenuItemClickListener
                         popup.setOnMenuItemClickListener { _ ->
                             if (clienteBean.phone_contact.isNullOrEmpty() || clienteBean.phone_contact == "null") {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> empty number")
                                 Toast.makeText(
                                     itemView.context,
                                     "El cliente no cuenta con número de contacto",
@@ -81,6 +86,8 @@ class AdapterRutaClientes(
                                 ).show()
                                 return@setOnMenuItemClickListener false
                             } else if (clienteBean.phone_contact?.length != 10) {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> bad number ${clienteBean.phone_contact}")
+
                                 Toast.makeText(
                                     itemView.context,
                                     "El número del cliente es erroneo ${clienteBean.phone_contact}",
@@ -88,6 +95,7 @@ class AdapterRutaClientes(
                                 ).show()
                                 return@setOnMenuItemClickListener false
                             } else {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> call number ${clienteBean.phone_contact}")
 
                                 val intent = Intent(
                                     Intent.ACTION_CALL,
@@ -102,11 +110,15 @@ class AdapterRutaClientes(
                 }
 
                 itemView longClick  {
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> longClick")
                     onItemLongClickListener.onItemLongClicked(adapterPosition)
                     false
                 }
 
-                itemView click  { onItemClickListener.onItemClick(adapterPosition) }
+                itemView click  {
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> itemView -> click")
+                    onItemClickListener.onItemClick(adapterPosition)
+                }
 
                 val calendar = Calendar.getInstance()
                 val day = calendar[Calendar.DAY_OF_WEEK]

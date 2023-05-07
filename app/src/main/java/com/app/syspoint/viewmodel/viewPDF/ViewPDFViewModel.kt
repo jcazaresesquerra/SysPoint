@@ -22,11 +22,14 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import timber.log.Timber
+
+private const val TAG = "ViewPDFViewModel"
 
 class ViewPDFViewModel: ViewModel() {
 
-
     fun addProductosInventori(venta: Long) {
+        Timber.tag(TAG).d("addProductosInventori $venta")
         viewModelScope.launch(Dispatchers.IO) {
             val sellsDao = SellsDao()
             val ventasBean = sellsDao.getVentaByInventario(venta)
@@ -94,6 +97,8 @@ class ViewPDFViewModel: ViewModel() {
                         }
 
                         productoBean.existencia = productoBean.existencia - item.cantidad
+
+                        Timber.tag(TAG).d("insert product: $productoBean")
                         productDao.insert(productoBean)
                     }
                 }
@@ -104,6 +109,7 @@ class ViewPDFViewModel: ViewModel() {
 
 
     fun sync(venta: Long, clienteID: Long) {
+        Timber.tag(TAG).d("Sync $venta $clienteID")
         viewModelScope.launch(Dispatchers.IO) {
             syncCloudVenta(venta)
             sincronizaCliente(clienteID)
@@ -113,6 +119,7 @@ class ViewPDFViewModel: ViewModel() {
 
 
     private fun loadCobranza() {
+        Timber.tag(TAG).d("Load cobranza")
         val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
         val listaCobranza: MutableList<Payment> = ArrayList()
         for (item in cobranzaBeanList) {
@@ -129,18 +136,22 @@ class ViewPDFViewModel: ViewModel() {
             cobranza.identificador = item.empleado
             listaCobranza.add(cobranza)
         }
+        Timber.tag(TAG).d("Cobranzas: $cobranzaBeanList")
         ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
             override fun onSaveChargeSuccess() {
+                Timber.tag(TAG).d("executeSaveCharge success")
                 //Toast.makeText(getApplicationContext(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
             }
 
             override fun onSaveChargeError() {
+                Timber.tag(TAG).d("executeSaveCharge error")
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
             }
         })
     }
 
     private fun sincronizaCliente(idCliente: Long) {
+        Timber.tag(TAG).d("sincronizaCliente: $idCliente")
         val clientDao = ClientDao()
         val listaClientesDB = clientDao.getByIDClient(idCliente)
         val listaClientes: MutableList<Client> = ArrayList()
@@ -176,42 +187,46 @@ class ViewPDFViewModel: ViewModel() {
             }
             listaClientes.add(client)
         }
+
+        Timber.tag(TAG).d("Clients: $listaClientes")
         ClientInteractorImp().executeSaveClient(listaClientes, object : SaveClientListener {
             override fun onSaveClientSuccess() {
-                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                Timber.tag(TAG).d("executeSaveCharge success")
             }
 
             override fun onSaveClientError() {
-                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                Timber.tag(TAG).d("executeSaveCharge error")
             }
         })
     }
 
     private fun syncCloudVenta(venta: Long) {
         try {
+            Timber.tag(TAG).d("syncCloudVenta $venta")
             val sincVentasByID = SincVentasByID(venta)
             sincVentasByID.setOnSuccess(object : ResponseOnSuccess() {
                 @Throws(JSONException::class)
                 override fun onSuccess(response: JSONArray) {
-                    Log.d("SincVentas", "Send sell success");
+                    Timber.tag(TAG).d("SincVentasByID Send sell success")
                 }
 
                 @Throws(Exception::class)
                 override fun onSuccessObject(response: JSONObject) {
-                    Log.d("SincVentas", "Send sell successObject");
+                    Timber.tag(TAG).d( "SincVentasByID Send sell successObject")
                 }
             })
             sincVentasByID.setOnError(object : ResponseOnError() {
                 override fun onError(error: ANError) {
-                    Log.d("SincVentas", "Send sell error ANR");
+                    Timber.tag(TAG).d( "SincVentasByID Send sell error ANR")
                 }
                 override fun onError(error: String) {
-                    Log.d("SincVentas", "Send sell error");
+                    Timber.tag(TAG).d( "SincVentasByID Send sell error")
                 }
             })
             sincVentasByID.postObject()
         } catch (e: Exception) {
             e.printStackTrace()
+            Timber.tag(TAG).e(e)
         }
     }
 }

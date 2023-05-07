@@ -63,9 +63,11 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import timber.log.Timber;
 
 public class RegistarEmpleadoActivity extends AppCompatActivity {
 
+    private final static String TAG = "RegistarEmpleadoActivity";
     private EditText ip_registro_empleado_nombre;
     private EditText ip_registro_empleado_direccion;
     private EditText ip_registro_empleado_email;
@@ -247,12 +249,15 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
                 finish();
                 return true;
             case R.id.searchImagen:
+                Timber.tag(TAG).d("searchImagen -> click");
                 selectImage();
                 return true;
             case R.id.guardaEmpleado:
+                Timber.tag(TAG).d("guardaEmpleado -> click");
                 if (validaCampos()) {
                     if (!validaEmpleado()) {
                         final PrettyDialog dialog = new PrettyDialog(this);
