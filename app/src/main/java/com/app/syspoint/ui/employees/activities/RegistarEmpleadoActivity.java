@@ -42,11 +42,11 @@ import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.RolesBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.EmployeeDao;
-import com.app.syspoint.repository.database.dao.RolesDao;
+import com.app.syspoint.models.enums.RoleType;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
@@ -63,9 +63,11 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import timber.log.Timber;
 
 public class RegistarEmpleadoActivity extends AppCompatActivity {
 
+    private final static String TAG = "RegistarEmpleadoActivity";
     private EditText ip_registro_empleado_nombre;
     private EditText ip_registro_empleado_direccion;
     private EditText ip_registro_empleado_email;
@@ -84,6 +86,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private SwitchCompat checkbox_inventarios_registro_empleado;
     private SwitchCompat checkbox_cobranza_registro_empleado;
     private SwitchCompat checkbox_edit_rute;
+    private SwitchCompat checkbox_edit_rute_order;
     private CircleImageView circleImageView;
     private RelativeLayout rlprogress;
 
@@ -94,6 +97,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     private int no_cuenta = 0;
     byte[] imageByteArray;
     Bitmap decoded;
+    private Long idEmpleado;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +137,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         checkbox_inventarios_registro_empleado = findViewById(R.id.checkbox_inventario_registro_empleado);
         checkbox_cobranza_registro_empleado = findViewById(R.id.checkbox_cobranza_registro_empleado);
         checkbox_edit_rute = findViewById(R.id.checkbox_edit_rute);
+        checkbox_edit_rute_order = findViewById(R.id.checkbox_edit_rute_order);
 
         loadSpinnerStatus();
         loadSpinnerRuteAndDay();
@@ -243,12 +249,15 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
                 finish();
                 return true;
             case R.id.searchImagen:
+                Timber.tag(TAG).d("searchImagen -> click");
                 selectImage();
                 return true;
             case R.id.guardaEmpleado:
+                Timber.tag(TAG).d("guardaEmpleado -> click");
                 if (validaCampos()) {
                     if (!validaEmpleado()) {
                         final PrettyDialog dialog = new PrettyDialog(this);
@@ -379,27 +388,29 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
 
     private boolean validaEmpleado() {
         EmployeeDao dao = new EmployeeDao();
-        EmpleadoBean bean = dao.getEmployeeByIdentifier(ip_registro_empleado_id.getText().toString());
+        EmployeeBox bean = dao.getEmployeeByIdentifier(ip_registro_empleado_id.getText().toString());
         return bean != null;
     }
 
     private boolean check_ReadStoragepermission() {
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            return true;
+        int permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                        Constants.permission_Read_data);
+                return false;
+            }
         } else {
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            Constants.permission_Read_data);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
+            permission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        Constants.permission_Read_data);
+                return false;
             }
         }
-        return false;
+
+        return true;
     }
 
     private void selectImage() {
@@ -481,10 +492,9 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }
 
-    String idEmpleado;
     private void saveEmpleado() {
         EmployeeDao employeeDao = new EmployeeDao();
-        EmpleadoBean employee = new EmpleadoBean();
+        EmployeeBox employee = new EmployeeBox();
         employee.setNombre(ip_registro_empleado_nombre.getText().toString());
         employee.setDireccion(ip_registro_empleado_direccion.getText().toString());
         employee.setEmail(ip_registro_empleado_email.getText().toString());
@@ -498,65 +508,72 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         employee.setUpdatedAt(Utils.fechaActualHMS());
         if (decoded != null) employee.setPath_image(getStringImage(decoded));
 
-        employeeDao.insert(employee);
+        employeeDao.insertBox(employee);
 
         RolesDao rolEmployeeDao = new RolesDao();
-        RolesBean rolRoutes = new RolesBean();
-        rolRoutes.setEmpleado(employee);
-        rolRoutes.setModulo("Rutas");
+        RolesBox rolRoutes = new RolesBox();
+        rolRoutes.getEmpleado().setTarget(employee);
+        rolRoutes.setModulo(RoleType.RUTES.getValue());
         rolRoutes.setActive(checkbox_edit_rute.isChecked());
         rolRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolRoutes);
+        rolEmployeeDao.insertBox(rolRoutes);
 
-        RolesBean rolCliente = new RolesBean();
-        rolCliente.setEmpleado(employee);
-        rolCliente.setModulo("Clientes");
+        RolesBox rolOrderRoutes = new RolesBox();
+        rolOrderRoutes.getEmpleado().setTarget(employee);
+        rolOrderRoutes.setModulo(RoleType.ORDER_RUTES.getValue());
+        rolOrderRoutes.setActive(checkbox_edit_rute_order.isChecked());
+        rolOrderRoutes.setIdentificador(ip_registro_empleado_id.getText().toString());
+        rolEmployeeDao.insertBox(rolOrderRoutes);
+
+        RolesBox rolCliente = new RolesBox();
+        rolCliente.getEmpleado().setTarget(employee);
+        rolCliente.setModulo(RoleType.CLIENTS.getValue());
         rolCliente.setActive(checkbox_clientes_registro_empleado.isChecked());
         rolCliente.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolCliente);
+        rolEmployeeDao.insertBox(rolCliente);
 
-        RolesBean rolProducto = new RolesBean();
-        rolProducto.setEmpleado(employee);
-        rolProducto.setModulo("Productos");
+        RolesBox rolProducto = new RolesBox();
+        rolProducto.getEmpleado().setTarget(employee);
+        rolProducto.setModulo(RoleType.PRODUCTS.getValue());
         rolProducto.setActive(checkbox_productos_registro_empleado.isChecked());
         rolProducto.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolProducto);
+        rolEmployeeDao.insertBox(rolProducto);
 
-        RolesBean rolVentas = new RolesBean();
-        rolVentas.setEmpleado(employee);
-        rolVentas.setModulo("Ventas");
+        RolesBox rolVentas = new RolesBox();
+        rolVentas.getEmpleado().setTarget(employee);
+        rolVentas.setModulo(RoleType.SELLS.getValue());
         rolVentas.setActive(checkbox_ventas_registro_empleado.isChecked());
         rolVentas.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolVentas);
+        rolEmployeeDao.insertBox(rolVentas);
 
-        RolesBean rolEmpleado = new RolesBean();
-        rolEmpleado.setEmpleado(employee);
-        rolEmpleado.setModulo("Empleados");
+        RolesBox rolEmpleado = new RolesBox();
+        rolEmpleado.getEmpleado().setTarget(employee);
+        rolEmpleado.setModulo(RoleType.EMPLOYEES.getValue());
         rolEmpleado.setActive(checkbox_empleados_registro_empleado.isChecked());
         rolEmpleado.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolEmpleado);
+        rolEmployeeDao.insertBox(rolEmpleado);
 
-        RolesBean rolStock = new RolesBean();
-        rolStock.setEmpleado(employee);
-        rolStock.setModulo("Inventarios");
+        RolesBox rolStock = new RolesBox();
+        rolStock.getEmpleado().setTarget(employee);
+        rolStock.setModulo(RoleType.STOCK.getValue());
         rolStock.setActive(checkbox_inventarios_registro_empleado.isChecked());
         rolStock.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolStock);
+        rolEmployeeDao.insertBox(rolStock);
 
-        RolesBean rolCharge = new RolesBean();
-        rolCharge.setEmpleado(employee);
-        rolCharge.setModulo("Cobranza");
+        RolesBox rolCharge = new RolesBox();
+        rolCharge.getEmpleado().setTarget(employee);
+        rolCharge.setModulo(RoleType.CHARGE.getValue());
         rolCharge.setActive(checkbox_cobranza_registro_empleado.isChecked());
         rolCharge.setIdentificador(ip_registro_empleado_id.getText().toString());
-        rolEmployeeDao.insert(rolCharge);
+        rolEmployeeDao.insertBox(rolCharge);
 
-        idEmpleado = String.valueOf(employee.getId());
+        idEmpleado = employee.getId();
 
         if (!Utils.isNetworkAvailable(getApplication())){
             //showDialogNotConnectionInternet();
         }else {
             testLoadEmpleado(idEmpleado);
-            enviaRolsServidor(employee.identificador);
+            enviaRolsServidor(employee.getIdentificador());
         }
     }
 
@@ -584,10 +601,10 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         progressshow();
 
         RolesDao rolesDao = new RolesDao();
-        List<RolesBean> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
+        List<RolesBox> listaRolDB = rolesDao.getListaRolesByEmpleado(id);
         List<Role> listaRoles = new ArrayList<>();
 
-        for (RolesBean items : listaRolDB){
+        for (RolesBox items : listaRolDB){
             Role role = new Role();
             role.setEmpleado(items.getIdentificador());
             role.setModulo(items.getModulo());
@@ -608,13 +625,13 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
         });
     }
 
-    private void testLoadEmpleado(String id){
+    private void testLoadEmpleado(Long id){
         progressshow();
         EmployeeDao employeeDao = new EmployeeDao();
-        List<EmpleadoBean> listaEmpleadosDB = employeeDao.getEmployeeById(id);
+        List<EmployeeBox> listaEmpleadosDB = employeeDao.getEmployeeById(id);
 
         List<Employee> listEmpleados = new ArrayList<>();
-        for (EmpleadoBean item : listaEmpleadosDB){
+        for (EmployeeBox item : listaEmpleadosDB){
             Employee empleado = new Employee();
             empleado.setNombre(item.getNombre());
             if (item.getDireccion().isEmpty()){
@@ -644,7 +661,7 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
             empleado.setContrasenia(item.getContrasenia());
             empleado.setIdentificador(item.getIdentificador());
             empleado.setStatus(item.getStatus()? 1 : 0);
-            empleado.setUpdatedAt(item.updatedAt);
+            empleado.setUpdatedAt(item.getUpdatedAt());
 
             if (item.getPath_image() == null || item.getPath_image().isEmpty()){
                 empleado.setPathImage("");
@@ -652,8 +669,8 @@ public class RegistarEmpleadoActivity extends AppCompatActivity {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (!item.rute.isEmpty()) {
-                empleado.setRute(item.rute);
+            if (!item.getRute().isEmpty()) {
+                empleado.setRute(item.getRute());
             } else  {
                 empleado.setRute("");
             }

@@ -2,9 +2,9 @@ package com.app.syspoint.documents
 
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.cache.CacheInteractor
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.dao.StockDao
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.StockDao
+import com.app.syspoint.repository.objectBox.entities.StockBox
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 
@@ -13,7 +13,7 @@ class StockTicket: BaseTicket() {
     override fun template() {
         super.template()
 
-        val stockData: List<InventarioBean> = StockDao().getCurrentStock()
+        val stockData: List<StockBox> = StockDao().getCurrentStock()
 
         var ticket : String = when(BuildConfig.FLAVOR) {
             "donaqui" -> {
@@ -26,7 +26,7 @@ class StockTicket: BaseTicket() {
         var total = 0.0
         for (items in stockData) {
             total += items.precio * items.lastCantidad
-            ticket += "" + items.articulo.descripcion + Constants.NEW_LINE +
+            ticket += "" + items.articulo!!.target.descripcion + Constants.NEW_LINE +
                     "" + String.format(
                 "%1$-5s %2$11s %3$10s %4$10s",
                 items.lastCantidad,
@@ -65,12 +65,12 @@ class StockTicket: BaseTicket() {
 
     override fun buildSyspointHeader(): String {
         // get seller
-        var vendedoresBean = AppBundle.getUserBean()
+        var employeeBox = AppBundle.getUserBox()
 
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
+        if (employeeBox == null) {
+            employeeBox = CacheInteractor().getSeller()
         }
-        val vendedor = if (vendedoresBean != null) "" + vendedoresBean.getNombre() + Constants.NEW_LINE else ""
+        val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
 
         return "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
                 "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
@@ -95,12 +95,12 @@ class StockTicket: BaseTicket() {
 
     override fun buildDonAquiHeader(): String {
         // get seller
-        var vendedoresBean = AppBundle.getUserBean()
+        var employeeBox = AppBundle.getUserBox()
 
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
+        if (employeeBox == null) {
+            employeeBox = CacheInteractor().getSeller()
         }
-        val vendedor = if (vendedoresBean != null) "" + vendedoresBean.getNombre() + Constants.NEW_LINE else ""
+        val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
 
         return "         AGUAS DON AQUI         " + Constants.NEW_LINE +
                 " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +

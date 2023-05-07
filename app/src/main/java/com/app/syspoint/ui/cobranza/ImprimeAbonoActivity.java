@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,23 +32,23 @@ import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.SellsDao;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.PlayingBox;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.SellBox;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.InventarioHistorialBean;
-import com.app.syspoint.repository.database.bean.PartidasBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.StockHistoryDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.database.dao.SellsDao;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
 import com.app.syspoint.models.Client;
@@ -65,9 +64,14 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import io.objectbox.Box;
+import io.objectbox.query.Query;
+import io.objectbox.query.QueryBuilder;
 
 public class ImprimeAbonoActivity extends AppCompatActivity {
 
@@ -88,8 +92,8 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
 
 
     private TextView textViewStatus;
-    int venta;
-    String clienteID;
+    Long venta;
+    Long clienteID;
     public String templateTicket;
     private boolean isConnectada = false;
 
@@ -104,8 +108,8 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
 
         if (bundle != null) {
             templateTicket = bundle.getString("ticket");
-            venta = Integer.parseInt(bundle.getString("cobranza"));
-            clienteID = bundle.getString("clienteID");
+            venta = bundle.getLong("cobranza", 0);
+            clienteID = bundle.getLong("clienteID");
         }
 
         //Sincroniza la venta con el servidor
@@ -171,12 +175,11 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
 
 
     private void loadAbonos() {
-        final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> cobranzaBeanList = new ArrayList<>();
-        cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
-
+        final ChargeDao chargeDao = new ChargeDao();
+        List<ChargeBox> chargeBoxList = chargeDao.getAbonosFechaActual(Utils.fechaActual());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<Payment> listaCobranza = new ArrayList<>();
-        for (CobranzaBean item : cobranzaBeanList) {
+        for (ChargeBox item : chargeBoxList) {
             Payment cobranza = new Payment();
             cobranza.setCobranza(item.getCobranza());
             cobranza.setCuenta(item.getCliente());
@@ -188,7 +191,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             cobranza.setFecha(item.getFecha());
             cobranza.setHora(item.getHora());
             cobranza.setIdentificador(item.getEmpleado());
-            cobranza.setUpdatedAt(item.getUpdatedAt());
+            cobranza.setUpdatedAt(formatter.format(item.getUpdatedAt()));
             listaCobranza.add(cobranza);
         }
 
@@ -251,16 +254,15 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     }
 
 
-    private void sincronizaCliente(String idCliente) {
+    private void sincronizaCliente(Long idCliente) {
 
 
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
-        listaClientesDB = clientDao.getByIDClient(idCliente);
+        List<ClientBox> listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
+        for (ClientBox item : listaClientesDB) {
             Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
@@ -308,7 +310,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
                 isConnectada = true;
@@ -401,7 +403,7 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
 
     }
 
-    private void syncCloudVenta(Integer venta) {
+    private void syncCloudVenta(long venta) {
 
         try {
             final SincVentasByID sincVentasByID = new SincVentasByID(Long.parseLong(String.valueOf(venta)));
@@ -441,16 +443,16 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     private void upadteExistencias() {
 
         final SellsDao sellsDao = new SellsDao();
-        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
+        final SellBox ventasBean = sellsDao.getVentaByInventario(venta);
 
-        for (PartidasBean item : ventasBean.getListaPartidas()) {
+        for (PlayingBox item : ventasBean.getListaPartidas()) {
 
             final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
 
             if (productoBean != null) {
                 productoBean.setExistencia(productoBean.getExistencia() - item.getCantidad());
-                productDao.save(productoBean);
+                productDao.insertBox(productoBean);
             }
 
         }
@@ -460,26 +462,26 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
     private void addProductosInventori() {
 
         final SellsDao sellsDao = new SellsDao();
-        final VentasBean ventasBean = sellsDao.getVentaByInventario(venta);
+        final SellBox ventasBean = sellsDao.getVentaByInventario(venta);
 
         //Contiene las partidas de la venta
-        for (PartidasBean item : ventasBean.getListaPartidas()) {
+        for (PlayingBox item : ventasBean.getListaPartidas()) {
 
             //Consultamos a la base de datos si existe el producto
             final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
 
             //Si no existe en el inventario creamos el producto
             if (productoBean != null) {
 
                 //Si existe entonces creamos el inser en estado PE
                 StockDao stockDao = new StockDao();
-                InventarioBean inventarioBean = stockDao.getProductoByArticulo(item.getArticulo().getArticulo());
+                StockBox inventarioBean = stockDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
 
                 if (inventarioBean == null) {
-                    InventarioBean bean = new InventarioBean();
+                    StockBox bean = new StockBox();
                     StockDao dao = new StockDao();
-                    bean.setArticulo(productoBean);
+                    bean.getArticulo().setTarget(productoBean);
                     bean.setCantidad(0);
                     bean.setEstado("PE");
                     bean.setPrecio(item.getPrecio());
@@ -487,36 +489,36 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
                     bean.setHora(Utils.getHoraActual());
                     bean.setImpuesto(item.getImpuesto());
                     bean.setArticulo_clave(productoBean.getArticulo());
-                    dao.insert(bean);
+                    dao.insertBox(bean);
 
                     final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                    final StockHistoryBox inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                     if (inventarioHistorialBean != null) {
                         inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        stockHistoryDao.save(inventarioHistorialBean);
+                        stockHistoryDao.insertBox(inventarioHistorialBean);
                     } else {
-                        final InventarioHistorialBean invBean = new InventarioHistorialBean();
+                        final StockHistoryBox invBean = new StockHistoryBox();
                         final StockHistoryDao invDao = new StockHistoryDao();
-                        invBean.setArticulo(productoBean);
+                        invBean.getArticulo().setTarget(productoBean);
                         invBean.setArticulo_clave(productoBean.getArticulo());
                         invBean.setCantidad(item.getCantidad());
-                        invDao.insert(invBean);
+                        invDao.insertBox(invBean);
                     }
                 } else {
                     final StockHistoryDao stockHistoryDao = new StockHistoryDao();
-                    final InventarioHistorialBean inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
+                    final StockHistoryBox inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.getArticulo());
 
                     if (inventarioHistorialBean != null) {
                         inventarioHistorialBean.setCantidad(inventarioHistorialBean.getCantidad() + item.getCantidad());
-                        stockHistoryDao.save(inventarioHistorialBean);
+                        stockHistoryDao.insertBox(inventarioHistorialBean);
                     } else {
-                        final InventarioHistorialBean invBean = new InventarioHistorialBean();
+                        final StockHistoryBox invBean = new StockHistoryBox();
                         final StockHistoryDao invDao = new StockHistoryDao();
-                        invBean.setArticulo(productoBean);
+                        invBean.getArticulo().setTarget(productoBean);
                         invBean.setArticulo_clave(productoBean.getArticulo());
                         invBean.setCantidad(item.getCantidad());
-                        invDao.insert(invBean);
+                        invDao.insertBox(invBean);
                     }
                 }
             }

@@ -6,13 +6,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemProductoInventarioBinding
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.dao.StockHistoryDao
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao
+import com.app.syspoint.repository.objectBox.entities.StockBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.longClick
+import timber.log.Timber
+
+private const val TAG = "AdapterInventario"
 
 class AdapterInventario(
-    data: List<InventarioBean?>,
+    data: List<StockBox?>,
     val onItemLongClickListener: OnItemLongClickListener
     ): RecyclerView.Adapter<AdapterInventario.Holder>() {
 
@@ -33,39 +36,40 @@ class AdapterInventario(
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(mDataRefresh: List<InventarioBean?>) {
+    fun setData(mDataRefresh: List<StockBox?>) {
         mData = mDataRefresh
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemProductoInventarioBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(inventarioBean: InventarioBean?, onItemLongClickListener: OnItemLongClickListener) {
+        fun bind(inventarioBean: StockBox?, onItemLongClickListener: OnItemLongClickListener) {
             inventarioBean?.let { item ->
                 val stockHistoryDao = StockHistoryDao()
                 val inventarioHistorialBean =
-                    stockHistoryDao.getInvatarioPorArticulo(item.articulo.articulo)
+                    stockHistoryDao.getInvatarioPorArticulo(item.articulo.target.articulo)
 
                 val vendido = inventarioHistorialBean?.cantidad ?: 0
                 val inicial = item.totalCantidad
 
                 binding.tvInventarioTotal.text = Utils.FDinero(item.cantidad * item.precio)
                 binding.tvInventarioCantidad.text = inicial.toString()
-                binding.tvInventarioDescripcion.text = item.articulo.descripcion
-                binding.tvInventarioArticulo.text = item.articulo.articulo
+                binding.tvInventarioDescripcion.text = item.articulo.target.descripcion
+                binding.tvInventarioArticulo.text = item.articulo.target.articulo
                 binding.tvInventarioVendido.text = vendido.toString()
                 val total = inicial - vendido
 
                 binding.tvInventarioTotalInventario.text = total.toString()
-                if (item.articulo.path_img != null) {
+                if (item.articulo.target.path_img != null) {
                     val decodedString: ByteArray =
-                        Base64.decode(item.articulo.path_img, Base64.DEFAULT)
+                        Base64.decode(item.articulo.target.path_img, Base64.DEFAULT)
                     val decodedByte =
                         BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
                     binding.imageView4Inv.setImageBitmap(decodedByte)
                 }
 
                 itemView longClick  {
+                    Timber.tag(TAG).d("AdapterInventario -> Holder -> bind -> itemView -> click");
                     onItemLongClickListener.onItemLongClicked(adapterPosition)
                     false
                 }

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.location.*
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
@@ -18,20 +17,28 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
+import com.app.syspoint.analytics.EVENT
+import com.app.syspoint.analytics.PARAM
 import com.app.syspoint.databinding.*
-import com.app.syspoint.models.enum.SellType
+import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
-import com.app.syspoint.repository.database.bean.VentasModelBean
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.ProductDao
-import com.app.syspoint.repository.database.dao.SellsModelDao
-import com.app.syspoint.repository.database.dao.SpecialPricesDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.SellsModelDao
+import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.ui.precaptura.PrecaptureActivity
 import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.sell.SellViewModel
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
+import timber.log.Timber
 import java.util.*
+
+const val TAG = "VentasActivity"
 
 class VentasActivity: AppCompatActivity(), LocationListener {
 
@@ -43,9 +50,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private var isBackPressed = false
     private var confirmPrecaptureClicked = false
-    private lateinit var clientId: String
+    private var clientId: String? = null
     private var sellType: SellType = SellType.SIN_DEFINIR
     private lateinit var geocoder: Geocoder
+
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,17 +64,22 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel = ViewModelProvider(this)[SellViewModel::class.java]
         viewModel.sellViewState.observe(this, ::renderViewState)
         geocoder = Geocoder(this, Locale.getDefault())
+        val myTrace = Firebase.performance.newTrace("init_ventas")
+        myTrace.start()
+
+        firebaseAnalytics = Firebase.analytics
+
         setContentView(binding.root)
         initToolBar()
         locationStart()
 
-        clientId = intent.getStringExtra(Actividades.PARAM_1) ?: ""
+        clientId = intent.getStringExtra(Actividades.PARAM_1)
 
         //showLoading()
         viewModel.clearSells()
         viewModel.setUpSells()
 
-        val data = SellsModelDao().list() as List<VentasModelBean?>
+        val data = SellsModelDao().list() as List<SellModelBox?>
         initRecyclerView(data)
 
         viewModel.updateSaldo(clientId)
@@ -74,14 +88,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel.setUpChargeByClient(clientId)
 
         val clientDao = ClientDao()
-        val clienteBean = clientDao.getClientByAccount(clientId)
+        val clienteBean = clientDao.getClientByAccount(clientId.toString())
         if (clienteBean != null) {
             if (clienteBean.recordatorio.isNullOrEmpty() || clienteBean.recordatorio == "null") {
-                viewModel.testLoadClientes(clientId)
+                viewModel.testLoadClientes(clientId.toString())
             } else {
                 showScheduleDialog(
-                    clienteBean.id.toString(),
-                    clienteBean.recordatorio
+                    clienteBean.id,
+                    clienteBean.recordatorio!!
                 )
             }
             val saldoClient = if (clienteBean.matriz.isNullOrEmpty() || clienteBean.matriz == "null") {
@@ -90,12 +104,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 val clientMatriz = clientDao.getClientByAccount(clienteBean.matriz)
                 Utils.FDinero(clientMatriz?.saldo_credito ?: 0.0)
             }
-            showClientInfo(clienteBean.nombre_comercial, clienteBean.cuenta, saldoClient)
+            showClientInfo(clienteBean.nombre_comercial!!, clienteBean.cuenta!!, saldoClient)
         }
         //viewModel.loadClients(clientId)
 
         //viewModel.load(clientId)
         initControls()
+        myTrace.stop()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -110,18 +125,18 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         val productoBean = productDao.getProductoByArticulo(articulo)
 
         if (productoBean == null) {
-            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
+            Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
         //Validamos si existe el producto
-        if (viewModel.validaProducto(productoBean.articulo)) {
+        if (viewModel.validaProducto(productoBean.articulo!!)) {
             showProductExists()
             return
         }
 
         if (cantidad.isNullOrEmpty()) {
-            Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente onActivityResult")
+            Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
             return
         }
 
@@ -129,22 +144,22 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         //Validamos los datos del cliente
         val clientDao = ClientDao()
-        val clienteBean = clientDao.getClientByAccount(clientId)
+        val clienteBean = clientDao.getClientByAccount(clientId.toString())
 
         //Validamos si hay precio especial del cliente
-        val specialPricesDao = SpecialPricesDao()
-        val preciosEspecialesBean =
+        val specialPricesDao = com.app.syspoint.repository.objectBox.dao.SpecialPricesDao()
+        val preciosEspecialesBeanspecialPricesBox =
             specialPricesDao.getPrecioEspeciaPorCliente(productoBean.articulo, clienteBean!!.cuenta)
 
         val preciosEspeciales = viewModel.partidasEspeciales.value?.filter {
                 precioEspecialBean -> precioEspecialBean?.articulo == productoBean.articulo
                 && precioEspecialBean?.active == true
         }
-        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBean else preciosEspeciales[0]
+        val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBeanspecialPricesBox else preciosEspeciales[0]
 
         val data = viewModel.addItem(
-            productoBean.articulo,
-            productoBean.descripcion,
+            productoBean.articulo!!,
+            productoBean.descripcion!!,
             precioEspacial?.precio ?: productoBean.precio,
             productoBean.iva,
             cantidadVendida
@@ -195,7 +210,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private fun renderViewState(sellViewState: SellViewState) {
         when (sellViewState) {
             is SellViewState.LoadingStart -> {
-                showLoading()
+                //showLoading()
             }
             is SellViewState.LoadingFinish -> {
                 hideLoading()
@@ -270,8 +285,22 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     }
 
     private fun initControls() {
+        if (viewModel.existenPartidas()) {
+            binding.imgBtnFinishSale.setVisible()
+            binding.imgBtnFinishVisita.setGone()
+        } else {
+            binding.imgBtnFinishSale.setGone()
+            binding.imgBtnFinishVisita.setVisible()
+        }
+
         binding.imgBtnFinishSale click {
             if (binding.imgBtnFinishSale.isEnabled) {
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_FINISH_SELL_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 binding.imgBtnFinishSale.isEnabled = false
                 if (viewModel.existenPartidas()) {
                     // Not selected sell type
@@ -281,7 +310,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     } else if (sellType == SellType.CREDITO) {
                         val subtotal = headerBinding.textViewSubtotalVentaView.text.toString()
                         val import = headerBinding.textViewImpuestoVentaView.text.toString()
-                        viewModel.checkUserCredit(clientId, sellType, subtotal, import)
+                        viewModel.checkUserCredit(clientId.toString(), sellType, subtotal, import)
                         //binding.imgBtnFinishSale.isEnabled = true
                     } else if (sellType == SellType.CONTADO) {
                         showFinishPreSell()
@@ -295,22 +324,44 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         binding.imgBtnFinishVisita click {
             if (binding.imgBtnFinishVisita.isEnabled) {
+
+                val myTrace = Firebase.performance.newTrace(TAG)
+                myTrace.start()
+                myTrace.incrementMetric(PARAM.BUTTON_FINISH_SELL_CLICK.value, 1)
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_FINISH_VISIT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 binding.imgBtnFinishVisita.isEnabled = false
-                viewModel.createPrecatureParams(clientId)
+                viewModel.createPrecatureParams(clientId.toString())
+                myTrace.stop()
             }
         }
 
         headerBinding.fbAddProductos click {
             if (headerBinding.fbAddProductos.isEnabled) {
                 headerBinding.fbAddProductos.isEnabled = false
+
+                val myTrace = Firebase.performance.newTrace(TAG)
+                myTrace.start()
+                myTrace.incrementMetric(PARAM.BUTTON_FINISH_VISIT_CLICK.value, 1)
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_ADD_PRODUCT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 Actividades.getSingleton(this@VentasActivity, ListaProductosActivity::class.java)
                     .muestraActividadForResult(Actividades.PARAM_INT_1)
                 headerBinding.fbAddProductos.isEnabled = true
+                myTrace.stop()
             }
         }
     }
 
-    private fun refreshRecyclerView(data: List<VentasModelBean?>) {
+    private fun refreshRecyclerView(data: List<SellModelBox?>) {
         adapter.setData(data)
 
         binding.recyclerViewVentas.adapter = adapter
@@ -325,14 +376,19 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         viewModel.computeImports()
     }
 
-    private fun initRecyclerView(data: List<VentasModelBean?>) {
+    private fun initRecyclerView(data: List<SellModelBox?>) {
         binding.recyclerViewVentas.setHasFixedSize(true)
 
         val manager = LinearLayoutManager(this)
         binding.recyclerViewVentas.layoutManager = manager
 
         adapter = AdapterItemsVenta(data, object: AdapterItemsVenta.OnItemLongClickListener {
-            override fun onItemLongClicked(sell: VentasModelBean): Boolean {
+            override fun onItemLongClicked(sell: SellModelBox): Boolean {
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.DELETE_PRODUCT_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
 
                 val dialog = PrettyDialog(this@VentasActivity)
                 dialog.setTitle("Eliminar")
@@ -342,8 +398,15 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     .setAnimationEnabled(false)
                     .setIcon(R.drawable.pdlg_icon_close, R.color.purple_500) { dialog.dismiss() }
                     .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
+
+                        val params = Bundle()
+                        params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                        params.putString(FirebaseAnalytics.Param.VALUE, PARAM.DELETE_PRODUCT_SUCCESS_CLICK.value)
+                        params.putString(FirebaseAnalytics.Param.ITEM_ID, sell.articulo)
+                        firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                         val dao = SellsModelDao()
-                        dao.delete(sell)
+                        dao.delete(sell.id)
                         viewModel.refreshSellData()
                         dialog.dismiss()
                     }.addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) { dialog.dismiss() }
@@ -352,7 +415,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 return false
             }
         }, object : AdapterItemsVenta.OnItemClickListener {
-                override fun onItemClick(sell: VentasModelBean) {
+                override fun onItemClick(sell: SellModelBox) {
                     val dialogo = Dialog(this@VentasActivity)
 
                     val dialogBinding = DialogCantidadVentaBinding
@@ -362,17 +425,24 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     dialogBinding.buttonSeleccionarCantidadVentaDialog click {
                         val cantidad = dialogBinding.edittextCantidadVentaSeleccionadaDialog.text.toString()
                         if (cantidad.isNotEmpty()) {
-                                val cantidadVenta = cantidad.toInt()
-                                if (cantidadVenta == 0) {
-                                    showQuantityErrorDialog()
-                                } else {
-                                    val dao = SellsModelDao()
-                                    sell.cantidad = cantidadVenta
-                                    dao.save(sell)
-                                    viewModel.refreshSellData()
-                                    dialogo.dismiss()
-                                }
+                            val params = Bundle()
+                            params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                            params.putString(FirebaseAnalytics.Param.VALUE, PARAM.ADD_PRODUCT_SUCCESS_CLICK.value)
+                            params.putString(FirebaseAnalytics.Param.ITEM_ID, sell.articulo)
+                            params.putString(FirebaseAnalytics.Param.QUANTITY, cantidad)
+                            firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
+                            val cantidadVenta = cantidad.toInt()
+                            if (cantidadVenta == 0) {
+                                showQuantityErrorDialog()
+                            } else {
+                                val dao = SellsModelDao()
+                                sell.cantidad = cantidadVenta
+                                dao.insert(sell)
+                                viewModel.refreshSellData()
+                                dialogo.dismiss()
                             }
+                        }
                     }
                     dialogo.show()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
@@ -408,7 +478,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1000)
-            Log.d("SysPoint", "Error, Location permissions not granted, Ventas")
+            Timber.tag(TAG).d("Error, Location permissions not granted, Ventas")
             return
         }
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
@@ -429,8 +499,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         }
                     } catch (e: Exception) {
                         runOnUiThread {
-                            Log.d(
-                                "SysPoint",
+                            Timber.tag(TAG).d(
                                 "Ha ocurrido un error, intente nuevamente onLocationChanged"
                             )
                         }
@@ -455,10 +524,9 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
         when (status) {
-            LocationProvider.AVAILABLE -> Log.d("debug", "LocationProvider.AVAILABLE")
-            LocationProvider.OUT_OF_SERVICE -> Log.d("debug", "LocationProvider.OUT_OF_SERVICE")
-            LocationProvider.TEMPORARILY_UNAVAILABLE -> Log.d(
-                "debug",
+            LocationProvider.AVAILABLE -> Timber.tag(TAG).d( "LocationProvider.AVAILABLE")
+            LocationProvider.OUT_OF_SERVICE -> Timber.tag(TAG).d( "LocationProvider.OUT_OF_SERVICE")
+            LocationProvider.TEMPORARILY_UNAVAILABLE -> Timber.tag(TAG).d(
                 "LocationProvider.TEMPORARILY_UNAVAILABLE"
             )
         }
@@ -555,6 +623,12 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 binding.imgBtnFinishSale.isEnabled = true
                 if (!confirmPrecaptureClicked) {
                     confirmPrecaptureClicked = true
+
+                    val params = Bundle()
+                    params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                    params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_CONFIRM_FINISH_SELL_CLICK.value)
+                    firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                     Utils.addActivity2Stack(this@VentasActivity)
 
                     val subtotal = headerBinding.textViewSubtotalVentaView.text.toString()
@@ -568,7 +642,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             }
 
         dialog.setCancelable(false)
-        dialog.show()
+        try {
+            dialog.show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun showProductNotSelected() {
@@ -618,6 +696,13 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 isBackPressed = false
             }.addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
                 viewModel.clearSells()
+
+
+                val params = Bundle()
+                params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+                params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_EXIT_SELL_CLICK.value)
+                firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
                 finish()
                 dialog.dismiss()
                 isBackPressed = false
@@ -662,7 +747,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         dialog.window!!.attributes = lp
     }
 
-    private fun showScheduleDialog(clientId: String, recordatorio: String) {
+    private fun showScheduleDialog(clientId: Long, recordatorio: String) {
         val dialogBinding = DialogRecordatorioBinding.inflate(
             LayoutInflater.from(this@VentasActivity), binding.root, false)
 
@@ -683,6 +768,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             dialog.dismiss()
         }
         dialogBinding.btSubmit click {
+            val params = Bundle()
+            params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
+            params.putString(FirebaseAnalytics.Param.VALUE, PARAM.BUTTON_SUBMIT_SCHEDULE.value)
+            firebaseAnalytics.logEvent(EVENT.SELL.value, params)
+
             viewModel.submitSchedule(clientId)
             dialog.dismiss()
         }
@@ -696,7 +786,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             progressDialog = ProgressDialog(this@VentasActivity)
             progressDialog.setMessage("Espere un momento")
             progressDialog.setCancelable(false)
-            progressDialog.show()
+            if (!progressDialog.isShowing)
+                progressDialog.show()
         } catch (e: Exception) {
             e.printStackTrace()
         }

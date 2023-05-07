@@ -24,12 +24,15 @@ import com.app.syspoint.R
 import com.app.syspoint.bluetooth.ConnectedThread
 import com.app.syspoint.databinding.ActivityCashCloseBinding
 import com.app.syspoint.documents.CloseTicket
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.dao.PrinterDao
+import com.app.syspoint.repository.objectBox.dao.PrinterDao
+import com.app.syspoint.repository.objectBox.entities.StockBox
 import com.app.syspoint.ui.bluetooth.BluetoothActivity
 import com.app.syspoint.ui.stock.StockFragment
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
+import com.app.syspoint.utils.setVisible
+import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -132,18 +135,21 @@ class CashCloseActivity: AppCompatActivity() {
         val id = item.itemId
         when (id) {
             R.id.action_print -> {
+                Timber.tag(TAG).d("action print")
+
                 if (!isConnected) {
                     initPrinter()
                     return false
                 }
 
-                val inventarioBean = InventarioBean()
+                val inventarioBean = StockBox()
                 val ticketInventario = CloseTicket()
-                ticketInventario.bean = inventarioBean
+                ticketInventario.box = inventarioBean
                 ticketInventario.template()
                 val ticket = ticketInventario.document
                 templateTicket = ticket
                 Log.d(TAG, ticket)
+                Timber.tag(TAG).d(ticket)
 
                 if (mConnectedThread != null) //First check to make sure thread created
                     mConnectedThread!!.write(ticket)
@@ -151,9 +157,11 @@ class CashCloseActivity: AppCompatActivity() {
                 return true
             }
             R.id.home -> {
+                Timber.tag(TAG).d("action home")
                 return true
             }
             R.id.action_settings -> {
+                Timber.tag(TAG).d("action settings")
                 Actividades.getSingleton(this, BluetoothActivity::class.java)
                     .muestraActividad()
             }
@@ -167,6 +175,7 @@ class CashCloseActivity: AppCompatActivity() {
 
     private fun setUpListeners() {
         binding.btnFinishCashClose click {
+            Timber.tag(TAG).d("btnFinishCashClose -> click")
             setResult(StockFragment.CLOSE_INVENTORY)
             finish()
         }
@@ -227,7 +236,10 @@ class CashCloseActivity: AppCompatActivity() {
                             if (!fail) {
 
                                 binding.tvConnect.post {
-                                    binding.tvConnect.text = "Puede imprimir el documento dando click en la parte superior"
+                                    binding.tvConnect.setGone()
+                                }
+                                binding.tvPrintTicket.post {
+                                    binding.tvPrintTicket.setVisible()
                                 }
 
                                 mConnectedThread = ConnectedThread(mBTSocket, mHandler)

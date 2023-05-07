@@ -10,12 +10,12 @@ import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.Client
 import com.app.syspoint.models.Visit
 import com.app.syspoint.models.sealed.PrecaptureViewState
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.VisitasBean
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.RoutingDao
-import com.app.syspoint.repository.database.dao.RuteClientDao
-import com.app.syspoint.repository.database.dao.VisitsDao
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao
+import com.app.syspoint.repository.objectBox.dao.VisitsDao
+import com.app.syspoint.repository.objectBox.entities.VisitsBox
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Utils
 
@@ -24,7 +24,7 @@ class PrecaptureViewModel: ViewModel() {
     val precaptureViewState = MutableLiveData<PrecaptureViewState>()
 
     fun confirmPrecapture(accountId: String?, conceptSelectedView: String?, latitud: Double, longitud: Double) {
-        var vendedoresBean = AppBundle.getUserBean()
+        var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) {
             vendedoresBean = CacheInteractor().getSeller()
         }
@@ -35,7 +35,7 @@ class PrecaptureViewModel: ViewModel() {
         clienteBean!!.visitado = 1
         clienteBean.date_sync = Utils.fechaActual()
         clienteBean.visitasNoefectivas = clienteBean.visitasNoefectivas + 1
-        clientDao.save(clienteBean)
+        clientDao.insert(clienteBean)
         val routingDao = RoutingDao()
         val ruteoBean = routingDao.getRutaEstablecida()
         val ruteClientDao = RuteClientDao()
@@ -44,16 +44,16 @@ class PrecaptureViewModel: ViewModel() {
             else ruteClientDao.getClienteByCuentaCliente(accountId)
         if (clientesRutaBean != null) {
             clientesRutaBean.visitado = 1
-            ruteClientDao.save(clientesRutaBean)
+            ruteClientDao.insert(clientesRutaBean)
         }
 
         saveClient()
 
-        val visitBean = VisitasBean()
+        val visitBean = VisitsBox()
         val visitsDao = VisitsDao()
         visitBean.motivo_visita = conceptSelectedView
-        visitBean.empleado = vendedoresBean
-        visitBean.cliente = clienteBean
+        visitBean.empleado.target = vendedoresBean
+        visitBean.cliente.target = clienteBean
         visitBean.hora = Utils.getHoraActual()
         visitBean.fecha = Utils.fechaActual()
         visitBean.latidud = clienteBean.latitud
@@ -67,14 +67,14 @@ class PrecaptureViewModel: ViewModel() {
         params[Actividades.PARAM_1] = conceptSelectedView!!
         //params[Actividades.PARAM_2] = tipo_inventario_seleccionado
         if (vendedoresBean != null) {
-            params[Actividades.PARAM_3] = vendedoresBean.getNombre()
+            params[Actividades.PARAM_3] = vendedoresBean.nombre!!
         }
         params[Actividades.PARAM_4] = Utils.fechaActual()
         params[Actividades.PARAM_5] =
             Utils.getHoraActual()
         params[Actividades.PARAM_6] = latitud.toString()
         params[Actividades.PARAM_7] = longitud.toString()
-        params[Actividades.PARAM_8] = clienteBean.cuenta
+        params[Actividades.PARAM_8] = clienteBean.cuenta!!
 
         precaptureViewState.value = PrecaptureViewState.PrecaptureFinished(params)
     }
@@ -109,7 +109,7 @@ class PrecaptureViewModel: ViewModel() {
             client.phone_contacto = "" + item.contacto_phone
             client.recordatorio = "" + item.recordatorio
             client.visitas = item.visitasNoefectivas
-            if (item.is_credito) {
+            if (item.isCredito) {
                 client.isCredito = 1
             } else {
                 client.isCredito = 0
@@ -140,7 +140,7 @@ class PrecaptureViewModel: ViewModel() {
         val visitsBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
 
         val listaVisitas: MutableList<Visit> = ArrayList()
-        var vendedoresBean = AppBundle.getUserBean()
+        var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) {
             vendedoresBean = CacheInteractor().getSeller()
         }
@@ -149,7 +149,7 @@ class PrecaptureViewModel: ViewModel() {
 
         for (item in visitsBeanListBean) {
             val visit = Visit()
-            val clientBean = clientDao.getClientByAccount(item.cliente.cuenta)
+            val clientBean = clientDao.getClientByAccount(item.cliente!!.target.cuenta)
             visit.fecha = item.fecha
             visit.hora = item.hora
             visit.cuenta = clientBean!!.cuenta
@@ -158,7 +158,7 @@ class PrecaptureViewModel: ViewModel() {
             visit.motivo_visita = item.motivo_visita
             visit.updatedAt = item.updatedAt
             if (vendedoresBean != null) {
-                visit.identificador = vendedoresBean.getIdentificador()
+                visit.identificador = vendedoresBean.identificador
             }
             listaVisitas.add(visit)
         }

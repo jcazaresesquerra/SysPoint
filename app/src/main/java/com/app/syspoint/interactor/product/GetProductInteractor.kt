@@ -1,17 +1,17 @@
 package com.app.syspoint.interactor.product
 
 import com.app.syspoint.models.Product
-import com.app.syspoint.repository.database.bean.ProductoBean
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 
 abstract class GetProductInteractor {
 
     interface OnGetProductsListener {
-        fun onGetProductsSuccess(products: List<ProductoBean?>)
+        fun onGetProductsSuccess(products: List<ProductBox?>)
         fun onGetProductsError()
     }
 
     interface OnGetProductByIdListener {
-        fun onGetProductByIDSuccess(products: ProductoBean)
+        fun onGetProductByIDSuccess(products: ProductBox)
         fun onGetProductByIdError()
     }
 

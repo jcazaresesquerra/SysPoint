@@ -3,7 +3,6 @@ package com.app.syspoint.ui.ventas;
 import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -23,23 +22,12 @@ import com.app.syspoint.interactor.file.FileInteractorImp;
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
-import com.app.syspoint.models.ResponseVenta;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class CApturaComprobanteActivity extends AppCompatActivity {
 

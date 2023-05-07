@@ -43,9 +43,9 @@ import androidx.core.app.ActivityCompat;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
 import com.app.syspoint.models.Client;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
@@ -90,7 +90,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
     private List<String> listaCamposValidos;
     private String status_seleccionado;
     private String ruta_seleccionado;
-    private String idCliente;
+    private Long idCliente;
     private String no_cuenta = "0";
     private boolean latitudeSet = false;
     private boolean longitudeSet = false;
@@ -234,7 +234,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         new ClientInteractorImp().executeGetLasClient(new ClientInteractor.GetLastClient() {
             @Override
-            public void onGetLastClientSuccess(@NonNull ClienteBean client) {
+            public void onGetLastClientSuccess(@NonNull ClientBox client) {
 
                 int nCuenta = Integer.valueOf(client.getCuenta()) + 1;
                 String consectivo = "";
@@ -562,7 +562,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     private boolean validaCliente() {
         ClientDao dao = new ClientDao();
-        ClienteBean bean = dao.getClientByAccount(editText_no_cuenta_registro_cliente.getText().toString());
+        ClientBox bean = dao.getClientByAccount(editText_no_cuenta_registro_cliente.getText().toString());
         return bean != null;
     }
 
@@ -570,7 +570,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
         String numero = inp_contacto_phone_registro_cliente.getText().toString();
         if (numero != null && !numero.isEmpty() && !numero.equals("null")) {
             if (latitudeSet && longitudeSet) {
-                final ClienteBean clienteBean = new ClienteBean();
+                final ClientBox clienteBean = new ClientBox();
                 final ClientDao clientDao = new ClientDao();
                 clienteBean.setNombre_comercial(editText_nombre_registro_cliente.getText().toString());
                 clienteBean.setCalle(editText_calle_registro_cliente.getText().toString());
@@ -595,7 +595,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
                 clienteBean.setContacto_phone(inp_contacto_phone_registro_cliente.getText().toString());
                 clienteBean.setLatitud(editTextLatitud.getText().toString());
                 clienteBean.setLongitud(editTextLongitud.getText().toString());
-                clienteBean.setIs_credito(checkbox_registro_credito.isChecked());
+                clienteBean.setCredito(checkbox_registro_credito.isChecked());
 
                 String limite = et_registro_limite_credito.getText().toString();
                 if (limite.isEmpty()) {
@@ -606,9 +606,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
                 if (checkbox_registro_credito.isChecked()) {
                     clienteBean.setMatriz(inp_matriz_asignada_registro_cliente.getText().toString());
-                    clienteBean.setIs_credito(true);
+                    clienteBean.setCredito(true);
                 } else {
-                    clienteBean.setIs_credito(false);
+                    clienteBean.setCredito(false);
                     clienteBean.setMatriz("null");
                 }
 
@@ -616,9 +616,9 @@ public class RegistroClienteActivity extends AppCompatActivity {
                 clienteBean.setDate_sync(Utils.fechaActual());
                 clienteBean.setUpdatedAt(Utils.fechaActualHMS());
 
-                clientDao.insert(clienteBean);
+                clientDao.insertBox(clienteBean);
 
-                idCliente = String.valueOf(clienteBean.getId());
+                idCliente = clienteBean.getId();
                 if (!Utils.isNetworkAvailable(getApplication())) {
                     //showDialogNotConnectionInternet();
                 } else {
@@ -652,14 +652,14 @@ public class RegistroClienteActivity extends AppCompatActivity {
         dialog.getWindow().setAttributes(lp);
     }
 
-    private void testLoadClientes(String idCliente) {
+    private void testLoadClientes(Long idCliente) {
         progressshow();
 
         ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = clientDao.getByIDClient(idCliente);
+        List<ClientBox> listaClientesDB = clientDao.getByIDClient(idCliente);
         List<Client> listaClientes = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
+        for (ClientBox item : listaClientesDB) {
             Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
@@ -684,7 +684,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
             cliente.setPhone_contacto(item.getContacto_phone());
             cliente.setRecordatorio(item.getRecordatorio() != null? item.getRecordatorio() : "");
             cliente.setVisitas(item.getVisitasNoefectivas());
-            cliente.setCredito(item.getIs_credito()? 1 : 0);
+            cliente.setCredito(item.isCredito()? 1 : 0);
 
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setLimite_credito(item.getLimite_credito());

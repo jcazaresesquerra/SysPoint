@@ -1,5 +1,6 @@
 package com.app.syspoint.viewmodel.viewPDF
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.androidnetworking.error.ANError
@@ -9,9 +10,9 @@ import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.models.Client
 import com.app.syspoint.models.Payment
-import com.app.syspoint.repository.database.bean.InventarioBean
-import com.app.syspoint.repository.database.bean.InventarioHistorialBean
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.StockBox
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentasByID
@@ -21,13 +22,15 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import timber.log.Timber
 
+private const val TAG = "ViewPDFViewModel"
 
 class ViewPDFViewModel: ViewModel() {
 
-
-    fun addProductosInventori(venta: Int) {
-        viewModelScope.launch(Dispatchers.Default) {
+    fun addProductosInventori(venta: Long) {
+        Timber.tag(TAG).d("addProductosInventori $venta")
+        viewModelScope.launch(Dispatchers.IO) {
             val sellsDao = SellsDao()
             val ventasBean = sellsDao.getVentaByInventario(venta)
 
@@ -38,20 +41,20 @@ class ViewPDFViewModel: ViewModel() {
 
                     //Consultamos a la base de datos si existe el producto
                     val productDao = ProductDao()
-                    val productoBean = productDao.getProductoByArticulo(item.articulo.articulo)
+                    val productoBean = productDao.getProductoByArticulo(item.articulo.target.articulo)
 
                     //Si no existe en el inventario creamos el producto
                     if (productoBean != null) {
 
                         //Si existe entonces creamos el inser en estado PE
                         val stockDao = StockDao()
-                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo.articulo)
+                        val inventarioBean = stockDao.getProductoByArticulo(item.articulo.target.articulo)
 
                         //Si no existe se deja como pendiente
                         if (inventarioBean == null) {
-                            val bean = InventarioBean()
+                            val bean = StockBox()
                             val dao = StockDao()
-                            bean.articulo = productoBean
+                            bean.articulo.target = productoBean
                             bean.cantidad = 0
                             bean.estado = "PE"
                             bean.precio = item.precio
@@ -61,16 +64,14 @@ class ViewPDFViewModel: ViewModel() {
                             bean.articulo_clave = productoBean.articulo
                             dao.insert(bean)
                             val stockHistoryDao = StockHistoryDao()
-                            val inventarioHistorialBean =
-                                stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
+                            val inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
                             if (inventarioHistorialBean != null) {
-                                inventarioHistorialBean.cantidad =
-                                    inventarioHistorialBean.cantidad + item.cantidad
-                                stockHistoryDao.save(inventarioHistorialBean)
+                                inventarioHistorialBean.cantidad = inventarioHistorialBean.cantidad + item.cantidad
+                                stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
-                                val invBean = InventarioHistorialBean()
+                                val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo = productoBean
+                                invBean.articulo.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
@@ -78,47 +79,37 @@ class ViewPDFViewModel: ViewModel() {
                         } else {
                             //Si existe entonces actualizamos los datos
                             val stockHistoryDao = StockHistoryDao()
-                            val inventarioHistorialBean =
-                                stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
+                            val inventarioHistorialBean = stockHistoryDao.getInvatarioPorArticulo(productoBean.articulo)
 
                             //Si existe entonces actualizamos las cantidades
                             if (inventarioHistorialBean != null) {
-                                inventarioHistorialBean.cantidad =
-                                    inventarioHistorialBean.cantidad + item.cantidad
-                                stockHistoryDao.save(inventarioHistorialBean)
+                                inventarioHistorialBean.cantidad = inventarioHistorialBean.cantidad + item.cantidad
+                                stockHistoryDao.insert(inventarioHistorialBean)
                             } else {
                                 //Creamos el historial del Inventario
-                                val invBean = InventarioHistorialBean()
+                                val invBean = StockHistoryBox()
                                 val invDao = StockHistoryDao()
-                                invBean.articulo = productoBean
+                                invBean.articulo.target = productoBean
                                 invBean.articulo_clave = productoBean.articulo
                                 invBean.cantidad = item.cantidad
                                 invDao.insert(invBean)
                             }
                         }
+
+                        productoBean.existencia = productoBean.existencia - item.cantidad
+
+                        Timber.tag(TAG).d("insert product: $productoBean")
+                        productDao.insert(productoBean)
                     }
                 }
 
-                upadteExistencias(venta)
             }
         }
     }
 
-    //Actualiza las existencias del producto
-    private fun upadteExistencias(venta: Int) {
-        val sellsDao = SellsDao()
-        val ventasBean = sellsDao.getVentaByInventario(venta)
-        for (item in ventasBean!!.listaPartidas) {
-            val productDao = ProductDao()
-            val productoBean = productDao.getProductoByArticulo(item.articulo.articulo)
-            if (productoBean != null) {
-                productoBean.existencia = productoBean.existencia - item.cantidad
-                productDao.save(productoBean)
-            }
-        }
-    }
 
-    fun sync(venta: Int, clienteID: String) {
+    fun sync(venta: Long, clienteID: Long) {
+        Timber.tag(TAG).d("Sync $venta $clienteID")
         viewModelScope.launch(Dispatchers.IO) {
             syncCloudVenta(venta)
             sincronizaCliente(clienteID)
@@ -126,16 +117,17 @@ class ViewPDFViewModel: ViewModel() {
         }
     }
 
+
     private fun loadCobranza() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
+        Timber.tag(TAG).d("Load cobranza")
+        val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
         val listaCobranza: MutableList<Payment> = ArrayList()
         for (item in cobranzaBeanList) {
             val cobranza = Payment()
             cobranza.cobranza = item.cobranza
             cobranza.cuenta = item.cliente
             cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
+            cobranza.saldo = item.saldo!!
             cobranza.venta = item.venta
             cobranza.estado = item.estado
             cobranza.observaciones = item.observaciones
@@ -144,18 +136,22 @@ class ViewPDFViewModel: ViewModel() {
             cobranza.identificador = item.empleado
             listaCobranza.add(cobranza)
         }
+        Timber.tag(TAG).d("Cobranzas: $cobranzaBeanList")
         ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
             override fun onSaveChargeSuccess() {
+                Timber.tag(TAG).d("executeSaveCharge success")
                 //Toast.makeText(getApplicationContext(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
             }
 
             override fun onSaveChargeError() {
+                Timber.tag(TAG).d("executeSaveCharge error")
                 //Toast.makeText(getApplicationContext(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
             }
         })
     }
 
-    private fun sincronizaCliente(idCliente: String) {
+    private fun sincronizaCliente(idCliente: Long) {
+        Timber.tag(TAG).d("sincronizaCliente: $idCliente")
         val clientDao = ClientDao()
         val listaClientesDB = clientDao.getByIDClient(idCliente)
         val listaClientes: MutableList<Client> = ArrayList()
@@ -184,43 +180,53 @@ class ViewPDFViewModel: ViewModel() {
             client.phone_contacto = item.contacto_phone
             client.recordatorio = item.recordatorio
             client.visitas = item.visitasNoefectivas
-            if (item.matriz === "null" && item.matriz == null && item.matriz.isEmpty()) {
+            if (item.matriz === "null" && item.matriz == null && item.matriz!!.isEmpty()) {
                 client.matriz = ""
             } else {
                 client.matriz = item.matriz
             }
             listaClientes.add(client)
         }
+
+        Timber.tag(TAG).d("Clients: $listaClientes")
         ClientInteractorImp().executeSaveClient(listaClientes, object : SaveClientListener {
             override fun onSaveClientSuccess() {
-                //Toast.makeText(getApplicationContext(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                Timber.tag(TAG).d("executeSaveCharge success")
             }
 
             override fun onSaveClientError() {
-                //Toast.makeText(getApplicationContext(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                Timber.tag(TAG).d("executeSaveCharge error")
             }
         })
     }
 
-    private fun syncCloudVenta(venta: Int) {
+    private fun syncCloudVenta(venta: Long) {
         try {
-            val sincVentasByID = SincVentasByID(venta.toString().toLong())
+            Timber.tag(TAG).d("syncCloudVenta $venta")
+            val sincVentasByID = SincVentasByID(venta)
             sincVentasByID.setOnSuccess(object : ResponseOnSuccess() {
                 @Throws(JSONException::class)
                 override fun onSuccess(response: JSONArray) {
+                    Timber.tag(TAG).d("SincVentasByID Send sell success")
                 }
 
                 @Throws(Exception::class)
                 override fun onSuccessObject(response: JSONObject) {
+                    Timber.tag(TAG).d( "SincVentasByID Send sell successObject")
                 }
             })
             sincVentasByID.setOnError(object : ResponseOnError() {
-                override fun onError(error: ANError) {}
-                override fun onError(error: String) {}
+                override fun onError(error: ANError) {
+                    Timber.tag(TAG).d( "SincVentasByID Send sell error ANR")
+                }
+                override fun onError(error: String) {
+                    Timber.tag(TAG).d( "SincVentasByID Send sell error")
+                }
             })
             sincVentasByID.postObject()
         } catch (e: Exception) {
             e.printStackTrace()
+            Timber.tag(TAG).e(e)
         }
     }
 }

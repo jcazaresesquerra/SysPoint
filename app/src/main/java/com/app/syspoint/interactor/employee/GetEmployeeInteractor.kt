@@ -1,17 +1,17 @@
 package com.app.syspoint.interactor.employee
 
 import com.app.syspoint.models.Employee
-import com.app.syspoint.repository.database.bean.EmpleadoBean
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 
 abstract class GetEmployeeInteractor {
 
     interface GetEmployeesListener {
-        fun onGetEmployeesSuccess(employees: List<EmpleadoBean?>)
+        fun onGetEmployeesSuccess(employees: List<EmployeeBox?>)
         fun onGetEmployeesError()
     }
 
     interface GetEmployeeByIdListener {
-        fun onGetEmployeeByIdSuccess(employees: EmpleadoBean)
+        fun onGetEmployeeByIdSuccess(employees: EmployeeBox)
         fun onGetEmployeeByIdError()
     }
 

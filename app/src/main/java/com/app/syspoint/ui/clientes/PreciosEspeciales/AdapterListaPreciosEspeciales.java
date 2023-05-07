@@ -15,9 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
@@ -26,12 +26,12 @@ import java.util.List;
 public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterListaPreciosEspeciales.Holder> implements Filterable {
 
 
-    private List<PreciosEspecialesBean> mData;
-    private List<PreciosEspecialesBean> mDataFilter;
+    private List<SpecialPricesBox> mData;
+    private List<SpecialPricesBox> mDataFilter;
     private OnItemClickListener onItemClickListener;
 
 
-    public AdapterListaPreciosEspeciales(List<PreciosEspecialesBean> mData, OnItemClickListener onItemClickListener) {
+    public AdapterListaPreciosEspeciales(List<SpecialPricesBox> mData, OnItemClickListener onItemClickListener) {
         this.mData = mData;
         this.mDataFilter = mData;
         this.onItemClickListener = onItemClickListener;
@@ -70,10 +70,10 @@ public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterL
                 if (filtro.isEmpty()){
                     mDataFilter = mData;
                 }else {
-                    List<PreciosEspecialesBean> filtroProductos = new ArrayList<>();
+                    List<SpecialPricesBox> filtroProductos = new ArrayList<>();
 
 
-                    for (PreciosEspecialesBean row : mDataFilter){
+                    for (SpecialPricesBox row : mDataFilter){
 
 
                         if (row.getCliente().toLowerCase().contains(filtro) || row.getArticulo().toLowerCase().contains(filtro) ){
@@ -91,7 +91,7 @@ public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterL
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                mDataFilter = (ArrayList<PreciosEspecialesBean>) filterResults.values;
+                mDataFilter = (ArrayList<SpecialPricesBox>) filterResults.values;
                 notifyDataSetChanged();
             }
         };
@@ -114,11 +114,11 @@ public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterL
             textView_producto_precio_normal_lista_cliente_lista  = itemView.findViewById(R.id.textView_producto_precio_normal_lista_cliente_lista);
         }
 
-        private void bind(final PreciosEspecialesBean item, OnItemClickListener onItemClickListener){
+        private void bind(final SpecialPricesBox item, OnItemClickListener onItemClickListener){
 
 
             final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo());
+            final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo());
 
             if (productoBean != null){
                 if (productoBean.getPath_img() != null){
@@ -144,7 +144,7 @@ public class AdapterListaPreciosEspeciales extends RecyclerView.Adapter<AdapterL
 
 
     //Para saber si cambio algo
-    public void setPrecios(List<PreciosEspecialesBean> data){
+    public void setPrecios(List<SpecialPricesBox> data){
         this.mDataFilter = data;
         notifyDataSetChanged();
     }

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,23 +29,26 @@ import androidx.core.content.ContextCompat;
 import com.app.syspoint.R;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
+import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public class FinalizaInventarioActivity extends AppCompatActivity {
 
@@ -78,14 +80,13 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         textViewStatus = findViewById(R.id.tvStatusPrinterInventario);
         btnConfirmaInventario = findViewById(R.id.btnConfirmaInventario);
 
-        btnConfirmaInventario.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int loadId = new CacheInteractor().getCurrentLoadId() + 1;
-                new CacheInteractor().setLoadId(loadId);
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+        btnConfirmaInventario.setOnClickListener(v -> {
+            Timber.tag(TAG).d("btnConfirmaInventario -> click");
+
+            int loadId = new CacheInteractor().getCurrentLoadId() + 1;
+            new CacheInteractor().setLoadId(loadId);
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -159,27 +160,35 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
 
     private void aplicaInventario(){
 
-        List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        List<StockBox> mData = new StockDao().list();
         SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(this);
         int currentStockId = sharedPreferencesManager.getCurrentStockId();
         int currentLoadId = sharedPreferencesManager.getCurrentLoadId();
 
-        for (InventarioBean item : mData){
+        for (StockBox item : mData){
 
             final ProductDao productDao = new ProductDao();
-            final ProductoBean productoBean = productDao.getProductoByArticulo(item.getArticulo().getArticulo());
+            final ProductBox productoBean = productDao.getProductoByArticulo(item.getArticulo().getTarget().getArticulo());
 
             if (productoBean != null){
 
                 //Actualiza la existencia del articulo
-                productoBean.setExistencia(item.getCantidad());
-                productDao.save(productoBean);
+                StockHistoryDao stockHistoryDao = new StockHistoryDao();
+                StockHistoryBox inventarioHistorialBean =
+                        stockHistoryDao.getInvatarioPorArticulo(item.articulo.getTarget().getArticulo());
+
+                int vendido = inventarioHistorialBean != null ? inventarioHistorialBean.getCantidad() : 0;
+                int inicial = item.getTotalCantidad();
+                int total = inicial - vendido;
+
+                productoBean.setExistencia(total);
+                productDao.insertBox(productoBean);
 
                 //Cambia el status a confirmado
                 final StockDao stockDao = new StockDao();
-                final InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
+                final StockBox inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
                 inventarioBean.setEstado("CO");
-                stockDao.save(inventarioBean);
+                stockDao.insertBox(inventarioBean);
 
             }
         }
@@ -193,7 +202,7 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
                 isConnectada = true;
@@ -321,6 +330,7 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.imprime_inventario) {
+            Timber.tag(TAG).d("print stock -> click");
 
             if (isConnectada == false) {
                 initPrinter();
@@ -332,8 +342,10 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
 
 
         } else if (id == android.R.id.home) {
+            Timber.tag(TAG).d("home -> click");
             return false;
         }  else if  (id ==  R.id.config_printer){
+            Timber.tag(TAG).d("config printer -> click");
             Actividades.getSingleton(FinalizaInventarioActivity.this, BluetoothActivity.class).muestraActividad();
         }
         return super.onOptionsItemSelected(item);

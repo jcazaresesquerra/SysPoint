@@ -30,7 +30,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,9 +39,9 @@ import androidx.core.content.ContextCompat;
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ProductDao;
 import com.app.syspoint.models.Product;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
@@ -71,8 +70,10 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     Spinner spinner_producto_status;
     ImageView imgView;
     private String statusSeleccioandoDB;
+    private Long idProducto;
 
     private RelativeLayout rlprogress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -240,7 +241,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         String productoGlobal = intent.getStringExtra(Actividades.PARAM_1);
 
         ProductDao productDao = new ProductDao();
-        ProductoBean productoBean = productDao.getProductoByArticulo(productoGlobal);
+        ProductBox productoBean = productDao.getProductoByArticulo(productoGlobal);
 
         if (productoBean != null) {
             editTextArticulo.setText(productoBean.getArticulo());
@@ -318,16 +319,15 @@ public class ActualizaProductoActivity extends AppCompatActivity {
 
     private boolean exitProduct(){
         ProductDao dao = new ProductDao();
-        ProductoBean producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
+        ProductBox producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
 
         return producto != null;
     }
 
-    private String idProducto;
     private void saveProducto(){
 
         ProductDao dao = new ProductDao();
-        ProductoBean producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
+        ProductBox producto = dao .getProductoByArticulo(editTextArticulo.getText().toString());
 
         if (producto != null) {
             producto.setArticulo(editTextArticulo.getText().toString());
@@ -340,9 +340,9 @@ public class ActualizaProductoActivity extends AppCompatActivity {
             if (decoded != null) {
                 producto.setPath_img(getStringImage(decoded));
             }
-            dao.save(producto);
+            dao.insertBox(producto);
 
-            idProducto = String.valueOf(producto.getId());
+            idProducto = producto.getId();
 
             if (!Utils.isNetworkAvailable(getApplication())) {
                 //showDialogNotConnectionInternet();
@@ -383,14 +383,14 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         dialog.getWindow().setAttributes(lp);
     }
 
-    private void testLoadProductos(String idProducto){
+    private void testLoadProductos(Long idProducto){
          progressshow();
         final ProductDao productDao = new ProductDao();
-        List<ProductoBean> listaProductosDB =  productDao.getProductoByID(idProducto);
+        List<ProductBox> listaProductosDB =  productDao.getProductoByID(idProducto);
 
         List<Product> listaProductos = new ArrayList<>();
 
-        for (ProductoBean item : listaProductosDB){
+        for (ProductBox item : listaProductosDB){
             Product producto = new Product();
             producto.setArticulo(item.getArticulo());
             producto.setDescripcion(item.getDescripcion());

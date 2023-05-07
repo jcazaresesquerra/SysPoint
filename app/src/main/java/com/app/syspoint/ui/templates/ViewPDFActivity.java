@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,55 +27,30 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.androidnetworking.error.ANError;
-import com.app.syspoint.interactor.charge.ChargeInteractor;
-import com.app.syspoint.interactor.charge.ChargeInteractorImp;
-import com.app.syspoint.interactor.client.ClientInteractor;
-import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.R;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.InventarioHistorialBean;
-import com.app.syspoint.repository.database.bean.PartidasBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.StockHistoryDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.database.dao.SellsDao;
-import com.app.syspoint.repository.request.http.Servicio;
-import com.app.syspoint.repository.request.http.SincVentasByID;
-import com.app.syspoint.models.Client;
-import com.app.syspoint.models.Payment;
 import com.app.syspoint.ui.cobranza.CobranzaActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
 import com.app.syspoint.viewmodel.viewPDF.ViewPDFViewModel;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 
 public class ViewPDFActivity extends AppCompatActivity {
-
-
 
     private final String TAG = ViewPDFActivity.class.getSimpleName();
 
@@ -95,8 +69,8 @@ public class ViewPDFActivity extends AppCompatActivity {
 
 
     private TextView textViewStatus;
-    int venta;
-    String clienteID;
+    Long venta;
+    Long clienteID;
     String account;
     public String templateTicket;
     private boolean isConnectada = false;
@@ -118,32 +92,32 @@ public class ViewPDFActivity extends AppCompatActivity {
 
         if (bundle != null) {
             templateTicket = bundle.getString("ticket");
-            venta = Integer.parseInt( bundle.getString("venta"));
-            clienteID = bundle.getString("clienteID");
+            venta = bundle.getLong("venta", 0);
+            clienteID = bundle.getLong("clienteID");
             account = bundle.getString("account");
         }
 
         viewModel.addProductosInventori(venta);
 
         ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClientByAccount(String.valueOf(account));
+        ClientBox clienteBean = clientDao.getClientByAccount(String.valueOf(account));
 
         if (clienteBean != null){
             clienteBean.setVisitado(1);
             clienteBean.setVisitasNoefectivas(0);
             clienteBean.setDate_sync(Utils.fechaActual());
-            clientDao.save(clienteBean);
+            clientDao.insertBox(clienteBean);
 
-            PaymentDao paymentDao = new PaymentDao();
+            ChargeDao chargeDao = new ChargeDao();
             try {
-                double saldoCliente = paymentDao.getTotalSaldoDocumentosCliente(clienteBean.getCuenta());
+                double saldoCliente = chargeDao.getSaldoByCliente(clienteBean.getCuenta());
 
                 float saldoClient = (float) saldoCliente;
 
                 if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
                     saldoClient = (float) clienteBean.getSaldo_credito();
                 } else {
-                    ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                    ClientBox clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                     if (clientMatriz != null) {
                         saldoClient = (float) clientMatriz.getSaldo_credito();
                     }
@@ -161,7 +135,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                         if (clienteBean.getMatriz() == null || clienteBean.getMatriz().isEmpty() || clienteBean.getMatriz() == "null") {
                             parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
                         } else {
-                            ClienteBean clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
+                            ClientBox clientMatriz = clientDao.getClientByAccount(clienteBean.getMatriz());
                             if (clientMatriz != null) {
                                 parametros.put(Actividades.PARAM_1, clientMatriz.getCuenta());
                             } else {
@@ -180,9 +154,8 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
 
         //Sincroniza la venta con el servidor
-
         new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-            if (!connected) {
+            if (connected) {
                viewModel.sync(venta, clienteID);
             }
         }).execute(), 100);
@@ -207,12 +180,9 @@ public class ViewPDFActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
         Button button = findViewById(R.id.btnConfirmaVenta);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+        button.setOnClickListener(v -> {
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mHandler = new Handler(Looper.myLooper()){
@@ -271,6 +241,11 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+    }
+
     private void initToolBar() {
 
         Toolbar toolbar = findViewById(R.id.toolbar_preview);
@@ -324,7 +299,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
                 isConnectada = true;
@@ -389,7 +364,7 @@ public class ViewPDFActivity extends AppCompatActivity {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            Timber.tag(TAG).e("Could not create Insecure RFComm Connection" + e);
         }
         return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }

@@ -5,13 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
 import com.app.syspoint.models.sealed.EmployeeViewState
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.EmpleadoBean
-import com.app.syspoint.repository.database.dao.EmployeeDao
-import com.app.syspoint.repository.database.dao.RolesDao
+import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.models.sealed.EmployeeLoadingViewState
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.RolesDao
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,28 +52,28 @@ class EmployeeViewModel: BaseViewModel() {
         }
     }
 
-    fun handleSelection(name: String?, employeeBean: EmpleadoBean) {
+    fun handleSelection(name: String?, employeeBean: EmployeeBox) {
         viewModelScope.launch(Dispatchers.IO) {
             var identificador = ""
 
             //Obtiene el nombre del vendedor
-            var vendedoresBean = AppBundle.getUserBean()
+            var vendedoresBean = AppBundle.getUserBox()
             if (vendedoresBean == null) {
                 vendedoresBean = CacheInteractor().getSeller()
             }
             if (vendedoresBean != null) {
-                identificador = vendedoresBean.getIdentificador()
+                identificador = vendedoresBean.identificador!!
             }
             val rolesDao = RolesDao()
             val rolesBean = rolesDao.getRolByEmpleado(identificador, "Empleados")
             if (name == null || name.compareTo("Editar", ignoreCase = true) == 0) {
                 if (rolesBean != null && rolesBean.active) {
-                    employeeViewState.postValue(EmployeeViewState.ShowEditEmployeeState(employeeBean.identificador))
+                    employeeViewState.postValue(EmployeeViewState.ShowEditEmployeeState(employeeBean.identificador!!))
                 } else {
                     employeeViewState.postValue(EmployeeViewState.CanNotEditEmployeeState)
                 }
             } else if (name.compareTo("Llamar", ignoreCase = true) == 0) {
-                employeeViewState.postValue(EmployeeViewState.CallEmployeeState(employeeBean.telefono))
+                employeeViewState.postValue(EmployeeViewState.CallEmployeeState(employeeBean.telefono!!))
             } else if (name.compareTo("Enviar email", ignoreCase = true) == 0) {
                 employeeViewState.postValue(EmployeeViewState.SendEmailState)
             }
@@ -85,7 +85,7 @@ class EmployeeViewModel: BaseViewModel() {
             employeeProgressViewState.postValue(EmployeeLoadingViewState.LoadingStartState)
             GetEmployeesInteractorImp().executeGetEmployees(object :
                 GetEmployeeInteractor.GetEmployeesListener {
-                override fun onGetEmployeesSuccess(employees: List<EmpleadoBean?>) {
+                override fun onGetEmployeesSuccess(employees: List<EmployeeBox?>) {
                     employees.toMutableList().removeIf { item -> !item!!.status }
                     employeeProgressViewState.postValue(EmployeeLoadingViewState.LoadingFinishState)
                     employeeViewState.postValue(EmployeeViewState.GetEmployeesState(employees))

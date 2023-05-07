@@ -2,7 +2,6 @@ package com.app.syspoint.ui.stock.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,19 +20,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.ui.stock.adapter.AdapterListaProductosInv;
-import com.app.syspoint.ui.products.adapters.AdapterListaProductos;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class ListaProductosInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "ListaProductosInventarioActivity";
     private AdapterListaProductosInv mAdapter;
-    private List<ProductoBean> mData;
+    private List<ProductBox> mData;
     private RelativeLayout rlprogress;
     private LinearLayout lyt_productos;
     public static String articuloSeleccionado;
@@ -109,6 +110,7 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
                 finish();
                 return true;
             default:
@@ -129,7 +131,7 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
     private void initRecyclerView() {
 
         mData = new ArrayList<>();
-        mData = (List<ProductoBean>) new ProductDao().getActiveProducts();
+        mData = (List<ProductBox>) new ProductDao().getActiveProducts();
 
         if (mData.size() > 0) {
             lyt_productos.setVisibility(View.GONE);
@@ -146,6 +148,7 @@ public class ListaProductosInventarioActivity extends AppCompatActivity {
 
         mAdapter = new AdapterListaProductosInv(mData, productoBean -> {
             articuloSeleccionado = productoBean.getArticulo();
+            Timber.tag(TAG).d("initRecyclerView -> AdapterListaProductosInv -> item click -> %s", productoBean.getArticulo());
             //Muestra el dialogo para seleccion de cantidades
             Actividades.getSingleton(ListaProductosInventarioActivity.this, CantidadInventarioActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });

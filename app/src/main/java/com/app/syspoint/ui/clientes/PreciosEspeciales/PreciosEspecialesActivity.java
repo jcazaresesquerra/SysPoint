@@ -1,7 +1,6 @@
 package com.app.syspoint.ui.clientes.PreciosEspeciales;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -10,7 +9,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,22 +19,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
-import com.app.syspoint.models.json.SpecialPriceJson;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.Gson;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.SpecialPricesDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
-import com.app.syspoint.repository.request.http.ApiServices;
-import com.app.syspoint.repository.request.http.PointApi;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.models.json.RequestClients;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 
@@ -48,7 +39,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
 
     private AdapterListaPreciosEspeciales mAdapter;
-    private List<PreciosEspecialesBean> mData;
+    private List<SpecialPricesBox> mData;
     private RelativeLayout rlprogress;
     private LinearLayout lyt_productos;
     private String idCliente;
@@ -66,7 +57,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         idCliente = intent.getStringExtra(Actividades.PARAM_1);
 
         ClientDao clientDao = new ClientDao();
-        ClienteBean clienteBean = clientDao.getClientByAccount(idCliente);
+        ClientBox clienteBean = clientDao.getClientByAccount(idCliente);
 
         if (clienteBean != null) {
             cuentaCliente = clienteBean.getCuenta();
@@ -98,8 +89,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         progressshow();
         new PriceInteractorImp().executeGetPricesByClient(cuentaCliente, new PriceInteractor.GetPricesByClientListener() {
             @Override
-            public void onGetPricesByClientSuccess(@NonNull List<? extends PreciosEspecialesBean> pricesByClientList) {
-                mData = (List<PreciosEspecialesBean>) pricesByClientList;
+            public void onGetPricesByClientSuccess(@NonNull List<SpecialPricesBox> pricesByClientList) {
+                mData = (List<SpecialPricesBox>) pricesByClientList;
 
                 initRecyclerView();
                 progresshide();
@@ -207,7 +198,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
             @Override
             public void onItemClick(int position) {
 
-                PreciosEspecialesBean bean = mData.get(position);
+                SpecialPricesBox bean = mData.get(position);
                 SpecialPricesDao dao = new SpecialPricesDao();
                 //Cremos laa pregunta
 
@@ -229,7 +220,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
                                 bean.setActive(false);
                                 bean.setFecha_sync(Utils.fechaActual());
-                                dao.save(bean);
+                                dao.inserBox(bean);
 
                                 if (!Utils.isNetworkAvailable(getApplication())) {
                                 } else {
@@ -284,7 +275,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         final SpecialPricesDao dao =  new SpecialPricesDao();
 
         //Contiene la lista de precios de la db local
-        List<PreciosEspecialesBean> listaDB = new ArrayList<>();
+        List<SpecialPricesBox> listaDB = new ArrayList<>();
 
         //Obtenemos la lista por id cliente
         listaDB = dao.getListaPrecioPorClienteUpdate(clienteID);
@@ -294,7 +285,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         final List<Price> listaPreciosServidor = new ArrayList<>();
 
         //Contien la lista de precios especiales locales
-        for (PreciosEspecialesBean items : listaDB){
+        for (SpecialPricesBox items : listaDB){
 
             final Price precio = new Price();
             if (items.getActive() == true){

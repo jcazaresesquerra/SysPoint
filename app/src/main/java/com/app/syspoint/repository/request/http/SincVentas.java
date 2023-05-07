@@ -1,20 +1,24 @@
 package com.app.syspoint.repository.request.http;
 
-import com.app.syspoint.repository.database.bean.PartidasBean;
-import com.app.syspoint.repository.database.bean.VentasBean;
-import com.app.syspoint.repository.database.dao.SellsDao;
+import android.os.Build;
+import android.os.Looper;
+
+import com.app.syspoint.repository.objectBox.dao.SellsDao;
+import com.app.syspoint.repository.objectBox.entities.PlayingBox;
+import com.app.syspoint.repository.objectBox.entities.SellBox;
 import com.app.syspoint.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class SincVentas extends Servicio {
+
+    private final static String TAG = "SincVentas";
 
     private Response responseVentas;
 
@@ -22,11 +26,11 @@ public class SincVentas extends Servicio {
         super("saveSale");
 
         final SellsDao sellsDao = new SellsDao();
-        List<VentasBean> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());
+        List<SellBox> listaVentas = sellsDao.getListVentasByDate(Utils.fechaActual());
 
-        HashMap<String, VentasBean> listaVentasHash = new HashMap<>();
+        HashMap<String, SellBox> listaVentasHash = new HashMap<>();
 
-        for (VentasBean item : listaVentas) {
+        for (SellBox item : listaVentas) {
             if (!listaVentasHash.containsKey(item.getTicket())) {
                 listaVentasHash.put(item.getTicket(), item);
             }
@@ -35,15 +39,15 @@ public class SincVentas extends Servicio {
         final JSONArray jsonArrayVentas = new JSONArray();
 
         //Recorremos la lista de ventas
-        for (VentasBean items : listaVentasHash.values()){
+        for (SellBox items : listaVentasHash.values()){
 
             JSONObject jsonObjectVenta = new JSONObject();
             jsonObjectVenta.put("venta", ""+ items.getVenta());
             jsonObjectVenta.put("tipo_doc", ""+ items.getTipo_doc());
             jsonObjectVenta.put("fecha", ""+ items.getFecha());
             jsonObjectVenta.put("hora", "" + items.getHora());
-            jsonObjectVenta.put("cliente", "" + items.getCliente().getCuenta());
-            jsonObjectVenta.put("empleado", "" + items.getEmpleado().identificador);
+            jsonObjectVenta.put("cliente", "" + items.getClient().getTarget().getCuenta());
+            jsonObjectVenta.put("empleado", "" + items.getEmployee().getTarget().getIdentificador());
             jsonObjectVenta.put("importe", "" + items.getImporte());
             jsonObjectVenta.put("impuesto", "" +items.getImpuesto());
             jsonObjectVenta.put("datos", "" + items.getDatos());
@@ -64,11 +68,11 @@ public class SincVentas extends Servicio {
             jsonObjectVenta.put("partidas", jsonArrayPartidas);
 
             //Recoremos los items de los productos
-            for(PartidasBean detalle : items.getListaPartidas()){
+            for(PlayingBox detalle : items.getListaPartidas()){
 
                 JSONObject jsonObjectPatidas = new JSONObject();
                 jsonObjectPatidas.put("venta", "" + detalle.getVenta());
-                jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getArticulo());
+                jsonObjectPatidas.put("articulo", "" + detalle.getArticulo().getTarget().getArticulo());
                 jsonObjectPatidas.put("cantidad", "" + detalle.getCantidad());
                 jsonObjectPatidas.put("precio", "" + detalle.getPrecio());
                 jsonObjectPatidas.put("impuesto", "" + detalle.getImpuesto());
@@ -84,6 +88,13 @@ public class SincVentas extends Servicio {
 
         this.jsonObject.put("ventas", jsonArrayVentas);
         String json = this.jsonObject.toString();
+
+        boolean isUiThread = false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) isUiThread = Looper.getMainLooper().isCurrentThread();
+        else isUiThread = Thread.currentThread() == Looper.getMainLooper().getThread();
+
+        Timber.tag(TAG).d("SincVentas -> json: %s -> isUIThread: %s", json, isUiThread);
 
         onSuccess = new ResponseOnSuccess() {
             @Override

@@ -4,13 +4,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaDocumentosCardviewBinding
-import com.app.syspoint.repository.database.bean.CobranzaBean
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.setInvisible
 import com.app.syspoint.utils.setVisible
 
 class AdapterListaDocumentosCobranza(
-    data: List<CobranzaBean?>,
+    data: List<ChargeBox?>,
     val onItemClickListener: OnItemClickListener,
     val onItemLongClickListener: OnItemLongClickListener
     ): RecyclerView.Adapter<AdapterListaDocumentosCobranza.Holder>() {
@@ -39,19 +39,19 @@ class AdapterListaDocumentosCobranza(
 
     override fun getItemCount(): Int= if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<CobranzaBean?>) {
+    fun setData(data: List<ChargeBox?>) {
         mData = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaDocumentosCardviewBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(cobranzaBean: CobranzaBean?, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
+        fun bind(cobranzaBean: ChargeBox?, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
             cobranzaBean?.let {
                 binding.tvVentaCobranzaView.text = cobranzaBean.venta.toString()
                 binding.tvCobranzaCobranzaView.text = cobranzaBean.cobranza
                 binding.tvImporteCobranzaView.text = Utils.FDinero(cobranzaBean.importe)
-                binding.tvSaldoCobranzaView.text = Utils.FDinero(cobranzaBean.saldo)
+                binding.tvSaldoCobranzaView.text = Utils.FDinero(cobranzaBean.saldo ?: 0.0)
                 binding.tvFechaCobranzaView.text = cobranzaBean.fecha
 
                 if (cobranzaBean.isCheck) {

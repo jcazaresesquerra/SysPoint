@@ -4,6 +4,7 @@ import static com.app.syspoint.utils.Constants.BASE_URL_DONAQUI;
 import static com.app.syspoint.utils.Constants.BASE_URL_SYSPOINT;
 
 import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.ANRequest;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
@@ -12,6 +13,9 @@ import com.app.syspoint.BuildConfig;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import okhttp3.Headers;
+import okhttp3.RequestBody;
 
 public class Servicio {
 
@@ -30,12 +34,15 @@ public class Servicio {
 
         final String finalURL = this.host  + this.servicio;
 
-        AndroidNetworking.post(finalURL)
+        ANRequest req = AndroidNetworking.post(finalURL)
                 .addJSONObjectBody(jsonObject) // posting json
                 .setTag("test")
                 .setPriority(Priority.MEDIUM)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
+                .build();
+        Headers headers = req.getHeaders();
+        RequestBody body = req.getRequestBody();
+
+        req.getAsJSONObject(new JSONObjectRequestListener() {
 
                     @Override
                     public void onResponse(JSONObject response) {

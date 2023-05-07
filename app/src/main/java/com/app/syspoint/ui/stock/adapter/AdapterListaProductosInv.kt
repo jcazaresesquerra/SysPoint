@@ -7,14 +7,16 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
-import com.app.syspoint.databinding.ItemListaProductodBinding
 import com.app.syspoint.databinding.ItemListaProductosInventarioBinding
-import com.app.syspoint.repository.database.bean.ProductoBean
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.utils.click
+import timber.log.Timber
 import java.util.*
 
+private const val TAG = "AdapterListaProductosInv"
+
 class AdapterListaProductosInv(
-    data: List<ProductoBean?>,
+    data: List<ProductBox?>,
     val onItemClickListener: OnItemClickListener
 ): RecyclerView.Adapter<AdapterListaProductosInv.Holder>(), Filterable {
 
@@ -22,7 +24,7 @@ class AdapterListaProductosInv(
     private var mDataFilter = data
 
     interface OnItemClickListener {
-        fun onItemClick(productoBean: ProductoBean?)
+        fun onItemClick(productoBean: ProductBox?)
     }
 
     override fun onCreateViewHolder(
@@ -48,11 +50,11 @@ class AdapterListaProductosInv(
                 } else {
 
                     //TODO filtro productos
-                    val filtroProductos: MutableList<ProductoBean> = ArrayList()
+                    val filtroProductos: MutableList<ProductBox> = ArrayList()
                     for (row in mDataFilter) {
                         row?.let {
-                            if (row.articulo.lowercase(Locale.getDefault())
-                                    .contains(filtro) || row.descripcion.lowercase(
+                            if (row.articulo!!.lowercase(Locale.getDefault())
+                                    .contains(filtro) || row.descripcion!!.lowercase(
                                     Locale.getDefault()
                                 ).contains(filtro)
                             ) {
@@ -68,20 +70,20 @@ class AdapterListaProductosInv(
             }
 
             override fun publishResults(constraint: CharSequence, results: FilterResults) {
-                mDataFilter = results.values as ArrayList<ProductoBean?>
+                mDataFilter = results.values as ArrayList<ProductBox?>
                 notifyDataSetChanged()
             }
         }
     }
 
-    fun setData(data: List<ProductoBean?>) {
+    fun setData(data: List<ProductBox?>) {
         mDataFilter = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaProductosInventarioBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(productoBean: ProductoBean?, onItemClickListener: OnItemClickListener) {
+        fun bind(productoBean: ProductBox?, onItemClickListener: OnItemClickListener) {
             productoBean?.let { producto ->
                 binding.textViewArticuloListInv.text = producto.articulo
                 binding.textViewDescripcionProductoListInv.text = producto.descripcion
@@ -100,6 +102,7 @@ class AdapterListaProductosInv(
                 }
 
                 itemView click {
+                    Timber.tag(TAG).d("AdapterListaProductosInv -> Holder -> bind -> itemView -> click");
                     onItemClickListener.onItemClick(producto)
                 }
             }

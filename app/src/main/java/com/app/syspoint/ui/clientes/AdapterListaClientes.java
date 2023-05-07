@@ -13,20 +13,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.ClientesRutaBean;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClientes.Holder> implements Filterable {
 
-    private List<ClienteBean>mData;
-    private List<ClienteBean>mDataFiltrable;
+    private List<ClientBox>mData;
+    private List<ClientBox>mDataFiltrable;
     private OnItemClickListener mOnItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
     private Context context;
-    public AdapterListaClientes(List<ClienteBean> mData, OnItemClickListener mOnItemClickListener, OnItemLongClickListener onItemLongClickListener ) {
+    public AdapterListaClientes(List<ClientBox> mData, OnItemClickListener mOnItemClickListener, OnItemLongClickListener onItemLongClickListener ) {
         this.mData = mData;
         this.mDataFiltrable = mData;
         this.mOnItemClickListener = mOnItemClickListener;
@@ -60,11 +59,9 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
                 if (filtro.isEmpty()){
                     mDataFiltrable = mData;
                 }else {
+                    List<ClientBox> filtroEmpleados = new ArrayList<>();
 
-                    //TODO filtro productos
-                    List<ClienteBean> filtroEmpleados = new ArrayList<>();
-
-                    for (ClienteBean row : mData){
+                    for (ClientBox row : mData){
                         if (row.getNombre_comercial().toLowerCase().contains(filtro) || row.getCalle().toLowerCase().contains(filtro) ){
                             filtroEmpleados.add(row);
                         }
@@ -79,19 +76,24 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                mDataFiltrable = (ArrayList<ClienteBean>) results.values;
+                mDataFiltrable = (ArrayList<ClientBox>) results.values;
                 notifyDataSetChanged();
             }
         };
     }
 
-    public void setClients(List<ClienteBean> data) {
+    public void setClients(List<ClientBox> data) {
+
+        //tell the recycler view that all the old items are gone
+        notifyItemRangeRemoved(0, mData.size());
         this.mDataFiltrable  = data;
         this.mData = data;
-        notifyDataSetChanged();
+        //tell the recycler view how many new items we added
+        notifyItemRangeInserted(0, data.size());
+        //notifyDataSetChanged();
     }
 
-    public void setListaRuta(List<ClienteBean> mData) {
+    public void setListaRuta(List<ClientBox> mData) {
         this.mDataFiltrable = mData;
         this.notifyDataSetChanged();
     }
@@ -111,7 +113,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
             //this.imageView = itemView.findViewById(R.id.img_more);
         }
 
-        private void bind(ClienteBean cliente, final OnItemClickListener onItemClickListener, final OnItemLongClickListener onItemLongClickListener){
+        private void bind(ClientBox cliente, final OnItemClickListener onItemClickListener, final OnItemLongClickListener onItemLongClickListener){
 
             textViewNombre.setText(""+ cliente.getNombre_comercial());
             textViewCuenta.setText("" + cliente.getCuenta());
@@ -143,7 +145,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
     }
 
     public interface OnItemClickListener {
-        void onItemClick(View view, ClienteBean obj, int position, OnDialogShownListener onDialogShownListener);
+        void onItemClick(View view, ClientBox obj, int position, OnDialogShownListener onDialogShownListener);
     }
 
     public interface OnDialogShownListener {

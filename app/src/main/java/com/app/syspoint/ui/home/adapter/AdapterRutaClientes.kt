@@ -1,24 +1,29 @@
 package com.app.syspoint.ui.home.adapter
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
-import com.app.syspoint.repository.database.bean.ClientesRutaBean
-import com.app.syspoint.repository.database.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
+import timber.log.Timber
 import java.util.*
+private const val TAG = "AdapterRutaClientes"
 
 class AdapterRutaClientes(
-    data: List<ClientesRutaBean?>,
+    data: List<RuteClientBox?>,
     val onItemClickListener: OnItemClickListener,
-    val onItemLongClickListener: OnItemLongClickListener
+    val onItemLongClickListener: OnItemLongClickListener,
+    val onCallPermissionRequestListener: OnCallPermissionRequestListener
     ): RecyclerView.Adapter<AdapterRutaClientes.Holder>() {
 
     private var mData = data
@@ -31,63 +36,89 @@ class AdapterRutaClientes(
         fun onItemLongClicked(position: Int): Boolean
     }
 
+    interface OnCallPermissionRequestListener {
+        fun onCallPermissionRequest()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val binding = ItemListaClientesRutaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Holder(binding)
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(mData[position], position + 1, onItemClickListener, onItemLongClickListener)
+        holder.bind(mData[position], position + 1, onItemClickListener, onItemLongClickListener, onCallPermissionRequestListener)
     }
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<ClientesRutaBean?>) {
+    fun setData(data: List<RuteClientBox?>) {
         mData = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaClientesRutaBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clienteBean: ClientesRutaBean?, position: Int, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener) {
+        fun bind(clienteBean: RuteClientBox?, position: Int, onItemClickListener: OnItemClickListener, onItemLongClickListener: OnItemLongClickListener, onCallPermissionRequestListener: OnCallPermissionRequestListener) {
             clienteBean?.let { clienteBean ->
                 binding.textViewNombreClienteRuta.text = position.toString() + " - " + clienteBean.nombre_comercial
                 binding.textViewDireccionClienteRuta.text = clienteBean.calle + " " + clienteBean.numero
                 binding.textViewColoniaClienteRuta.text = "Col. " + clienteBean.colonia
 
                 binding.imgCall click {
-                    val popup =
-                        PopupMenu(itemView.context, binding.imgCall)
-                    //Inflating the Popup using xml file
-                    popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> click")
 
-                    //registering popup with OnMenuItemClickListener
-                    popup.setOnMenuItemClickListener { _ ->
-                        if (clienteBean.phone_contact.isNullOrEmpty() || clienteBean.phone_contact == "null") {
-                            Toast.makeText(
-                                itemView.context,
-                                "El cliente no cuenta con número de contacto",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@setOnMenuItemClickListener false
-                        } else {
-                            val intent = Intent(
-                                Intent.ACTION_CALL,
-                                Uri.parse("tel:" + "+52" + clienteBean.phone_contact)
-                            )
-                            itemView.context.startActivity(intent)
+                    if (ActivityCompat.checkSelfPermission(itemView.context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                        onCallPermissionRequestListener.onCallPermissionRequest()
+                    } else {
+                        val popup =
+                            PopupMenu(itemView.context, binding.imgCall)
+                        //Inflating the Popup using xml file
+                        popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
+
+                        //registering popup with OnMenuItemClickListener
+                        popup.setOnMenuItemClickListener { _ ->
+                            if (clienteBean.phone_contact.isNullOrEmpty() || clienteBean.phone_contact == "null") {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> empty number")
+                                Toast.makeText(
+                                    itemView.context,
+                                    "El cliente no cuenta con número de contacto",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@setOnMenuItemClickListener false
+                            } else if (clienteBean.phone_contact?.length != 10) {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> bad number ${clienteBean.phone_contact}")
+
+                                Toast.makeText(
+                                    itemView.context,
+                                    "El número del cliente es erroneo ${clienteBean.phone_contact}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@setOnMenuItemClickListener false
+                            } else {
+                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> call number ${clienteBean.phone_contact}")
+
+                                val intent = Intent(
+                                    Intent.ACTION_CALL,
+                                    Uri.parse("tel:" + "+52" + clienteBean.phone_contact)
+                                )
+                                itemView.context.startActivity(intent)
+                            }
+                            true
                         }
-                        true
+                        popup.show() //showing popup menu
                     }
-                    popup.show() //showing popup menu
                 }
 
                 itemView longClick  {
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> longClick")
                     onItemLongClickListener.onItemLongClicked(adapterPosition)
                     false
                 }
 
-                itemView click  { onItemClickListener.onItemClick(adapterPosition) }
+                itemView click  {
+                    Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> itemView -> click")
+                    onItemClickListener.onItemClick(adapterPosition)
+                }
 
                 val calendar = Calendar.getInstance()
                 val day = calendar[Calendar.DAY_OF_WEEK]

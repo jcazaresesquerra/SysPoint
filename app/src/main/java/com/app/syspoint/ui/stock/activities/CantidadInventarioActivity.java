@@ -22,26 +22,27 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
-import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class CantidadInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "CantidadInventarioActivity";
     private EditText EditTextCantidad, EditTextPrecio, EditTextTotal;
     private String cantidad;
     private String ariculo;
     private double precio;
     private TextView tv_inventario_descripcion, tv_inventario_articulo;
-    private ProductoBean productoBean;
+    private ProductBox productoBean;
     int qty = 0;
     private ImageView img_inv_producto;
 
@@ -121,10 +122,14 @@ public class CantidadInventarioActivity extends AppCompatActivity {
         });
 
         Button buttonCerrar = findViewById(R.id.btn_inventario_cerrar);
-        buttonCerrar.setOnClickListener(v -> finish());
+        buttonCerrar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonCerrar -> click");
+            finish();
+        });
 
         Button buttonConfirmar = findViewById(R.id.btn_inventario_confirmar);
         buttonConfirmar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonConfirmar -> click -> %s", qty);
 
             if (qty == 0) {
                 final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
@@ -142,7 +147,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
 
             //Validamos si el inventario esta pendiente de lo contrario no ingresamos nada
 
-            List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().getInventarioPendiente();
+            List<StockBox> mData = new StockDao().getInventarioPendiente();
 
             /*int count = mData.size();
 
@@ -175,7 +180,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
             int currentLoadId = sharedPreferencesManager.getCurrentLoadId();
 
             StockDao stockDao = new StockDao();
-            InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
+            StockBox inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
 
             if (inventarioBean != null){
                 int total = inventarioBean.getTotalCantidad() + qty;
@@ -185,18 +190,19 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                 inventarioBean.setTotalCantidad(total);
                 inventarioBean.setStockId(currentStockId);
                 inventarioBean.setLoadId(currentLoadId);
-                stockDao.save(inventarioBean);
+                stockDao.insertBox(inventarioBean);
 
                 Intent intent = new Intent();
                 intent.putExtra(Actividades.PARAM_1, cantidad);
                 setResult(Activity.RESULT_OK, intent);
+
                 Toast.makeText(CantidadInventarioActivity.this, "La cantidad se actualizo", Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }else {
-                InventarioBean bean = new InventarioBean();
+                StockBox bean = new StockBox();
                 StockDao dao = new StockDao();
-                bean.setArticulo(productoBean);
+                bean.getArticulo().setTarget(productoBean);
                 bean.setCantidad(qty);
                 bean.setLastCantidad(qty);
                 bean.setTotalCantidad(qty);
@@ -208,7 +214,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                 bean.setArticulo_clave(productoBean.getArticulo());
                 bean.setStockId(currentStockId);
                 bean.setLoadId(currentLoadId);
-                dao.insert(bean);
+                dao.insertBox(bean);
 
                 Intent intent = new Intent();
                 intent.putExtra(Actividades.PARAM_1, cantidad);

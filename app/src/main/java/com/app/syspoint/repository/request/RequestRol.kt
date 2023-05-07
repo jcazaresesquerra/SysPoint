@@ -4,9 +4,9 @@ import android.util.Log
 import com.app.syspoint.interactor.roles.RolInteractor
 import com.app.syspoint.models.Role
 import com.app.syspoint.models.json.RolJson
-import com.app.syspoint.repository.database.bean.RolesBean
-import com.app.syspoint.repository.database.dao.EmployeeDao
-import com.app.syspoint.repository.database.dao.RolesDao
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.RolesDao
+import com.app.syspoint.repository.objectBox.entities.RolesBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
@@ -16,6 +16,13 @@ import retrofit2.Response
 
 class RequestRol {
     companion object {
+
+        fun requestAllRoles(): Call<RolJson> {
+            return ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getAllRols()
+        }
+
         fun requestAllRoles(onGetAllRolesListener: RolInteractor.OnGetAllRolesListener): Call<RolJson> {
             val getRoles = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
@@ -24,17 +31,16 @@ class RequestRol {
             getRoles.enqueue(object: Callback<RolJson> {
                 override fun onResponse(call: Call<RolJson>, response: Response<RolJson>) {
                     if (response.isSuccessful) {
-                        val roles = arrayListOf<RolesBean>()
+                        val roles = arrayListOf<RolesBox>()
                         val rolesDao = RolesDao()
                         val employeeDao = EmployeeDao()
 
-                        rolesDao.beginTransaction()
                         response.body()!!.roles!!.map {rol ->
                             val rolesBean = rolesDao.getRolByModule(rol!!.empleado, rol.modulo)
                             if (rolesBean == null) {
-                                val bean = RolesBean()
+                                val bean = RolesBox()
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
-                                bean.empleado = empleadoBean
+                                bean.empleado.target = empleadoBean
                                 bean.modulo = rol.modulo
                                 bean.active = rol.activo == 1
                                 bean.identificador = rol.empleado
@@ -42,15 +48,14 @@ class RequestRol {
                                 roles.add(bean)
                             } else {
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(rol.empleado)
-                                rolesBean.empleado = empleadoBean
+                                rolesBean.empleado.target = empleadoBean
                                 rolesBean.modulo = rol.modulo
                                 rolesBean.active = rol.activo == 1
                                 rolesBean.identificador = rol.empleado
-                                rolesDao.save(rolesBean)
+                                rolesDao.insert(rolesBean)
                                 roles.add(rolesBean)
                             }
                         }
-                        rolesDao.commmit()
 
                         onGetAllRolesListener.onGetAllRolesSuccess(roles)
                     } else {

@@ -1,17 +1,17 @@
 package com.app.syspoint.documents
 
 import com.app.syspoint.BuildConfig
-import com.app.syspoint.repository.database.bean.VentasBean
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.entities.SellBox
 
 class SellTicket: BaseTicket() {
 
     override fun template() {
         super.template()
 
-        val ventasBean = bean as VentasBean
+        val ventasBean = box as SellBox
 
         /*var saldoCreditodo = 0.0
         var facturaMatriz = false
@@ -40,8 +40,8 @@ class SellTicket: BaseTicket() {
         }
 
         //val importeTotalVenta: Double = ventasBean.importe + ventasBean.impuesto
-        for (items in ventasBean.listaPartidas) {
-            ticket += "" + items.articulo.descripcion + Constants.NEW_LINE +
+        for (items in ventasBean.listaPartidas!!) {
+            ticket += "" + items.articulo!!.target.descripcion + Constants.NEW_LINE +
                     "" + String.format(
                 "%1$-5s %2$11s %3$10s %4$10s",
                 items.cantidad,
@@ -112,7 +112,7 @@ class SellTicket: BaseTicket() {
             }
         }*/
         ticket += "================================" + Constants.NEW_LINE
-        if (ventasBean.tipo_venta.compareTo("CREDITO", ignoreCase = true) == 0) {
+        if (ventasBean.tipo_venta!!.compareTo("CREDITO", ignoreCase = true) == 0) {
             ticket += "FIRMA DE CONFORMIDAD:           " + Constants.NEW_LINE +
                     "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
                     "                                " + Constants.NEW_LINE +
@@ -120,7 +120,7 @@ class SellTicket: BaseTicket() {
                     "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
                     "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
                     "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
-        } else if (ventasBean.tipo_venta.compareTo("CONTADO", ignoreCase = true) == 0) {
+        } else if (ventasBean.tipo_venta!!.compareTo("CONTADO", ignoreCase = true) == 0) {
             ticket += "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
                     "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
                     "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
@@ -131,13 +131,13 @@ class SellTicket: BaseTicket() {
     }
 
     override fun buildSyspointHeader(): String {
-        val ventasBean = bean as VentasBean
+        val sellBox = box as SellBox
 
-        val vendedor = if (ventasBean.empleado != null) {
-            "Vendedor:" + ventasBean.empleado.getNombre() + Constants.NEW_LINE
+        val vendedor = if (sellBox.employee != null) {
+            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
         } else {
-            val empleadoBean = CacheInteractor().getSeller()
-            if (empleadoBean != null) "Vendedor:" + empleadoBean.getNombre() + Constants.NEW_LINE
+            val employeeBox = CacheInteractor().getSeller()
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
             else ""
         }
 
@@ -151,9 +151,9 @@ class SellTicket: BaseTicket() {
                 "         www.aguapoint.com      " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "(" + ventasBean.cliente.cuenta + ")  " + ventasBean.cliente.nombre_comercial + Constants.NEW_LINE + vendedor +
-                "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
-                "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
+                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE + vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +
@@ -164,13 +164,13 @@ class SellTicket: BaseTicket() {
     }
 
     override fun buildDonAquiHeader(): String {
-        val ventasBean = bean as VentasBean
+        val sellBox = box as SellBox
 
-        val vendedor = if (ventasBean.empleado != null) {
-            "Vendedor:" + ventasBean.empleado.getNombre() + Constants.NEW_LINE
+        val employee = if (sellBox.employee != null) {
+            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
         } else {
-            val empleadoBean = CacheInteractor().getSeller()
-            if (empleadoBean != null) "Vendedor:" + empleadoBean.getNombre() + Constants.NEW_LINE
+            val employeeBox = CacheInteractor().getSeller()
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre+ Constants.NEW_LINE
             else ""
         }
 
@@ -182,10 +182,10 @@ class SellTicket: BaseTicket() {
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "(" + ventasBean.cliente.cuenta + ")  " + ventasBean.cliente.nombre_comercial + Constants.NEW_LINE +
-                vendedor +
-                "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
-                "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
+                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE +
+                employee +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +

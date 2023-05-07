@@ -6,14 +6,14 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemVentasCardviewBinding
-import com.app.syspoint.repository.database.bean.VentasModelBean
-import com.app.syspoint.repository.database.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
 
 class AdapterItemsVenta(
-    data: List<VentasModelBean?>,
+    data: List<SellModelBox?>,
     val onItemLongClickListener: OnItemLongClickListener,
     val onItemClickListener: OnItemClickListener
 ): RecyclerView.Adapter<AdapterItemsVenta.Holder>() {
@@ -21,11 +21,11 @@ class AdapterItemsVenta(
     private var mData = data
 
     interface OnItemClickListener {
-        fun onItemClick(sell: VentasModelBean)
+        fun onItemClick(sell: SellModelBox)
     }
 
     interface OnItemLongClickListener {
-        fun onItemLongClicked(sell: VentasModelBean): Boolean
+        fun onItemLongClicked(sell: SellModelBox): Boolean
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -39,13 +39,13 @@ class AdapterItemsVenta(
 
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
-    fun setData(data: List<VentasModelBean?>) {
+    fun setData(data: List<SellModelBox?>) {
         mData = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemVentasCardviewBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(ventasModelBean: VentasModelBean?, onItemLongClickListener: OnItemLongClickListener, onItemClickListener: OnItemClickListener) {
+        fun bind(ventasModelBean: SellModelBox?, onItemLongClickListener: OnItemLongClickListener, onItemClickListener: OnItemClickListener) {
             ventasModelBean?.let { item ->
                 binding.textViewProductoCodigoVenta.text = item.articulo
                 binding.textViewProductoDescripcionVenta.text = item.descripcion

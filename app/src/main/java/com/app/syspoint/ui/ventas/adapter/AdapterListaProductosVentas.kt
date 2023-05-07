@@ -9,12 +9,13 @@ import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaProductosVentasBinding
-import com.app.syspoint.repository.database.bean.ProductoBean
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.utils.click
 import java.util.*
 
 class AdapterListaProductosVentas(
-    data: List<ProductoBean?>,
+    data: List<ProductBox?>,
     val onItemClickListener: OnItemClickListener
 ): RecyclerView.Adapter<AdapterListaProductosVentas.Holder>(), Filterable {
 
@@ -48,11 +49,11 @@ class AdapterListaProductosVentas(
                 } else {
 
                     //TODO filtro productos
-                    val filtroProductos: MutableList<ProductoBean> = ArrayList()
+                    val filtroProductos: MutableList<ProductBox> = ArrayList()
                     for (row in mDataFilter) {
                         row?.let {
-                            if (row.articulo.lowercase(Locale.getDefault())
-                                    .contains(filtro) || row.descripcion.lowercase(
+                            if (row.articulo!!.lowercase(Locale.getDefault())
+                                    .contains(filtro) || row.descripcion!!.lowercase(
                                     Locale.getDefault()
                                 ).contains(filtro)
                             ) {
@@ -68,20 +69,20 @@ class AdapterListaProductosVentas(
             }
 
             override fun publishResults(constraint: CharSequence, results: FilterResults) {
-                mDataFilter = results.values as ArrayList<ProductoBean?>
+                mDataFilter = results.values as ArrayList<ProductBox?>
                 notifyDataSetChanged()
             }
         }
     }
 
-    fun setData(data: List<ProductoBean?>) {
+    fun setData(data: List<ProductBox?>) {
         mDataFilter = data
         notifyDataSetChanged()
     }
 
     class Holder(val binding: ItemListaProductosVentasBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(productoBean: ProductoBean?, onItemClickListener: OnItemClickListener) {
+        fun bind(productoBean: ProductBox?, onItemClickListener: OnItemClickListener) {
             productoBean?.let { producto ->
                 binding.textViewProductoCodigoListaVentaLista.text = producto.articulo
                 binding.textViewProductoDescripcionVentaLista.text = producto.descripcion

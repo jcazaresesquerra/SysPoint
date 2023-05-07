@@ -4,8 +4,8 @@ import android.util.Log
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.models.Employee
 import com.app.syspoint.models.json.EmployeeJson
-import com.app.syspoint.repository.database.bean.EmpleadoBean
-import com.app.syspoint.repository.database.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
@@ -16,6 +16,14 @@ import java.text.SimpleDateFormat
 
 class RequestEmployees {
     companion object {
+
+        fun requestEmployees(): Call<EmployeeJson> {
+            return ApiServices.getClientRetrofit()
+                .create(
+                    PointApi::class.java
+                ).getAllEmpleados()
+        }
+
         fun requestEmployees(getEmployeesListener: GetEmployeeInteractor.GetEmployeesListener): Call<EmployeeJson> {
             val getEmployees: Call<EmployeeJson> = ApiServices.getClientRetrofit()
                 .create(
@@ -25,58 +33,57 @@ class RequestEmployees {
             getEmployees.enqueue(object: Callback<EmployeeJson> {
                 override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
                     if (response.isSuccessful){
-                        val employees = arrayListOf<EmpleadoBean?>()
+                        val employees = arrayListOf<EmployeeBox?>()
                         val employeeDao = EmployeeDao()
-                        employeeDao.beginTransaction()
+
                         response.body()!!.employees!!.map { item ->
                             //Validamos si existe el empleado en la base de datos en base al identificador
-                            val employeeBean = employeeDao.getEmployeeByIdentifier(item!!.identificador)
+                            val employeeBox = employeeDao.getEmployeeByIdentifier(item!!.identificador)
                             //NO existe entonces lo creamos
-                            if (employeeBean == null) {
-                                val employee = EmpleadoBean()
-                                employee.setNombre(item.nombre)
-                                employee.setDireccion(item.direccion)
-                                employee.setEmail(item.email)
-                                employee.setTelefono(item.telefono)
-                                employee.setFecha_nacimiento(item.fechaNacimiento)
-                                employee.setFecha_ingreso(item.fechaIngreso)
-                                employee.setContrasenia(item.contrasenia)
-                                employee.setIdentificador(item.identificador)
-                                employee.setPath_image(item.pathImage)
-                                employee.setRute(item.rute)
-                                employee.setStatus(item.status == 1)
-                                employee.setUpdatedAt(item.updatedAt)
+                            if (employeeBox == null) {
+                                val employee = EmployeeBox()
+                                employee.nombre = item.nombre
+                                employee.direccion = item.direccion
+                                employee.email = item.email
+                                employee.telefono = item.telefono
+                                employee.fecha_nacimiento = item.fechaNacimiento
+                                employee.fecha_ingreso = item.fechaIngreso
+                                employee.contrasenia = item.contrasenia
+                                employee.identificador = item.identificador
+                                employee.path_image = item.pathImage
+                                employee.rute = item.rute
+                                employee.status = item.status == 1
+                                employee.updatedAt = item.updatedAt
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
 
-                                val update = if (!employeeBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                val update = if (!employeeBox.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     Log.d("SysPoint", item.updatedAt!! + "  --  " + item.id)
                                     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                     val dateItem = formatter.parse(item.updatedAt)
-                                    val dateBean = formatter.parse(employeeBean.updatedAt)
+                                    val dateBean = formatter.parse(employeeBox.updatedAt)
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    employeeBean.setNombre(item.nombre)
-                                    employeeBean.setDireccion(item.direccion)
-                                    employeeBean.setEmail(item.email)
-                                    employeeBean.setTelefono(item.telefono)
-                                    employeeBean.setFecha_nacimiento(item.fechaNacimiento)
-                                    employeeBean.setFecha_ingreso(item.fechaIngreso)
-                                    employeeBean.setContrasenia(item.contrasenia)
-                                    employeeBean.setIdentificador(item.identificador)
-                                    employeeBean.setPath_image(item.pathImage)
-                                    employeeBean.setRute(item.rute)
-                                    employeeBean.setStatus(item.status == 1)
-                                    employeeBean.setUpdatedAt(item.updatedAt)
-                                    employeeDao.save(employeeBean)
+                                    employeeBox.nombre = item.nombre
+                                    employeeBox.direccion = item.direccion
+                                    employeeBox.email = item.email
+                                    employeeBox.telefono = item.telefono
+                                    employeeBox.fecha_nacimiento = item.fechaNacimiento
+                                    employeeBox.fecha_ingreso = item.fechaIngreso
+                                    employeeBox.contrasenia = item.contrasenia
+                                    employeeBox.identificador = item.identificador
+                                    employeeBox.path_image = item.pathImage
+                                    employeeBox.rute = item.rute
+                                    employeeBox.status = item.status == 1
+                                    employeeBox.updatedAt = item.updatedAt
+                                    employeeDao.insert(employeeBox)
                                 }
-                                employees.add(employeeBean)
+                                employees.add(employeeBox)
                             }
                         }
-                        employeeDao.commmit()
 
                         getEmployeesListener.onGetEmployeesSuccess(employees)
                     } else {
