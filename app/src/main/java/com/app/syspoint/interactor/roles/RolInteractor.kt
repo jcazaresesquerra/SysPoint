@@ -1,12 +1,12 @@
 package com.app.syspoint.interactor.roles
 
 import com.app.syspoint.models.Role
-import com.app.syspoint.repository.database.bean.RolesBean
+import com.app.syspoint.repository.objectBox.entities.RolesBox
 
 abstract class RolInteractor {
 
     interface OnGetAllRolesListener {
-        fun onGetAllRolesSuccess(roles: List<RolesBean>)
+        fun onGetAllRolesSuccess(roles: List<RolesBox>)
         fun onGetAllRolesError()
     }
 

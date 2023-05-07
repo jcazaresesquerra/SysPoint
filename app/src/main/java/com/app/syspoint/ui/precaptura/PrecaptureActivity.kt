@@ -30,6 +30,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import timber.log.Timber
+
+private const val TAG = "PrecaptureActivity"
 
 class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     GoogleApiClient.ConnectionCallbacks,
@@ -114,10 +117,12 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
             android.R.id.home -> {
+                Timber.tag(TAG).d("home -> click")
                 finish()
                 return true
             }
             R.id.finish_preventa -> {
+                Timber.tag(TAG).d("finish_preventa -> click")
                 if (!finishPreSellClicked) {
                     finishPreSellClicked = true
                     if (conceptSelectedView == null || conceptSelectedView!!.isEmpty() || conceptSelectedView === "") {
@@ -206,10 +211,12 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                     }
                     if (position >= 0 && position < data.size) {
                         val item: VisitType = data[position]
+                        Timber.tag(TAG).d("setUpRecyclerView -> ViewTypeAdapter -> item click -> %s -> %s", position, item)
+
                         conceptSelectedView = item.name
                         item.isSelected = true
                     } else {
-                        Log.d("SysPoint", "Ha ocurrido un error, intente nuevamente ViewTypeAdapter")
+                        Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente ViewTypeAdapter")
                     }
                     binding.rvTipoVisita.adapter!!.notifyDataSetChanged()
                 }
@@ -219,6 +226,8 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun showNotChecked() {
+        Timber.tag(TAG).d("showNotChecked")
+
         val dialog = PrettyDialog(this)
         dialog.setTitle("Sin Concepto")
             .setTitleColor(R.color.purple_500)
@@ -229,6 +238,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 dialog.dismiss()
             }
             .addButton("OK", R.color.white, R.color.red_800) {
+                Timber.tag(TAG).d("showNotChecked -> OK -> click")
                 dialog.dismiss()
             }
         dialog.show()
@@ -238,6 +248,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
 
         val accountId = intent.getStringExtra(Actividades.PARAM_1)
 
+        Timber.tag(TAG).d("handleConfirmAction -> %s", accountId)
         val dialog = PrettyDialog(this)
         dialog.setTitle("Confirmar accion")
             .setTitleColor(R.color.purple_500)
@@ -248,6 +259,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 dialog.dismiss()
             }
             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.green_800) {
+                Timber.tag(TAG).d("handleConfirmAction -> confirm -> click")
                 if (!confirmPrecaptureClicked) {
                     confirmPrecaptureClicked = true
                     viewModel.confirmPrecapture(accountId, conceptSelectedView, latitud, longitud)
@@ -255,6 +267,7 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
                 }
             }
             .addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) {
+                Timber.tag(TAG).d("handleConfirmAction -> cancel -> click")
                 dialog.dismiss()
             }
         dialog.setCancelable(false)

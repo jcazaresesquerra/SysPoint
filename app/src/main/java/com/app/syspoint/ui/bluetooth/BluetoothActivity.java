@@ -27,6 +27,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,10 +39,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.bluetooth.ConnectedThread;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.dao.PrinterDao;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -91,6 +95,23 @@ public class BluetoothActivity extends AppCompatActivity {
         listViewNuevos = (ListView) findViewById(R.id.devices_list_view);
         listViewNuevos.setAdapter(mBTArrayAdapter); // assign model to view
         listViewNuevos.setOnItemClickListener(mDeviceClickListener);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityResultLauncher<Intent> requestBluetooth = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    //granted
+                }else{
+                    //deny
+                }
+            });
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT}, 100);
+            } else{
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                requestBluetooth.launch(enableBtIntent);
+            }
+        }
 
         // [#11] Ensures that the Bluetooth is available on this device before proceeding.
         boolean hasBluetooth = getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
@@ -255,7 +276,7 @@ public class BluetoothActivity extends AppCompatActivity {
                                 .sendToTarget();
 
 
-                        PrinterBean printerBean = new PrinterBean();
+                        PrinterBox printerBean = new PrinterBox();
                         PrinterDao printerDao = new PrinterDao();
                         printerDao.clear();
 
@@ -263,7 +284,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         printerBean.setAddress(address);
                         printerBean.setName(name);
                         printerBean.setIdPrinter(Long.valueOf(1));
-                        printerDao.insert(printerBean);
+                        printerDao.insertBox(printerBean);
                     }
                 }
             }.start();

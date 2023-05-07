@@ -2,15 +2,13 @@ package com.app.syspoint.repository.request
 
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.models.*
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
-import kotlinx.coroutines.delay
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.IOException
 import java.text.SimpleDateFormat
 
 class RequestData {
@@ -25,44 +23,44 @@ class RequestData {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
                     if (response.isSuccessful) {
                         if (response.code() == 200) {
-                            var dao = EmployeeDao()
-                            var employee = EmpleadoBean()
+                            var employeeDao = EmployeeDao()
+                            var employee = EmployeeBox()
+
                             response.body()!!.data.empleados.map {
-                                val employeeBean = dao.getEmployeeByIdentifier(it.identificador)
+                                val employeeBean = employeeDao.getEmployeeByIdentifier(it.identificador)
                                 if (employeeBean == null) {
-                                    employee = EmpleadoBean()
-                                    dao = EmployeeDao()
-                                    employee.setNombre(it.nombre)
-                                    employee.setDireccion(it.direccion)
-                                    employee.setEmail(it.email)
-                                    employee.setTelefono(it.telefono)
-                                    employee.setFecha_nacimiento(it.fechaNacimiento)
-                                    employee.setFecha_ingreso(it.fechaIngreso)
-                                    employee.setContrasenia(it.contrasenia)
-                                    employee.setIdentificador(it.identificador)
-                                    employee.setPath_image(it.pathImage)
-                                    employee.setRute(it.rute)
-                                    employee.setStatus(it.status == 1)
-                                    dao.insert(employee)
+                                    employee = EmployeeBox()
+                                    employeeDao = EmployeeDao()
+                                    employee.nombre = it.nombre!!
+                                    employee.direccion = it.direccion!!
+                                    employee.email = it.email!!
+                                    employee.telefono = it.telefono!!
+                                    employee.fecha_nacimiento = it.fechaNacimiento!!
+                                    employee.fecha_ingreso = it.fechaIngreso!!
+                                    employee.contrasenia = it.contrasenia!!
+                                    employee.identificador = it.identificador!!
+                                    employee.path_image = it.pathImage ?: ""
+                                    employee.rute = it.rute!!
+                                    employee.status = it.status == 1
+                                    employeeDao.insert(employee)
                                 } else {
-                                    employeeBean.setNombre(it.nombre)
-                                    employeeBean.setDireccion(it.direccion)
-                                    employeeBean.setEmail(it.email)
-                                    employeeBean.setTelefono(it.telefono)
-                                    employeeBean.setFecha_nacimiento(it.fechaNacimiento)
-                                    employeeBean.setFecha_ingreso(it.fechaIngreso)
-                                    employeeBean.setContrasenia(it.contrasenia)
-                                    employeeBean.setIdentificador(it.identificador)
-                                    employeeBean.setPath_image(it.pathImage)
-                                    employeeBean.setRute(it.rute)
-                                    employeeBean.setStatus(it.status == 1)
-                                    dao.save(employeeBean)
+                                    employeeBean.nombre = it.nombre!!
+                                    employeeBean.direccion = it.direccion!!
+                                    employeeBean.email = it.email!!
+                                    employeeBean.telefono = it.telefono!!
+                                    employeeBean.fecha_nacimiento = it.fechaNacimiento!!
+                                    employeeBean.fecha_ingreso = it.fechaIngreso!!
+                                    employeeBean.contrasenia = it.contrasenia!!
+                                    employeeBean.identificador = it.identificador!!
+                                    employeeBean.path_image = it.pathImage?: ""
+                                    employeeBean.rute = it.rute!!
+                                    employeeBean.status = it.status == 1
+                                    employeeDao.insert(employeeBean)
                                 }
                             }
 
                             var rolesDao = RolesDao()
-                            var bean = RolesBean()
-                            val employeeDao = EmployeeDao()
+                            var bean = RolesBox()
                             //Contiene la lista de permidos
 
                             response.body()!!.data.roles.map {
@@ -71,30 +69,30 @@ class RequestData {
 
                                 if (rolesBean == null) {
                                     rolesDao = RolesDao()
-                                    bean = RolesBean()
-                                    bean.empleado = empleadoBean
+                                    bean = RolesBox()
+                                    bean.empleado.target = empleadoBean
                                     bean.modulo = it.modulo
                                     bean.active = it.activo == 1
                                     bean.identificador = it.empleado
                                     rolesDao.insert(bean)
                                 } else {
-                                    rolesBean.empleado = empleadoBean
+                                    rolesBean.empleado.target = empleadoBean
                                     rolesBean.modulo = it.modulo
                                     rolesBean.active = it.activo == 1
                                     rolesBean.identificador = it.empleado
-                                    rolesDao.save(rolesBean)
+                                    rolesDao.insert(rolesBean)
                                 }
                             }
 
                             var productDao = ProductDao()
-                            var producto = ProductoBean()
+                            var producto = ProductBox()
                             //Contiene la lista de productos
 
                             response.body()!!.data.productos.map {
                                 val productoBean = productDao.getProductoByArticulo(it.articulo)
                                 if (productoBean == null) {
                                     //Creamos el producto
-                                    producto = ProductoBean()
+                                    producto = ProductBox()
                                     productDao = ProductDao()
                                     producto.articulo = it.articulo
                                     producto.descripcion = it.descripcion
@@ -112,17 +110,17 @@ class RequestData {
                                     productoBean.iva = it.iva
                                     productoBean.codigo_barras = it.codigoBarras
                                     productoBean.path_img = it.pathImage
-                                    productDao.save(productoBean)
+                                    productDao.insert(productoBean)
                                 }
                             }
 
                             var clientDao = ClientDao()
-                            var clienteBean = ClienteBean()
+                            var clienteBean = ClientBox()
 
                             response.body()!!.data.clientes.map {
                                 val bean = clientDao.getClientByAccount(it.cuenta)
                                 if (bean == null) {
-                                    clienteBean = ClienteBean()
+                                    clienteBean = ClientBox()
                                     clientDao = ClientDao()
                                     clienteBean.nombre_comercial = it.nombreComercial
                                     clienteBean.calle = it.calle
@@ -155,7 +153,7 @@ class RequestData {
                                     clienteBean.contacto_phone = it.phone_contacto
                                     clienteBean.recordatorio = it.recordatorio
                                     clienteBean.visitasNoefectivas = it.visitas
-                                    clienteBean.is_credito = it.isCredito == 1
+                                    clienteBean.isCredito = it.isCredito == 1
                                     clienteBean.limite_credito = it.limite_credito
                                     clienteBean.saldo_credito = it.saldo_credito
                                     clienteBean.matriz = it.matriz
@@ -201,12 +199,12 @@ class RequestData {
                                         bean.contacto_phone = it.phone_contacto
                                         bean.recordatorio = it.recordatorio
                                         bean.visitasNoefectivas = it.visitas
-                                        bean.is_credito = it.isCredito == 1
+                                        bean.isCredito = it.isCredito == 1
                                         bean.limite_credito = it.limite_credito
                                         bean.saldo_credito = it.saldo_credito
                                         bean.matriz = it.matriz
                                         bean.updatedAt = it.updatedAt
-                                        clientDao.save(bean)
+                                        clientDao.insert(bean)
                                     }
                                 }
                             }
@@ -222,7 +220,7 @@ class RequestData {
 
                                 //Si no hay precios especiales entonces crea un precio
                                 if (preciosEspecialesBean == null) {
-                                    val bean = PreciosEspecialesBean()
+                                    val bean = SpecialPricesBox()
                                     bean.cliente = item.cliente
                                     bean.articulo = item.articulo
                                     bean.precio = item.precio
@@ -233,7 +231,7 @@ class RequestData {
                                     preciosEspecialesBean.articulo = item.articulo
                                     preciosEspecialesBean.precio = item.precio
                                     preciosEspecialesBean.active = item.active == 1
-                                    specialPricesDao.save(preciosEspecialesBean)
+                                    specialPricesDao.insert(preciosEspecialesBean)
                                 }
                             }
                         }
@@ -260,76 +258,75 @@ class RequestData {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
                     if (response.isSuccessful) {
                         if (response.code() == 200) {
+
                             var dao = EmployeeDao()
-                            var employee = EmpleadoBean()
+                            var employee = EmployeeBox()
                             response.body()!!.data.empleados.map {
                                 val employeeBean = dao.getEmployeeByIdentifier(it.identificador)
                                 if (employeeBean == null) {
-                                    employee = EmpleadoBean()
+                                    employee = EmployeeBox()
                                     dao = EmployeeDao()
-                                    employee.setNombre(it.nombre)
-                                    employee.setDireccion(it.direccion)
-                                    employee.setEmail(it.email)
-                                    employee.setTelefono(it.telefono)
-                                    employee.setFecha_nacimiento(it.fechaNacimiento)
-                                    employee.setFecha_ingreso(it.fechaIngreso)
-                                    employee.setContrasenia(it.contrasenia)
-                                    employee.setIdentificador(it.identificador)
-                                    employee.setPath_image(it.pathImage)
-                                    employee.setRute(it.rute)
-                                    employee.setStatus(it.status == 1)
+                                    employee.nombre = (it.nombre)
+                                    employee.direccion = (it.direccion)
+                                    employee.email = (it.email)
+                                    employee.telefono = (it.telefono)
+                                    employee.fecha_nacimiento = (it.fechaNacimiento)
+                                    employee.fecha_ingreso = (it.fechaIngreso)
+                                    employee.contrasenia = (it.contrasenia)
+                                    employee.identificador = (it.identificador)
+                                    employee.path_image = (it.pathImage)
+                                    employee.rute = (it.rute)
+                                    employee.status = (it.status == 1)
                                     dao.insert(employee)
                                 } else {
-                                    employeeBean.setNombre(it.nombre)
-                                    employeeBean.setDireccion(it.direccion)
-                                    employeeBean.setEmail(it.email)
-                                    employeeBean.setTelefono(it.telefono)
-                                    employeeBean.setFecha_nacimiento(it.fechaNacimiento)
-                                    employeeBean.setFecha_ingreso(it.fechaIngreso)
-                                    employeeBean.setContrasenia(it.contrasenia)
-                                    employeeBean.setIdentificador(it.identificador)
-                                    employeeBean.setPath_image(it.pathImage)
-                                    employeeBean.setRute(it.rute)
-                                    employeeBean.setStatus(it.status == 1)
-                                    dao.save(employeeBean)
+                                    employeeBean.nombre = (it.nombre)
+                                    employeeBean.direccion = (it.direccion)
+                                    employeeBean.email = (it.email)
+                                    employeeBean.telefono = (it.telefono)
+                                    employeeBean.fecha_nacimiento = (it.fechaNacimiento)
+                                    employeeBean.fecha_ingreso = (it.fechaIngreso)
+                                    employeeBean.contrasenia = (it.contrasenia)
+                                    employeeBean.identificador = (it.identificador)
+                                    employeeBean.path_image = (it.pathImage)
+                                    employeeBean.rute = (it.rute)
+                                    employeeBean.status = (it.status == 1)
+                                    dao.insert(employeeBean)
                                 }
                             }
 
                             var rolesDao = RolesDao()
-                            var bean = RolesBean()
+                            var bean = RolesBox()
                             val employeeDao = EmployeeDao()
                             //Contiene la lista de permidos
-
                             response.body()!!.data.roles.map {
                                 val rolesBean = rolesDao.getRolByModule(it.empleado, it.modulo)
                                 val empleadoBean = employeeDao.getEmployeeByIdentifier(it.empleado)
 
                                 if (rolesBean == null) {
                                     rolesDao = RolesDao()
-                                    bean = RolesBean()
-                                    bean.empleado = empleadoBean
+                                    bean = RolesBox()
+                                    bean.empleado!!.target = empleadoBean
                                     bean.modulo = it.modulo
                                     bean.active = it.activo == 1
                                     bean.identificador = it.empleado
                                     rolesDao.insert(bean)
                                 } else {
-                                    rolesBean.empleado = empleadoBean
+                                    rolesBean.empleado!!.target = empleadoBean
                                     rolesBean.modulo = it.modulo
                                     rolesBean.active = it.activo == 1
                                     rolesBean.identificador = it.empleado
-                                    rolesDao.save(rolesBean)
+                                    rolesDao.insert(rolesBean)
                                 }
                             }
 
                             var productDao = ProductDao()
-                            var producto = ProductoBean()
+                            var producto = ProductBox()
                             //Contiene la lista de productos
-
                             response.body()!!.data.productos.map {
                                 val productoBean = productDao.getProductoByArticulo(it.articulo)
                                 if (productoBean == null) {
                                     //Creamos el producto
-                                    producto = ProductoBean()
+                                    producto = ProductBox()
                                     productDao = ProductDao()
                                     producto.articulo = it.articulo
                                     producto.descripcion = it.descripcion
@@ -347,17 +344,17 @@ class RequestData {
                                     productoBean.iva = it.iva
                                     productoBean.codigo_barras = it.codigoBarras
                                     productoBean.path_img = it.pathImage
-                                    productDao.save(productoBean)
+                                    productDao.insert(productoBean)
                                 }
                             }
 
                             var clientDao = ClientDao()
-                            var clienteBean = ClienteBean()
+                            var clienteBean = ClientBox()
 
                             response.body()!!.data.clientes.map {
                                 val bean = clientDao.getClientByAccount(it.cuenta)
                                 if (bean == null) {
-                                    clienteBean = ClienteBean()
+                                    clienteBean = ClientBox()
                                     clientDao = ClientDao()
                                     clienteBean.nombre_comercial = it.nombreComercial
                                     clienteBean.calle = it.calle
@@ -390,7 +387,7 @@ class RequestData {
                                     clienteBean.contacto_phone = it.phone_contacto
                                     clienteBean.recordatorio = it.recordatorio
                                     clienteBean.visitasNoefectivas = it.visitas
-                                    clienteBean.is_credito = it.isCredito == 1
+                                    clienteBean.isCredito = it.isCredito == 1
                                     clienteBean.limite_credito = it.limite_credito
                                     clienteBean.saldo_credito = it.saldo_credito
                                     clienteBean.matriz = it.matriz
@@ -436,18 +433,17 @@ class RequestData {
                                         bean.contacto_phone = it.phone_contacto
                                         bean.recordatorio = it.recordatorio
                                         bean.visitasNoefectivas = it.visitas
-                                        bean.is_credito = it.isCredito == 1
+                                        bean.isCredito = it.isCredito == 1
                                         bean.limite_credito = it.limite_credito
                                         bean.saldo_credito = it.saldo_credito
                                         bean.matriz = it.matriz
                                         bean.updatedAt = it.updatedAt
-                                        clientDao.save(bean)
+                                        clientDao.insert(bean)
                                     }
                                 }
                             }
 
                             val specialPricesDao = SpecialPricesDao()
-
                             response.body()!!.data.precios.map { item ->
                                 val preciosEspecialesBean =
                                     specialPricesDao.getPrecioEspeciaPorCliente(
@@ -457,7 +453,7 @@ class RequestData {
 
                                 //Si no hay precios especiales entonces crea un precio
                                 if (preciosEspecialesBean == null) {
-                                    val bean = PreciosEspecialesBean()
+                                    val bean = SpecialPricesBox()
                                     bean.cliente = item.cliente
                                     bean.articulo = item.articulo
                                     bean.precio = item.precio
@@ -468,7 +464,7 @@ class RequestData {
                                     preciosEspecialesBean.articulo = item.articulo
                                     preciosEspecialesBean.precio = item.precio
                                     preciosEspecialesBean.active = item.active == 1
-                                    specialPricesDao.save(preciosEspecialesBean)
+                                    specialPricesDao.insert(preciosEspecialesBean)
                                 }
                             }
                         }
@@ -499,73 +495,67 @@ class RequestData {
                         }
 
                         if (response.code() == 200) {
-                            for (item in response.body()!!.data.empleados) {
-                                val dao = EmployeeDao()
-                                val empleadoBean = dao.getEmployeeByIdentifier(item.identificador)
+                            val employeeDao = EmployeeDao()
+                            response.body()!!.data.empleados.map {item ->
+                                val empleadoBean = employeeDao.getEmployeeByIdentifier(item.identificador)
 
                                 if (empleadoBean == null) {
-                                    val empleado = EmpleadoBean()
-                                    val employeeDao = EmployeeDao()
-                                    empleado.setNombre(item.nombre)
-                                    empleado.setDireccion(item.direccion)
-                                    empleado.setEmail(item.email)
-                                    empleado.setTelefono(item.telefono)
-                                    empleado.setFecha_nacimiento(item.fechaNacimiento)
-                                    empleado.setFecha_ingreso(item.fechaIngreso)
-                                    empleado.setContrasenia(item.contrasenia)
-                                    empleado.setIdentificador(item.identificador)
-                                    empleado.setPath_image(item.pathImage)
-                                    empleado.setRute(item.rute)
-                                    empleado.setStatus(item.status == 1)
+                                    val empleado = EmployeeBox()
+                                    empleado.nombre = (item.nombre)
+                                    empleado.direccion = (item.direccion)
+                                    empleado.email = (item.email)
+                                    empleado.telefono = (item.telefono)
+                                    empleado.fecha_nacimiento = (item.fechaNacimiento)
+                                    empleado.fecha_ingreso = (item.fechaIngreso)
+                                    empleado.contrasenia = (item.contrasenia)
+                                    empleado.identificador = (item.identificador)
+                                    empleado.path_image = (item.pathImage)
+                                    empleado.rute = (item.rute)
+                                    empleado.status = (item.status == 1)
                                     employeeDao.insert(empleado)
                                 } else {
-                                    empleadoBean.setNombre(item.nombre)
-                                    empleadoBean.setDireccion(item.direccion)
-                                    empleadoBean.setEmail(item.email)
-                                    empleadoBean.setTelefono(item.telefono)
-                                    empleadoBean.setFecha_nacimiento(item.fechaNacimiento)
-                                    empleadoBean.setFecha_ingreso(item.fechaIngreso)
-                                    empleadoBean.setContrasenia(item.contrasenia)
-                                    empleadoBean.setIdentificador(item.identificador)
-                                    empleadoBean.setPath_image(item.pathImage)
-                                    empleadoBean.setRute(item.rute)
-                                    empleadoBean.setStatus(item.status == 1)
-                                    dao.save(empleadoBean)
+                                    empleadoBean.nombre = (item.nombre)
+                                    empleadoBean.direccion = (item.direccion)
+                                    empleadoBean.email = (item.email)
+                                    empleadoBean.telefono = (item.telefono)
+                                    empleadoBean.fecha_nacimiento = (item.fechaNacimiento)
+                                    empleadoBean.fecha_ingreso = (item.fechaIngreso)
+                                    empleadoBean.contrasenia = (item.contrasenia)
+                                    empleadoBean.identificador = (item.identificador)
+                                    empleadoBean.path_image = (item.pathImage)
+                                    empleadoBean.rute = (item.rute)
+                                    empleadoBean.status = (item.status == 1)
+                                    employeeDao.insert(empleadoBean)
                                 }
                             }
 
-                            //Contiene la lista de permidos
-                            for (item in response.body()!!.data.roles) {
-                                val rolesDao = RolesDao()
+
+                            val rolesDao = RolesDao()
+                            response.body()!!.data.roles.map {item ->
                                 val rolesBean = rolesDao.getRolByModule(item.empleado, item.modulo)
                                 if (rolesBean == null) {
-                                    val bean = RolesBean()
-                                    val dao = RolesDao()
-                                    val employeeDao = EmployeeDao()
+                                    val bean = RolesBox()
                                     val empleadoBean = employeeDao.getEmployeeByIdentifier(item.empleado)
-                                    bean.empleado = empleadoBean
+                                    bean.empleado!!.target = empleadoBean
                                     bean.modulo = item.modulo
                                     bean.active = item.activo == 1
                                     bean.identificador = item.empleado
-                                    dao.insert(bean)
+                                    rolesDao.insert(bean)
                                 } else {
-                                    val employeeDao = EmployeeDao()
                                     val empleadoBean = employeeDao.getEmployeeByIdentifier(item.empleado)
-                                    rolesBean.empleado = empleadoBean
+                                    rolesBean.empleado!!.target = empleadoBean
                                     rolesBean.modulo = item.modulo
                                     rolesBean.active = item.activo == 1
                                     rolesBean.identificador = item.empleado
-                                    rolesDao.save(rolesBean)
+                                    rolesDao.insert(rolesBean)
                                 }
                             }
 
-                            //Contiene la lista de productos
-                            for (item in response.body()!!.data.productos) {
-                                val productDao = ProductDao()
+                            val productDao = ProductDao()
+                            response.body()!!.data.productos.map {item ->
                                 val productoBean = productDao.getProductoByArticulo(item.articulo)
                                 if (productoBean == null) {
-                                    val producto = ProductoBean()
-                                    val dao = ProductDao()
+                                    val producto = ProductBox()
                                     producto.articulo = item.articulo
                                     producto.descripcion = item.descripcion
                                     producto.status = item.status
@@ -573,7 +563,7 @@ class RequestData {
                                     producto.iva = item.iva
                                     producto.codigo_barras = item.codigoBarras
                                     producto.path_img = item.pathImage
-                                    dao.insert(producto)
+                                    productDao.insert(producto)
                                 } else {
                                     productoBean.articulo = item.articulo
                                     productoBean.descripcion = item.descripcion
@@ -582,18 +572,15 @@ class RequestData {
                                     productoBean.iva = item.iva
                                     productoBean.codigo_barras = item.codigoBarras
                                     productoBean.path_img = item.pathImage
-                                    productDao.save(productoBean)
+                                    productDao.insert(productoBean)
                                 }
                             }
 
-                            for (item in response.body()!!.data.clientes) {
-
-                                //Validamos si existe el cliente
-                                val dao = ClientDao()
-                                val bean = dao.getClientByAccount(item.cuenta)
+                            val clientDao = ClientDao()
+                            response.body()!!.data.clientes.map {item ->
+                                val bean = clientDao.getClientByAccount(item.cuenta)
                                 if (bean == null) {
-                                    val clienteBean = ClienteBean()
-                                    val clientDao = ClientDao()
+                                    val clienteBean = ClientBox()
                                     clienteBean.nombre_comercial = item.nombreComercial
                                     clienteBean.calle = item.calle
                                     clienteBean.numero = item.numero
@@ -618,7 +605,7 @@ class RequestData {
                                     clienteBean.contacto_phone = item.phone_contacto
                                     clienteBean.recordatorio = item.recordatorio
                                     clienteBean.visitasNoefectivas = item.visitas
-                                    clienteBean.is_credito = item.isCredito == 1
+                                    clienteBean.isCredito = item.isCredito == 1
                                     clienteBean.limite_credito = item.limite_credito
                                     clienteBean.saldo_credito = item.saldo_credito
                                     clienteBean.matriz = item.matriz
@@ -657,90 +644,81 @@ class RequestData {
                                         bean.contacto_phone = item.phone_contacto
                                         bean.recordatorio = item.recordatorio
                                         bean.visitasNoefectivas = item.visitas
-                                        bean.is_credito = item.isCredito == 1
+                                        bean.isCredito = item.isCredito == 1
                                         bean.limite_credito = item.limite_credito
                                         bean.saldo_credito = item.saldo_credito
                                         bean.matriz = item.matriz
                                         bean.updatedAt = item.updatedAt
-                                        dao.save(bean)
+                                        clientDao.insert(bean)
                                     }
                                 }
                             }
 
-                            for (item in response.body()!!.data.cobranzas) {
-                                val paymentDao = PaymentDao()
-                                val cobranzaBean = paymentDao.getByCobranza(item.cobranza)
-                                if (cobranzaBean == null) {
-                                    val cobranzaBean1 = CobranzaBean()
-                                    val paymentDao1 = PaymentDao()
-                                    cobranzaBean1.cobranza = item.cobranza
-                                    cobranzaBean1.cliente = item.cuenta
-                                    cobranzaBean1.importe = item.importe
-                                    cobranzaBean1.saldo = item.saldo
-                                    cobranzaBean1.venta = item.venta
-                                    cobranzaBean1.estado = item.estado
-                                    cobranzaBean1.observaciones = item.observaciones
-                                    cobranzaBean1.fecha = item.fecha
-                                    cobranzaBean1.hora = item.hora
-                                    cobranzaBean1.empleado = item.identificador
-                                    cobranzaBean1.isCheck = false
-                                    paymentDao1.insert(cobranzaBean1)
+
+                            val chargeDao = ChargeDao()
+                            response.body()!!.data.cobranzas.map {item ->
+                                val chargeBox1 = chargeDao.getByCobranza(item.cobranza)
+                                if (chargeBox1 == null) {
+                                    val chargeBox = ChargeBox()
+                                    chargeBox.cobranza = item.cobranza
+                                    chargeBox.cliente = item.cuenta
+                                    chargeBox.importe = item.importe
+                                    chargeBox.saldo = item.saldo
+                                    chargeBox.venta = item.venta
+                                    chargeBox.estado = item.estado
+                                    chargeBox.observaciones = item.observaciones
+                                    chargeBox.fecha = item.fecha
+                                    chargeBox.hora = item.hora
+                                    chargeBox.empleado = item.identificador
+                                    chargeBox.isCheck = false
+                                    chargeDao.insert(chargeBox)
                                 } else {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.isCheck = false
-                                    paymentDao.save(cobranzaBean)
+                                    chargeBox1.cobranza = item.cobranza
+                                    chargeBox1.cliente = item.cuenta
+                                    chargeBox1.importe = item.importe
+                                    chargeBox1.saldo = item.saldo
+                                    chargeBox1.venta = item.venta
+                                    chargeBox1.estado = item.estado
+                                    chargeBox1.observaciones = item.observaciones
+                                    chargeBox1.fecha = item.fecha
+                                    chargeBox1.hora = item.hora
+                                    chargeBox1.empleado = item.identificador
+                                    chargeBox1.isCheck = false
+                                    chargeDao.insert(chargeBox1)
                                 }
                             }
 
-                            for (item in response.body()!!.data.precios) {
+                            val specialPricesDao = SpecialPricesDao()
+                            response.body()!!.data.precios.map {item ->
 
-                                //Para obtener los datos del cliente
-                                val clientDao = ClientDao()
                                 val clienteBean = clientDao.getClientByAccount(item.cliente)
-
                                 if (clienteBean != null) {
-                                    //Para obtener los datos del producto
-                                    val productDao = ProductDao()
-                                    val productoBean =
-                                        productDao.getProductoByArticulo(item.articulo)
-
+                                    val productoBean = productDao.getProductoByArticulo(item.articulo)
                                     if (productoBean != null) {
-                                        val specialPricesDao = SpecialPricesDao()
                                         val preciosEspecialesBean =
                                             specialPricesDao.getPrecioEspeciaPorCliente(
                                                 productoBean.articulo,
                                                 clienteBean.cuenta
                                             )
 
-                                        //Si no hay precios especiales entonces crea un precio
                                         if (preciosEspecialesBean == null) {
-                                            val dao = SpecialPricesDao()
-                                            val bean = PreciosEspecialesBean()
+                                            val bean = SpecialPricesBox()
                                             bean.cliente = clienteBean.cuenta
                                             bean.articulo = productoBean.articulo
                                             bean.precio = item.precio
                                             bean.active = item.active == 1
-                                            dao.insert(bean)
-                                            specialPricesDao.save(bean)
+                                            specialPricesDao.insert(bean)
                                         } else {
                                             preciosEspecialesBean.cliente = clienteBean.cuenta
                                             preciosEspecialesBean.articulo = productoBean.articulo
                                             preciosEspecialesBean.precio = item.precio
                                             preciosEspecialesBean.active = item.active == 1
-                                            specialPricesDao.save(preciosEspecialesBean)
+                                            specialPricesDao.insert(preciosEspecialesBean)
                                         }
                                     }
                                 }
                             }
+
                             onGetAllDataByDateListener.onGetAllDataByDateSuccess()
 
                         } else {

@@ -3,6 +3,7 @@ package com.app.syspoint.ui.login
 import android.Manifest
 import android.Manifest.permission
 import android.app.DownloadManager
+import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import com.app.syspoint.App
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityLoginBinding
@@ -26,9 +29,6 @@ import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
-import androidx.annotation.RequiresApi
-
-
 
 
 class LoginActivity: AppCompatActivity() {
@@ -69,7 +69,10 @@ class LoginActivity: AppCompatActivity() {
 
     private fun loginViewState(viewState: LoginViewState) {
         when(viewState) {
-            is LoggedIn -> showMainActivity()
+            is LoggedIn -> {
+                App.INSTANCE?.plantTimber()
+                showMainActivity()
+            }
             is LoginError -> showErrorDialog(viewState.error)
             is LoginVersionError -> showVersionErrorDialog(viewState.error)
             is LoadingDataStart -> binding.rlprogressLogin.setVisible()
@@ -89,6 +92,9 @@ class LoginActivity: AppCompatActivity() {
                 isConnected = false
                 binding.rlprogressLogin.setInvisible()
                 showNotInternetConnectionError()
+            }
+            is NoSessionExists -> {
+                showNotDataInApp()
             }
         }
     }
@@ -121,10 +127,10 @@ class LoginActivity: AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true
         }
-
         if (checkSelfPermission(permission.CAMERA) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(permission.INSTALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
@@ -140,18 +146,37 @@ class LoginActivity: AppCompatActivity() {
             || shouldShowRequestPermissionRationale(permission.INSTALL_PACKAGES)
             || shouldShowRequestPermissionRationale(permission.REQUEST_INSTALL_PACKAGES)
             || shouldShowRequestPermissionRationale(permission.ACCESS_FINE_LOCATION))) {
-            requestPermissions(
-                arrayOf(
-                    permission.CAMERA,
-                    permission.WRITE_EXTERNAL_STORAGE,
-                    permission.READ_EXTERNAL_STORAGE,
-                    permission.BLUETOOTH,
-                    permission.CALL_PHONE,
-                    permission.ACCESS_FINE_LOCATION,
-                    permission.INSTALL_PACKAGES,
-                    permission.REQUEST_INSTALL_PACKAGES
-                ), 100
-            )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                requestPermissions(
+                    arrayOf(
+                        permission.CAMERA,
+                        permission.WRITE_EXTERNAL_STORAGE,
+                        permission.READ_EXTERNAL_STORAGE,
+                        permission.BLUETOOTH_SCAN,
+                        permission.BLUETOOTH_CONNECT,
+                        permission.CALL_PHONE,
+                        permission.ACCESS_FINE_LOCATION,
+                        permission.INSTALL_PACKAGES,
+                        permission.REQUEST_INSTALL_PACKAGES
+                    ), 100
+                )
+            } else {
+                requestPermissions(
+                    arrayOf(
+                        permission.CAMERA,
+                        permission.WRITE_EXTERNAL_STORAGE,
+                        permission.READ_EXTERNAL_STORAGE,
+                        permission.BLUETOOTH,
+                        permission.CALL_PHONE,
+                        permission.ACCESS_FINE_LOCATION,
+                        permission.INSTALL_PACKAGES,
+                        permission.REQUEST_INSTALL_PACKAGES
+                    ), 100
+                )
+            }
+
+
         }
         return false
     }
@@ -185,6 +210,31 @@ class LoginActivity: AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showNeedsWifiErrorDialog(baseUpdateUrl: String, versionToDownload: String) {
+        binding.btnSignIn.isEnabled = true
+        val dialog = PrettyDialog(this)
+        dialog.setTitle("Error")
+            .setTitleColor(R.color.purple_500)
+            .setMessage("Necesitas conectarte a una red WIFI")
+            .setMessageColor(R.color.purple_700)
+            .setAnimationEnabled(false)
+            .setIcon(
+                R.drawable.pdlg_icon_info, R.color.purple_500
+            ) {
+                dialog.dismiss()
+                showAppOldVersion(baseUpdateUrl, versionToDownload)
+            }
+            .addButton(
+                getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.light_blue_800
+            ) {
+                dialog.dismiss()
+            showAppOldVersion(baseUpdateUrl, versionToDownload)
+            }
+
+        dialog.setCancelable(false)
+        dialog.show()
+    }
+
     private fun showVersionErrorDialog(message: String) {
         binding.btnSignIn.isEnabled = true
         val dialog = PrettyDialog(this)
@@ -208,7 +258,7 @@ class LoginActivity: AppCompatActivity() {
 
         if (!isOldApkVersionDialogShowing) {
             isOldApkVersionDialogShowing = true
-            val oldApkVersionDialog = PrettyDialog(this)
+            val oldApkVersionDialog = OldApkVersionDialog(this)
             oldApkVersionDialog.setTitle("Error")
                 .setTitleColor(R.color.purple_500)
                 .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
@@ -223,46 +273,58 @@ class LoginActivity: AppCompatActivity() {
                     if (versionToDownload.isNullOrEmpty()) {
                         showErrorDialog("Ha ocurrido un error, vuelve a intentarlo")
                     } else {
-                        isOldApkVersionDialogShowing = false
-                        oldApkVersionDialog.dismiss()
+                        val connManager =
+                            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                        val mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
 
-                        binding.rlprogressLogin.setVisible()
+                        if (mWifi?.isConnected == true) {
+                            // Do whatever
 
-                        val downloadManager =
-                            getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-                        val request = DownloadManager.Request(
-                            Uri.parse(
-                                Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
-                            )
-                        )
-                        val id = downloadManager.enqueue(request)
+                            isOldApkVersionDialogShowing = false
+                            oldApkVersionDialog.dismiss()
 
-                        val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
-                            override fun onDownloadSuccess(uri: Uri) {
-                                binding.rlprogressLogin.setInvisible()
-                                showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                ApkInstaller().installApplicationFromCpanel(
-                                    applicationContext,
-                                    uri
+                            binding.rlprogressLogin.setVisible()
+
+                            val downloadManager =
+                                getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+                            val request = DownloadManager.Request(
+                                Uri.parse(
+                                    Utils.getUpdateURL(baseUpdateUrl, versionToDownload)
                                 )
-                                viewModel.forceUpdate()
-                            }
+                            )
+                            val id = downloadManager.enqueue(request)
 
-                            override fun onDownloadError(error: String) {
-                                binding.rlprogressLogin.setInvisible()
-                                showAppOldVersion(baseUpdateUrl, versionToDownload)
-                                showErrorDialog(error)
-                            }
+                            val downloadReceiver = DownloadReceiver(id, object : DownloadListener {
+                                override fun onDownloadSuccess(uri: Uri) {
+                                    binding.rlprogressLogin.setInvisible()
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                    ApkInstaller().installApplicationFromCpanel(
+                                        applicationContext,
+                                        uri
+                                    )
+                                    viewModel.forceUpdate()
+                                }
 
-                        })
-                        registerReceiver(
-                            downloadReceiver,
-                            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-                        )
+                                override fun onDownloadError(error: String) {
+                                    binding.rlprogressLogin.setInvisible()
+                                    showAppOldVersion(baseUpdateUrl, versionToDownload)
+                                    showErrorDialog(error)
+                                }
+
+                            })
+                            registerReceiver(
+                                downloadReceiver,
+                                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+                            )
 
 
-                        // just uncomment when firebase is working and paid
-                        //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
+                            // just uncomment when firebase is working and paid
+                            //viewModel.checkAppVersionInFirebaseStore(versionToDownload)
+                        } else {
+                            oldApkVersionDialog.dismiss()
+                            isOldApkVersionDialogShowing = false
+                            showNeedsWifiErrorDialog(baseUpdateUrl, versionToDownload)
+                        }
                     }
 
                 }
@@ -288,6 +350,16 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun showNotInternetConnectionError() {
+        showError("No tiene conexión a internet")
+        binding.etLoginEmail.isEnabled = true
+        binding.etLoginPassword.isEnabled = true
+        binding.btnSignIn.isEnabled = true
+        binding.errorLogin.setVisible()
+        //binding.etLoginEmail.inputType = InputType.TYPE_NULL
+        //binding.etLoginPassword.inputType = InputType.TYPE_NULL
+    }
+
+    private fun showNotDataInApp() {
         showError("No hay regitros en la base de datos, verifique su conexion a internet y vuelva a intentar.")
         binding.etLoginEmail.isEnabled = false
         binding.etLoginPassword.isEnabled = false

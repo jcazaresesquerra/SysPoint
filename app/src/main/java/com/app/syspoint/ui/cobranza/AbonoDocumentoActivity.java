@@ -8,12 +8,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.dao.PaymentDao;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
@@ -67,13 +65,12 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
 
     private void initParametros() {
         try{
-
-            final PaymentDao paymentDao = new PaymentDao();
-            final CobranzaBean cobranzaBean = paymentDao.getByCobranza(ListaDocumentosCobranzaActivity.documentoSeleccionado);
+            ChargeDao chargeDao = new ChargeDao();
+            ChargeBox cobranzaBean = chargeDao.getByCobranza(ListaDocumentosCobranzaActivity.documentoSeleccionado);
             textView_importe_cobranza_documento.setText(Utils.formatMoneyMX(cobranzaBean.getSaldo()));
             saldoDocumento = Double.parseDouble(textView_importe_cobranza_documento.getText().toString().replace("$","").replace(",","").trim());
         }catch (Exception e){
-            //Excepcion.getSingleton(e).procesaExcepcion(activityGlobal);
+            e.printStackTrace();
         }
     }
 
@@ -81,18 +78,46 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
     private void initButtons() {
         Button buttonAceptar = (Button) findViewById(R.id.btn_abonar);
 
-        buttonAceptar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonAceptar.setOnClickListener(v -> {
 
-                String cantidad = editTextCantidad.getText().toString().replace(",", "");
+            String cantidad = editTextCantidad.getText().toString().replace(",", "");
 
 
-                if (cantidad.isEmpty()){
+            if (cantidad.isEmpty()){
+                final PrettyDialog dialogo = new PrettyDialog(AbonoDocumentoActivity.this);
+                dialogo.setTitle("Importe")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe de indicar el importe a abonar")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
+                return;
+            }
+
+            if (cantidad != null ){
+
+                double importe = Double.parseDouble(cantidad);
+
+                if (importe > saldoDocumento){
+
+
                     final PrettyDialog dialogo = new PrettyDialog(AbonoDocumentoActivity.this);
                     dialogo.setTitle("Importe")
                             .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe de indicar el importe a abonar")
+                            .setMessage("El importe es mayor al saldo del documento")
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
                             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
@@ -112,70 +137,39 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (cantidad != null ){
+                //Establece el resultado que debe de regresar
+                Intent intent = new Intent();
+                intent.putExtra(Actividades.PARAM_1, cantidad);
+                setResult(Activity.RESULT_OK, intent);
 
-                    double importe = Double.parseDouble(cantidad);
+                //Cierra la actividad
+                finish();
+            }else{
+               // dialogo = new Dialogo(activityGlobal);
 
-                    if (importe > saldoDocumento){
-
-
-                        final PrettyDialog dialogo = new PrettyDialog(AbonoDocumentoActivity.this);
-                        dialogo.setTitle("Importe")
-                                .setTitleColor(R.color.purple_500)
-                                .setMessage("El importe es mayor al saldo del documento")
-                                .setMessageColor(R.color.purple_700)
-                                .setAnimationEnabled(false)
-                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                })
-                                .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                    @Override
-                                    public void onClick() {
-                                        dialogo.dismiss();
-                                    }
-                                });
-                        dialogo.setCancelable(false);
-                        dialogo.show();
-                        return;
-                    }
-
-                    //Establece el resultado que debe de regresar
-                    Intent intent = new Intent();
-                    intent.putExtra(Actividades.PARAM_1, cantidad);
-                    setResult(Activity.RESULT_OK, intent);
-
-                    //Cierra la actividad
-                    finish();
-                }else{
-                   // dialogo = new Dialogo(activityGlobal);
-
-                    final PrettyDialog dialogo = new PrettyDialog(AbonoDocumentoActivity.this);
-                    dialogo.setTitle("Importe")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe de indicar el importe del documento")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
-                    dialogo.setCancelable(false);
-                    dialogo.show();
+                final PrettyDialog dialogo = new PrettyDialog(AbonoDocumentoActivity.this);
+                dialogo.setTitle("Importe")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe de indicar el importe del documento")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
 
 
-                    return;
-                }
+                return;
             }
         });
     }

@@ -33,6 +33,7 @@ class RequestFile {
                     if (response.isSuccessful) {
                         onPostFileListener.onPostFileSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onPostFileListener.onPostFileError()
                     }
                 }

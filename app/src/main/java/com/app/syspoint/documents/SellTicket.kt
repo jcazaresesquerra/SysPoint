@@ -1,17 +1,17 @@
 package com.app.syspoint.documents
 
 import com.app.syspoint.BuildConfig
-import com.app.syspoint.repository.database.bean.VentasBean
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.entities.SellBox
 
 class SellTicket: BaseTicket() {
 
     override fun template() {
         super.template()
 
-        val ventasBean = bean as VentasBean
+        val ventasBean = box as SellBox
 
         /*var saldoCreditodo = 0.0
         var facturaMatriz = false
@@ -40,17 +40,17 @@ class SellTicket: BaseTicket() {
         }
 
         //val importeTotalVenta: Double = ventasBean.importe + ventasBean.impuesto
-        for (items in ventasBean.listaPartidas) {
-            ticket += "" + items.articulo.descripcion + Constants.newLine +
+        for (items in ventasBean.listaPartidas!!) {
+            ticket += "" + items.articulo!!.target.descripcion + Constants.NEW_LINE +
                     "" + String.format(
                 "%1$-5s %2$11s %3$10s %4$10s",
                 items.cantidad,
                 Utils.FDinero(items.precio),
                 Utils.FDinero(items.precio * items.cantidad),
                 ""
-            ) + Constants.newLine
+            ) + Constants.NEW_LINE
         }
-        ticket += "================================" + Constants.newLine + Constants.newLine
+        ticket += "================================" + Constants.NEW_LINE + Constants.NEW_LINE
 
 /*
         if (ventasBean.getTipo_venta().compareToIgnoreCase("CREDITO") == 0) {
@@ -82,21 +82,21 @@ class SellTicket: BaseTicket() {
             "   SubTotal:",
             Utils.FDinero(ventasBean.importe),
             ""
-        ) + Constants.newLine +
+        ) + Constants.NEW_LINE +
                 "" + String.format(
             "%1$-5s %2$-10s %3$11s %4$10s",
             "",
             "       IVA:",
             Utils.FDinero(ventasBean.impuesto),
             ""
-        ) + Constants.newLine +
+        ) + Constants.NEW_LINE +
                 "" + String.format(
             "%1$-5s %2$-10s %3$11s %4$10s",
             "",
             "     Total:",
             Utils.FDinero(ventasBean.importe + ventasBean.impuesto),
             ""
-        ) + "" + Constants.newLine
+        ) + "" + Constants.NEW_LINE
         /*if (ventasBean.getTipo_venta().compareToIgnoreCase("CREDITO") == 0) {
             if (facturaMatriz){
                 ticket += "" + String.format("%1$-5s %2$-10s %3$5s %4$5s", "", " SALDO ACTUAL:", Utils.FDinero(saldoCreditodo), "") + salto + salto;
@@ -111,19 +111,19 @@ class SellTicket: BaseTicket() {
                 ticket += "" + String.format("%1$-5s %2$-10s %3$5s %4$5s", "", " SALDO ACTUAL:", Utils.FDinero(saldoCreditodo), "") + salto + salto;
             }
         }*/
-        ticket += "================================" + Constants.newLine
-        if (ventasBean.tipo_venta.compareTo("CREDITO", ignoreCase = true) == 0) {
-            ticket += "FIRMA DE CONFORMIDAD:           " + Constants.newLine +
-                    "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine +
-                    "                                " + Constants.newLine +
-                    "================================" + Constants.newLine +
-                    "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.newLine +
-                    "FOLIO FINAL:         " + ventasBean.ticket + Constants.newLine +
-                    "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
-        } else if (ventasBean.tipo_venta.compareTo("CONTADO", ignoreCase = true) == 0) {
-            ticket += "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.newLine +
-                    "FOLIO FINAL:         " + ventasBean.ticket + Constants.newLine +
-                    "" + Constants.newLine + Constants.newLine + Constants.newLine + Constants.newLine
+        ticket += "================================" + Constants.NEW_LINE
+        if (ventasBean.tipo_venta!!.compareTo("CREDITO", ignoreCase = true) == 0) {
+            ticket += "FIRMA DE CONFORMIDAD:           " + Constants.NEW_LINE +
+                    "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                    "                                " + Constants.NEW_LINE +
+                    "================================" + Constants.NEW_LINE +
+                    "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
+                    "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
+                    "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
+        } else if (ventasBean.tipo_venta!!.compareTo("CONTADO", ignoreCase = true) == 0) {
+            ticket += "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.NEW_LINE +
+                    "FOLIO FINAL:         " + ventasBean.ticket + Constants.NEW_LINE +
+                    "" + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE
         }
 
 
@@ -131,67 +131,67 @@ class SellTicket: BaseTicket() {
     }
 
     override fun buildSyspointHeader(): String {
-        val ventasBean = bean as VentasBean
+        val sellBox = box as SellBox
 
-        val vendedor = if (ventasBean.empleado != null) {
-            "Vendedor:" + ventasBean.empleado.getNombre() + Constants.newLine
+        val vendedor = if (sellBox.employee != null) {
+            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
         } else {
-            val empleadoBean = CacheInteractor().getSeller()
-            if (empleadoBean != null) "Vendedor:" + empleadoBean.getNombre() + Constants.newLine
+            val employeeBox = CacheInteractor().getSeller()
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
             else ""
         }
 
-        return "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
-                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
-                "      San Rafael C.P. 80150     " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "           APO170818QR6         " + Constants.newLine +
-                "          (667) 744-9350        " + Constants.newLine +
-                "        info@aguapoint.com      " + Constants.newLine +
-                "         www.aguapoint.com      " + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "(" + ventasBean.cliente.cuenta + ")  " + ventasBean.cliente.nombre_comercial + Constants.newLine + vendedor +
-                "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.newLine +
-                "FOLIO FINAL:         " + ventasBean.ticket + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "          NOTA DE VENTA         " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "CONCEPTO / PRODUCTO             " + Constants.newLine +
-                "CANTIDAD     PRECIO     IMPORTE " + Constants.newLine +
-                "================================" + Constants.newLine
+        return "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+                "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "           APO170818QR6         " + Constants.NEW_LINE +
+                "          (667) 744-9350        " + Constants.NEW_LINE +
+                "        info@aguapoint.com      " + Constants.NEW_LINE +
+                "         www.aguapoint.com      " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE + vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
     }
 
     override fun buildDonAquiHeader(): String {
-        val ventasBean = bean as VentasBean
+        val sellBox = box as SellBox
 
-        val vendedor = if (ventasBean.empleado != null) {
-            "Vendedor:" + ventasBean.empleado.getNombre() + Constants.newLine
+        val employee = if (sellBox.employee != null) {
+            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
         } else {
-            val empleadoBean = CacheInteractor().getSeller()
-            if (empleadoBean != null) "Vendedor:" + empleadoBean.getNombre() + Constants.newLine
+            val employeeBox = CacheInteractor().getSeller()
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre+ Constants.NEW_LINE
             else ""
         }
 
-        return "         AGUAS DON AQUI         " + Constants.newLine +
-                " Blvd. Manuel J. Clouthier 2755 " + Constants.newLine +
-                "     Buenos Aires C.P. 80199    " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "          HIMA9801022T8         " + Constants.newLine +
-                "    Adalberto Higuera Mendez    " + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "(" + ventasBean.cliente.cuenta + ")  " + ventasBean.cliente.nombre_comercial + Constants.newLine +
-                vendedor +
-                "" + ventasBean.fecha + " " + ventasBean.hora + "" + Constants.newLine +
-                "FOLIO FINAL:         " + ventasBean.ticket + Constants.newLine +
-                "" + Constants.newLine +
-                "" + Constants.newLine +
-                "          NOTA DE VENTA         " + Constants.newLine +
-                "================================" + Constants.newLine +
-                "CONCEPTO / PRODUCTO             " + Constants.newLine +
-                "CANTIDAD     PRECIO     IMPORTE " + Constants.newLine +
-                "================================" + Constants.newLine
+        return "         AGUAS DON AQUI         " + Constants.NEW_LINE +
+                " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
+                "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "          HIMA9801022T8         " + Constants.NEW_LINE +
+                "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE +
+                employee +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
     }
 }

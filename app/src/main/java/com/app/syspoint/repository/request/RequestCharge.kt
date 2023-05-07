@@ -1,5 +1,8 @@
 package com.app.syspoint.repository.request
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
+import android.os.Looper
 import android.util.Log
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.charge.ChargeInteractor
@@ -8,21 +11,39 @@ import com.app.syspoint.models.RequestChargeByRute
 import com.app.syspoint.models.json.PaymentJson
 import com.app.syspoint.models.json.RequestCobranza
 import com.app.syspoint.models.json.RequestTokenBody
-import com.app.syspoint.repository.database.bean.CobranzaBean
-import com.app.syspoint.repository.database.dao.ClientDao
-import com.app.syspoint.repository.database.dao.PaymentDao
-import com.app.syspoint.repository.database.dao.StockDao
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.StockDao
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.awaitResponse
+import timber.log.Timber
 import java.text.SimpleDateFormat
+
 
 class RequestCharge {
     companion object {
-        fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener) {
+        private const val TAG = "RequestCharge"
+        fun requestGetCharge2(): Call<PaymentJson> {
+            val appVersion = BuildConfig.VERSION_NAME.split(".")
+            val version = appVersion[0]
+            val subversion = appVersion[1] + "." + appVersion[2]
+            val requestTokenBody = RequestTokenBody(version, subversion)
+
+            Timber.tag(TAG).d("requestGetCharge2")
+            val getCharge = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getCobranza()
+
+            return getCharge
+        }
+
+        fun requestGetCharge(onGetChargeListener: ChargeInteractor.OnGetChargeListener): Call<PaymentJson> {
             val appVersion = BuildConfig.VERSION_NAME.split(".")
             val version = appVersion[0]
             val subversion = appVersion[1] + "." + appVersion[2]
@@ -32,65 +53,79 @@ class RequestCharge {
                 PointApi::class.java
             ).getCobranza()
 
+            val isUiThread =
+                if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "requestGetCharge request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("requestGetCharge -> isUIThread: %s", isUiThread)
+
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    val isUiThread =
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                    Log.d("RuestCharge", "requestGetCharge response isUIThread: $isUiThread")
+
                     if (response.isSuccessful) {
-                        val paymentDao = PaymentDao()
-                        val chargeList = arrayListOf<CobranzaBean>()
+
+                        val chargeList = arrayListOf<ChargeBox>()
                         val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
-                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
-                            if (cobranzaBean == null) {
-                                val chargeBean = CobranzaBean()
-                                val paymentDao1 = PaymentDao()
-                                chargeBean.cobranza = item.cobranza
-                                chargeBean.cliente = item.cuenta
-                                chargeBean.importe = item.importe
-                                chargeBean.saldo = item.saldo
-                                chargeBean.venta = item.venta
-                                chargeBean.estado = item.estado
-                                chargeBean.observaciones = item.observaciones
-                                chargeBean.fecha = item.fecha
-                                chargeBean.hora = item.hora
-                                chargeBean.empleado = item.identificador
-                                chargeBean.updatedAt = item.updatedAt
-                                chargeBean.stockId = stockId
-                                paymentDao1.insert(chargeBean)
-                                chargeList.add(chargeBean)
+                        val chargeDao = ChargeDao()
+                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+                        response.body()!!.payments!!.map {item ->
+                            val charge = chargeDao.getByCobranza(item!!.cobranza)
+
+                            if (charge == null) {
+                                val chargeBox = ChargeBox()
+                                chargeBox.cobranza = item.cobranza
+                                chargeBox.cliente = item.cuenta
+                                chargeBox.importe = item.importe
+                                chargeBox.saldo = item.saldo
+                                chargeBox.venta = item.venta
+                                chargeBox.estado = item.estado
+                                chargeBox.observaciones = item.observaciones
+                                chargeBox.fecha = item.fecha
+                                chargeBox.hora = item.hora
+                                chargeBox.empleado = item.identificador
+                                chargeBox.updatedAt = formatter.parse(item.updatedAt)
+                                chargeBox.stockId = stockId
+                                chargeDao.insert(chargeBox)
+                                chargeList.add(chargeBox)
                             } else {
-                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
-                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+                                val update = if (charge.updatedAt != null && !formatter.format(charge.updatedAt).isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val dateItem = try {
                                         formatter.parse(item.updatedAt)
                                     } catch (e: Exception) {
                                         formatter.parse(item.updatedAt + "00:00:00")
                                     }
                                     val dateBean = try {
-                                        formatter.parse(cobranzaBean.updatedAt)
+                                        charge.updatedAt
                                     } catch (e: Exception) {
-                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                        formatter.parse(formatter.format(charge.updatedAt) + "00:00:00")
                                     }
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.updatedAt = item.updatedAt
-                                    cobranzaBean.stockId = stockId
-                                    paymentDao.save(cobranzaBean)
+                                    charge.cobranza = item.cobranza
+                                    charge.cliente = item.cuenta
+                                    charge.importe = item.importe
+                                    charge.saldo = item.saldo
+                                    charge.venta = item.venta
+                                    charge.estado = item.estado
+                                    charge.observaciones = item.observaciones
+                                    charge.fecha = item.fecha
+                                    charge.hora = item.hora
+                                    charge.empleado = item.identificador
+                                    charge.updatedAt = formatter.parse(item.updatedAt)
+                                    charge.stockId = stockId
+                                    chargeDao.insert(charge)
                                 }
-                                chargeList.add(cobranzaBean)
+                                chargeList.add(charge)
                             }
                         }
+
                         onGetChargeListener.onGetChargeSuccess(chargeList)
                     } else {
                         onGetChargeListener.onGetChargeError()
@@ -103,6 +138,7 @@ class RequestCharge {
 
             })
 
+            return getCharge
         }
 
         fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {
@@ -111,63 +147,71 @@ class RequestCharge {
                 PointApi::class.java
             ).getAllCobranzaByEmployee(requestChargesByRute)
 
+            val isUiThread =
+                if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "requestGetChargeByEmployee request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("requestGetChargeByEmployee -> isUIThread: %s", isUiThread)
             getCharge.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    val isUiThread =
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                    Log.d("RuestCharge", "requestGetChargeByEmployee response isUIThread: $isUiThread")
                     if (response.isSuccessful) {
-                        val paymentDao = PaymentDao()
-                        val chargeList = arrayListOf<CobranzaBean>()
+                        val chargeList = arrayListOf<ChargeBox>()
                         val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
-                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
-                            if (cobranzaBean == null) {
-                                val chargeBean = CobranzaBean()
-                                val paymentDao1 = PaymentDao()
-                                chargeBean.cobranza = item.cobranza
-                                chargeBean.cliente = item.cuenta
-                                chargeBean.importe = item.importe
-                                chargeBean.saldo = item.saldo
-                                chargeBean.venta = item.venta
-                                chargeBean.estado = item.estado
-                                chargeBean.observaciones = item.observaciones
-                                chargeBean.fecha = item.fecha
-                                chargeBean.hora = item.hora
-                                chargeBean.empleado = item.identificador
-                                chargeBean.updatedAt = item.updatedAt
-                                chargeBean.stockId = stockId
-                                paymentDao1.insert(chargeBean)
-                                chargeList.add(chargeBean)
+                        val chargeDao = ChargeDao()
+                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+                        response.body()!!.payments!!.map {item ->
+                            val charge = chargeDao.getByCobranza(item!!.cobranza)
+                            if (charge == null) {
+                                val chargeBox = ChargeBox()
+                                chargeBox.cobranza = item.cobranza
+                                chargeBox.cliente = item.cuenta
+                                chargeBox.importe = item.importe
+                                chargeBox.saldo = item.saldo
+                                chargeBox.venta = item.venta
+                                chargeBox.estado = item.estado
+                                chargeBox.observaciones = item.observaciones
+                                chargeBox.fecha = item.fecha
+                                chargeBox.hora = item.hora
+                                chargeBox.empleado = item.identificador
+                                chargeBox.updatedAt = formatter.parse(item.updatedAt)
+                                chargeBox.stockId = stockId
+                                chargeDao.insert(chargeBox)
+                                chargeList.add(chargeBox)
                             } else {
-                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
-                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                val update = if (charge.updatedAt != null && !formatter.format(charge.updatedAt).isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val dateItem = try {
                                         formatter.parse(item.updatedAt)
                                     } catch (e: Exception) {
                                         formatter.parse(item.updatedAt + "00:00:00")
                                     }
                                     val dateBean = try {
-                                        formatter.parse(cobranzaBean.updatedAt)
+                                        charge.updatedAt
                                     } catch (e: Exception) {
-                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                        formatter.parse(formatter.format(charge.updatedAt) + "00:00:00")
                                     }
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.updatedAt = item.updatedAt
-                                    cobranzaBean.stockId = stockId
-                                    paymentDao.save(cobranzaBean)
+                                    charge.cobranza = item.cobranza
+                                    charge.cliente = item.cuenta
+                                    charge.importe = item.importe
+                                    charge.saldo = item.saldo
+                                    charge.venta = item.venta
+                                    charge.estado = item.estado
+                                    charge.observaciones = item.observaciones
+                                    charge.fecha = item.fecha
+                                    charge.hora = item.hora
+                                    charge.empleado = item.identificador
+                                    charge.updatedAt = formatter.parse(item.updatedAt)
+                                    charge.stockId = stockId
+                                    chargeDao.insert(charge)
                                 }
-                                chargeList.add(cobranzaBean)
+                                chargeList.add(charge)
                             }
                         }
                         onGetChargeListener.onGetChargeByEmployeeSuccess(chargeList)
@@ -195,67 +239,79 @@ class RequestCharge {
                 PointApi::class.java
             ).getCobranzaByCliente(requestCobranza)
 
+            val isUiThread =
+                if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "requestGetChargeByClient request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("requestGetChargeByClient -> isUIThread: %s", isUiThread)
+
             getChargeByClient.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    val isUiThread =
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                    Log.d("RuestCharge", " requestGetChargeByClient response isUIThread: $isUiThread")
                     if (response.isSuccessful) {
-                        val paymentDao = PaymentDao()
-                        val chargeByClientList = arrayListOf<CobranzaBean>()
+                        val chargeList = arrayListOf<ChargeBox>()
                         val stockId = StockDao().getCurrentStockId()
-                        for (item in response.body()!!.payments!!) {
-                            val cobranzaBean = paymentDao.getByCobranza(item!!.cobranza)
-                            if (cobranzaBean == null) {
-                                val cobranzaBean1 = CobranzaBean()
-                                cobranzaBean1.cobranza = item.cobranza
-                                cobranzaBean1.cliente = item.cuenta
-                                cobranzaBean1.importe = item.importe
-                                cobranzaBean1.saldo = item.saldo
-                                cobranzaBean1.venta = item.venta
-                                cobranzaBean1.estado = item.estado
-                                cobranzaBean1.observaciones = item.observaciones
-                                cobranzaBean1.fecha = item.fecha
-                                cobranzaBean1.hora = item.hora
-                                cobranzaBean1.empleado = item.identificador
-                                cobranzaBean1.isCheck = false
-                                cobranzaBean1.updatedAt = item.updatedAt
-                                cobranzaBean1.stockId = stockId
-                                paymentDao.insert(cobranzaBean1)
-                                chargeByClientList.add(cobranzaBean1)
+                        val chargeDao = ChargeDao()
+                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+                        response.body()!!.payments!!.map {item ->
+
+                            val charge = chargeDao.getByCobranza(item!!.cobranza)
+                            if (charge == null) {
+                                val chargeBox = ChargeBox()
+                                chargeBox.cobranza = item.cobranza
+                                chargeBox.cliente = item.cuenta
+                                chargeBox.importe = item.importe
+                                chargeBox.saldo = item.saldo
+                                chargeBox.venta = item.venta
+                                chargeBox.estado = item.estado
+                                chargeBox.observaciones = item.observaciones
+                                chargeBox.fecha = item.fecha
+                                chargeBox.hora = item.hora
+                                chargeBox.empleado = item.identificador
+                                chargeBox.isCheck = false
+                                chargeBox.updatedAt = formatter.parse(item.updatedAt)
+                                chargeBox.stockId = stockId
+                                chargeDao.insert(chargeBox)
+                                chargeList.add(chargeBox)
                             } else {
-                                val update = if (!cobranzaBean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
-                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                val update = if (charge.updatedAt != null && !formatter.format(charge.updatedAt).isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
                                     val dateItem = try {
                                         formatter.parse(item.updatedAt)
                                     } catch (e: Exception) {
                                         formatter.parse(item.updatedAt + "00:00:00")
                                     }
                                     val dateBean = try {
-                                        formatter.parse(cobranzaBean.updatedAt)
+                                        charge.updatedAt
                                     } catch (e: Exception) {
-                                        formatter.parse(cobranzaBean.updatedAt + "00:00:00")
+                                        formatter.parse(formatter.format(charge.updatedAt) + "00:00:00")
                                     }
                                     dateItem?.compareTo(dateBean) ?: 1
                                 } else 1
 
                                 if (update > 0) {
-                                    cobranzaBean.cobranza = item.cobranza
-                                    cobranzaBean.cliente = item.cuenta
-                                    cobranzaBean.importe = item.importe
-                                    cobranzaBean.saldo = item.saldo
-                                    cobranzaBean.venta = item.venta
-                                    cobranzaBean.estado = item.estado
-                                    cobranzaBean.observaciones = item.observaciones
-                                    cobranzaBean.fecha = item.fecha
-                                    cobranzaBean.hora = item.hora
-                                    cobranzaBean.empleado = item.identificador
-                                    cobranzaBean.isCheck = false
-                                    cobranzaBean.updatedAt = item.updatedAt
-                                    cobranzaBean.stockId = stockId
-                                    paymentDao.save(cobranzaBean)
+                                    charge.cobranza = item.cobranza
+                                    charge.cliente = item.cuenta
+                                    charge.importe = item.importe
+                                    charge.saldo = item.saldo
+                                    charge.venta = item.venta
+                                    charge.estado = item.estado
+                                    charge.observaciones = item.observaciones
+                                    charge.fecha = item.fecha
+                                    charge.hora = item.hora
+                                    charge.empleado = item.identificador
+                                    charge.isCheck = false
+                                    charge.updatedAt = formatter.parse(item.updatedAt)
+                                    charge.stockId = stockId
+                                    chargeDao.insert(charge)
                                 }
-                                chargeByClientList.add(cobranzaBean)
+                                chargeList.add(charge)
                             }
                         }
-                        onGetChargeByClientListener.onGetChargeByClientSuccess(chargeByClientList)
+
+                        onGetChargeByClientListener.onGetChargeByClientSuccess(chargeList)
                     } else {
                         onGetChargeByClientListener.onGetChargeByClientError()
                     }
@@ -273,14 +329,23 @@ class RequestCharge {
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
             val json = Gson().toJson(chargeJson)
-            Log.d("Sin Cobranza", json)
+            Log.d("saveCharge Sin Cobranza", json)
 
             val saveCharges = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).sendCobranza(chargeJson)
 
+            val isUiThread =
+                if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "save request isUIThread: $isUiThread")
+
+            Timber.tag(TAG).d("saveCharge -> charges: %s -> isUIThread: %s", chargeJson, isUiThread)
+
             saveCharges.enqueue(object: Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    val isUiThread =
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                    Log.d("RuestCharge", "save response isUIThread: $isUiThread")
                     if (response.isSuccessful) {
                         onSaveChargeListener.onSaveChargeSuccess()
                     } else {
@@ -299,14 +364,21 @@ class RequestCharge {
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
             val json = Gson().toJson(chargeJson)
-            Log.d("Sin Cobranza", json)
+            Log.d("updateCharge Sin Cobranza", json)
 
             val updateCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).updateCobranza(chargeJson)
 
+            val isUiThread =
+                if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+            Log.d("RuestCharge", "update request isUIThread: $isUiThread")
+
             updateCharge.enqueue(object : Callback<PaymentJson> {
                 override fun onResponse(call: Call<PaymentJson>, response: Response<PaymentJson>) {
+                    val isUiThread =
+                        if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
+                    Log.d("RuestCharge", "update response isUIThread: $isUiThread")
                     if (response.isSuccessful) {
                         onUpdateChargeListener.onUpdateChargeSuccess()
                     } else {

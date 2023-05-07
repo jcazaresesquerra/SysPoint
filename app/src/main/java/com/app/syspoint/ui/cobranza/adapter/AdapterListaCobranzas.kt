@@ -4,12 +4,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaCobranzaCardviewBinding
-import com.app.syspoint.repository.database.bean.CobrosBean
+import com.app.syspoint.repository.objectBox.entities.CobrosBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 
 class AdapterListaCobranzas(
-    data: List<CobrosBean?>,
+    data: List<CobrosBox?>,
     val onItemClickListener: OnItemClickListener
     ): RecyclerView.Adapter<AdapterListaCobranzas.Holder>() {
 
@@ -27,12 +27,12 @@ class AdapterListaCobranzas(
     override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
 
     class Holder(val binding: ItemListaCobranzaCardviewBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(cobrosBean: CobrosBean?, onItemClickListener: OnItemClickListener) {
+        fun bind(cobrosBean: CobrosBox?, onItemClickListener: OnItemClickListener) {
             cobrosBean?.let {
                 val total = it.importe
                 val subtotalFormato = Utils.formatMoneyMX(total)
-                binding.tvListaCobranzaClienteView.text = it.cliente.cuenta
-                binding.tvListaCobranzaClienteNombreView.text = it.cliente.nombre_comercial
+                binding.tvListaCobranzaClienteView.text = it.cliente!!.target.cuenta
+                binding.tvListaCobranzaClienteNombreView.text = it.cliente!!.target.nombre_comercial
                 binding.tvListaCobranzaCobranzaView.text = it.cobro.toString()
                 binding.tvListaCobranzaHoraCobranzaView.text = it.hora
                 binding.tvListaCobranzaFechaView.text = it.fecha

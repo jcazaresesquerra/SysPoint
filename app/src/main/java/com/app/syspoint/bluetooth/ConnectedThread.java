@@ -113,20 +113,20 @@ public class ConnectedThread extends Thread {
             String body = bodyText();
 
             printCustom(header,1,1);
-            printCustom(Constants.divider, 4,0);
+            printCustom(Constants.DIVIDER, 4,0);
             printNewLine();
             printCustom("AVISO", 4,1);
             printCustom("DE VISITA", 4,1);
             printNewLine();
-            printCustom(Constants.divider, 4,0);
+            printCustom(Constants.DIVIDER, 4,0);
             printCustom(body, 1, 1);
-            printCustom(Constants.divider, 4,0);
+            printCustom(Constants.DIVIDER, 4,0);
             printNewLine();
             printCustom("Resultado de la Visita", 1,1);
             printCustom(concepto, 4,1);
             printCustom(bodyText2(empleado, fecha, hora),1, 1 );
             printNewLine();
-            printCustom(Constants.divider, 4,0);
+            printCustom(Constants.DIVIDER, 4,0);
             printNewLine();
             printCustom("Llamenos", 1, 1);
             printCustom("(667) 744-9350", 4, 1);
@@ -141,37 +141,37 @@ public class ConnectedThread extends Thread {
     }
 
     private String headerTicket(){
-        return  "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
-                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
-                "      San Rafael C.P. 80150     " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "           APO170818QR6         " + Constants.newLine +
-                "          (667) 774-9350        " + Constants.newLine +
-                "        info@aguapoint.com      " + Constants.newLine +
-                "         www.aguapoint.com      " + Constants.newLine;
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+                "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "           APO170818QR6         " + Constants.NEW_LINE +
+                "          (667) 774-9350        " + Constants.NEW_LINE +
+                "        info@aguapoint.com      " + Constants.NEW_LINE +
+                "         www.aguapoint.com      " + Constants.NEW_LINE;
     }
 
     private String bodyText(){
-        return  "Le informamos que estuvimos en" + Constants.newLine +
-                " su domicilio pero no pudimos  " + Constants.newLine +
-                "   atenderle. Estamos a sus      " + Constants.newLine +
-                " ordenes por favor cominiquese " + Constants.newLine +
+        return  "Le informamos que estuvimos en" + Constants.NEW_LINE +
+                " su domicilio pero no pudimos  " + Constants.NEW_LINE +
+                "   atenderle. Estamos a sus      " + Constants.NEW_LINE +
+                " ordenes por favor cominiquese " + Constants.NEW_LINE +
                 "           con nosotros                  ";
     }
     private String bodyText2(String empleado, String fecha, String hora){
-        return  "" + fecha + " - " + hora + "" + Constants.newLine +
-                "Vendedor: " + empleado + Constants.newLine;
+        return  "" + fecha + " - " + hora + "" + Constants.NEW_LINE +
+                "Vendedor: " + empleado + Constants.NEW_LINE;
     }
 
     private String footerText(){
-        return  "     AGUA POINT S.A. DE C.V.    " + Constants.newLine +
-                "     Calz. Aeropuerto 4912 A    " + Constants.newLine +
-                "      San Rafael C.P. 80150     " + Constants.newLine +
-                "        Culiacan, Sinaloa       " + Constants.newLine +
-                "           APO170818QR6         " + Constants.newLine +
-                "          (667) 774-9350        " + Constants.newLine +
-                "        info@aguapoint.com      " + Constants.newLine +
-                "         www.aguapoint.com      " + Constants.newLine;
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+                "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "           APO170818QR6         " + Constants.NEW_LINE +
+                "          (667) 774-9350        " + Constants.NEW_LINE +
+                "        info@aguapoint.com      " + Constants.NEW_LINE +
+                "         www.aguapoint.com      " + Constants.NEW_LINE;
     }
 
     public void printText(byte[] msg) {

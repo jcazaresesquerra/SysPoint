@@ -1,9 +1,6 @@
 package com.app.syspoint.repository.cache
 
 import android.content.Context
-import com.app.syspoint.App
-import com.app.syspoint.repository.database.bean.EmpleadoBean
-import com.app.syspoint.utils.JsonParser
 
 class SharedPreferencesManager(context: Context) {
     /*
@@ -15,6 +12,7 @@ class SharedPreferencesManager(context: Context) {
     private val DATA_STATUS: String = "data_status"
     private val APP_TOKEN: String = "app_token"
     private val STOCK_ID: String = "stock_id"
+    private val LOAD_ID: String = "load_id"
 
 
     /*
@@ -110,5 +108,18 @@ class SharedPreferencesManager(context: Context) {
     fun getCurrentStockId(): Int {
         val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         return prefs.getInt(STOCK_ID, 0)
+    }
+
+
+    fun saveCurrentLoadId(loadId: Int) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putInt(LOAD_ID, loadId)
+        editor.apply()
+    }
+
+    fun getCurrentLoadId(): Int {
+        val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(LOAD_ID, 0)
     }
 }

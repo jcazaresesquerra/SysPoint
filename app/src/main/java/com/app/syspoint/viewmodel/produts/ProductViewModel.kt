@@ -4,12 +4,12 @@ import androidx.lifecycle.MutableLiveData
 import com.app.syspoint.interactor.product.GetProductInteractor
 import com.app.syspoint.interactor.product.GetProductsInteractorImp
 import com.app.syspoint.models.sealed.ProductViewState
-import com.app.syspoint.repository.database.bean.AppBundle
-import com.app.syspoint.repository.database.bean.ProductoBean
-import com.app.syspoint.repository.database.dao.ProductDao
-import com.app.syspoint.repository.database.dao.RolesDao
+import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.RolesDao
+import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class ProductViewModel: BaseViewModel() {
@@ -40,23 +40,23 @@ class ProductViewModel: BaseViewModel() {
         }.execute()
     }
 
-    fun handleSelection(name: String?, productBean: ProductoBean) {
+    fun handleSelection(name: String?, productBean: ProductBox) {
         var identificador = ""
 
         //Obtiene el nombre del vendedor
-        var vendedoresBean = AppBundle.getUserBean()
+        var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) {
             vendedoresBean = CacheInteractor().getSeller()
         }
         if (vendedoresBean != null) {
-            identificador = vendedoresBean.getIdentificador()
+            identificador = vendedoresBean.identificador!!
         }
         val rolesDao = RolesDao()
         val rolesBean = rolesDao.getRolByEmpleado(identificador, "Productos")
         if (name == null || name.compareTo("Editar", ignoreCase = true) == 0) {
             if (rolesBean != null) {
                 if (rolesBean.active) {
-                    productViewState.postValue(ProductViewState.EditProductState(productBean.articulo))
+                    productViewState.postValue(ProductViewState.EditProductState(productBean.articulo!!))
                 } else {
                     productViewState.postValue(ProductViewState.CanNotEditProductState)
                 }
@@ -67,7 +67,7 @@ class ProductViewModel: BaseViewModel() {
     fun getProducts() {
         productViewState.value = ProductViewState.LoadingStartState
         GetProductsInteractorImp().executeGetProducts(object: GetProductInteractor.OnGetProductsListener {
-            override fun onGetProductsSuccess(products: List<ProductoBean?>) {
+            override fun onGetProductsSuccess(products: List<ProductBox?>) {
                 productViewState.value = ProductViewState.LoadingFinishState
                 productViewState.value = ProductViewState.GetProductsSuccess(products)
             }

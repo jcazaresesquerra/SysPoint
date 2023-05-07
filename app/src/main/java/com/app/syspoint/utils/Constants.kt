@@ -8,8 +8,12 @@ class Constants {
         const val permission_Read_data = 789
         var solictaRuta = false
 
-        const val newLine = "\n"
-        const val divider = "****************"
+        const val NEW_LINE = "\n"
+        const val EMPTY_STRING = ""
+        const val DIVIDER = "****************"
+        const val DON_AQUI_FLAVOR_TAG = "donaqui"
+        const val SYSPOINT_FLAVOR_TAG = "syspoint"
+        const val CONTADO = "Contado"
 
         //Contiene la línea
         const val line = "================================"

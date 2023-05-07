@@ -1,10 +1,10 @@
 package com.app.syspoint.documents
 
-import com.app.syspoint.repository.database.bean.Bean
+import com.app.syspoint.repository.objectBox.entities.BaseBox
 
 abstract class BaseTicket {
     open lateinit var document: String
-    open lateinit var bean: Bean
+    open lateinit var box: BaseBox
 
     open fun template() {}
 

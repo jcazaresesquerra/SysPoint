@@ -13,9 +13,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.RoutingDao;
-import com.app.syspoint.repository.database.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.utils.Utils;
 
 import java.text.SimpleDateFormat;
@@ -39,7 +39,7 @@ public class DialogoRuteo extends Dialog {
         setContentView(R.layout.dialog_ruteo_condional);
 
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null) {
             rutaSeleccionada = ruteoBean.getRuta();

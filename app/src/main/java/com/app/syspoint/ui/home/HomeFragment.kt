@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.databinding.FragmentHomeBinding
 import com.app.syspoint.models.sealed.HomeViewState
-import com.app.syspoint.repository.database.bean.ClientesRutaBean
 import com.app.syspoint.ui.customs.DialogoRuteo
 import com.app.syspoint.ui.customs.DialogoRuteo.DialogListener
 import com.app.syspoint.ui.home.activities.MapsRuteoActivity

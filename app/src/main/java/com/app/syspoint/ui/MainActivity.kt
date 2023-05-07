@@ -19,6 +19,8 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatButton
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
@@ -49,16 +51,23 @@ import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.interactor.visit.VisitInteractor.OnSaveVisitListener
 import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
-import com.app.syspoint.repository.database.bean.*
-import com.app.syspoint.repository.database.dao.*
+import com.app.syspoint.models.enums.RoleType
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.RolesBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 
 class MainActivity: BaseActivity() {
 
@@ -72,11 +81,9 @@ class MainActivity: BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    // receiver
-    private lateinit var mNetworkChangeReceiver: NetworkChangeReceiver
-
-    private var isConnected = false
     private var isOldApkVersionDialogShowing = false
+
+    private lateinit var progressDialog: ProgressDialog
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,26 +96,28 @@ class MainActivity: BaseActivity() {
 
         val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
 
-        var vendedoresBean = AppBundle.getUserBean()
+        var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
-        val identificador = if (vendedoresBean != null) vendedoresBean.getIdentificador() else ""
+        val identificador = if (vendedoresBean != null) vendedoresBean.identificador else ""
 
         val rolesDao = RolesDao()
-        val productsRolesBean = rolesDao.getRolByEmpleado(identificador, "Productos")
-        val employeesRolesBean = rolesDao.getRolByEmpleado(identificador, "Empleados")
+        val productsRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.PRODUCTS.value)
+        val employeesRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.EMPLOYEES.value)
+        val clientsRolesBox = rolesDao.getRolByEmpleado(identificador, RoleType.CLIENTS.value)
 
-        val productsActive = productsRolesBean?.active ?: false
-        val employeesActive = employeesRolesBean?.active ?: false
+        val productsActive = productsRolesBox?.active ?: false
+        val employeesActive = employeesRolesBox?.active ?: false
+        val clientsActive = clientsRolesBox?.active ?: false
 
         binding.navView.apply {
             menu.clear()
             inflateMenu(R.menu.activity_main_drawer)
         }
 
-        configureMenu(isAdmin, employeesActive, productsActive)
+        configureMenu(isAdmin, employeesActive, productsActive, clientsActive)
 
         mAppBarConfiguration =
-            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive))
+            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive, clientsActive))
            .setDrawerLayout(binding.drawerLayout)
                 .build()
 
@@ -139,7 +148,7 @@ class MainActivity: BaseActivity() {
 
         getUpdates()
         //validateToken()
-        registerNetworkBroadcastForNougat()
+        //registerNetworkBroadcastForNougat()
         //startForegroundService(Intent(this, UpdateDataService::class.java))
 
     }
@@ -207,26 +216,26 @@ class MainActivity: BaseActivity() {
         }
     }
 
-    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean) {
+    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean) {
         val menu = binding.navView.menu
         menu.findItem(R.id.nav_home).isVisible = true
         menu.findItem(R.id.nav_producto).isVisible = true
         menu.findItem(R.id.nav_empleado).isVisible = employeesActive
         menu.findItem(R.id.nav_producto).isVisible = productsActive
-        menu.findItem(R.id.nav_cliente).isVisible = true
+        menu.findItem(R.id.nav_cliente).isVisible = clientsActive
         menu.findItem(R.id.nav_historial).isVisible = true
         menu.findItem(R.id.nav_inventario).isVisible = isAdmin
         menu.findItem(R.id.nav_cobranza).isVisible = isAdmin
     }
 
-    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean): Set<Int> {
+    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean): Set<Int> {
         //Obtiene el nombre del vendedor
         val menuSet = mutableSetOf(R.id.nav_home, R.id.nav_ruta)
 
         if (employeesActive) menuSet.add(R.id.nav_empleado)
         if (productsActive) menuSet.add(R.id.nav_producto)
+        if (clientsActive) menuSet.add(R.id.nav_cliente)
 
-        menuSet.add(R.id.nav_cliente)
         menuSet.add(R.id.nav_historial)
 
         if (isAdmin) {
@@ -244,64 +253,21 @@ class MainActivity: BaseActivity() {
     }
 
     private fun getUpdates() {
-        val progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Espere un momento")
         progressDialog.setCancelable(false)
         progressDialog.show()
 
         Handler().postDelayed({
             NetworkStateTask { connected: Boolean ->
-                progressDialog.dismiss()
+                dismissProgressDialog()
                 if (connected) {
                     progressDialog.setMessage("Obteniendo actualizaciones...");
-
                     progressDialog.show();
-                    GetAllDataInteractorImp().executeGetAllDataByDate(object:  GetAllDataInteractor.OnGetAllDataByDateListener {
-                        override fun onGetAllDataByDateSuccess() {
-                            progressDialog.dismiss()
-                        }
-
-                        override fun onGetAllDataByDateError() {
-                            progressDialog.dismiss()
-                        }
-                    })
+                    getUpdated()
                 }
             }.execute()}
             ,100)
-    }
-
-
-    private fun registerNetworkBroadcastForNougat() {
-        mNetworkChangeReceiver =
-            NetworkChangeReceiver(object : ConnectionNetworkListener {
-                override fun onConnected() {
-                    isConnected = true
-                    Handler().postDelayed({
-                        NetworkStateTask { connected: Boolean ->
-                            if (connected) {
-                                getClientsByRute()
-                                getCobranzasByEmployee()
-                                getRoles()
-
-                                saveVentas()
-                                //saveCobranza()
-                                //saveAbonos()
-                                saveVisitas()
-                                //saveClientes()
-                                savePreciosEspeciales()
-                            }
-                        }.execute()
-                    }, 100)
-                }
-
-                override fun onDisconnected() {
-                    isConnected = false
-                }
-            })
-        registerReceiver(
-            mNetworkChangeReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
     }
 
     /**
@@ -341,226 +307,227 @@ class MainActivity: BaseActivity() {
 
 
     private fun saveVentas() {
-        try {
-            val sincVentas = SincVentas()
-            sincVentas.setOnSuccess(object : ResponseOnSuccess() {
-                @Throws(JSONException::class)
-                override fun onSuccess(response: JSONArray) {
-                }
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val sincVentas = SincVentas()
+                sincVentas.setOnSuccess(object : ResponseOnSuccess() {
+                    @Throws(JSONException::class)
+                    override fun onSuccess(response: JSONArray) {
+                    }
 
-                @Throws(java.lang.Exception::class)
-                override fun onSuccessObject(response: JSONObject) {
-                }
-            })
-            sincVentas.setOnError(object : ResponseOnError() {
-                override fun onError(error: ANError) {}
-                override fun onError(error: String) {}
-            })
-            sincVentas.postObject()
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
+                    @Throws(java.lang.Exception::class)
+                    override fun onSuccessObject(response: JSONObject) {
+                    }
+                })
+                sincVentas.setOnError(object : ResponseOnError() {
+                    override fun onError(error: ANError) {}
+                    override fun onError(error: String) {}
+                })
+                sincVentas.postObject()
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     private fun saveVisitas() {
-        val visitsDao = VisitsDao()
-        val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
-        val clientDao = ClientDao()
-        var vendedoresBean = AppBundle.getUserBean()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
-        val visitList: MutableList<Visit> = ArrayList()
-        for (item in visitasBeanListBean) {
-            val visita = Visit()
-            visita.fecha = item.fecha
-            visita.hora = item.hora
-            val clienteBean = clientDao.getClientByAccount(item.cliente.cuenta)
-            visita.cuenta = clienteBean!!.cuenta
-            visita.latidud = item.latidud
-            visita.longitud = item.longitud
-            visita.motivo_visita = item.motivo_visita
-            if (vendedoresBean != null) {
-                visita.identificador = vendedoresBean.getIdentificador()
-            } else {
-                Log.e("SysPoint", "vendedoresBean is null")
+        lifecycleScope.launch(Dispatchers.IO) {
+            val visitsDao = VisitsDao()
+            val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
+            val clientDao = ClientDao()
+            var vendedoresBean = AppBundle.getUserBox()
+            if (vendedoresBean == null) {
+                vendedoresBean = CacheInteractor().getSeller()
             }
-            visitList.add(visita)
-        }
-        VisitInteractorImp().executeSaveVisit(visitList, object : OnSaveVisitListener {
-            override fun onSaveVisitSuccess() {
-                //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+            val visitList: MutableList<Visit> = ArrayList()
+            visitasBeanListBean.map {item ->
+                val visita = Visit()
+                visita.fecha = item.fecha
+                visita.hora = item.hora
+                val clienteBean = clientDao.getClientByAccount(item.cliente.target.cuenta)
+                visita.cuenta = clienteBean!!.cuenta
+                visita.latidud = item.latidud
+                visita.longitud = item.longitud
+                visita.motivo_visita = item.motivo_visita
+                if (vendedoresBean != null) {
+                    visita.identificador = vendedoresBean.identificador
+                } else {
+                    Log.e("SysPoint", "vendedoresBean is null")
+                }
+                visitList.add(visita)
             }
+            VisitInteractorImp().executeSaveVisit(visitList, object : OnSaveVisitListener {
+                override fun onSaveVisitSuccess() {
+                    //Toast.makeText(requireActivity(), "Visita registrada correctamente", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveVisitError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveVisitError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al registrar la visita", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
     fun saveCobranza() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual())
-        val listaCobranza: MutableList<Payment> = ArrayList()
-        for (item in cobranzaBeanList) {
-            val cobranza = Payment()
-            cobranza.cobranza = item.cobranza
-            cobranza.cuenta = item.cliente
-            cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
-            cobranza.venta = item.venta
-            cobranza.estado = item.estado
-            cobranza.observaciones = item.observaciones
-            cobranza.fecha = item.fecha
-            cobranza.hora = item.hora
-            cobranza.identificador = item.empleado
-            cobranza.updatedAt = item.updatedAt
-            listaCobranza.add(cobranza)
-        }
-        ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
-            override fun onSaveChargeSuccess() {
-                //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cobranzaBeanList = ChargeDao().getCobranzaFechaActual(Utils.fechaActual())
+            val listaCobranza: MutableList<Payment> = ArrayList()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            cobranzaBeanList.map {item ->
+                val cobranza = Payment()
+                cobranza.cobranza = item.cobranza
+                cobranza.cuenta = item.cliente
+                cobranza.importe = item.importe
+                cobranza.saldo = item.saldo!!
+                cobranza.venta = item.venta
+                cobranza.estado = item.estado
+                cobranza.observaciones = item.observaciones
+                cobranza.fecha = item.fecha
+                cobranza.hora = item.hora
+                cobranza.identificador = item.empleado
+                cobranza.updatedAt = formatter.format(item.updatedAt)
+                listaCobranza.add(cobranza)
             }
+            ChargeInteractorImp().executeSaveCharge(listaCobranza, object : OnSaveChargeListener {
+                override fun onSaveChargeSuccess() {
+                    //Toast.makeText(requireActivity(), "Cobranza guardada correctamente", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveChargeError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveChargeError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un problema al guardar la cobranza", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
 
     private fun savePreciosEspeciales() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao = SpecialPricesDao()
+            val listaDB = dao.getPreciosBydate(Utils.fechaActual())
+            val listaPreciosServidor: MutableList<Price> = ArrayList()
 
-        //Instancia la base de datos
-        val dao = SpecialPricesDao()
-
-        //Contiene la lista de precios de la db local
-        var listaDB: List<PreciosEspecialesBean> = ArrayList()
-
-        //Obtenemos la lista por id cliente
-        listaDB = dao.getPreciosBydate(Utils.fechaActual())
-
-
-        //Contiene la lista de lo que se envia al servidor
-        val listaPreciosServidor: MutableList<Price> = ArrayList()
-
-        //Contien la lista de precios especiales locales
-        for (items in listaDB) {
-            val precio = Price()
-            if (items.active) {
-                precio.active = 1
-            } else {
-                precio.active = 0
+            //Contien la lista de precios especiales locales
+            listaDB.map {item ->
+                val precio = Price()
+                if (item.active) {
+                    precio.active = 1
+                } else {
+                    precio.active = 0
+                }
+                precio.articulo = item.articulo
+                precio.cliente = item.cliente
+                precio.precio = item.precio
+                listaPreciosServidor.add(precio)
             }
-            precio.articulo = items.articulo
-            precio.cliente = items.cliente
-            precio.precio = items.precio
-            listaPreciosServidor.add(precio)
+            PriceInteractorImp().executeSendPrices(
+                listaPreciosServidor,
+                object : SendPricesListener {
+                    override fun onSendPricesSuccess() {
+                        //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
+                    }
+
+                    override fun onSendPricesError() {
+                        //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
+                    }
+                })
         }
-        PriceInteractorImp().executeSendPrices(listaPreciosServidor, object : SendPricesListener {
-            override fun onSendPricesSuccess() {
-                //Toast.makeText(requireActivity(), "Sincronizacion de lista de precios exitosa", Toast.LENGTH_LONG).show();
-            }
-
-            override fun onSendPricesError() {
-                //Toast.makeText(requireActivity(), "Error al sincronizar la lista de precios intente mas tarde", Toast.LENGTH_LONG).show();
-            }
-        })
     }
 
     fun saveClientes() {
-        val clientDao = ClientDao()
-        val clientListDB = clientDao.getClientsByDay(Utils.fechaActual())
-        val clientList: MutableList<Client> = ArrayList()
-        for (item in clientListDB) {
-            val client = Client()
-            client.nombreComercial = item.nombre_comercial
-            client.calle = item.calle
-            client.numero = item.numero
-            client.colonia = item.colonia
-            client.ciudad = item.ciudad
-            client.codigoPostal = item.codigo_postal
-            client.fechaRegistro = item.fecha_registro
-            client.cuenta = item.cuenta
-            client.status = if (item.status) 1 else 0
-            client.consec = item.consec
-            client.rango = item.rango
-            client.lun = item.lun
-            client.mar = item.mar
-            client.mie = item.mie
-            client.jue = item.jue
-            client.vie = item.vie
-            client.sab = item.sab
-            client.dom = item.dom
-            client.latitud = item.latitud
-            client.longitud = item.longitud
-            client.phone_contacto = "" + item.contacto_phone
-            client.recordatorio = "" + item.recordatorio
-            client.visitas = item.visitasNoefectivas
-            client.updatedAt = item.updatedAt
-            if (item.is_credito) {
-                client.isCredito = 1
-            } else {
-                client.isCredito = 0
+        lifecycleScope.launch(Dispatchers.IO) {
+            val clientDao = ClientDao()
+            val clientListDB = clientDao.getClientsByDay(Utils.fechaActual())
+            val clientList: MutableList<Client> = ArrayList()
+            clientListDB.map {item->
+                val client = Client()
+                client.nombreComercial = item.nombre_comercial
+                client.calle = item.calle
+                client.numero = item.numero
+                client.colonia = item.colonia
+                client.ciudad = item.ciudad
+                client.codigoPostal = item.codigo_postal
+                client.fechaRegistro = item.fecha_registro
+                client.cuenta = item.cuenta
+                client.status = if (item.status) 1 else 0
+                client.consec = item.consec
+                client.rango = item.rango
+                client.lun = item.lun
+                client.mar = item.mar
+                client.mie = item.mie
+                client.jue = item.jue
+                client.vie = item.vie
+                client.sab = item.sab
+                client.dom = item.dom
+                client.latitud = item.latitud
+                client.longitud = item.longitud
+                client.phone_contacto = "" + item.contacto_phone
+                client.recordatorio = "" + item.recordatorio
+                client.visitas = item.visitasNoefectivas
+                client.updatedAt = item.updatedAt
+                if (item.isCredito) {
+                    client.isCredito = 1
+                } else {
+                    client.isCredito = 0
+                }
+                client.saldo_credito = item.saldo_credito
+                client.limite_credito = item.limite_credito
+                if (item.matriz == null || item.matriz != null && item.matriz == "null") {
+                    client.matriz = "null"
+                } else {
+                    client.matriz = item.matriz
+                }
+                clientList.add(client)
             }
-            client.saldo_credito = item.saldo_credito
-            client.limite_credito = item.limite_credito
-            if (item.matriz == null || item.matriz != null && item.matriz == "null") {
-                client.matriz = "null"
-            } else {
-                client.matriz = item.matriz
-            }
-            clientList.add(client)
-        }
-        ClientInteractorImp().executeSaveClient(clientList, object : SaveClientListener {
-            override fun onSaveClientSuccess() {
-                //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
-            }
+            ClientInteractorImp().executeSaveClient(clientList, object : SaveClientListener {
+                override fun onSaveClientSuccess() {
+                    //Toast.makeText(requireActivity(), "Sincronizacion de clientes exitosa", Toast.LENGTH_LONG).show();
+                }
 
-            override fun onSaveClientError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
-            }
-        })
+                override fun onSaveClientError() {
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al sincronizar los clientes", Toast.LENGTH_LONG).show();
+                }
+            })
+        }
     }
 
-    private fun testLoadEmpleado(id: String) {
+    private fun testLoadEmpleado(id: Long) {
         val employeeDao = EmployeeDao()
-        var listaEmpleadosDB: List<EmpleadoBean> = ArrayList()
-        listaEmpleadosDB = employeeDao.getEmployeeById(id)
+        val listaEmpleadosDB = employeeDao.getEmployeeById(id)
         val listEmpleados: MutableList<Employee> = ArrayList()
-        for (item in listaEmpleadosDB) {
+        listaEmpleadosDB.map {item ->
             val empleado = Employee()
-            empleado.nombre = item.getNombre()
-            if (item.getDireccion().isEmpty()) {
+            empleado.nombre = item.nombre
+            if (item.direccion!!.isEmpty()) {
                 empleado.direccion = "-"
             } else {
-                empleado.direccion = item.getDireccion()
+                empleado.direccion = item.direccion
             }
-            empleado.email = item.getEmail()
-            if (item.getTelefono().isEmpty()) {
+            empleado.email = item.email
+            if (item.telefono!!.isEmpty()) {
                 empleado.telefono = "-"
             } else {
-                empleado.telefono = item.getTelefono()
+                empleado.telefono = item.telefono
             }
-            if (item.getFecha_nacimiento().isEmpty()) {
+            if (item.fecha_nacimiento!!.isEmpty()) {
                 empleado.fechaNacimiento = "-"
             } else {
-                empleado.fechaNacimiento = item.getFecha_nacimiento()
+                empleado.fechaNacimiento = item.fecha_nacimiento
             }
-            if (item.getFecha_ingreso().isEmpty()) {
+            if (item.fecha_ingreso!!.isEmpty()) {
                 empleado.fechaIngreso = "-"
             } else {
-                empleado.fechaIngreso = item.getFecha_ingreso()
+                empleado.fechaIngreso = item.fecha_ingreso
             }
-            empleado.contrasenia = item.getContrasenia()
-            empleado.identificador = item.getIdentificador()
-            empleado.status = if (item.getStatus()) 1 else 0
-            if (item.getPath_image() == null || item.getPath_image().isEmpty()) {
+            empleado.contrasenia = item.contrasenia
+            empleado.identificador = item.identificador
+            empleado.status = if (item.status) 1 else 0
+            if (item.path_image == null || item.path_image!!.isEmpty()) {
                 empleado.pathImage = ""
             } else {
-                empleado.pathImage = item.getPath_image()
+                empleado.pathImage = item.path_image
             }
-            if (!item.rute.isEmpty()) {
+            if (!item.rute!!.isEmpty()) {
                 empleado.rute = item.rute
             } else {
                 empleado.rute = ""
@@ -581,49 +548,58 @@ class MainActivity: BaseActivity() {
     }
 
     private fun saveAbonos() {
-        val paymentDao = PaymentDao()
-        val cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual())
-        val listaCobranza: MutableList<Payment> = java.util.ArrayList()
-        for (item in cobranzaBeanList) {
-            val cobranza = Payment()
-            cobranza.cobranza = item.cobranza
-            cobranza.cuenta = item.cliente
-            cobranza.importe = item.importe
-            cobranza.saldo = item.saldo
-            cobranza.venta = item.venta
-            cobranza.estado = item.estado
-            cobranza.observaciones = item.observaciones
-            cobranza.fecha = item.fecha
-            cobranza.hora = item.hora
-            cobranza.identificador = item.empleado
-            cobranza.updatedAt = item.updatedAt
-            listaCobranza.add(cobranza)
-        }
-        ChargeInteractorImp().executeUpdateCharge(listaCobranza, object : OnUpdateChargeListener {
-            override fun onUpdateChargeSuccess() {
-                //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cobranzaBeanList = ChargeDao().getAbonosFechaActual(Utils.fechaActual())
+            val listaCobranza: MutableList<Payment> = java.util.ArrayList()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            cobranzaBeanList.map {item ->
+                val cobranza = Payment()
+                cobranza.cobranza = item.cobranza
+                cobranza.cuenta = item.cliente
+                cobranza.importe = item.importe
+                cobranza.saldo = item.saldo!!
+                cobranza.venta = item.venta
+                cobranza.estado = item.estado
+                cobranza.observaciones = item.observaciones
+                cobranza.fecha = item.fecha
+                cobranza.hora = item.hora
+                cobranza.identificador = item.empleado
+                cobranza.updatedAt = formatter.format(item.updatedAt)
+                listaCobranza.add(cobranza)
             }
+            ChargeInteractorImp().executeUpdateCharge(
+                listaCobranza,
+                object : OnUpdateChargeListener {
+                    override fun onUpdateChargeSuccess() {
+                        //Toast.makeText(requireActivity(), "Cobranza actualizada correctamente", Toast.LENGTH_LONG).show();
+                    }
 
-            override fun onUpdateChargeError() {
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
-            }
-        })
+                    override fun onUpdateChargeError() {
+                        //Toast.makeText(requireActivity(), "Ha ocurrido un error al actualizar la cobranza", Toast.LENGTH_LONG).show();
+                    }
+                })
+        }
     }
 
     private fun getCobranzasByEmployee() {
-        val vendedoresBean = AppBundle.getUserBean()
-        if (vendedoresBean != null) {
-            ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
-                override fun onGetChargeSuccess(chargeList: List<CobranzaBean>) {
-                    saveCobranza()
-                    saveAbonos()                }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val vendedoresBean = AppBundle.getUserBox()
+            if (vendedoresBean != null) {
+                lifecycleScope.launch(Dispatchers.Default) {
+                    ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
+                        override fun onGetChargeSuccess(chargeList: List<ChargeBox>) {
+                            saveCobranza()
+                            saveAbonos()
+                        }
 
-                override fun onGetChargeError() {
-                    saveCobranza()
-                    saveAbonos()                }
+                        override fun onGetChargeError() {
+                            saveCobranza()
+                            saveAbonos()
+                        }
+                    })
+                }
 
-            });
-            /*ChargeInteractorImp().executeGetChargeByEmployee(
+                /*ChargeInteractorImp().executeGetChargeByEmployee(
                 vendedoresBean.identificador,
                 object : OnGetChargeByEmployeeListener {
                     override fun onGetChargeByEmployeeSuccess(chargeByClientList: List<CobranzaBean>) {
@@ -636,45 +612,49 @@ class MainActivity: BaseActivity() {
                         saveAbonos()
                     }
                 })*/
+            }
         }
     }
 
     private fun getClientsByRute() {
-        val routingDao = RoutingDao()
-        val ruteoBean = routingDao.getRutaEstablecida()
-        if (ruteoBean != null) {
-            val vendedoresBean = AppBundle.getUserBean()
-            val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta.isNotEmpty()
-            ) ruteoBean.ruta else vendedoresBean.getRute()
+        lifecycleScope.launch(Dispatchers.IO) {
+            val routingDao = RoutingDao()
+            val ruteoBean = routingDao.getRutaEstablecida()
+            if (ruteoBean != null) {
+                val vendedoresBean = AppBundle.getUserBox()
+                val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()
+                ) ruteoBean.ruta else vendedoresBean.rute
 
-            ClientInteractorImp().executeGetAllClientsByDate(
-                ruta,
-                ruteoBean.dia,
-                object : GetAllClientsListener {
-                    override fun onGetAllClientsSuccess(clientList: List<ClienteBean>) {
-                        Log.d("SysPoint", "Clients updated")
-                        saveClientes()
-                    }
+                ClientInteractorImp().executeGetAllClientsByDate(
+                    ruta!!,
+                    ruteoBean.dia,
+                    object : GetAllClientsListener {
+                        override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
+                            Log.d("SysPoint", "Clients updated")
+                            saveClientes()
+                        }
 
-                    override fun onGetAllClientsError() {
-                        Log.d("SysPoint", "Error when update clients")
-                        saveClientes()
-                    }
-                })
+                        override fun onGetAllClientsError() {
+                            Log.d("SysPoint", "Error when update clients")
+                            saveClientes()
+                        }
+                    })
+            }
         }
     }
 
     private fun getRoles() {
-        RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
-            override fun onGetAllRolesSuccess(roles: List<RolesBean>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            RolInteractorImp().executeGetAllRoles(object : OnGetAllRolesListener {
+                override fun onGetAllRolesSuccess(roles: List<RolesBox>) {
+                }
 
-            }
-
-            override fun onGetAllRolesError() {
-                //progresshide()
-                //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
-            }
-        })
+                override fun onGetAllRolesError() {
+                    //progresshide()
+                    //Toast.makeText(requireActivity(), "Ha ocurrido un error al obtener roles", Toast.LENGTH_SHORT).show();
+                }
+            })
+        }
     }
 
     private fun showErrorDialog(message: String) {
@@ -771,7 +751,7 @@ class MainActivity: BaseActivity() {
                             id,
                             object : LoginActivity.DownloadListener {
                                 override fun onDownloadSuccess(uri: Uri) {
-                                    progressDialog.dismiss()
+                                    dismissProgressDialog()
                                     showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     ApkInstaller().installApplicationFromCpanel(
                                         applicationContext,
@@ -780,7 +760,7 @@ class MainActivity: BaseActivity() {
                                 }
 
                                 override fun onDownloadError(error: String) {
-                                    progressDialog.dismiss()
+                                    dismissProgressDialog()
                                     showAppOldVersion(baseUpdateUrl, versionToDownload)
                                     showErrorDialog(error)
                                 }
@@ -800,5 +780,63 @@ class MainActivity: BaseActivity() {
             oldApkVersionDialog.show()
         }
 
+    }
+
+    fun getLifecycleScope(): LifecycleCoroutineScope {
+        return lifecycleScope
+    }
+
+    private fun getData() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            getClientsByRute()
+            getCobranzasByEmployee()
+            getRoles()
+
+            saveVentas()
+            //saveCobranza()
+            //saveAbonos()
+            saveVisitas()
+            //saveClientes()
+            savePreciosEspeciales()
+        }
+    }
+
+    private fun getUpdated() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            GetAllDataInteractorImp().executeGetAllDataByDate(object:  GetAllDataInteractor.OnGetAllDataByDateListener {
+                override fun onGetAllDataByDateSuccess() {
+                    runOnUiThread {
+                        dismissProgressDialog()
+                    }
+                }
+
+                override fun onGetAllDataByDateError() {
+                    runOnUiThread {
+                        dismissProgressDialog()
+                    }
+                }
+            })
+        }
+    }
+
+    fun blockInput() {
+        /*window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
+    }
+
+    fun unblockInput() {
+        //window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+    }
+
+    private fun dismissProgressDialog() {
+        if (::progressDialog.isInitialized && progressDialog.isShowing) {
+            if (window != null) {
+                val decor = window.decorView
+                if (decor.parent != null) {
+                    progressDialog.dismiss()
+                }
+            }
+        }
     }
 }

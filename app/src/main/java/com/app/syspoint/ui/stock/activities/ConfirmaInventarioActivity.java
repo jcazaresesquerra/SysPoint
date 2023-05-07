@@ -1,7 +1,6 @@
 package com.app.syspoint.ui.stock.activities;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,21 +16,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.cache.SharedPreferencesManager;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.dao.StockDao;
+
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.documents.StockTicket;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;
 import com.app.syspoint.utils.PrettyDialog;
-import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class ConfirmaInventarioActivity extends AppCompatActivity {
 
-    private List<InventarioBean> mData;
+    private static final String TAG = "ConfirmaInventarioActivity";
+    private List<StockBox> mData;
     private AdapterInventario mAdapter;
     private TextView tv_total_inventario_confirmar;
     @Override
@@ -45,7 +47,6 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
     }
 
     private void initToolBar() {
-
         Toolbar toolbar = findViewById(R.id.toolbar_confirma_inventario);
         toolbar.setTitle("Confirma Inventario");
         setSupportActionBar(toolbar);
@@ -59,7 +60,7 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
     private void initRecyclerView(){
         mData = new ArrayList<>();
-        mData = (List<InventarioBean>) (List<?>) new StockDao().list();
+        mData = new StockDao().list();
 
         if (mData.size() > 0){
             // lyt_empleados.setVisibility(View.GONE);
@@ -89,10 +90,13 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                Timber.tag(TAG).d("home -> click");
+
                 finish();
                 return true;
 
             case R.id.item_menu_confirma_inventario:
+                Timber.tag(TAG).d("confirm stock -> click");
                 final PrettyDialog dialog = new PrettyDialog(ConfirmaInventarioActivity.this);
                 dialog.setTitle("Confirmar")
                         .setTitleColor(R.color.purple_500)
@@ -104,14 +108,17 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
 
                             Utils.addActivity2Stack(ConfirmaInventarioActivity.this);
 
-                            final InventarioBean inventarioBean = new InventarioBean();
+                            final StockBox inventarioBean = new StockBox();
 
                             StockTicket stockTicket = new StockTicket();
-                            stockTicket.setBean(inventarioBean);
+                            stockTicket.setBox(inventarioBean);
                             stockTicket.template();
 
                             String ticket = stockTicket.getDocument();
                             Log.d("ConfirmarInventarioActivity", ticket);
+
+                            int loadId = new CacheInteractor().getCurrentLoadId() + 1;
+                            new CacheInteractor().setLoadId(loadId);
 
                             Intent intent = new Intent(ConfirmaInventarioActivity.this, FinalizaInventarioActivity.class);
                             intent.putExtra("ticket", ticket);
@@ -131,7 +138,6 @@ public class ConfirmaInventarioActivity extends AppCompatActivity {
     }
 
     private void calcular(){
-
         double total = 0;
         for (int i = 0; i < mData.size(); i++) {
             total += (mData.get(i).getPrecio() * mData.get(i).getCantidad());

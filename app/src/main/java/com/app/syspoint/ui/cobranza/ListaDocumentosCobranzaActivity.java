@@ -1,9 +1,7 @@
 package com.app.syspoint.ui.cobranza;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -12,35 +10,29 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import com.app.syspoint.R;
-import com.app.syspoint.interactor.charge.ChargeInteractor;
-import com.app.syspoint.interactor.charge.ChargeInteractorImp;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.PaymentModelDao;
+import com.app.syspoint.repository.objectBox.dao.ChargeModelDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeModelBox;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaDocumentosCobranza;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
-
 import java.util.List;
 
 public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
     private static final String TAG = "ChargeViewModel";
     private AdapterListaDocumentosCobranza mAdapter;
-    private List<CobranzaBean> lista;
+    private List<ChargeBox> lista;
     private LinearLayout lyt_lista_documentos;
     public static String documentoSeleccionado;
-    private SwipeRefreshLayout refreshLayout;
     private ImageView img_add_documents;
 
     private String clienteGlobal;
@@ -95,7 +87,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
     private void initRecyclerViews(){
         Log.d(TAG, "getByCobranzaByCliente start");
-        lista = new PaymentDao().getByCobranzaByCliente(clienteGlobal);
+        lista = new ChargeDao().getByCobranzaByCliente(clienteGlobal);
         Log.d(TAG, "getByCobranzaByCliente finish");
 
         if (lista.size() > 0){
@@ -115,7 +107,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
         mAdapter = new AdapterListaDocumentosCobranza(lista,
                 position -> {
             if (countItems == 0) {
-                CobranzaBean cobranzaBean = lista.get(position);
+                ChargeBox cobranzaBean = lista.get(position);
                 ListaDocumentosCobranzaActivity.documentoSeleccionado = cobranzaBean.getCobranza();
                 Actividades.getSingleton(ListaDocumentosCobranzaActivity.this, AbonoDocumentoActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
             }else {
@@ -143,27 +135,26 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
             }
         }, position -> {
 
-             CobranzaBean cobranzaBean = lista.get(position);
-             PaymentDao paymentDao = new PaymentDao();
-
-             if (cobranzaBean.getIsCheck() == false){
+             ChargeBox chargeBox = lista.get(position);
+             ChargeDao paymentBox = new ChargeDao();
+             if (chargeBox.isCheck() == false){
                  countItems++;
-                 cobranzaBean.setIsCheck(true);
-                 paymentDao.save(cobranzaBean);
+                 chargeBox.setCheck(true);
+                 paymentBox.insertBox(chargeBox);
                  if (countItems > 1 ){
                      img_add_documents.setVisibility(View.VISIBLE);
                  }else {
                      img_add_documents.setVisibility(View.GONE);
                  }
              }else {
-                 cobranzaBean.setIsCheck(false);
+                 chargeBox.setCheck(false);
                  countItems--;
                  if (countItems > 1 ){
                      img_add_documents.setVisibility(View.VISIBLE);
                  }else {
                      img_add_documents.setVisibility(View.GONE);
                  }
-                 paymentDao.save(cobranzaBean);
+                 paymentBox.insertBox(chargeBox);
              }
             setData();
             return false;
@@ -173,7 +164,7 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
 
     private void setData(){
-        lista = (List<CobranzaBean>)(List<?>) new PaymentDao().getByCobranzaByCliente(clienteGlobal);
+        lista = (List<ChargeBox>)new ChargeDao().getByCobranzaByCliente(clienteGlobal);
         mAdapter.setData(lista);
     }
     @Override
@@ -203,14 +194,14 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
 
         try{
 
-            final PaymentModelDao dao = new PaymentModelDao();
+            final ChargeModelDao dao = new ChargeModelDao();
             dao.clear();
 
-            List<CobranzaBean> listaDocumentosSeleccionados = new PaymentDao().getDocumentosSeleccionados(clienteGlobal);
-            final PaymentDao paymentDao = new PaymentDao();
+            ChargeDao chargeDao = new ChargeDao();
+            List<ChargeBox> listaDocumentosSeleccionados = chargeDao.getDocumentosSeleccionados(clienteGlobal);
 
-            for (CobranzaBean cobranzaItems : listaDocumentosSeleccionados) {
-                final CobranzaBean cobranzaBean = paymentDao.getByCobranza(cobranzaItems.getCobranza());
+            for (ChargeBox cobranzaItems : listaDocumentosSeleccionados) {
+                final ChargeBox cobranzaBean = chargeDao.getByCobranza(cobranzaItems.getCobranza());
                 long venta = cobranzaBean.getVenta();
                 String cobranza = cobranzaBean.getCobranza();
                 double importe = cobranzaBean.getImporte();
@@ -226,15 +217,15 @@ public class ListaDocumentosCobranzaActivity extends AppCompatActivity {
         }
     }
     private void AddItems(long venta, String cobranza, double importe, double saldo, double acuenta, String no_referen) {
-        final CobranzaModel item = new CobranzaModel();
-        final PaymentModelDao dao = new PaymentModelDao();
+        final ChargeModelBox item = new ChargeModelBox();
+        final ChargeModelDao dao = new ChargeModelDao();
         item.setVenta(venta);
         item.setCobranza(cobranza);
         item.setImporte(importe);
         item.setSaldo(saldo);
         item.setAcuenta(acuenta);
         item.setNo_referen(no_referen);
-        dao.insert(item);
+        dao.insertBox(item);
 
     }
 

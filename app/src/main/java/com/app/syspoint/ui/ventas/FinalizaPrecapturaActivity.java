@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,25 +42,25 @@ import com.app.syspoint.R;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Payment;
 import com.app.syspoint.models.Price;
-import com.app.syspoint.repository.database.bean.CobranzaBean;
-import com.app.syspoint.repository.database.bean.PreciosEspecialesBean;
-import com.app.syspoint.repository.database.bean.RuteoBean;
-import com.app.syspoint.repository.database.dao.EmployeeDao;
-import com.app.syspoint.repository.database.dao.PaymentDao;
-import com.app.syspoint.repository.database.dao.RoutingDao;
-import com.app.syspoint.repository.database.dao.SpecialPricesDao;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao;
+import com.app.syspoint.repository.objectBox.dao.VisitsDao;
+import com.app.syspoint.repository.objectBox.entities.ChargeBox;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
+import com.app.syspoint.repository.objectBox.entities.RoutingBox;
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
+import com.app.syspoint.repository.objectBox.entities.VisitsBox;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentas;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.AppBundle;
-import com.app.syspoint.repository.database.bean.ClienteBean;
-import com.app.syspoint.repository.database.bean.EmpleadoBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.bean.VisitasBean;
-import com.app.syspoint.repository.database.dao.ClientDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
-import com.app.syspoint.repository.database.dao.VisitsDao;
+import com.app.syspoint.repository.objectBox.AppBundle;
 import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Visit;
 import com.app.syspoint.utils.Actividades;
@@ -75,9 +74,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
@@ -134,25 +136,22 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
 
         Button button = findViewById(R.id.btnConfirmaVisita);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
-                    if (connected) {
-                        getClientsByRute();
+        button.setOnClickListener(v -> {
+            new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                if (connected) {
+                    getClientsByRute();
 
-                        saveVentas();
-                        saveCobranza();
-                        saveAbonos();
-                        saveVisitas();
-                        //saveClientes();
-                        savePreciosEspeciales();
-                    }
-                }).execute(), 100);
+                    saveVentas();
+                    saveCobranza();
+                    saveAbonos();
+                    saveVisitas();
 
-                Utils.finishActivitiesFromStack();
-                finish();
-            }
+                    savePreciosEspeciales();
+                }
+            }).execute(), 100);
+
+            Utils.finishActivitiesFromStack();
+            finish();
         });
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -201,6 +200,11 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         };
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+    }
+
     private void initToolBar() {
         Toolbar toolbar = findViewById(R.id.toolbar_finaliza_visita);
         toolbar.setTitle("Visita exitosa");
@@ -245,17 +249,14 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
 
-    private void sincronizaCliente(String idCliente) {
-
-
-
+    private void sincronizaCliente(Long idCliente) {
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> listaClientesDB = new ArrayList<>();
+        List<ClientBox> listaClientesDB = new ArrayList<>();
         listaClientesDB = clientDao.getByIDClient(idCliente);
 
         List<Client> listaClientes = new ArrayList<>();
 
-        for (ClienteBean item : listaClientesDB) {
+        for (ClientBox item : listaClientesDB) {
             Client cliente = new Client();
             cliente.setNombreComercial(item.getNombre_comercial());
             cliente.setCalle(item.getCalle());
@@ -303,7 +304,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
                 isConnectada = true;
@@ -368,7 +369,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection",e);
+            Timber.tag(TAG).e("Could not create Insecure RFComm Connection" + e);
         }
         return  device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
     }
@@ -421,30 +422,29 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     private void loadVisitas(){
 
         final VisitsDao visitsDao = new VisitsDao();
-        List<VisitasBean> visitasBeanListBean = new ArrayList<>();
-        visitasBeanListBean =  visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        List<VisitsBox> visitBoxList =  visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
 
         List<Visit> listaVisitas = new ArrayList<>();
-        for (VisitasBean item : visitasBeanListBean){
+        for (VisitsBox item : visitBoxList){
             Visit visita = new Visit();
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
 
             final ClientDao clientDao = new ClientDao();
-            final ClienteBean clienteBean = clientDao.getClientByAccount(cuenta_cliente);
-            visita.setCuenta(clienteBean.getCuenta());
+            final ClientBox clientBox = clientDao.getClientByAccount(cuenta_cliente);
+            visita.setCuenta(clientBox.getCuenta());
             visita.setLatidud(item.getLatidud());
             visita.setLongitud(item.getLongitud());
             visita.setMotivo_visita(item.getMotivo_visita());
             //Obtiene el nombre del vendedor
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+            EmployeeBox employeeBox = AppBundle.getUserBox();
 
-            if (vendedoresBean == null) {
-                vendedoresBean = new CacheInteractor().getSeller();
+            if (employeeBox == null) {
+                employeeBox = new CacheInteractor().getSeller();
             }
 
-            if (vendedoresBean != null) {
-                visita.setIdentificador(vendedoresBean.getIdentificador());
+            if (employeeBox != null) {
+                visita.setIdentificador(employeeBox.getIdentificador());
             }
 
             listaVisitas.add(visita);
@@ -464,17 +464,17 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void updateCobranzas() {
-        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmployeeBox employeeBox = AppBundle.getUserBox();
 
-        if (vendedoresBean != null) {
-            new ChargeInteractorImp().executeGetChargeByEmployee(vendedoresBean.identificador, new ChargeInteractor.OnGetChargeByEmployeeListener() {
+        if (employeeBox != null) {
+            new ChargeInteractorImp().executeGetChargeByEmployee(employeeBox.getIdentificador(), new ChargeInteractor.OnGetChargeByEmployeeListener() {
                 @Override
-                public void onGetChargeByEmployeeSuccess(@NonNull List<? extends CobranzaBean> chargeByClientList) {
-                    Log.d("SysPoint", "charge updated");
+                public void onGetChargeByEmployeeSuccess(@NonNull List<ChargeBox> chargeByClientList) {
+                    Timber.tag(TAG).d( "charge updated");
                 }
                 @Override
                 public void onGetChargeByEmployeeError() {
-                    Log.d("SysPoint", "error when charge update");
+                    Timber.tag(TAG).d( "error when charge update");
                 }
             });
         }
@@ -483,14 +483,14 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     private void getClientsByRute() {
 
         RoutingDao routingDao = new RoutingDao();
-        RuteoBean ruteoBean = routingDao.getRutaEstablecida();
+        RoutingBox routingBox = routingDao.getRutaEstablecida();
 
-        if (ruteoBean != null) {
-            EmpleadoBean vendedoresBean = AppBundle.getUserBean();
-            String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
-            new ClientInteractorImp().executeGetAllClientsByDate(ruta, ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
+        if (routingBox != null) {
+            EmployeeBox vendedoresBean = AppBundle.getUserBox();
+            String ruta = routingBox.getRuta() != null && !routingBox.getRuta().isEmpty() ? routingBox.getRuta(): vendedoresBean.getRute();
+            new ClientInteractorImp().executeGetAllClientsByDate(ruta, routingBox.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
-                public void onGetAllClientsSuccess(@NonNull List<? extends ClienteBean> clientList) {
+                public void onGetAllClientsSuccess(@NonNull List<ClientBox> clientList) {
                     saveClientes();
                 }
 
@@ -541,28 +541,28 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     private void saveVisitas() {
 
         final VisitsDao visitsDao = new VisitsDao();
-        List<VisitasBean> visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
+        List<VisitsBox> visitsBoxList = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
         final ClientDao clientDao = new ClientDao();
-        EmpleadoBean vendedoresBean = AppBundle.getUserBean();
+        EmployeeBox employeeBox = AppBundle.getUserBox();
 
-        if (vendedoresBean == null) {
-            vendedoresBean = new CacheInteractor().getSeller();
+        if (employeeBox == null) {
+            employeeBox = new CacheInteractor().getSeller();
         }
 
         List<Visit> visitList = new ArrayList<>();
-        for (VisitasBean item : visitasBeanListBean) {
+        for (VisitsBox item : visitsBoxList) {
             Visit visita = new Visit();
             visita.setFecha(item.getFecha());
             visita.setHora(item.getHora());
-            final ClienteBean clienteBean = clientDao.getClientByAccount(item.getCliente().getCuenta());
+            final ClientBox clienteBean = clientDao.getClientByAccount(item.getCliente().getTarget().getCuenta());
             visita.setCuenta(clienteBean.getCuenta());
             visita.setLatidud(item.getLatidud());
             visita.setLongitud(item.getLongitud());
             visita.setMotivo_visita(item.getMotivo_visita());
-            if (vendedoresBean != null) {
-                visita.setIdentificador(vendedoresBean.getIdentificador());
+            if (employeeBox != null) {
+                visita.setIdentificador(employeeBox.getIdentificador());
             } else {
-                Log.e(TAG, "vendedoresBean is null");
+                Timber.tag(TAG).e("employeeBox is null");
             }
 
             visitList.add(visita);
@@ -582,12 +582,11 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     public void saveCobranza() {
-
-        final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> cobranzaBeanList = paymentDao.getCobranzaFechaActual(Utils.fechaActual());
+        ChargeDao chargeDao = new ChargeDao();
+        List<ChargeBox> cobranzaList = chargeDao.getCobranzaFechaActual(Utils.fechaActual());
 
         List<Payment> listaCobranza = new ArrayList<>();
-        for (CobranzaBean item : cobranzaBeanList) {
+        for (ChargeBox item : cobranzaList) {
             Payment cobranza = new Payment();
             cobranza.setCobranza(item.getCobranza());
             cobranza.setCuenta(item.getCliente());
@@ -617,11 +616,12 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
 
     private void saveAbonos() {
 
-        final PaymentDao paymentDao = new PaymentDao();
-        List<CobranzaBean> cobranzaBeanList = paymentDao.getAbonosFechaActual(Utils.fechaActual());
+        ChargeDao chargeDao = new ChargeDao();
+        List<ChargeBox> cobranzaList = chargeDao.getAbonosFechaActual(Utils.fechaActual());
         List<Payment> listaCobranza = new ArrayList<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        for (CobranzaBean item : cobranzaBeanList) {
+        for (ChargeBox item : cobranzaList) {
             Payment cobranza = new Payment();
             cobranza.setCobranza(item.getCobranza());
             cobranza.setCuenta(item.getCliente());
@@ -633,7 +633,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             cobranza.setFecha(item.getFecha());
             cobranza.setHora(item.getHora());
             cobranza.setIdentificador(item.getEmpleado());
-            cobranza.setUpdatedAt(item.getUpdatedAt());
+            cobranza.setUpdatedAt(formatter.format(item.getUpdatedAt()));
             listaCobranza.add(cobranza);
         }
 
@@ -651,22 +651,15 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void savePreciosEspeciales() {
-
-        //Instancia la base de datos
         final SpecialPricesDao dao = new SpecialPricesDao();
 
-        //Contiene la lista de precios de la db local
-        List<PreciosEspecialesBean> listaDB = new ArrayList<>();
-
-        //Obtenemos la lista por id cliente
-        listaDB = dao.getPreciosBydate(Utils.fechaActual());
-
+        List<SpecialPricesBox> listaDB = dao.getPreciosBydate(Utils.fechaActual());
 
         //Contiene la lista de lo que se envia al servidor
         final List<Price> listaPreciosServidor = new ArrayList<>();
 
         //Contien la lista de precios especiales locales
-        for (PreciosEspecialesBean items : listaDB) {
+        for (SpecialPricesBox items : listaDB) {
 
             final Price precio = new Price();
             if (items.getActive()) {
@@ -679,7 +672,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             precio.setCliente(items.getCliente());
             precio.setPrecio(items.getPrecio());
             listaPreciosServidor.add(precio);
-
         }
 
         new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {
@@ -696,13 +688,12 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     public void saveClientes() {
-
         final ClientDao clientDao = new ClientDao();
-        List<ClienteBean> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
+        List<ClientBox> clientListDB = clientDao.getClientsByDay(Utils.fechaActual());
 
         List<Client> clientList = new ArrayList<>();
 
-        for (ClienteBean item : clientListDB) {
+        for (ClientBox item : clientListDB) {
             Client client = new Client();
             client.setNombreComercial(item.getNombre_comercial());
             client.setCalle(item.getCalle());
@@ -727,7 +718,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             client.setPhone_contacto("" + item.getContacto_phone());
             client.setRecordatorio("" + item.getRecordatorio());
             client.setVisitas(item.getVisitasNoefectivas());
-            if (item.getIs_credito()) {
+            if (item.isCredito()) {
                 client.setCredito(1);
             } else {
                 client.setCredito(0);
@@ -757,13 +748,13 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         });
     }
 
-    private void testLoadEmpleado(String id){
+    private void testLoadEmpleado(Long id){
         final EmployeeDao employeeDao = new EmployeeDao();
-        List<EmpleadoBean> listaEmpleadosDB = new ArrayList<>();
+        List<EmployeeBox> listaEmpleadosDB = new ArrayList<>();
         listaEmpleadosDB =  employeeDao.getEmployeeById(id);
 
         List<Employee> listEmpleados = new ArrayList<>();
-        for (EmpleadoBean item : listaEmpleadosDB){
+        for (EmployeeBox item : listaEmpleadosDB){
             Employee empleado = new Employee();
             empleado.setNombre(item.getNombre());
             if (item.getDireccion().isEmpty()){
@@ -800,8 +791,8 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
                 empleado.setPathImage(item.getPath_image());
             }
 
-            if (!item.rute.isEmpty()) {
-                empleado.setRute(item.rute);
+            if (!item.getRute().isEmpty()) {
+                empleado.setRute(item.getRute());
             } else  {
                 empleado.setRute("");
             }

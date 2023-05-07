@@ -21,26 +21,28 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.syspoint.R;
-import com.app.syspoint.repository.database.bean.InventarioBean;
-import com.app.syspoint.repository.database.bean.ProductoBean;
-import com.app.syspoint.repository.database.dao.StockDao;
-import com.app.syspoint.repository.database.dao.ProductDao;
+import com.app.syspoint.repository.cache.SharedPreferencesManager;
+import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.StockDao;
+import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
-import com.app.syspoint.utils.PrettyDialogCallback;
 import com.app.syspoint.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 public class CantidadInventarioActivity extends AppCompatActivity {
 
+    private static final String TAG = "CantidadInventarioActivity";
     private EditText EditTextCantidad, EditTextPrecio, EditTextTotal;
     private String cantidad;
     private String ariculo;
     private double precio;
     private TextView tv_inventario_descripcion, tv_inventario_articulo;
-    private ProductoBean productoBean;
+    private ProductBox productoBean;
     int qty = 0;
     private ImageView img_inv_producto;
 
@@ -65,7 +67,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
         productoBean = productDao.getProductoByArticulo(ariculo);
 
         if (productoBean != null) {
-            EditTextPrecio.setText("" + Utils.FDinero(productoBean.getPrecio() * (1 + productoBean.getIva() / 100)));
+            EditTextPrecio.setText(Utils.FDinero(productoBean.getPrecio() * (1 + productoBean.getIva() / 100)));
             precio = (productoBean.getPrecio() * (1 + productoBean.getIva() / 100));
             tv_inventario_descripcion.setText(productoBean.getDescripcion());
             tv_inventario_articulo.setText(productoBean.getArticulo());
@@ -96,7 +98,7 @@ public class CantidadInventarioActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().length() == 0) {
-                    EditTextCantidad.setText("" + 0);
+                    EditTextCantidad.setText(String.valueOf(0));
                     EditTextCantidad.setSelectAllOnFocus(true);
                     EditTextCantidad.requestFocus();
                     return;
@@ -106,10 +108,10 @@ public class CantidadInventarioActivity extends AppCompatActivity {
                 qty = Integer.parseInt(cantidad);
 
                 if (qty == 0) {
-                    EditTextTotal.setText("" + Utils.FDinero(precio));
+                    EditTextTotal.setText(Utils.FDinero(precio));
                 } else {
                     double tota = precio * qty;
-                    EditTextTotal.setText("" + Utils.FDinero(tota));
+                    EditTextTotal.setText(Utils.FDinero(tota));
                 }
             }
 
@@ -120,100 +122,106 @@ public class CantidadInventarioActivity extends AppCompatActivity {
         });
 
         Button buttonCerrar = findViewById(R.id.btn_inventario_cerrar);
-        buttonCerrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
+        buttonCerrar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonCerrar -> click");
+            finish();
         });
 
         Button buttonConfirmar = findViewById(R.id.btn_inventario_confirmar);
-        buttonConfirmar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        buttonConfirmar.setOnClickListener(v -> {
+            Timber.tag(TAG).d("initControls -> buttonConfirmar -> click -> %s", qty);
 
-                if (qty == 0) {
-                    final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
-                    dialogo.setTitle("Existencia")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe indicar la cantidad a ingresar")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialogo.dismiss())
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, () -> dialogo.dismiss());
-                    dialogo.setCancelable(false);
-                    dialogo.show();
-                    return;
-                }
+            if (qty == 0) {
+                final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
+                dialogo.setTitle("Existencia")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("Debe indicar la cantidad a ingresar")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialogo::dismiss)
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.green_800, dialogo::dismiss);
+                dialogo.setCancelable(false);
+                dialogo.show();
+                return;
+            }
 
-                //Validamos si el inventario esta pendiente de lo contrario no ingresamos nada
+            //Validamos si el inventario esta pendiente de lo contrario no ingresamos nada
 
-                List<InventarioBean> mData = (List<InventarioBean>) (List<?>) new StockDao().getInventarioPendiente();
+            List<StockBox> mData = new StockDao().getInventarioPendiente();
 
-                /*int count = mData.size();
+            /*int count = mData.size();
 
-                if (count > 0){
-                    final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
-                    dialogo.setTitle("Inventario")
-                            .setTitleColor(R.color.purple_500)
-                            .setMessage("El inventario ya fue confirmado no puede agregar mas productos")
-                            .setMessageColor(R.color.purple_700)
-                            .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            })
-                            .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange, new PrettyDialogCallback() {
-                                @Override
-                                public void onClick() {
-                                    dialogo.dismiss();
-                                }
-                            });
-                    dialogo.setCancelable(false);
-                    dialogo.show();
-                    return;
-                }else {
+            if (count > 0){
+                final PrettyDialog dialogo = new PrettyDialog(CantidadInventarioActivity.this);
+                dialogo.setTitle("Inventario")
+                        .setTitleColor(R.color.purple_500)
+                        .setMessage("El inventario ya fue confirmado no puede agregar mas productos")
+                        .setMessageColor(R.color.purple_700)
+                        .setAnimationEnabled(false)
+                        .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        })
+                        .addButton(getString(R.string.ok_dialog), R.color.pdlg_color_white, R.color.quantum_orange, new PrettyDialogCallback() {
+                            @Override
+                            public void onClick() {
+                                dialogo.dismiss();
+                            }
+                        });
+                dialogo.setCancelable(false);
+                dialogo.show();
+                return;
+            }else {
 */
-                    StockDao stockDao = new StockDao();
-                    InventarioBean inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
-                    if (inventarioBean != null){
-                        int total = inventarioBean.getTotalCantidad() + qty;
-                        int cantidad = inventarioBean.getCantidad() + qty;
-                        inventarioBean.setCantidad(cantidad);
-                        inventarioBean.setLastCantidad(qty);
-                        inventarioBean.setTotalCantidad(total);
-                        stockDao.save(inventarioBean);
+            SharedPreferencesManager sharedPreferencesManager = new SharedPreferencesManager(getApplicationContext());
+            int currentStockId = sharedPreferencesManager.getCurrentStockId();
+            int currentLoadId = sharedPreferencesManager.getCurrentLoadId();
 
-                        Intent intent = new Intent();
-                        intent.putExtra(Actividades.PARAM_1, cantidad);
-                        setResult(Activity.RESULT_OK, intent);
-                        Toast.makeText(CantidadInventarioActivity.this, "La cantidad se actualizo", Toast.LENGTH_LONG).show();
-                        finish();
-                        return;
-                    }else {
-                        InventarioBean bean = new InventarioBean();
-                        StockDao dao = new StockDao();
-                        bean.setArticulo(productoBean);
-                        bean.setCantidad(qty);
-                        bean.setLastCantidad(qty);
-                        bean.setTotalCantidad(qty);
-                        bean.setEstado("PE");
-                        bean.setPrecio(productoBean.getPrecio());
-                        bean.setFecha(Utils.fechaActual());
-                        bean.setHora(Utils.getHoraActual());
-                        bean.setImpuesto(productoBean.getIva());
-                        bean.setArticulo_clave(productoBean.getArticulo());
-                        dao.insert(bean);
+            StockDao stockDao = new StockDao();
+            StockBox inventarioBean = stockDao.getProductoByArticulo(productoBean.getArticulo());
 
-                        Intent intent = new Intent();
-                        intent.putExtra(Actividades.PARAM_1, cantidad);
-                        setResult(Activity.RESULT_OK, intent);
-                        finish();
-                        return;
-                    }
-                }
+            if (inventarioBean != null){
+                int total = inventarioBean.getTotalCantidad() + qty;
+                int cantidad = inventarioBean.getCantidad() + qty;
+                inventarioBean.setCantidad(cantidad);
+                inventarioBean.setLastCantidad(qty);
+                inventarioBean.setTotalCantidad(total);
+                inventarioBean.setStockId(currentStockId);
+                inventarioBean.setLoadId(currentLoadId);
+                stockDao.insertBox(inventarioBean);
+
+                Intent intent = new Intent();
+                intent.putExtra(Actividades.PARAM_1, cantidad);
+                setResult(Activity.RESULT_OK, intent);
+
+                Toast.makeText(CantidadInventarioActivity.this, "La cantidad se actualizo", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }else {
+                StockBox bean = new StockBox();
+                StockDao dao = new StockDao();
+                bean.getArticulo().setTarget(productoBean);
+                bean.setCantidad(qty);
+                bean.setLastCantidad(qty);
+                bean.setTotalCantidad(qty);
+                bean.setEstado("PE");
+                bean.setPrecio(productoBean.getPrecio());
+                bean.setFecha(Utils.fechaActual());
+                bean.setHora(Utils.getHoraActual());
+                bean.setImpuesto(productoBean.getIva());
+                bean.setArticulo_clave(productoBean.getArticulo());
+                bean.setStockId(currentStockId);
+                bean.setLoadId(currentLoadId);
+                dao.insertBox(bean);
+
+                Intent intent = new Intent();
+                intent.putExtra(Actividades.PARAM_1, cantidad);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+                return;
+            }
         });
 
     }

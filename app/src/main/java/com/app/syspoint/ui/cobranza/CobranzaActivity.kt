@@ -17,7 +17,8 @@ import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityCobranzaBinding
 import com.app.syspoint.databinding.EncabezadoCobranzaBinding
 import com.app.syspoint.models.sealed.ChargeViewState
-import com.app.syspoint.repository.database.dao.PaymentModelDao
+import com.app.syspoint.repository.objectBox.dao.ChargeModelDao
+import com.app.syspoint.repository.objectBox.entities.ChargeModelBox
 import com.app.syspoint.ui.cobranza.adapter.AdapterCobranza
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.charge.ChargeViewModel
@@ -117,7 +118,7 @@ class CobranzaActivity: AppCompatActivity() {
                 onBackPressed()
                 try {
                     //Eliminamos el cobro temporal para que no se guarde en memoria
-                    val dao = PaymentModelDao()
+                    val dao = ChargeModelDao()
                     dao.clear()
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -160,12 +161,12 @@ class CobranzaActivity: AppCompatActivity() {
             is ChargeViewState.ClientLoaded -> {
                 val headerBinding = EncabezadoCobranzaBinding.bind(binding.cobranzaHeader.root)
 
-                headerBinding.textViewClienteCobranzaView.text = chargeViewState.clientBean.cuenta
-                headerBinding.textViewClienteNombreCobranzaView.text = chargeViewState.clientBean.nombre_comercial
+                headerBinding.textViewClienteCobranzaView.text = chargeViewState.clientBox.cuenta
+                headerBinding.textViewClienteNombreCobranzaView.text = chargeViewState.clientBox.nombre_comercial
                 //this.id_cliente_seleccionado = chargeViewState.clienteBean.cuenta
-                headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.clientBean.saldo_credito)
+                headerBinding.textViewSubtotalCobranzaView.text = Utils.FDinero(chargeViewState.clientBox.saldo_credito)
                 //this.textView_cliente_saldo_cobranza_view.setText(Formats.FDinero(saldoDocumentos));
-                headerBinding.textViewClienteSaldoCobranzaView.setText(Utils.FDinero(chargeViewState.clientBean.saldo_credito))
+                headerBinding.textViewClienteSaldoCobranzaView.setText(Utils.FDinero(chargeViewState.clientBox.saldo_credito))
                 //this.saldoCliente = chargeViewState.clienteBean.saldo_credito
             }
             is ChargeViewState.EndChargeWithDocument -> {
@@ -203,14 +204,14 @@ class CobranzaActivity: AppCompatActivity() {
         window.statusBarColor = resources.getColor(R.color.purple_700)
     }
 
-    private fun refreshRecyclerView(charges: List<CobranzaModel?>) {
+    private fun refreshRecyclerView(charges: List<ChargeModelBox?>) {
         if (::adapter.isInitialized) {
             adapter.setData(charges)
             adapter.notifyDataSetChanged()
         }
     }
 
-    private fun initRecyclerViews(charges: List<CobranzaModel?>) {
+    private fun initRecyclerViews(charges: List<ChargeModelBox?>) {
 
         binding.recyclerViewCobranza.setHasFixedSize(true)
 
@@ -219,7 +220,7 @@ class CobranzaActivity: AppCompatActivity() {
 
         adapter = AdapterCobranza(charges, object: AdapterCobranza.OnItemLongClickListener {
             override fun onItemLongClicked(position: Int): Boolean {
-                val item: CobranzaModel? = charges[position]
+                val item: ChargeModelBox? = charges[position]
                 if (item != null) {
                     val dialog = PrettyDialog(this@CobranzaActivity)
                     dialog.setTitle("Eliminar")
@@ -361,7 +362,7 @@ class CobranzaActivity: AppCompatActivity() {
         }
     }
 
-    private fun goPintTicket(ticket: String, ventaID: String, clientId: String) {
+    private fun goPintTicket(ticket: String, ventaID: Long, clientId: String) {
         val intent = Intent(this@CobranzaActivity, ImprimeAbonoActivity::class.java)
         intent.putExtra("ticket", ticket)
         intent.putExtra("cobranza", ventaID)

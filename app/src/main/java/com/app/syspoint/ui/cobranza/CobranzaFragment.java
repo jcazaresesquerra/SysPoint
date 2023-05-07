@@ -4,7 +4,6 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -32,12 +31,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.repository.objectBox.dao.CobrosDao;
+import com.app.syspoint.repository.objectBox.dao.PrinterDao;
+import com.app.syspoint.repository.objectBox.entities.CobrosBox;
+import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.repository.database.bean.CobrosBean;
-import com.app.syspoint.repository.database.bean.PrinterBean;
-import com.app.syspoint.repository.database.dao.ChargesDao;
-import com.app.syspoint.repository.database.dao.PrinterDao;
 import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaCobranzas;
@@ -50,7 +49,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public class CobranzaFragment extends Fragment {
@@ -73,7 +71,7 @@ public class CobranzaFragment extends Fragment {
 
 
     private AdapterListaCobranzas mAdapter;
-    private List<CobrosBean> partidas;
+    private List<CobrosBox> partidas;
     private LinearLayout  lyt_cobranza;
 
     @Override
@@ -141,7 +139,7 @@ public class CobranzaFragment extends Fragment {
     private void initRecyclerView(View v){
 
         partidas = new ArrayList<>();
-        partidas = (List<CobrosBean>)(List<?>) new ChargesDao().GetAllListaCobrosConfirmadas();
+        partidas = new CobrosDao().GetAllListaCobrosConfirmadas();
 
         if (partidas.size() > 0){
             lyt_cobranza.setVisibility(View.GONE);
@@ -168,9 +166,9 @@ public class CobranzaFragment extends Fragment {
 
             builderSingle.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
             builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
-                CobrosBean cobrosBean = partidas.get(position);
+                CobrosBox cobrosBean = partidas.get(position);
                 DepositTicket depositTicket = new DepositTicket();
-                depositTicket.setBean(cobrosBean);
+                depositTicket.setBox(cobrosBean);
                 depositTicket.template();
                 Toast.makeText(getContext(), "Imprimiendo ticket", Toast.LENGTH_SHORT).show();
                 if (mConnectedThread != null) //First check to make sure thread created
@@ -240,7 +238,7 @@ public class CobranzaFragment extends Fragment {
         int existe = existeImpresora.existeConfiguracionImpresora();
 
         if (existe > 0) {
-            final PrinterBean establecida = existeImpresora.getImpresoraEstablecida();
+            final PrinterBox establecida = existeImpresora.getImpresoraEstablecida();
 
             if (establecida != null) {
 
