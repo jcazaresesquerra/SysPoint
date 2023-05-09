@@ -593,6 +593,7 @@ public class ClienteFragment extends Fragment {
                 ClientDao clientDao = new ClientDao();
                 clientBox.setRecordatorio(review);
                 clientBox.setDate_sync(Utils.fechaActual());
+                clientBox.setUpdatedAt(Utils.fechaActualHMS());
                 clientDao.insertBox(clientBox);
                 testLoadClientes(clientBox.getId());
             }
@@ -636,6 +637,7 @@ public class ClienteFragment extends Fragment {
             cliente.setLongitud(item.getLongitud());
             cliente.setPhone_contacto(item.getContacto_phone());
             cliente.setRecordatorio(item.getRecordatorio());
+            cliente.setUpdatedAt(item.getUpdatedAt());
             cliente.setVisitas(item.getVisitasNoefectivas());
             if (item.isCredito()){
                 cliente.setCredito(1);

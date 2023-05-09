@@ -36,6 +36,7 @@ import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
+import com.app.syspoint.utils.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -53,6 +54,7 @@ import com.app.syspoint.R;
 import com.app.syspoint.ui.dialogs.DialogOptionsClients;
 import com.app.syspoint.ui.ventas.VentasActivity;
 import com.app.syspoint.utils.Actividades;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +104,39 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                     .build();
         }
 
+        FloatingActionButton publicSale = findViewById(R.id.fb_public_sale);
+        publicSale.setOnClickListener(v -> {
+            makePublicSale();
+        });
+
+    }
+
+    private void makePublicSale() {
+        ClientDao clientDao = new ClientDao();
+        ClientBox client = clientDao.getClientGeneralPublic();
+        if (client == null) {
+            client = new ClientBox(1L, "Publico General",
+                    "Industrias del Valle", "1", "Parque Canacintra",
+                    "Culiacán Rosales", 80150, "22-08-2021",
+                    "000000", true, "000001", "01", 0,0,0,0,
+                    0,0,0, 0,0,0,0,0,
+                    0,0, 0, "24.777435983809422",
+                    "-107.437107128804", null, null,
+                    false, 0, false, 0.0,
+                    0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS());
+            try {
+                clientDao.insertBox(client);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        HashMap<String, String> parametros = new HashMap<>();
+        parametros.put(Actividades.PARAM_1, client.getCuenta());
+
+        Timber.tag(TAG).d("Public Sale -> click -> open VentasActivity -> %s", client.getCuenta());
+
+        Actividades.getSingleton(this, VentasActivity.class).muestraActividad(parametros);
     }
 
     @Override

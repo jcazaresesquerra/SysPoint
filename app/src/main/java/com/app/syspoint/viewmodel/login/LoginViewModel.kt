@@ -9,6 +9,8 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
+import com.app.syspoint.interactor.token.TokenInteractor
+import com.app.syspoint.interactor.token.TokenInteractorImpl
 import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
@@ -277,8 +279,8 @@ class LoginViewModel: BaseViewModel() {
     }
 
     fun validateToken() {
-        sync()
-        /*
+        //sync()
+
         Handler().postDelayed({
             NetworkStateTask { connected ->
                 if (connected) {
@@ -309,7 +311,7 @@ class LoginViewModel: BaseViewModel() {
                     }
                 }
             }.execute()
-        }, 100)*/
+        }, 100)
     }
 
     fun sync() {

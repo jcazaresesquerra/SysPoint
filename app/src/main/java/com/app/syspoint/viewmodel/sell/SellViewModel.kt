@@ -223,6 +223,7 @@ class SellViewModel: ViewModel() {
         if (clienteBean != null) {
             clienteBean.recordatorio = ""
             clienteBean.isRecordatorio = true
+            clienteBean.updatedAt = Utils.fechaActualHMS()
             clientDao.insertBox(clienteBean)
 
             testLoadClientes(clientId.toString())
@@ -602,6 +603,7 @@ class SellViewModel: ViewModel() {
                 client.longitud = item.longitud
                 client.phone_contacto = item.contacto_phone
                 client.recordatorio = item.recordatorio
+                client.updatedAt = item.updatedAt
                 client.visitas = item.visitasNoefectivas
                 client.isCredito = if (item.isCredito) 1 else 0
                 client.saldo_credito = item.saldo_credito
