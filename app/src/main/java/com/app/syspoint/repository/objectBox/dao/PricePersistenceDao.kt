@@ -5,6 +5,10 @@ import com.app.syspoint.repository.objectBox.entities.PersistancePricesBox_
 
 class PricePersistenceDao: AbstractDao<PersistancePricesBox>() {
 
+    fun clear() {
+        abstractBox<PersistancePricesBox>().removeAll()
+    }
+
     fun inserBox(box: PersistancePricesBox) {
         insert(box)
     }

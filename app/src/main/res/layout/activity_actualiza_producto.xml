@@ -38,7 +38,7 @@ tools:context=".ui.products.activities.ActualizaProductoActivity">
         <ImageView
             android:id="@+id/img_producto_actualiza"
             android:background="@color/grey_60"
-            android:src="@drawable/logo"
+            android:src="@drawable/tenet_icon"
             android:layout_width="match_parent"
             android:layout_height="200dp">
         </ImageView>
@@ -259,7 +259,7 @@ tools:context=".ui.products.activities.ActualizaProductoActivity">
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:elevation="10dp"
-                android:src="@drawable/logo" />
+                android:src="@drawable/tenet_icon" />
         </LinearLayout>
 
     </RelativeLayout>

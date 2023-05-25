@@ -17,6 +17,7 @@ import com.app.syspoint.models.sealed.LoginViewState
 import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.models.UserSession
+import com.app.syspoint.models.enums.RoleType
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.utils.NetworkStateTask
@@ -45,7 +46,7 @@ class LoginViewModel: BaseViewModel() {
         //sync()
     }
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, rememberSession: Boolean) {
         val employeeDao = EmployeeDao()
         val employeeBox = employeeDao.validateLogin(email, password)
 
@@ -77,9 +78,14 @@ class LoginViewModel: BaseViewModel() {
             val sessionBean = SessionBox()
             sessionBean.employee.target = employeeBox
             sessionBean.empleadoId = employeeBox.id
-            sessionBean.remember = false
+            sessionBean.employeeIdentifier = employeeBox.identificador!!
+            sessionBean.remember = rememberSession
             sessionDao.saveSession(sessionBean)
             AppBundle.setUserSession(userSession)
+
+            // save seller in cache
+            val cacheInteractor = CacheInteractor()
+            cacheInteractor.saveSeller(employeeBox)
         }
 
         loginViewState.postValue(
@@ -188,9 +194,22 @@ class LoginViewModel: BaseViewModel() {
         }
     }
 
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
+    }
+
     fun isUserAdmin(): Boolean {
         // get seller
-        val sellerBean = AppBundle.getUserBox()
+        val sellerBean = getEmployee()
 
         // save seller in cache
         val cacheInteractor = CacheInteractor()
@@ -201,7 +220,7 @@ class LoginViewModel: BaseViewModel() {
             identificador = sellerBean.identificador
         }
         val rolesDao = RolesDao()
-        val rolesBean = rolesDao.getRolByEmpleado(identificador, "Inventarios")
+        val rolesBean = rolesDao.getRolByEmpleado(identificador, RoleType.STOCK.value)
 
         return rolesBean != null && rolesBean.active
     }
@@ -290,10 +309,15 @@ class LoginViewModel: BaseViewModel() {
                             sync()
                         }
 
-                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String) {
-                            downloadApkViewState.postValue(
-                                DownloadApkViewState.ApkOldVersion(baseUpdateUrl, currentVersion)
-                            )
+                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String, throwable: Throwable?) {
+                            if (throwable == null) {
+                                downloadApkViewState.postValue(
+                                    DownloadApkViewState.ApkOldVersion(
+                                        baseUpdateUrl,
+                                        currentVersion
+                                    )
+                                )
+                            }
                         }
                     })
                 } else {
@@ -356,7 +380,9 @@ class LoginViewModel: BaseViewModel() {
     }
 
     private fun existUserSession(): Boolean {
-        return CacheInteractor().getSeller() != null
+        val seller = CacheInteractor().getSeller()
+        if (seller != null) return true
+        return SessionDao().getUserSession() != null
     }
 
     fun isSync(): Boolean {
@@ -366,7 +392,7 @@ class LoginViewModel: BaseViewModel() {
         val isUpdated = isSessionUpdated()
 
         if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual()) || !isUpdated) {
-            forceUpdate()
+            forceUpdate(false)
             exist = false
             //updateSession(false)
         } else {
@@ -376,17 +402,21 @@ class LoginViewModel: BaseViewModel() {
         return exist
     }
 
-    fun forceUpdate() {
+    fun forceUpdate(removeTask: Boolean) {
         Timber.tag(TAG).d("sync -> forceUpdate")
 
+        App.mBoxStore?.removeAllObjects()
+
+        val sessionDao = SessionDao()
+        sessionDao.clear()
         val stockDao = StockDao()
         stockDao.clear()
-        val historialDao = StockHistoryDao()
-        historialDao.clear()
-        val ventasDao = SellsDao()
-        ventasDao.clear()
-        val itemDao = PlayingDao()
-        itemDao.clear()
+        val stockHistoryDao = StockHistoryDao()
+        stockHistoryDao.clear()
+        val sellDao = SellsDao()
+        sellDao.clear()
+        val playingDao = PlayingDao()
+        playingDao.clear()
         val visitasDao = VisitsDao()
         visitasDao.clear()
         val cobranzaDao = CobrosDao()
@@ -408,11 +438,14 @@ class LoginViewModel: BaseViewModel() {
         val dao = TaskDao()
         dao.clear()
         val bean = TaskBox()
+
+        bean.date = if (removeTask) "" else Utils.fechaActual()
+        bean.task = "Sincronización"
+
         CacheInteractor().removeSellerFromCache()
         CacheInteractor().resetStockId()
         CacheInteractor().resetLoadId()
-        bean.date = Utils.fechaActual()
-        bean.task = "Sincronización"
+
         dao.insert(bean)
     }
 
@@ -468,7 +501,7 @@ class LoginViewModel: BaseViewModel() {
         val BYTES: Long = 1024 * 1024 * 90
         islandRef.getBytes(BYTES).addOnSuccessListener {
             stream.write(it)
-            forceUpdate()
+            forceUpdate(true)
             downloadApkViewState.postValue(
                 DownloadApkViewState.DownloadApkSuccess(file, versionToDownload)
             )

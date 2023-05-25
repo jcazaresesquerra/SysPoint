@@ -4,6 +4,8 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.SellBox
 
 class SellTicket: BaseTicket() {
@@ -40,8 +42,8 @@ class SellTicket: BaseTicket() {
         }
 
         //val importeTotalVenta: Double = ventasBean.importe + ventasBean.impuesto
-        for (items in ventasBean.listaPartidas!!) {
-            ticket += "" + items.articulo!!.target.descripcion + Constants.NEW_LINE +
+        for (items in ventasBean.listaPartidas) {
+            ticket += "" + items.articulo.target.descripcion + Constants.NEW_LINE +
                     "" + String.format(
                 "%1$-5s %2$11s %3$10s %4$10s",
                 items.cantidad,
@@ -133,11 +135,14 @@ class SellTicket: BaseTicket() {
     override fun buildSyspointHeader(): String {
         val sellBox = box as SellBox
 
-        val vendedor = if (sellBox.employee != null) {
-            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
         } else {
             val employeeBox = CacheInteractor().getSeller()
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
             if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
             else ""
         }
 
@@ -151,7 +156,7 @@ class SellTicket: BaseTicket() {
                 "         www.aguapoint.com      " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE + vendedor +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
@@ -166,11 +171,14 @@ class SellTicket: BaseTicket() {
     override fun buildDonAquiHeader(): String {
         val sellBox = box as SellBox
 
-        val employee = if (sellBox.employee != null) {
-            "Vendedor:" + sellBox.employee!!.target.nombre + Constants.NEW_LINE
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
         } else {
             val employeeBox = CacheInteractor().getSeller()
-            if (employeeBox != null) "Vendedor:" + employeeBox.nombre+ Constants.NEW_LINE
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
             else ""
         }
 
@@ -182,8 +190,8 @@ class SellTicket: BaseTicket() {
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "(" + sellBox.client!!.target.cuenta + ")  " + sellBox.client!!.target.nombre_comercial + Constants.NEW_LINE +
-                employee +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
+                vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +

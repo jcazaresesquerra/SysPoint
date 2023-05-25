@@ -41,10 +41,12 @@ import com.app.syspoint.R;
 import com.app.syspoint.repository.objectBox.AppBundle;
 import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.dao.SellsDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
 import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
@@ -54,6 +56,7 @@ import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.repository.objectBox.entities.SellBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
@@ -83,7 +86,7 @@ import java.util.UUID;
 
 public class ListaVentasFragment extends Fragment {
 
-    protected static final String TAG = "TAG";
+    protected static final String TAG = "ListaVentasFragment";
 
     //Connection bluetooth
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
@@ -196,7 +199,7 @@ public class ListaVentasFragment extends Fragment {
 
 
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
-        builderSingle.setIcon(R.drawable.logo);
+        builderSingle.setIcon(R.drawable.tenet_icon);
         builderSingle.setTitle("Seleccionar opción");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
@@ -224,11 +227,7 @@ public class ListaVentasFragment extends Fragment {
                 String identificador = "";
 
                 //Obtiene el nombre del vendedor
-                EmployeeBox vendedoresBean = AppBundle.getUserBox();
-
-                if (vendedoresBean == null && getContext() != null) {
-                    vendedoresBean = new CacheInteractor().getSeller();
-                }
+                EmployeeBox vendedoresBean = getEmployee();
 
                 if (vendedoresBean != null){
                     identificador = vendedoresBean.getIdentificador();
@@ -296,11 +295,7 @@ public class ListaVentasFragment extends Fragment {
                                 public void onClick() {
                                     if (!cancelSellClicked) {
                                         cancelSellClicked = true;
-                                        EmployeeBox cancelaUsuario = AppBundle.getUserBox();
-
-                                        if (cancelaUsuario == null && getContext() != null) {
-                                            cancelaUsuario = new CacheInteractor().getSeller();
-                                        }
+                                        EmployeeBox cancelaUsuario = getEmployee();
 
                                         SellsDao sellsDao = new SellsDao();
                                         venta.setEstado("CA");
@@ -383,6 +378,9 @@ public class ListaVentasFragment extends Fragment {
                     SellTicket sellTicket = new SellTicket();
                     sellTicket.setBox(venta);
                     sellTicket.template();
+
+                    String ticket = sellTicket.document;
+                    Log.d("ListaVentasFragment", ticket);
 
                     if (mConnectedThread != null) //First check to make sure thread created
                         mConnectedThread.write(sellTicket.getDocument());
@@ -660,5 +658,18 @@ public class ListaVentasFragment extends Fragment {
         super.onDestroy();
         if(mConnectedThread != null)
             mConnectedThread.cancel();
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 }

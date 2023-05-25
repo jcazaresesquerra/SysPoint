@@ -6,6 +6,10 @@ import io.objectbox.query.QueryBuilder
 
 class ProductDao: AbstractDao<ProductBox>() {
 
+    fun clear() {
+        abstractBox<ProductBox>().removeAll()
+    }
+
     fun insertBox(box: ProductBox) {
         insert(box)
     }
@@ -25,6 +29,17 @@ class ProductDao: AbstractDao<ProductBox>() {
     fun getProductoByArticulo(articulo: String?): ProductBox? {
         val query = abstractBox<ProductBox>().query()
             .equal(ProductBox_.articulo, articulo, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .build()
+        val results = query.find()
+        query.close()
+
+        return if (results.isEmpty()) null else results[0]
+    }
+
+    //Retorna el producto por identificador
+    fun getProductoByBarCode(barcode: String?): ProductBox? {
+        val query = abstractBox<ProductBox>().query()
+            .equal(ProductBox_.codigo_barras, barcode, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .build()
         val results = query.find()
         query.close()

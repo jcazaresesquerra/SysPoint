@@ -31,20 +31,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.models.enums.RoleType;
 import com.app.syspoint.models.sealed.GetClientsByRuteViewState;
 import com.app.syspoint.models.sealed.HomeLoadingViewState;
 import com.app.syspoint.models.sealed.SetRuteViewState;
 import com.app.syspoint.repository.objectBox.AppBundle;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.dao.RoutingDao;
 import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
 import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.ui.MainActivity;
 import com.app.syspoint.ui.customs.DialogoRuteo;
 import com.app.syspoint.ui.home.activities.MapsRuteoActivity;
@@ -67,7 +71,7 @@ import timber.log.Timber;
 
 public class HomeFragment extends Fragment {
 
-    private static final String TAG = "TAG";
+    private static final String TAG = "HomeFragment";
     AdapterRutaClientes mAdapter;
     List<RuteClientBox> mData;
     private RelativeLayout rlprogress;
@@ -83,20 +87,14 @@ public class HomeFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        viewModel.getHomeLoadingViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
-            if (o instanceof HomeLoadingViewState.LoadingStart) {
-                Timber.tag(TAG).d("LoadingStart");
-                rlprogress.setVisibility(View.VISIBLE);
-                if (getActivity() != null)
-                    ((MainActivity) getActivity()).blockInput();
-            } else if (o instanceof HomeLoadingViewState.LoadingFinish) {
-                Timber.tag(TAG).d("LoadingFinish");
-                rlprogress.setVisibility(View.GONE);
-                if (getActivity() != null)
-                    ((MainActivity) getActivity()).unblockInput();
+        viewModel.getHomeLoadingViewState().observe(getViewLifecycleOwner(), viewState -> {
+            if (viewState instanceof HomeLoadingViewState.LoadingStart) {
+                showLoading();
+            } else if (viewState instanceof HomeLoadingViewState.LoadingFinish) {
+                hideLoading();
             }
         });
-        viewModel.getGetClientsByRuteViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
+        viewModel.getGetClientsByRuteViewState().observe(getViewLifecycleOwner(), o -> {
             if (o instanceof GetClientsByRuteViewState.GetClientsByRuteSuccess) {
                 Timber.tag(TAG).d("GetClientsByRuteSuccess call loadRuta");
                 loadRuta();
@@ -106,7 +104,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        viewModel.getSetUpRuteViewState().observe(getViewLifecycleOwner(), (Observer) o -> {
+        viewModel.getSetUpRuteViewState().observe(getViewLifecycleOwner(), o -> {
             if (o instanceof SetRuteViewState.RuteDefined) {
                 loadRuta();
                 Timber.tag(TAG).d("RuteDefined -> called loadRuta and call getClientRute");
@@ -205,7 +203,7 @@ public class HomeFragment extends Fragment {
                     0,0, 0, "24.777435983809422",
                     "-107.437107128804", null, null,
                     false, 0, false, 0.0,
-                    0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS());
+                    0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS(), 0, "", "", "");
             try {
                 clientDao.insertBox(client);
             } catch (Exception e) {
@@ -272,7 +270,8 @@ public class HomeFragment extends Fragment {
 
     private void showDialog() {
         Timber.tag(TAG).d("showDialog");
-        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        EmployeeBox vendedoresBean = getEmployee();
+
         if (vendedoresBean !=  null) {
             RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.RUTES.getValue());
 
@@ -350,7 +349,7 @@ public class HomeFragment extends Fragment {
         RoutingBox ruteoBean = routingDao.getRutaEstablecida();
 
         if (ruteoBean != null && ruteoBean.getDia() > 0) {
-            EmployeeBox vendedoresBean = AppBundle.getUserBox();
+            EmployeeBox vendedoresBean = getEmployee();
             String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
 
             mData = new RuteClientDao().getAllRutaClientes(ruta, ruteoBean.getDia());
@@ -376,7 +375,7 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(manager);
 
         boolean isOrderRute = false;
-        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        EmployeeBox vendedoresBean = getEmployee();
         if (vendedoresBean !=  null) {
             RolesBox rutasRol = new RolesDao().getRolByEmpleado(vendedoresBean.getIdentificador(), RoleType.ORDER_RUTES.getValue());
             isOrderRute = rutasRol != null && rutasRol.getActive();
@@ -450,6 +449,34 @@ public class HomeFragment extends Fragment {
         dialog.show();
     }
 
+    private void showLoading() {
+        Timber.tag(TAG).d("LoadingStart");
+        rlprogress.setVisibility(View.VISIBLE);
+
+        new Handler().postDelayed(() -> {
+            Timber.tag(TAG).d("LoadingFinish by runnabler");
+            hideLoading();
+            /*new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+                if (connected) {
+                    Timber.tag(TAG).d("Check connection by runnabler -> NetworkStateTask connected ");
+                } else {
+                    Timber.tag(TAG).d("Check connection by runnabler -> NetworkStateTask not connected ");
+                    showDialogNotConnectionInternet();
+                }
+            }).execute(), 100);*/
+        }, 4000);
+
+        if (getActivity() != null)
+            ((MainActivity) getActivity()).blockInput();
+    }
+
+    private void hideLoading() {
+        Timber.tag(TAG).d("LoadingFinish");
+        rlprogress.setVisibility(View.GONE);
+        if (getActivity() != null)
+            ((MainActivity) getActivity()).unblockInput();
+    }
+
     private void showOrderRuteMessage() {
         Timber.tag(TAG).d("showOrderRuteMessage");
         Toast.makeText(getActivity(), "Es obligatorio seguir la secuencia del listado", Toast.LENGTH_SHORT).show();
@@ -473,7 +500,14 @@ public class HomeFragment extends Fragment {
                 dialog.dismiss();
             });
 
-            dialog.show();
+            if (!dialog.isShowing()) {
+                try {
+                    dialog.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             dialog.getWindow().setAttributes(lp);
         }
     }
@@ -483,18 +517,31 @@ public class HomeFragment extends Fragment {
         MainActivity.NetworkChangeReceiver mNetworkChangeReceiver = new MainActivity.NetworkChangeReceiver(new MainActivity.ConnectionNetworkListener() {
             @Override
             public void onConnected() {
-                Timber.tag(TAG).d("registerNetworkBroadcastForNougat -> NetworkChangeReceiver -> getData(false)");
+                Timber.tag(TAG).d("registerNetworkBroadcastForNougat -> NetworkChangeReceiver -> onConnected-> getData(false)");
                 getData(false);
             }
 
             @Override
             public void onDisconnected() {
-
+                Timber.tag(TAG).d("registerNetworkBroadcastForNougat -> NetworkChangeReceiver -> onDisconnected -> getData(false)");
             }
         });
         getActivity().registerReceiver(
                 mNetworkChangeReceiver,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         );
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 }

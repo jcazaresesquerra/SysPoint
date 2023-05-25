@@ -24,7 +24,7 @@ public class AdapterListaClientes extends RecyclerView.Adapter<AdapterListaClien
     private List<ClientBox>mDataFiltrable;
     private OnItemClickListener mOnItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
-    private Context context;
+
     public AdapterListaClientes(List<ClientBox> mData, OnItemClickListener mOnItemClickListener, OnItemLongClickListener onItemLongClickListener ) {
         this.mData = mData;
         this.mDataFiltrable = mData;

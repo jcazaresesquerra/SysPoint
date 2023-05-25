@@ -182,7 +182,7 @@ class ProductFragment: Fragment() {
     private fun showSelectionFunction(productBean: ProductBox?) {
 
         val builderSingle = AlertDialog.Builder(requireContext())
-        builderSingle.setIcon(R.drawable.logo)
+        builderSingle.setIcon(R.drawable.tenet_icon)
         builderSingle.setTitle("Seleccionar opción")
 
         val arrayAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line)

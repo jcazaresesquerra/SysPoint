@@ -36,15 +36,18 @@ import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
 import com.app.syspoint.repository.objectBox.dao.RoutingDao;
 import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
 import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.repository.objectBox.entities.RoutingBox;
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.app.syspoint.R;
 import com.app.syspoint.repository.objectBox.AppBundle;
@@ -94,7 +97,7 @@ public class ClienteFragment extends Fragment {
                         0,0, 0, "24.777435983809422",
                         "-107.437107128804", null, null,
                         false, 0, false, 0.0,
-                        0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS());
+                        0.0, null, "2022-11-08 00:00:00", Utils.fechaActualHMS(), 0, "", "", "");
                 try {
                     clientDao.insertBox(client);
                 } catch (Exception e) {
@@ -276,7 +279,7 @@ public class ClienteFragment extends Fragment {
 
     private void showGeneralPublicDialog(ClientBox cliente) {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
-        builderSingle.setIcon(R.drawable.logo);
+        builderSingle.setIcon(R.drawable.tenet_icon);
         builderSingle.setTitle("Seleccionar opción");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
@@ -313,7 +316,7 @@ public class ClienteFragment extends Fragment {
 
     private void showDialogList(ClientBox cliente, AdapterListaClientes.OnDialogShownListener onDialogShownListener) {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
-        builderSingle.setIcon(R.drawable.logo);
+        builderSingle.setIcon(R.drawable.tenet_icon);
         builderSingle.setTitle("Seleccionar opción");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
@@ -335,11 +338,7 @@ public class ClienteFragment extends Fragment {
             String identificador = "";
 
             //Obtiene el nombre del vendedor
-            EmployeeBox vendedoresBean = AppBundle.getUserBox();
-
-            if (vendedoresBean == null) {
-                vendedoresBean = new CacheInteractor().getSeller();
-            }
+            EmployeeBox vendedoresBean = getEmployee();
 
             if (vendedoresBean != null) {
                 identificador = vendedoresBean.getIdentificador();
@@ -443,12 +442,19 @@ public class ClienteFragment extends Fragment {
 
                             ruteClientBox.setId(id);
                             ruteClientBox.setNombre_comercial(cliente.getNombre_comercial());
+                            ruteClientBox.setPhone_contact(cliente.getContacto_phone());
                             ruteClientBox.setCalle(cliente.getCalle());
                             ruteClientBox.setNumero(cliente.getNumero());
                             ruteClientBox.setColonia(cliente.getColonia());
                             ruteClientBox.setCuenta(cliente.getCuenta());
                             ruteClientBox.setRango(ruteoBean.getRuta());
                             ruteClientBox.setStatus(cliente.getStatus());
+
+                            ruteClientBox.setVentaClientId(cliente.getVentaClientId());
+                            ruteClientBox.setVentaFecha(cliente.getVentaFecha());
+                            ruteClientBox.setVentaCreatedAt(cliente.getVentaCreatedAt());
+                            ruteClientBox.setVentaUpdatedAt(cliente.getVentaUpdatedAt());
+
 
                             if (ruteoBean.getDia() == 1)
                                 ruteClientBox.setLun(1);
@@ -683,7 +689,7 @@ public class ClienteFragment extends Fragment {
 
         if (ruteoBean != null) {
             progressshow();
-            new ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.getRuta(), ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
+            new ClientInteractorImp().executeGetAllClientsAndLastSellByRute(ruteoBean.getRuta(), ruteoBean.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
                 public void onGetAllClientsSuccess(@NonNull List<ClientBox> clientList) {
                     mData = new ClientDao().getClientsByRute(ruteoBean.getRuta());
@@ -740,5 +746,18 @@ public class ClienteFragment extends Fragment {
         } else {
             lyt_clientes.setVisibility(View.VISIBLE);
         }
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 }

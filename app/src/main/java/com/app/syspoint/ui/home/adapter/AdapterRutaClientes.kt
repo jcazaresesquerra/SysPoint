@@ -5,18 +5,26 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox
+import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
+import com.app.syspoint.utils.setGone
 import timber.log.Timber
+import java.net.URLEncoder
 import java.util.*
+import java.util.concurrent.TimeUnit
+
+
 private const val TAG = "AdapterRutaClientes"
 
 class AdapterRutaClientes(
@@ -76,7 +84,8 @@ class AdapterRutaClientes(
                         popup.menuInflater.inflate(R.menu.popup_menu, popup.menu)
 
                         //registering popup with OnMenuItemClickListener
-                        popup.setOnMenuItemClickListener { _ ->
+                        popup.setOnMenuItemClickListener { item ->
+
                             if (clienteBean.phone_contact.isNullOrEmpty() || clienteBean.phone_contact == "null") {
                                 Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> empty number")
                                 Toast.makeText(
@@ -95,13 +104,58 @@ class AdapterRutaClientes(
                                 ).show()
                                 return@setOnMenuItemClickListener false
                             } else {
-                                Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> call number ${clienteBean.phone_contact}")
+                                when(item.itemId ) {
+                                    R.id.call_client -> {
+                                        Timber.tag(TAG)
+                                            .d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> call number ${clienteBean.phone_contact}")
 
-                                val intent = Intent(
-                                    Intent.ACTION_CALL,
-                                    Uri.parse("tel:" + "+52" + clienteBean.phone_contact)
-                                )
-                                itemView.context.startActivity(intent)
+                                        val intent = Intent(
+                                            Intent.ACTION_CALL,
+                                            Uri.parse("tel:" + "+52" + clienteBean.phone_contact)
+                                        )
+                                        itemView.context.startActivity(intent)
+                                    }
+                                    R.id.send_whatsapp -> {
+                                        Timber.tag(TAG)
+                                            .d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> send WP ${clienteBean.phone_contact}")
+
+                                        val uri = Uri.parse(
+                                            "https://api.whatsapp.com/send?phone=" + "+52" + clienteBean.phone_contact + "&text=" + URLEncoder.encode(
+                                                "Hola!!"
+                                            )
+                                        )
+
+                                        val pm: PackageManager = itemView.context.packageManager
+                                        try {
+                                            val waIntent = Intent(Intent.ACTION_VIEW, uri)
+                                            val info = pm.getPackageInfo("com.whatsapp", PackageManager.GET_META_DATA)
+
+                                            waIntent.setPackage("com.whatsapp")
+                                            itemView.context.startActivity(
+                                                Intent.createChooser(
+                                                    waIntent,
+                                                    "Abrir con"
+                                                )
+                                            )
+                                        } catch (e: Exception) {
+                                            try {
+                                                val waIntent = Intent(Intent.ACTION_VIEW, uri)
+
+                                                val info = pm.getPackageInfo("com.whatsapp.w4b", PackageManager.GET_META_DATA)
+
+                                                waIntent.setPackage("com.whatsapp.w4b")
+                                                itemView.context.startActivity(
+                                                    Intent.createChooser(
+                                                        waIntent,
+                                                        "Abrir con"
+                                                    )
+                                                )
+                                            } catch (e: Exception) {
+                                                Toast.makeText(itemView.context, "WhatsApp no instalado", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             true
                         }
@@ -122,6 +176,25 @@ class AdapterRutaClientes(
 
                 val calendar = Calendar.getInstance()
                 val day = calendar[Calendar.DAY_OF_WEEK]
+
+
+                if (clienteBean.ventaCreatedAt.isNullOrEmpty()) {
+                    binding.tvLastVisit.text = "Ultima venta: sin ventas"
+                } else {
+                    try {
+                        val diff = Utils.getCurrentDayHMS().time - Utils.getDataFromString(clienteBean.ventaCreatedAt).time
+                        val days = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS)
+                        if (days <= 0) {
+                            binding.tvLastVisit.text = "Ultima venta: hoy"
+                        } else if (days == 1L) {
+                            binding.tvLastVisit.text = "Ultima venta: hace $days día"
+                        } else {
+                            binding.tvLastVisit.text = "Ultima venta: hace $days días"
+                        }
+                    } catch (e: Exception) {
+                        binding.tvLastVisit.visibility = View.GONE
+                    }
+                }
 
                 binding.textViewFechaVisitaClienteRuta.apply {
                     when (day) {

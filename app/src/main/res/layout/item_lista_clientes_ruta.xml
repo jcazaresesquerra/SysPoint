@@ -18,74 +18,107 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textView_nombre_cliente_ruta"
-                android:layout_width="350dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:text="EDUARDO GONZALEZ CASASOLA"
-                android:textAppearance="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large"
-                android:textColor="@color/purple_700"
-                android:textSize="16dp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@+id/imageView3"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/textView_direccion_cliente_ruta"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_marginEnd="8dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                android:text="San pablo de las salinas oaxaca 66 lote 17-d Mza-10 int 10"
-                android:textSize="10dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView_nombre_cliente_ruta" />
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView_nombre_cliente_ruta"
+                    android:layout_width="350dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="EDUARDO GONZALEZ CASASOLA"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Large"
+                    android:textColor="@color/purple_700"
+                    android:textSize="16dp"
+                    android:textStyle="bold"
+                    android:layout_alignParentStart="true"
+                    android:layout_toLeftOf="@+id/img_call"/>
 
-            <TextView
-                android:id="@+id/textView_colonia_cliente_ruta"
-                android:layout_width="wrap_content"
-                android:layout_height="14dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="8dp"
-                android:text="Col. San pablo de las salinas"
-                android:textSize="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView_direccion_cliente_ruta" />
+                <ImageView
+                    android:id="@+id/img_call"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_baseline_more_vert_24"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
 
-            <TextView
-                android:id="@+id/textView_fecha_visita_cliente_ruta"
-                android:layout_width="wrap_content"
+
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="Sig visita 20/02/2021"
-                android:textColor="@color/purple_700"
-                android:textSize="12dp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView_direccion_cliente_ruta" />
+                android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/img_call"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/textView_direccion_cliente_ruta"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:text="San pablo de las salinas oaxaca 66 lote 17-d Mza-10 int 10"
+                    android:textSize="10dp"
+                    android:lines="2"
+                    android:layout_alignParentStart="true"
+                    android:layout_toLeftOf="@+id/tv_last_visit"/>
+
+                <TextView
+                    android:id="@+id/tv_last_visit"
+                    android:layout_width="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Ultima venta: hace 12 días"
+                    android:textSize="12dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_700"
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_more_vert_24" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView_colonia_cliente_ruta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Col. San pablo de las salinas"
+                    android:textSize="10dp"
+                    android:layout_toStartOf="@+id/textView_fecha_visita_cliente_ruta"
+                    android:layout_alignParentStart="true"/>
+
+                <TextView
+                    android:id="@+id/textView_fecha_visita_cliente_ruta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Sig visita 20/02/2021"
+                    android:textColor="@color/purple_700"
+                    android:textSize="12dp"
+                    android:textStyle="bold"
+                    android:layout_alignParentEnd="true"
+                     />
+            </RelativeLayout>
+
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

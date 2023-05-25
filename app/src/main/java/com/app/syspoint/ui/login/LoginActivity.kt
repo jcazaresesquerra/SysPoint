@@ -119,7 +119,8 @@ class LoginActivity: AppCompatActivity() {
             binding.btnSignIn.isEnabled = false
             val email: String = binding.etLoginEmail.text.toString()
             val password: String = binding.etLoginPassword.text.toString()
-            viewModel.login(email, password)
+            val rememberSession = binding.cbRememberSession.isChecked
+            viewModel.login(email, password, rememberSession)
         }
     }
 
@@ -183,10 +184,8 @@ class LoginActivity: AppCompatActivity() {
 
     private fun showMainActivity() {
         binding.btnSignIn.isEnabled = true
-        val isAdmin = viewModel.isUserAdmin()
 
         val intent = Intent(applicationContext, MainActivity::class.java)
-        intent.putExtra(MainActivity.IS_ADMIN,isAdmin)
         startActivity(intent)
         finish()
     }
@@ -302,7 +301,7 @@ class LoginActivity: AppCompatActivity() {
                                         applicationContext,
                                         uri
                                     )
-                                    viewModel.forceUpdate()
+                                    viewModel.forceUpdate(true)
                                 }
 
                                 override fun onDownloadError(error: String) {
@@ -344,7 +343,7 @@ class LoginActivity: AppCompatActivity() {
                 binding.imageView.setImageResource(R.drawable.logo_donaqui)
             }
             else -> {
-                binding.imageView.setImageResource(R.drawable.logo)
+                binding.imageView.setImageResource(R.drawable.tenet_land)
             }
         }
     }

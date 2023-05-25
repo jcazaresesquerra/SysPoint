@@ -53,7 +53,7 @@ import java.util.UUID;
 
 public class CobranzaFragment extends Fragment {
 
-    protected static final String TAG = "TAG";
+    protected static final String TAG = "CobranzaFragment";
 
     //Connection bluetooth
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
@@ -158,7 +158,7 @@ public class CobranzaFragment extends Fragment {
         mAdapter = new AdapterListaCobranzas(partidas, position -> {
 
             AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
-            builderSingle.setIcon(R.drawable.logo);
+            builderSingle.setIcon(R.drawable.tenet_icon);
             builderSingle.setTitle("Seleccionar opción");
 
             final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);

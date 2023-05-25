@@ -13,6 +13,8 @@ public class ScannerActivity extends AppCompatActivity implements ZXingScannerVi
     ZXingScannerView lector;
     public static String valorCodigoDeBarras;
 
+    public static final int SCANNER_RESULT = 0x400;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,8 +30,7 @@ public class ScannerActivity extends AppCompatActivity implements ZXingScannerVi
         //Creamos el inten para poder retornar la informacion a la actividad anterior
         Intent intent = new Intent();
         intent.putExtra(Actividades.PARAM_1, result.getText());
-        setResult(Activity.RESULT_OK, intent);
-
+        setResult(SCANNER_RESULT, intent);
 
         onBackPressed();
     }

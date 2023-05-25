@@ -47,6 +47,7 @@ import com.app.syspoint.repository.objectBox.dao.ClientDao;
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.dao.RoutingDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
 import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao;
 import com.app.syspoint.repository.objectBox.dao.VisitsDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
@@ -54,6 +55,7 @@ import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
 import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.repository.objectBox.entities.RoutingBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
 import com.app.syspoint.repository.objectBox.entities.VisitsBox;
 import com.app.syspoint.repository.request.http.Servicio;
@@ -437,11 +439,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             visita.setLongitud(item.getLongitud());
             visita.setMotivo_visita(item.getMotivo_visita());
             //Obtiene el nombre del vendedor
-            EmployeeBox employeeBox = AppBundle.getUserBox();
-
-            if (employeeBox == null) {
-                employeeBox = new CacheInteractor().getSeller();
-            }
+            EmployeeBox employeeBox = getEmployee();
 
             if (employeeBox != null) {
                 visita.setIdentificador(employeeBox.getIdentificador());
@@ -464,7 +462,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
     }
 
     private void updateCobranzas() {
-        EmployeeBox employeeBox = AppBundle.getUserBox();
+        EmployeeBox employeeBox = getEmployee();
 
         if (employeeBox != null) {
             new ChargeInteractorImp().executeGetChargeByEmployee(employeeBox.getIdentificador(), new ChargeInteractor.OnGetChargeByEmployeeListener() {
@@ -486,9 +484,9 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         RoutingBox routingBox = routingDao.getRutaEstablecida();
 
         if (routingBox != null) {
-            EmployeeBox vendedoresBean = AppBundle.getUserBox();
+            EmployeeBox vendedoresBean = getEmployee();
             String ruta = routingBox.getRuta() != null && !routingBox.getRuta().isEmpty() ? routingBox.getRuta(): vendedoresBean.getRute();
-            new ClientInteractorImp().executeGetAllClientsByDate(ruta, routingBox.getDia(), new ClientInteractor.GetAllClientsListener() {
+            new ClientInteractorImp().executeGetAllClientsAndLastSellByRute(ruta, routingBox.getDia(), new ClientInteractor.GetAllClientsListener() {
                 @Override
                 public void onGetAllClientsSuccess(@NonNull List<ClientBox> clientList) {
                     saveClientes();
@@ -543,11 +541,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
         final VisitsDao visitsDao = new VisitsDao();
         List<VisitsBox> visitsBoxList = visitsDao.getVisitsByCurrentDay(Utils.fechaActual());
         final ClientDao clientDao = new ClientDao();
-        EmployeeBox employeeBox = AppBundle.getUserBox();
-
-        if (employeeBox == null) {
-            employeeBox = new CacheInteractor().getSeller();
-        }
+        EmployeeBox employeeBox = getEmployee();
 
         List<Visit> visitList = new ArrayList<>();
         for (VisitsBox item : visitsBoxList) {
@@ -813,6 +807,19 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
                 //Toast.makeText(ActualizarEmpleadoActivity.this, "Ha ocurrido un error al sincronizar los empleados", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 
 }

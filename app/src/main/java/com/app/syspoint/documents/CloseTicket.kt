@@ -53,9 +53,9 @@ class CloseTicket: BaseTicket() {
             ticket += partida.descripcion + Constants.NEW_LINE
 
             if (partida.tipoVenta == Constants.CONTADO) {
-                totalContado += (partida.cantidad * partida.precio)  + partida.impuesto
+                totalContado += partida.cantidad * (partida.precio * (1 + partida.impuesto / 100))
             } else {
-                totalCredito += (partida.cantidad * partida.precio) + partida.impuesto
+                totalCredito += partida.cantidad * (partida.precio * (1 + partida.impuesto / 100))
             }
 
             ticket += String.format(
@@ -135,9 +135,7 @@ class CloseTicket: BaseTicket() {
     }
 
     override fun buildSyspointHeader(): String {
-        var employeeBox = AppBundle.getUserBox()
-
-        if (employeeBox == null) employeeBox = CacheInteractor().getSeller()
+        val employeeBox = getEmployee()
 
         val sellers = if (employeeBox != null)
             employeeBox.nombre + Constants.NEW_LINE
@@ -163,9 +161,7 @@ class CloseTicket: BaseTicket() {
     }
 
     override fun buildDonAquiHeader(): String {
-        var employeeBox = AppBundle.getUserBox()
-
-        if (employeeBox == null) employeeBox = CacheInteractor().getSeller()
+        val employeeBox = getEmployee()
 
         val sellers = if (employeeBox != null)
             employeeBox.nombre + Constants.NEW_LINE

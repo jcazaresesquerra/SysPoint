@@ -9,7 +9,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.app.syspoint.BuildConfig
+import timber.log.Timber
 import java.io.File
+
+const val TAG = "ApkInstaller"
 
 class ApkInstaller {
     fun installApplicationFromCpanel(context: Context, uri: Uri) {
@@ -23,7 +26,7 @@ class ApkInstaller {
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
-            Log.e("TAG", "Error in opening the file!")
+            Timber.tag(TAG).e( e, "Error in opening the file!" )
         }
     }
 
@@ -42,7 +45,7 @@ class ApkInstaller {
                 context.startActivity(intent)
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                Log.e("TAG", "Error in opening the file!")
+                Timber.tag(TAG).e(e, "Error in opening the file!")
             }
         } else {
             Toast.makeText(

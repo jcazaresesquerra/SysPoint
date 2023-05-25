@@ -44,5 +44,13 @@ data class ClientBox (
     var saldo_credito: Double = 0.00,
     var matriz: String? = null,
     var date_sync: String? = null,
-    var updatedAt: String? = null
+    var updatedAt: String? = null,
+
+    /**
+     * this is the last sell given from getAllClientsAndLastSellByRute [POST]
+     */
+    var ventaClientId: Int = 0,
+    var ventaFecha: String? = "",
+    var ventaCreatedAt: String? = "",
+    var ventaUpdatedAt: String? = ""
 )

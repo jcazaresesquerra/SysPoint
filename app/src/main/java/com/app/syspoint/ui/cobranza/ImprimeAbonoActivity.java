@@ -55,6 +55,7 @@ import com.app.syspoint.models.Client;
 import com.app.syspoint.models.Payment;
 import com.app.syspoint.ui.templates.ViewPDFActivity;
 import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.Utils;
 
 import org.json.JSONArray;
@@ -113,10 +114,12 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
         }
 
         //Sincroniza la venta con el servidor
-        if (Utils.isNetworkAvailable(getApplication())) {
-            syncCloudVenta(venta);
-            sincronizaCliente(clienteID);
-        }
+        new Handler().postDelayed(() -> new NetworkStateTask(connected -> {
+           if (connected) {
+               syncCloudVenta(venta);
+               sincronizaCliente(clienteID);
+           }
+        }).execute(), 100);
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 

@@ -25,6 +25,14 @@ class ClientInteractorImp: ClientInteractor() {
     }
 
     @Synchronized
+    override fun executeGetAllClientsAndLastSellByRute(ruteByEmployee: String, day: Int, onGetAllClientsListener: GetAllClientsListener) {
+        super.executeGetAllClientsAndLastSellByRute(ruteByEmployee, day, onGetAllClientsListener)
+        GlobalScope.launch {
+            RequestClient.requestGetAllClientsAndLastSellByRute(ruteByEmployee, day, onGetAllClientsListener)
+        }
+    }
+
+    @Synchronized
     override fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {
         super.executeGetClientById(clientId, onGetClientByIdListener)
         GlobalScope.launch {

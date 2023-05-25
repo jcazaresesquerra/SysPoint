@@ -19,10 +19,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.models.enums.RoleType;
+import com.app.syspoint.repository.objectBox.AppBundle;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.PricePersistenceDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
 import com.app.syspoint.repository.objectBox.entities.PersistancePricesBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
+import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.ui.products.activities.ScannerActivity;
 import com.app.syspoint.ui.ventas.adapter.AdapterListaProductosVentas;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,6 +39,7 @@ import com.app.syspoint.R;
 import com.app.syspoint.utils.Actividades;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ListaProductosActivity extends AppCompatActivity {
@@ -58,7 +68,31 @@ public class ListaProductosActivity extends AppCompatActivity {
 
         if(resultCode == Activity.RESULT_CANCELED) return;
 
+        if (resultCode == ScannerActivity.SCANNER_RESULT) {
+            String barCode = data.getStringExtra(Actividades.PARAM_1);
+            HashMap<String, String> parametros = new HashMap<String, String>();
+            parametros.put(Actividades.PARAM_1, barCode);
+
+            ProductBox productBox = new ProductDao().getProductoByBarCode(barCode);
+            if (productBox != null) {
+                articuloSeleccionado = productBox.getArticulo();
+            }
+
+            Actividades.getSingleton(ListaProductosActivity.this, CantidadActivity.class)
+                    .muestraActividadForResultAndParams(Actividades.PARAM_INT_1, parametros);
+            return;
+        }
+
+
         String cantidad = data.getStringExtra(Actividades.PARAM_1);
+
+        String barcode = data.getStringExtra(Actividades.PARAM_2);
+        if (barcode != null && !barcode.isEmpty()) {
+            ProductBox productBox = new ProductDao().getProductoByBarCode(barcode);
+            if (productBox != null) {
+                articuloSeleccionado = productBox.getArticulo();
+            }
+        }
 
         //Establece el resultado que debe de regresar
         Intent intent = new Intent();
@@ -75,6 +109,9 @@ public class ListaProductosActivity extends AppCompatActivity {
 
         MenuItem searchMenuItem = menu.findItem(R.id.buscarProducto);
         SearchView searchView = (SearchView) searchMenuItem.getActionView();
+
+        menu.findItem(R.id.all).setVisible(false);
+        menu.findItem(R.id.by_disponibles).setVisible(false);
 
         searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
@@ -152,7 +189,7 @@ public class ListaProductosActivity extends AppCompatActivity {
     private void initControls() {
         FloatingActionButton button = findViewById(R.id.fab_add_barcoder);
         button.setOnClickListener(v ->
-                startActivity(new Intent(getApplicationContext(), ScannerActivity.class))
+                startActivityForResult(new Intent(getApplicationContext(), ScannerActivity.class), 0x2)
         );
     }
 
@@ -170,7 +207,7 @@ public class ListaProductosActivity extends AppCompatActivity {
         String persistencia =  obtienePersistencia();
         mData = new ArrayList<>();
 
-        if (persistencia.compareToIgnoreCase("all") == 0){
+        if (canSelectProducts()){
             mData = new ProductDao().getActiveProducts();
         }else {
             mData = new ProductDao().getProductosInventario();
@@ -188,9 +225,8 @@ public class ListaProductosActivity extends AppCompatActivity {
         final LinearLayoutManager manager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(manager);
 
-        mAdapter = new AdapterListaProductosVentas(mData, position -> {
-            ProductBox producto = mData.get(position);
-            articuloSeleccionado = producto.getArticulo();
+        mAdapter = new AdapterListaProductosVentas(mData, productBox -> {
+            articuloSeleccionado = productBox.getArticulo();
             Actividades.getSingleton(ListaProductosActivity.this, CantidadActivity.class).muestraActividadForResult(Actividades.PARAM_INT_1);
         });
         recyclerView.setAdapter(mAdapter);
@@ -218,5 +254,34 @@ public class ListaProductosActivity extends AppCompatActivity {
             }
         }
         return  persistencia;
+    }
+
+    private boolean canSelectProducts() {
+        // get seller
+        EmployeeBox employeeBox = getEmployee();
+
+        // save seller in cache
+        CacheInteractor cacheInteractor = new CacheInteractor();
+        cacheInteractor.saveSeller(employeeBox);
+
+        String identificador = employeeBox != null ? employeeBox.getIdentificador() : "";
+
+        RolesDao rolesDao = new RolesDao();
+        RolesBox rolesBean = rolesDao.getRolByEmpleado(identificador, RoleType.STOCK.getValue());
+
+        return rolesBean != null && rolesBean.getActive();
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 }

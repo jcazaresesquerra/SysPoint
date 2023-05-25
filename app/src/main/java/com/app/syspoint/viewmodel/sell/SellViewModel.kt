@@ -436,14 +436,15 @@ class SellViewModel: ViewModel() {
             }
 
             //Obtiene el nombre del vendedor
-            var employeeBox = AppBundle.getUserBox()
-            if (employeeBox == null) {
-                employeeBox = CacheInteractor().getSeller()
-            }
+            val employeeBox = getEmployee()
+            val sessionBox = SessionDao().getUserSession()
+
+
             sellBox.tipo_doc = "TIK"
             sellBox.fecha = Utils.fechaActual()
             sellBox.hora = Utils.getHoraActual()
             sellBox.clienteId = clienteID
+            sellBox.empleadoId = employeeBox?.id ?: (sessionBox?.id?: -1)
             sellBox.client.target = clienteBean1
             sellBox.employee.target = employeeBox
             sellBox.importe = subtota.replace(",", "").toDouble()
@@ -712,6 +713,19 @@ class SellViewModel: ViewModel() {
 
         sellViewState.value = SellViewState.LoadingFinish
         sellViewState.value = (SellViewState.NotInternetConnection)
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 
 }

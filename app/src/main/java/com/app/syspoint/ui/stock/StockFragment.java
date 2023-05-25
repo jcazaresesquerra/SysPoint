@@ -66,7 +66,7 @@ public class StockFragment extends Fragment {
 
     public static final int CLOSE_INVENTORY = 1000;
 
-    protected static final String TAG = "TAG";
+    protected static final String TAG = "StockFragment";
 
     //Connection bluetooth
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier

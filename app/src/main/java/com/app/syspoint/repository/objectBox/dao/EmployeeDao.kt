@@ -36,6 +36,16 @@ class EmployeeDao: AbstractDao<EmployeeBox>() {
         return results
     }
 
+    fun getEmployeeByID(id: Long): EmployeeBox? {
+        val query = abstractBox<EmployeeBox>().query()
+            .equal(EmployeeBox_.id, id)
+            .build()
+        val results = query.find()
+        query.close()
+
+        return if (results.isNullOrEmpty()) null else results[0]
+    }
+
     suspend fun getActiveEmployees(): List<EmployeeBox> {
         val query = abstractBox<EmployeeBox>().query()
             .equal(EmployeeBox_.status, 1)

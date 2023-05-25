@@ -106,6 +106,17 @@ class SellsDao: AbstractDao<SellBox>() {
         return results
     }
 
+    fun getLastClientSell(clientId: Long): SellBox? {
+        val query = abstractBox<SellBox>().query()
+            .equal(SellBox_.clientId, clientId)
+            .orderDesc(SellBox_.id)
+            .build()
+        val results = query.find()
+        query.close()
+
+        return if (results.isNullOrEmpty()) null else results[0]
+    }
+
 
     fun getVentaByInventario(venta: Long): SellBox? {
         val query = abstractBox<SellBox>().query()
