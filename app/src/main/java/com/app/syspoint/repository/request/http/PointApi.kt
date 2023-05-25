@@ -51,6 +51,10 @@ interface PointApi {
     @POST("getAllClientesByRute")
     fun getAllClientesByRute(@Body clientsByRute: RequestClientsByRute?): Call<ClientJson>
 
+    // CLIENTES
+    @POST("getAllClientsAndLastSellByRute")
+    fun getAllClientsAndLastSellByRute(@Body clientsByRute: RequestClientsByRute?): Call<ClientJson>
+
     @POST("getClienteByID")
     fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
 

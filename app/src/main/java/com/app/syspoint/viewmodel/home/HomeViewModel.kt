@@ -41,8 +41,10 @@ import org.json.JSONObject
 
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.RoutingBox
 import com.app.syspoint.usecases.GetRolesUseCase
+import timber.log.Timber
 import java.text.SimpleDateFormat
 
 const val TAG = "HomeViewModel"
@@ -82,7 +84,7 @@ class HomeViewModel: ViewModel() {
     }
 
     private suspend fun getCharges() {
-        val vendedoresBean = AppBundle.getUserBox()
+        val vendedoresBean = getEmployee()
         if (vendedoresBean != null) {
             val isUiThread =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
@@ -105,6 +107,7 @@ class HomeViewModel: ViewModel() {
 
     fun getUpdates() {
         if (requestingDataViewState.value != RequestingDataViewState.RequestingDataStart) {
+            Timber.tag(TAG).d("getUpdates -> RequestingDataStart")
             requestingDataViewState.value = RequestingDataViewState.RequestingDataStart
 
             viewModelScope.launch(Dispatchers.Main) {
@@ -129,6 +132,7 @@ class HomeViewModel: ViewModel() {
     fun getData() {
         if (requestingDataViewState.value != RequestingDataViewState.RequestingDataStart) {
             requestingDataViewState.value = RequestingDataViewState.RequestingDataStart
+            Timber.tag(TAG).d("getData -> RequestingDataStart")
 
             viewModelScope.launch(Dispatchers.IO) {
                 val isUiThread =
@@ -137,8 +141,11 @@ class HomeViewModel: ViewModel() {
                 getClientsByRute(false)
                 GetDataUseCase().invoke().onEach {
                     if (it is Resource.Loading) {
+                        Timber.tag(TAG).d("getData -> LoadingStart")
                         homeLoadingViewState.postValue(HomeLoadingViewState.LoadingStart)
                     } else {
+                        Timber.tag(TAG).d("getData -> LoadingFinish")
+                        Timber.tag(TAG).d("getData -> RequestingDataFinish")
                         homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         requestingDataViewState.postValue(RequestingDataViewState.RequestingDataFinish)
                     }
@@ -194,8 +201,9 @@ class HomeViewModel: ViewModel() {
                 //Log.d("HomeViewModel", "\ngetCobranzas: ${getCobranzas.value} \n getRoles: ${getRoles.value} \n saveVentas: ${saveVentas.value} \n saveVisitas: ${saveVisitas.value} \n savePreciosEspeciales: ${savePreciosEspeciales.value} \n saveAbono: ${saveAbono.value} \n saveCobranza: ${saveCobranza.value}")
             }
 
-            Log.d("HomeViewModel", "\ngetCobranzas: ${getCobranzas.value} \n getRoles: ${getRoles.value} \n saveVentas: ${saveVentas.value} \n saveVisitas: ${saveVisitas.value} \n savePreciosEspeciales: ${savePreciosEspeciales.value} \n saveAbono: ${saveAbono.value} \n saveCobranza: ${saveCobranza.value}")
-            Log.d("HomeViewModel", "LoadingFinish")
+            Timber.tag(TAG).d("getUpdates \ngetCobranzas: ${getCobranzas.value} \n getRoles: ${getRoles.value} \n saveVentas: ${saveVentas.value} \n saveVisitas: ${saveVisitas.value} \n savePreciosEspeciales: ${savePreciosEspeciales.value} \n saveAbono: ${saveAbono.value} \n saveCobranza: ${saveCobranza.value}")
+            Timber.tag(TAG).d( "getUpdates -> LoadingFinish")
+            Timber.tag(TAG).d( "getUpdates -> RequestingDataFinish")
             homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
             requestingDataViewState.postValue(RequestingDataViewState.RequestingDataFinish)
         }
@@ -208,9 +216,9 @@ class HomeViewModel: ViewModel() {
             val routingDao = RoutingDao()
             val ruteoBean = routingDao.getRutaEstablecida()
             if (ruteoBean != null) {
-                val vendedoresBean = AppBundle.getUserBox()
-                val ruta = if (ruteoBean.ruta != null && !ruteoBean.ruta!!.isEmpty()) ruteoBean.ruta else vendedoresBean.rute
-                ClientInteractorImp().executeGetAllClientsByDate(ruta!!, ruteoBean.dia, object : GetAllClientsListener {
+                val vendedoresBean = getEmployee()
+                val ruta = if (ruteoBean.ruta != null && !ruteoBean.ruta!!.isEmpty()) ruteoBean.ruta else vendedoresBean?.rute
+                ClientInteractorImp().executeGetAllClientsAndLastSellByRute(ruta!!, ruteoBean.dia, object : GetAllClientsListener {
                     override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
                         getClientsByRute.postValue(true)
                         _getClientsByRuteViewState.postValue(GetClientsByRuteViewState.GetClientsByRuteSuccess(clientList))
@@ -251,10 +259,7 @@ class HomeViewModel: ViewModel() {
             val visitsDao = VisitsDao()
             val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
             val clientDao = ClientDao()
-            var vendedoresBean = AppBundle.getUserBox()
-            if (vendedoresBean == null) {
-                vendedoresBean = CacheInteractor().getSeller()
-            }
+            val vendedoresBean = getEmployee()
             val visitList: MutableList<Visit> = ArrayList()
             visitasBeanListBean.map { item ->
                 val visita = Visit()
@@ -527,8 +532,8 @@ class HomeViewModel: ViewModel() {
             ruteoBean.id = 1L
             ruteoBean.fecha = Utils.fechaActual()
 
-            val vendedoresBean1 = AppBundle.getUserBox()
-            var ruta_ = if (ruta.isNullOrEmpty()) vendedoresBean1.rute else ruta
+            val vendedoresBean1 = getEmployee()
+            var ruta_ = if (ruta.isNullOrEmpty()) vendedoresBean1?.rute else ruta
 
             if (ruta_ == "0") {
                 val vendedoresBean = CacheInteractor().getSeller()
@@ -545,10 +550,10 @@ class HomeViewModel: ViewModel() {
 
             setRute(ruteoBean)
 
-            vendedoresBean1.rute = ruta_
-            vendedoresBean1.updatedAt = Utils.fechaActualHMS()
+            vendedoresBean1?.rute = ruta_
+            vendedoresBean1?.updatedAt = Utils.fechaActualHMS()
 
-            EmployeeDao().insert(vendedoresBean1)
+            EmployeeDao().insert(vendedoresBean1!!)
             val idEmpleado = vendedoresBean1.id
             testLoadEmpleado(idEmpleado)
         }
@@ -556,8 +561,8 @@ class HomeViewModel: ViewModel() {
 
     private fun setRute(ruteoBean: RoutingBox) {
         _setUpRuteViewState.postValue(SetRuteViewState.Loading)
-        val vendedoresBean = AppBundle.getUserBox()
-        val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()) ruteoBean.ruta else vendedoresBean.rute
+        val vendedoresBean = getEmployee()
+        val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()) ruteoBean.ruta else vendedoresBean?.rute
         val clients = RuteClientDao().getAllRutaClientes(ruta!!, ruteoBean.dia)
         if (clients != null && clients.isNotEmpty()) {
             _setUpRuteViewState.postValue(SetRuteViewState.RuteDefined(clients))
@@ -607,5 +612,18 @@ class HomeViewModel: ViewModel() {
                     }
                 })
         }
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

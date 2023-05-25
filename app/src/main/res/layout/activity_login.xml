@@ -99,6 +99,7 @@
                             android:layout_margin="@dimen/activity_horizontal_margin">
 
                             <CheckBox
+                                android:id="@+id/cb_remember_session"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingRight="50dp"
@@ -116,13 +117,12 @@
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_above="@+id/inputCont"
-                android:layout_marginStart="100dp"
-                android:layout_marginEnd="100dp"
-                android:layout_marginBottom="-250dp"
-                android:src="@drawable/logo" />
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="-220dp"
+                android:src="@drawable/tenet_land" />
 
             <Button
                 android:id="@+id/btnSignIn"
@@ -186,7 +186,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:elevation="10dp"
-                android:src="@drawable/logo" />
+                android:src="@drawable/tenet_icon" />
         </LinearLayout>
     </RelativeLayout>
 

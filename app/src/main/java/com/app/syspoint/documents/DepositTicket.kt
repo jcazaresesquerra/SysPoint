@@ -1,6 +1,7 @@
 package com.app.syspoint.documents
 
 import com.app.syspoint.BuildConfig
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.entities.CobrosBox
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
@@ -74,7 +75,16 @@ class DepositTicket: BaseTicket() {
     }
 
     override fun buildSyspointHeader(): String {
-        val cobrosBean = box as CobrosBox
+        val cobrosBox = box as CobrosBox
+
+        val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
+        else {
+
+            val employee = EmployeeDao().getEmployeeByID(cobrosBox.empleadoId)
+            if (employee != null) employee.nombre + Constants.NEW_LINE
+            else Constants.EMPTY_STRING + Constants.NEW_LINE
+        }
+
         return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
                 "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
                 "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
@@ -84,11 +94,11 @@ class DepositTicket: BaseTicket() {
                 "          (667) 744-9350        " + Constants.NEW_LINE +
                 "        info@aguapoint.com      " + Constants.NEW_LINE +
                 "         www.aguapoint.com      " + Constants.NEW_LINE +
-                "COBRANZA:" + cobrosBean.cobro + Constants.NEW_LINE +
-                "FECHA   :" + cobrosBean.fecha + Constants.NEW_LINE +
-                "VENDEDOR:" + cobrosBean.empleado!!.target.nombre + Constants.NEW_LINE +
-                "CLIENTE :" + cobrosBean.cliente!!.target.cuenta + Constants.NEW_LINE +
-                "" + cobrosBean.cliente!!.target.nombre_comercial + Constants.NEW_LINE +
+                "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
+                "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
+                "VENDEDOR:" + seller +
+                "CLIENTE :" + cobrosBox.cliente.target.cuenta + Constants.NEW_LINE +
+                "" + cobrosBox.cliente.target.nombre_comercial + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO          TICKET" + Constants.NEW_LINE +
                 "SALDO/TIC    ABONO" + Constants.NEW_LINE +
@@ -97,6 +107,14 @@ class DepositTicket: BaseTicket() {
 
     override fun buildDonAquiHeader(): String {
         val cobrosBox = box as CobrosBox
+
+        val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
+        else {
+            val employee = EmployeeDao().getEmployeeByID(cobrosBox.empleadoId)
+            if (employee != null) employee.nombre + Constants.NEW_LINE
+            else Constants.EMPTY_STRING + Constants.NEW_LINE
+        }
+
         return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
                 "         AGUAS DON AQUI         " + Constants.NEW_LINE +
                 " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
@@ -106,9 +124,9 @@ class DepositTicket: BaseTicket() {
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
                 "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
                 "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
-                "VENDEDOR:" + cobrosBox.empleado!!.target.nombre + Constants.NEW_LINE +
-                "CLIENTE :" + cobrosBox.cliente!!.target.cuenta + Constants.NEW_LINE +
-                "" + cobrosBox.cliente!!.target.nombre_comercial + Constants.NEW_LINE +
+                "VENDEDOR:" + seller +
+                "CLIENTE :" + cobrosBox.cliente.target.cuenta + Constants.NEW_LINE +
+                "" + cobrosBox.cliente.target.nombre_comercial + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO          TICKET" + Constants.NEW_LINE +
                 "SALDO/TIC    ABONO" + Constants.NEW_LINE +

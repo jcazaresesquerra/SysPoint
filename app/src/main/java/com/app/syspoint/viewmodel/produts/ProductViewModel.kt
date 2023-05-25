@@ -7,8 +7,11 @@ import com.app.syspoint.models.sealed.ProductViewState
 import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.dao.ProductDao
 import com.app.syspoint.repository.objectBox.dao.RolesDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.viewmodel.BaseViewModel
 
@@ -44,10 +47,7 @@ class ProductViewModel: BaseViewModel() {
         var identificador = ""
 
         //Obtiene el nombre del vendedor
-        var vendedoresBean = AppBundle.getUserBox()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
+        val vendedoresBean = getEmployee()
         if (vendedoresBean != null) {
             identificador = vendedoresBean.identificador!!
         }
@@ -77,5 +77,18 @@ class ProductViewModel: BaseViewModel() {
                 productViewState.value = ProductViewState.GetProductsError("")
             }
         })
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

@@ -12,11 +12,11 @@ import java.util.*
 class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugTree() {
 
     private val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-    private val timeFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss_SSS_a_zzz", Locale.getDefault())
-    private val timeFormatHHmm = SimpleDateFormat("hh:mm", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss_SSS_a_zzz", Locale.getDefault())
+    private val timeFormatHHmm = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val date = dateFormat.format(Date(System.currentTimeMillis()))
 
-    private var logRef = Firebase.database.getReference("logs/${deviceDetails.employeeId}/$date/${deviceDetails.deviceId}")
+    private var logRef = Firebase.database.getReference("logs/${BuildConfig.FLAVOR}/${deviceDetails.employeeId}/$date/${deviceDetails.deviceId}")
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (BuildConfig.REMOTE_LOG_ENABLED) {
@@ -28,7 +28,7 @@ class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugT
             val seller = CacheInteractor().getSeller()
             if (seller != null) {
                 logRef =
-                    Firebase.database.getReference("logs/${seller.identificador}/$date/${deviceDetails.deviceId}")
+                    Firebase.database.getReference("logs/${BuildConfig.FLAVOR}/${seller.identificador}/$date/${deviceDetails.deviceId}")
             }
 
             with(logRef) {

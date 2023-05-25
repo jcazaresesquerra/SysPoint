@@ -10,9 +10,9 @@ class SessionBox (
     var id: Long = 0,
     var remember: Boolean = false,
     var empleadoId: Long = 0,
-
+    var employeeIdentifier: String = "",
 ) {
     lateinit var employee: ToOne<EmployeeBox>
 
-    constructor(): this(id = 0, remember = false, empleadoId = 0)
+    constructor(): this(id = 0, remember = false, empleadoId = 0, employeeIdentifier = "")
 }

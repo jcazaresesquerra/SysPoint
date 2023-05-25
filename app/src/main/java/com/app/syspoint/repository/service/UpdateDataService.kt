@@ -62,7 +62,7 @@ class UpdateDataService: Service() {
         val notification: NotificationCompat.Builder = NotificationCompat.Builder(this, CHANNELID)
             .setContentText("app is running in background")
             .setContentTitle("AppStatusControl")
-            .setSmallIcon(R.drawable.logo)
+            .setSmallIcon(R.drawable.tenet_icon)
 
         startForeground(1001, notification.build())
         return super.onStartCommand(intent, flags, startId)

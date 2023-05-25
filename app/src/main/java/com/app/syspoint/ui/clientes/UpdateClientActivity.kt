@@ -533,12 +533,12 @@ class UpdateClientActivity: AppCompatActivity() {
 
         override fun onProviderDisabled(provider: String) {
             // Este metodo se ejecuta cuando el GPS es desactivado
-            Toast.makeText(mainActivity!!.applicationContext, "GPS Desactivado", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(mainActivity!!.applicationContext, "GPS Desactivado", Toast.LENGTH_SHORT).show()
         }
 
         override fun onProviderEnabled(provider: String) {
             // Este metodo se ejecuta cuando el GPS es activado
-            Toast.makeText(mainActivity!!.applicationContext, "GPS Activado", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(mainActivity!!.applicationContext, "GPS Activado", Toast.LENGTH_SHORT).show()
         }
 
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {

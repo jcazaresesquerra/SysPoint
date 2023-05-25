@@ -97,6 +97,28 @@ public class Utils {
         return  fecha;
     }
 
+    public static Date getCurrentDayHMS(){
+        final Calendar calendarFechaFin = Calendar.getInstance();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final String fecha = format.format(calendarFechaFin.getTime());
+        try {
+            return format.parse(fecha);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
+    }
+
+    public static Date getDataFromString(String date){
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            return format.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new Date();
+        }
+    }
+
     public static String fechaActualHMS(){
         final Calendar calendarFechaFin = Calendar.getInstance();
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

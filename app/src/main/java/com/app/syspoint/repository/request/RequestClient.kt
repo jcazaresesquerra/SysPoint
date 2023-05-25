@@ -144,6 +144,7 @@ class RequestClient {
             })
         }
 
+        @Deprecated("This method needs to be replaced by requestGetAllClientsAndLastSellByRute")
         fun requestGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
             val clientsByRute = RequestClientsByRute(rute = ruteByEmployee)
             val getClients = ApiServices.getClientRetrofit().create(
@@ -354,6 +355,236 @@ class RequestClient {
             })
         }
 
+        fun requestGetAllClientsAndLastSellByRute(ruteByEmployee: String, day: Int, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
+            val clientsByRute = RequestClientsByRute(rute = ruteByEmployee)
+            val getClients = ApiServices.getClientRetrofit().create(
+                PointApi::class.java
+            ).getAllClientsAndLastSellByRute(clientsByRute)
+
+            getClients.enqueue(object: Callback<ClientJson> {
+                override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
+                    if (response.isSuccessful) {
+
+                        val clientList = arrayListOf<ClientBox>()
+                        val dao = ClientDao()
+                        val daoRute = com.app.syspoint.repository.objectBox.dao.RuteClientDao()
+
+                        response.body()!!.clients!!.map { item ->
+                            val bean = dao.getClientByAccount(item!!.cuenta)
+
+                            if (bean == null) {
+                                val clientBox = ClientBox()
+
+                                clientBox.nombre_comercial = item.nombreComercial
+                                clientBox.calle = item.calle
+                                clientBox.numero = item.numero
+                                clientBox.colonia = item.colonia
+                                clientBox.ciudad = item.ciudad
+                                clientBox.codigo_postal = item.codigoPostal
+                                clientBox.fecha_registro = item.fechaRegistro
+                                clientBox.cuenta = item.cuenta
+                                clientBox.status = item.status == 1
+                                clientBox.consec = item.consec ?: "0"
+                                clientBox.visitado = 0
+                                clientBox.rango = item.rango
+                                clientBox.lun = item.lun
+                                clientBox.mar = item.mar
+                                clientBox.mie = item.mie
+                                clientBox.jue = item.jue
+                                clientBox.vie = item.vie
+                                clientBox.sab = item.sab
+                                clientBox.dom = item.dom
+                                clientBox.lunOrder = item.lunOrder
+                                clientBox.marOrder = item.marOrder
+                                clientBox.mieOrder = item.mieOrder
+                                clientBox.jueOrder = item.jueOrder
+                                clientBox.vieOrder = item.vieOrder
+                                clientBox.sabOrder = item.sabOrder
+                                clientBox.domOrder = item.domOrder
+                                clientBox.latitud = item.latitud
+                                clientBox.longitud = item.longitud
+                                clientBox.isCredito = item.isCredito == 1
+                                clientBox.limite_credito = item.limite_credito
+                                clientBox.saldo_credito = item.saldo_credito
+                                clientBox.contacto_phone = item.phone_contacto
+                                clientBox.recordatorio = item.recordatorio
+                                clientBox.visitasNoefectivas = item.visitas
+                                clientBox.matriz = item.matriz
+                                clientBox.updatedAt = item.updatedAt
+
+                                clientBox.ventaClientId = item.ventaClientId
+                                clientBox.ventaFecha = item.ventaFecha
+                                clientBox.ventaCreatedAt = item.ventaCreatedAt
+                                clientBox.ventaUpdatedAt = item.ventaUpdatedAt
+                                dao.insert(clientBox)
+                                clientList.add(clientBox)
+                            } else {
+
+                                val update = if (!bean.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = try {
+                                        formatter.parse(item.updatedAt)
+                                    } catch (e:Exception) {
+                                        formatter.parse(item.updatedAt + "00:00:00")
+                                    }
+                                    val dateBean = try {
+                                        formatter.parse(bean.updatedAt)
+                                    } catch (e:Exception) {
+                                        formatter.parse(bean.updatedAt + "00:00:00")
+                                    }
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    bean.nombre_comercial = item.nombreComercial
+                                    bean.calle = item.calle
+                                    bean.numero = item.numero
+                                    bean.colonia = item.colonia
+                                    bean.ciudad = item.ciudad
+                                    bean.codigo_postal = item.codigoPostal
+                                    bean.fecha_registro = item.fechaRegistro
+                                    bean.cuenta = item.cuenta
+                                    bean.status = item.status == 1
+                                    bean.consec = item.consec ?: "0"
+                                    bean.visitado = if (bean.visitado == 0) 0 else 1
+                                    bean.rango = item.rango
+                                    bean.lun = item.lun
+                                    bean.mar = item.mar
+                                    bean.mie = item.mie
+                                    bean.jue = item.jue
+                                    bean.vie = item.vie
+                                    bean.sab = item.sab
+                                    bean.dom = item.dom
+                                    bean.lunOrder = item.lunOrder
+                                    bean.marOrder = item.marOrder
+                                    bean.mieOrder = item.mieOrder
+                                    bean.jueOrder = item.jueOrder
+                                    bean.vieOrder = item.vieOrder
+                                    bean.sabOrder = item.sabOrder
+                                    bean.domOrder = item.domOrder
+                                    bean.latitud = item.latitud
+                                    bean.longitud = item.longitud
+                                    bean.contacto_phone = item.phone_contacto
+                                    bean.recordatorio = item.recordatorio
+                                    bean.visitasNoefectivas = item.visitas
+                                    bean.isCredito = item.isCredito == 1
+                                    bean.limite_credito = item.limite_credito
+                                    bean.saldo_credito = item.saldo_credito
+                                    bean.matriz = item.matriz
+                                    bean.updatedAt = item.updatedAt
+
+                                    bean.ventaClientId = item.ventaClientId
+                                    bean.ventaFecha = item.ventaFecha
+                                    bean.ventaCreatedAt = item.ventaCreatedAt
+                                    bean.ventaUpdatedAt = item.ventaUpdatedAt
+                                    dao.insert(bean)
+                                }
+
+                                clientList.add(bean)
+                            }
+
+                            if (saveClientWithDay(item, day)) {
+                                val ruteClientBox1 = daoRute.getClienteByCuentaCliente(item.cuenta)
+
+                                if (ruteClientBox1 == null) {
+                                    val ruteClientBox = RuteClientBox()
+
+                                    ruteClientBox.nombre_comercial = item.nombreComercial
+                                    ruteClientBox.calle = item.calle
+                                    ruteClientBox.numero = item.numero
+                                    ruteClientBox.colonia = item.colonia
+                                    ruteClientBox.cuenta = item.cuenta
+                                    ruteClientBox.visitado = 0
+                                    ruteClientBox.rango = item.rango
+                                    ruteClientBox.status = item.status == 1
+                                    ruteClientBox.lun = item.lun
+                                    ruteClientBox.mar = item.mar
+                                    ruteClientBox.mie = item.mie
+                                    ruteClientBox.jue = item.jue
+                                    ruteClientBox.vie = item.vie
+                                    ruteClientBox.sab = item.sab
+                                    ruteClientBox.dom = item.dom
+                                    ruteClientBox.lunOrder = item.lunOrder
+                                    ruteClientBox.marOrder = item.marOrder
+                                    ruteClientBox.mieOrder = item.mieOrder
+                                    ruteClientBox.jueOrder = item.jueOrder
+                                    ruteClientBox.vieOrder = item.vieOrder
+                                    ruteClientBox.sabOrder = item.sabOrder
+                                    ruteClientBox.domOrder = item.domOrder
+                                    ruteClientBox.latitud = item.latitud
+                                    ruteClientBox.longitud = item.longitud
+                                    ruteClientBox.isCredito = item.isCredito == 1
+                                    ruteClientBox.recordatorio = item.recordatorio
+                                    ruteClientBox.phone_contact = item.phone_contacto
+                                    ruteClientBox.updatedAt = item.updatedAt
+
+                                    ruteClientBox.ventaClientId = item.ventaClientId
+                                    ruteClientBox.ventaFecha = item.ventaFecha
+                                    ruteClientBox.ventaCreatedAt = item.ventaCreatedAt
+                                    ruteClientBox.ventaUpdatedAt = item.ventaUpdatedAt
+
+                                    daoRute.insert(ruteClientBox)
+                                } else {
+                                    val update = if (!ruteClientBox1.updatedAt.isNullOrEmpty() && !item.updatedAt.isNullOrEmpty()) {
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                        val dateItem = formatter.parse(item.updatedAt)
+                                        val dateBean = formatter.parse(ruteClientBox1.updatedAt)
+                                        dateItem?.compareTo(dateBean) ?: 1
+                                    } else 1
+
+                                    if (update > 0) {
+                                        ruteClientBox1.nombre_comercial = item.nombreComercial
+                                        ruteClientBox1.calle = item.calle
+                                        ruteClientBox1.numero = item.numero
+                                        ruteClientBox1.colonia = item.colonia
+                                        ruteClientBox1.cuenta = item.cuenta
+                                        ruteClientBox1.visitado = if (ruteClientBox1.visitado == 0) 0 else 1
+                                        ruteClientBox1.rango = item.rango
+                                        ruteClientBox1.status = item.status == 1
+                                        ruteClientBox1.lun = item.lun
+                                        ruteClientBox1.mar = item.mar
+                                        ruteClientBox1.mie = item.mie
+                                        ruteClientBox1.jue = item.jue
+                                        ruteClientBox1.vie = item.vie
+                                        ruteClientBox1.sab = item.sab
+                                        ruteClientBox1.dom = item.dom
+                                        ruteClientBox1.lunOrder = item.lunOrder
+                                        ruteClientBox1.marOrder = item.marOrder
+                                        ruteClientBox1.mieOrder = item.mieOrder
+                                        ruteClientBox1.jueOrder = item.jueOrder
+                                        ruteClientBox1.vieOrder = item.vieOrder
+                                        ruteClientBox1.sabOrder = item.sabOrder
+                                        ruteClientBox1.domOrder = item.domOrder
+                                        ruteClientBox1.latitud = item.latitud
+                                        ruteClientBox1.longitud = item.longitud
+                                        ruteClientBox1.isCredito = item.isCredito == 1
+                                        ruteClientBox1.recordatorio = item.recordatorio
+                                        ruteClientBox1.phone_contact = item.phone_contacto
+                                        ruteClientBox1.updatedAt = item.updatedAt
+
+                                        ruteClientBox1.ventaClientId = item.ventaClientId
+                                        ruteClientBox1.ventaFecha = item.ventaFecha
+                                        ruteClientBox1.ventaCreatedAt = item.ventaCreatedAt
+                                        ruteClientBox1.ventaUpdatedAt = item.ventaUpdatedAt
+                                    }
+                                    daoRute.insert(ruteClientBox1)
+                                }
+                            }
+                        }
+
+                        onGetAllClientsListener.onGetAllClientsSuccess(clientList)
+                    } else {
+                        onGetAllClientsListener.onGetAllClientsError()
+                    }
+                }
+
+                override fun onFailure(call: Call<ClientJson>, t: Throwable) {
+                    onGetAllClientsListener.onGetAllClientsError()
+                }
+
+            })
+        }
+
         // not working fix server issue
         fun requestClientById(clientId: String, onGetClientByIdListener: ClientInteractor.GetClientByIdListener) {
 
@@ -537,6 +768,11 @@ class RequestClient {
                                 clientBox.matriz = item.matriz
                                 clientBox.updatedAt = item.updatedAt
 
+                                clientBox.ventaClientId = item.ventaClientId
+                                clientBox.ventaFecha = item.ventaFecha
+                                clientBox.ventaCreatedAt = item.ventaCreatedAt
+                                clientBox.ventaUpdatedAt = item.ventaUpdatedAt
+
                                 clientDao.insert(clientBox)
                                 clientList.add(clientBox)
                             } else {
@@ -578,6 +814,11 @@ class RequestClient {
                                     clientBox1.saldo_credito = item.saldo_credito
                                     clientBox1.matriz = item.matriz
                                     clientBox1.updatedAt = item.updatedAt
+
+                                    clientBox1.ventaClientId = item.ventaClientId
+                                    clientBox1.ventaFecha = item.ventaFecha
+                                    clientBox1.ventaCreatedAt = item.ventaCreatedAt
+                                    clientBox1.ventaUpdatedAt = item.ventaUpdatedAt
                                 }
                                 clientDao.insert(clientBox1)
                                 clientList.add(clientBox1)

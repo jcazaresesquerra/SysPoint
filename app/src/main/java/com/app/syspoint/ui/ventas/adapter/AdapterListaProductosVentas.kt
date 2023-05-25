@@ -23,7 +23,7 @@ class AdapterListaProductosVentas(
     private var mDataFilter = data
 
     interface OnItemClickListener {
-        fun onItemClick(position: Int)
+        fun onItemClick(productBox: ProductBox)
     }
 
     override fun onCreateViewHolder(
@@ -47,15 +47,12 @@ class AdapterListaProductosVentas(
                 mDataFilter = if (filtro.isEmpty()) {
                     mData
                 } else {
-
                     //TODO filtro productos
                     val filtroProductos: MutableList<ProductBox> = ArrayList()
                     for (row in mDataFilter) {
                         row?.let {
-                            if (row.articulo!!.lowercase(Locale.getDefault())
-                                    .contains(filtro) || row.descripcion!!.lowercase(
-                                    Locale.getDefault()
-                                ).contains(filtro)
+                            if (row.articulo!!.lowercase(Locale.getDefault()).contains(filtro) ||
+                                row.descripcion!!.lowercase(Locale.getDefault()).contains(filtro)
                             ) {
                                 filtroProductos.add(row)
                             }
@@ -77,6 +74,7 @@ class AdapterListaProductosVentas(
 
     fun setData(data: List<ProductBox?>) {
         mDataFilter = data
+        mData = data
         notifyDataSetChanged()
     }
 
@@ -95,7 +93,7 @@ class AdapterListaProductosVentas(
                         BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
                     binding.imgProductoVentaLista.setImageBitmap(decodedByte)
                 }
-                itemView click  { onItemClickListener.onItemClick(adapterPosition) }
+                itemView click  { onItemClickListener.onItemClick(producto) }
 
                 binding.textViewProductoDisponibleListaVentaListaView.apply {
                     text = producto.existencia.toString()

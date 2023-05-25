@@ -56,6 +56,7 @@ import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.RolesBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
@@ -69,12 +70,12 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 
+
 class MainActivity: BaseActivity() {
 
     companion object {
         @JvmStatic
         var apikey: String? = null
-        const val IS_ADMIN = "is_admin"
     }
 
     private var mAppBarConfiguration: AppBarConfiguration? = null
@@ -94,10 +95,7 @@ class MainActivity: BaseActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
         setUpLogo()
 
-        val isAdmin = intent.getBooleanExtra(IS_ADMIN, false)
-
-        var vendedoresBean = AppBundle.getUserBox()
-        if (vendedoresBean == null) vendedoresBean = CacheInteractor().getSeller()
+        val vendedoresBean = getEmployee()
         val identificador = if (vendedoresBean != null) vendedoresBean.identificador else ""
 
         val rolesDao = RolesDao()
@@ -114,10 +112,10 @@ class MainActivity: BaseActivity() {
             inflateMenu(R.menu.activity_main_drawer)
         }
 
-        configureMenu(isAdmin, employeesActive, productsActive, clientsActive)
+        configureMenu(employeesActive, productsActive, clientsActive)
 
         mAppBarConfiguration =
-            AppBarConfiguration.Builder(buildMenuSet(isAdmin, employeesActive, productsActive, clientsActive))
+            AppBarConfiguration.Builder(buildMenuSet(employeesActive, productsActive, clientsActive))
            .setDrawerLayout(binding.drawerLayout)
                 .build()
 
@@ -139,6 +137,9 @@ class MainActivity: BaseActivity() {
             }
             if (destination.id == R.id.nav_home) {
                 Constants.solictaRuta = false
+            }
+            if (destination.id == R.id.nav_close_session) {
+                closeSession()
             }
         }
 
@@ -163,10 +164,15 @@ class MainActivity: BaseActivity() {
                             getUpdates()
                         }
 
-                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String) {
+                        override fun onGetTokenError(
+                            baseUpdateUrl: String,
+                            currentVersion: String,
+                            throwable: Throwable?
+                        ) {
                             showErrorDialog("Su versión no esta soportada, por favor, actualice su aplicación")
                             showAppOldVersion(baseUpdateUrl, currentVersion)
                         }
+
                     })
                 }
             }.execute()
@@ -211,12 +217,13 @@ class MainActivity: BaseActivity() {
                 navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo_donaqui) }
             }
             else -> {
-                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo) }
+                navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
+                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.tenet_land) }
             }
         }
     }
 
-    private fun configureMenu(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean) {
+    private fun configureMenu(employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean) {
         val menu = binding.navView.menu
         menu.findItem(R.id.nav_home).isVisible = true
         menu.findItem(R.id.nav_producto).isVisible = true
@@ -224,11 +231,12 @@ class MainActivity: BaseActivity() {
         menu.findItem(R.id.nav_producto).isVisible = productsActive
         menu.findItem(R.id.nav_cliente).isVisible = clientsActive
         menu.findItem(R.id.nav_historial).isVisible = true
-        menu.findItem(R.id.nav_inventario).isVisible = isAdmin
-        menu.findItem(R.id.nav_cobranza).isVisible = isAdmin
+        menu.findItem(R.id.nav_inventario).isVisible = true
+        menu.findItem(R.id.nav_cobranza).isVisible = true
+        menu.findItem(R.id.nav_close_session).isVisible = true
     }
 
-    private fun buildMenuSet(isAdmin: Boolean, employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean): Set<Int> {
+    private fun buildMenuSet(employeesActive: Boolean, productsActive: Boolean, clientsActive: Boolean): Set<Int> {
         //Obtiene el nombre del vendedor
         val menuSet = mutableSetOf(R.id.nav_home, R.id.nav_ruta)
 
@@ -237,11 +245,9 @@ class MainActivity: BaseActivity() {
         if (clientsActive) menuSet.add(R.id.nav_cliente)
 
         menuSet.add(R.id.nav_historial)
-
-        if (isAdmin) {
-            menuSet.add(R.id.nav_inventario)
-            menuSet.add(R.id.nav_cobranza)
-        }
+        menuSet.add(R.id.nav_inventario)
+        menuSet.add(R.id.nav_cobranza)
+        menuSet.add(R.id.nav_close_session)
 
         return menuSet
     }
@@ -335,10 +341,8 @@ class MainActivity: BaseActivity() {
             val visitsDao = VisitsDao()
             val visitasBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
             val clientDao = ClientDao()
-            var vendedoresBean = AppBundle.getUserBox()
-            if (vendedoresBean == null) {
-                vendedoresBean = CacheInteractor().getSeller()
-            }
+            val vendedoresBean = getEmployee()
+
             val visitList: MutableList<Visit> = ArrayList()
             visitasBeanListBean.map {item ->
                 val visita = Visit()
@@ -583,7 +587,7 @@ class MainActivity: BaseActivity() {
 
     private fun getCobranzasByEmployee() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val vendedoresBean = AppBundle.getUserBox()
+            val vendedoresBean = getEmployee()
             if (vendedoresBean != null) {
                 lifecycleScope.launch(Dispatchers.Default) {
                     ChargeInteractorImp().executeGetCharge(object : OnGetChargeListener {
@@ -621,11 +625,11 @@ class MainActivity: BaseActivity() {
             val routingDao = RoutingDao()
             val ruteoBean = routingDao.getRutaEstablecida()
             if (ruteoBean != null) {
-                val vendedoresBean = AppBundle.getUserBox()
+                val vendedoresBean = getEmployee()
                 val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()
-                ) ruteoBean.ruta else vendedoresBean.rute
+                ) ruteoBean.ruta else vendedoresBean?.rute
 
-                ClientInteractorImp().executeGetAllClientsByDate(
+                ClientInteractorImp().executeGetAllClientsAndLastSellByRute(
                     ruta!!,
                     ruteoBean.dia,
                     object : GetAllClientsListener {
@@ -838,5 +842,27 @@ class MainActivity: BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun closeSession() {
+        val session = SessionDao()
+        session.clear()
+
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

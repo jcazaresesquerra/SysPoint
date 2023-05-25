@@ -4,4 +4,8 @@
         android:id="@+id/call_client"
         android:title="Llamar" />
 
+    <item
+        android:id="@+id/send_whatsapp"
+        android:title="Mandar WhatsApp" />
+
 </menu>

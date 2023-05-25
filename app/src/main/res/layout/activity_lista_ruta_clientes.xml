@@ -92,7 +92,7 @@ tools:context=".ui.home.activities.ListaRutaClientesActivity">
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:elevation="10dp"
-            android:src="@drawable/logo" />
+            android:src="@drawable/tenet_icon" />
     </LinearLayout>
 
 </RelativeLayout>

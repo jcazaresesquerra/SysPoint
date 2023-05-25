@@ -418,13 +418,13 @@ public class RegistroClienteActivity extends AppCompatActivity {
         @Override
         public void onProviderDisabled(String provider) {
             // Este metodo se ejecuta cuando el GPS es desactivado
-            Toast.makeText(getApplicationContext(), "GPS Desactivado", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "GPS Desactivado", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onProviderEnabled(String provider) {
             // Este metodo se ejecuta cuando el GPS es activado
-            Toast.makeText(getApplicationContext(), "GPS Activado", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "GPS Activado", Toast.LENGTH_SHORT).show();
         }
 
         @Override

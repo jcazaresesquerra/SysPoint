@@ -152,4 +152,25 @@ data class Client (
     @SerializedName("domOrden")
     @Expose
     var domOrder: Int = 0,
+
+
+    /**
+     * This is just for getAllClientsAndLastSellByRute [POST]
+     */
+    @SerializedName("venta_clientes_id")
+    @Expose
+    var ventaClientId: Int = 0,
+
+    @SerializedName("venta_fecha")
+    @Expose
+    var ventaFecha: String? = "",
+
+    @SerializedName("venta_created_at")
+    @Expose
+    var ventaCreatedAt: String? = "",
+
+    @SerializedName("venta_updated_at")
+    @Expose
+    var ventaUpdatedAt: String? = "",
+
 ): Serializable

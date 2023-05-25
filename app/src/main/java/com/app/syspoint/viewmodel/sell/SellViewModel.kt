@@ -223,6 +223,7 @@ class SellViewModel: ViewModel() {
         if (clienteBean != null) {
             clienteBean.recordatorio = ""
             clienteBean.isRecordatorio = true
+            clienteBean.updatedAt = Utils.fechaActualHMS()
             clientDao.insertBox(clienteBean)
 
             testLoadClientes(clientId.toString())
@@ -435,14 +436,15 @@ class SellViewModel: ViewModel() {
             }
 
             //Obtiene el nombre del vendedor
-            var employeeBox = AppBundle.getUserBox()
-            if (employeeBox == null) {
-                employeeBox = CacheInteractor().getSeller()
-            }
+            val employeeBox = getEmployee()
+            val sessionBox = SessionDao().getUserSession()
+
+
             sellBox.tipo_doc = "TIK"
             sellBox.fecha = Utils.fechaActual()
             sellBox.hora = Utils.getHoraActual()
             sellBox.clienteId = clienteID
+            sellBox.empleadoId = employeeBox?.id ?: (sessionBox?.id?: -1)
             sellBox.client.target = clienteBean1
             sellBox.employee.target = employeeBox
             sellBox.importe = subtota.replace(",", "").toDouble()
@@ -602,6 +604,7 @@ class SellViewModel: ViewModel() {
                 client.longitud = item.longitud
                 client.phone_contacto = item.contacto_phone
                 client.recordatorio = item.recordatorio
+                client.updatedAt = item.updatedAt
                 client.visitas = item.visitasNoefectivas
                 client.isCredito = if (item.isCredito) 1 else 0
                 client.saldo_credito = item.saldo_credito
@@ -710,6 +713,19 @@ class SellViewModel: ViewModel() {
 
         sellViewState.value = SellViewState.LoadingFinish
         sellViewState.value = (SellViewState.NotInternetConnection)
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 
 }

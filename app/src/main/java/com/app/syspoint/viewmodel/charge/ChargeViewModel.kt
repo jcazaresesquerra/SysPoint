@@ -128,10 +128,7 @@ class ChargeViewModel: ViewModel() {
 
 
         //Obtiene el nombre del vendedor
-        var vendedoresBean = AppBundle.getUserBox()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
+        val vendedoresBean = getEmployee()
         if (vendedoresBean == null) {
             chargeViewState.value = ChargeViewState.SellerNotFound
             return
@@ -185,6 +182,7 @@ class ChargeViewModel: ViewModel() {
         cobrosBox.fecha = Utils.fechaActual()
         cobrosBox.hora = Utils.getHoraActual()
         cobrosBox.cliente.target = clienteBean
+        cobrosBox.empleadoId = vendedoresBean.id
         cobrosBox.empleado.target = vendedoresBean
         cobrosBox.importe = import.replace("$", "")
                 .replace(",", "")
@@ -355,7 +353,7 @@ class ChargeViewModel: ViewModel() {
         val ruteoBean = routingDao.getRutaEstablecida()
 
         if (ruteoBean != null) {
-            ClientInteractorImp().executeGetAllClientsByDate(ruteoBean.ruta!!, ruteoBean.dia, object : GetAllClientsListener {
+            ClientInteractorImp().executeGetAllClientsAndLastSellByRute(ruteoBean.ruta!!, ruteoBean.dia, object : GetAllClientsListener {
                 override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {}
                 override fun onGetAllClientsError() {}
             })
@@ -421,5 +419,18 @@ class ChargeViewModel: ViewModel() {
             getTaxes(clientId)
         }
         Log.d(TAG, "createCharge finish")
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

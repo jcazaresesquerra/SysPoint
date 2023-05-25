@@ -48,8 +48,8 @@ class AdapterListaProductos(
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
                 val filtro = constraint.toString()
-                if (filtro.isEmpty()) {
-                    mDataFilter = mData
+                mDataFilter =if (filtro.isEmpty()) {
+                    mData
                 } else {
                     //TODO filtro productos
                     val filtroProductos: MutableList<ProductBox> = ArrayList()
@@ -62,7 +62,7 @@ class AdapterListaProductos(
                             }
                         }
                     }
-                    mDataFilter = filtroProductos
+                    filtroProductos
                 }
                 val results = FilterResults()
                 results.values = mDataFilter

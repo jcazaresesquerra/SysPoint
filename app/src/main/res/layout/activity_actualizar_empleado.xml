@@ -38,7 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:background="@color/white"
-                android:src="@drawable/logo"
+                android:src="@drawable/tenet_icon"
                 app:civ_border_color="@color/purple_700"
                 app:civ_fill_color="@color/purple_700"/>
 
@@ -790,7 +790,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:elevation="10dp"
-                android:src="@drawable/logo" />
+                android:src="@drawable/tenet_icon" />
         </LinearLayout>
 
     </RelativeLayout>

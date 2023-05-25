@@ -11,10 +11,8 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Visit
 import com.app.syspoint.models.sealed.PrecaptureViewState
 import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.repository.objectBox.dao.ClientDao
-import com.app.syspoint.repository.objectBox.dao.RoutingDao
-import com.app.syspoint.repository.objectBox.dao.RuteClientDao
-import com.app.syspoint.repository.objectBox.dao.VisitsDao
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.VisitsBox
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.Utils
@@ -24,10 +22,7 @@ class PrecaptureViewModel: ViewModel() {
     val precaptureViewState = MutableLiveData<PrecaptureViewState>()
 
     fun confirmPrecapture(accountId: String?, conceptSelectedView: String?, latitud: Double, longitud: Double) {
-        var vendedoresBean = AppBundle.getUserBox()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
+        val vendedoresBean = getEmployee()
 
         //Le indicamos al sistema que el cliente ya se ah visitado
         val clientDao = ClientDao()
@@ -140,10 +135,7 @@ class PrecaptureViewModel: ViewModel() {
         val visitsBeanListBean = visitsDao.getVisitsByCurrentDay(Utils.fechaActual())
 
         val listaVisitas: MutableList<Visit> = ArrayList()
-        var vendedoresBean = AppBundle.getUserBox()
-        if (vendedoresBean == null) {
-            vendedoresBean = CacheInteractor().getSeller()
-        }
+        var vendedoresBean = getEmployee()
 
         val clientDao = ClientDao()
 
@@ -172,5 +164,18 @@ class PrecaptureViewModel: ViewModel() {
                 precaptureViewState.value = PrecaptureViewState.SaveVisitErrorState
             }
         })
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

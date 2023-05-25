@@ -30,16 +30,16 @@ class RequestToken {
                             onGetTokenListener.onGetTokenSuccess(token!!.token, token.version + "." +token.subversion)
                         } else {
                             val token = response.body()?.error!![0]
-                            onGetTokenListener.onGetTokenError(token!!.baseUpdateUrl!!, token.version + "." + token.subversion)
+                            onGetTokenListener.onGetTokenError(token!!.baseUpdateUrl!!, token.version + "." + token.subversion, null)
                         }
                     } else {
                         val error = response.errorBody()!!.string()
-                        onGetTokenListener.onGetTokenError("", "")
+                        onGetTokenListener.onGetTokenError("", "", Throwable(error))
                     }
                 }
 
                 override fun onFailure(call: Call<TokenJson>, t: Throwable) {
-                    onGetTokenListener.onGetTokenError("", "")
+                    onGetTokenListener.onGetTokenError("", "", t)
                 }
             })
         }

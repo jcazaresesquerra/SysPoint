@@ -73,6 +73,13 @@
         android:label="Cobranza"
         tools:layout="@layout/fragment_cobranza" />
 
+    <fragment
+        android:screenOrientation="portrait"
+        android:id="@+id/nav_close_session"
+        android:name="com.app.syspoint.ui.home.HomeFragment"
+        android:label="Cerrar session"
+        tools:layout="@layout/fragment_home" />
+
 
 
 

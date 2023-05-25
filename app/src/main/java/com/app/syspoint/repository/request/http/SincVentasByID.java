@@ -19,18 +19,16 @@ import timber.log.Timber;
 
 public class SincVentasByID extends Servicio {
 
-    private final static String TAG = "TAG";
+    private final static String TAG = "SincVentasByID";
     private  Response responseVentas;
 
     public SincVentasByID (Long id) throws Exception {
         super("saveSale");
 
-
         final SellsDao sellsDao = new SellsDao();
         final List<SellBox> listaVentas = sellsDao.getSincVentaByID(id);
 
         final JSONArray jsonArrayVentas = new JSONArray();
-
 
         //Recorremos la lista de ventas
         for (SellBox items : listaVentas){

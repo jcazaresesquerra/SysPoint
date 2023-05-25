@@ -48,8 +48,15 @@ class CantidadActivity: AppCompatActivity() {
                 dialog.show()
             } else {
                 //Establece el resultado que debe de regresar
+                val barCode = intent.extras?.getString(Actividades.PARAM_1) ?: ""
+
                 val intent = Intent()
                 intent.putExtra(Actividades.PARAM_1, cantidad)
+
+                if (!barCode.isNullOrEmpty()) {
+                    intent.putExtra(Actividades.PARAM_2, barCode)
+                }
+
                 setResult(RESULT_OK, intent)
 
                 //Cierra la actividad

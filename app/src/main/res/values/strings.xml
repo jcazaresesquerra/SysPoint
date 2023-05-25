@@ -45,6 +45,7 @@
     <string name="menu_inventario">Inventario</string>
 
     <string name="menu_cobranza">Cobranza</string>
+    <string name="close_session">Cerrar sesión</string>
 
 
     <string name="device_discovery_started">Buscando dispositivos cercanos&#8230;</string>

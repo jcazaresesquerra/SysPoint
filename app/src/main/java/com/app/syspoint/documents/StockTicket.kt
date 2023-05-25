@@ -65,11 +65,8 @@ class StockTicket: BaseTicket() {
 
     override fun buildSyspointHeader(): String {
         // get seller
-        var employeeBox = AppBundle.getUserBox()
+        val employeeBox = getEmployee()
 
-        if (employeeBox == null) {
-            employeeBox = CacheInteractor().getSeller()
-        }
         val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
 
         return "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
@@ -95,11 +92,8 @@ class StockTicket: BaseTicket() {
 
     override fun buildDonAquiHeader(): String {
         // get seller
-        var employeeBox = AppBundle.getUserBox()
+        val employeeBox = getEmployee()
 
-        if (employeeBox == null) {
-            employeeBox = CacheInteractor().getSeller()
-        }
         val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
 
         return "         AGUAS DON AQUI         " + Constants.NEW_LINE +
