@@ -80,6 +80,7 @@ class LoginViewModel: BaseViewModel() {
             sessionBean.empleadoId = employeeBox.id
             sessionBean.employeeIdentifier = employeeBox.identificador!!
             sessionBean.remember = rememberSession
+            sessionBean.clientId = employeeBox.clientId
             sessionDao.saveSession(sessionBean)
             AppBundle.setUserSession(userSession)
 

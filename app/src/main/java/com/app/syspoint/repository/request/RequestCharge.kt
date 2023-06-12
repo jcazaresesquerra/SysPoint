@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat
 
 
 class RequestCharge {
-    companion object {
+    companion object: BaseRequest() {
         private const val TAG = "RequestCharge"
         fun requestGetCharge2(): Call<PaymentJson> {
             val appVersion = BuildConfig.VERSION_NAME.split(".")

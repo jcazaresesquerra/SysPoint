@@ -18,8 +18,9 @@ data class EmployeeBox(
     var status: Boolean = false,
     var path_image: String? = null,
     var rute: String? = null,
-    var updatedAt: String? = null
+    var updatedAt: String? = null,
+    var clientId: String = "tenet"
 ) {
     constructor() : this(0, "", "", "", "", "", "",
-        "", "", false, "","", "")
+        "", "", false, "","", "","")
 }

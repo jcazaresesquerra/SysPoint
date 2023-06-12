@@ -2,9 +2,8 @@ package com.app.syspoint.utils
 
 class Constants {
     companion object {
-        const val UPDATE_BASE_URL = "https://ocsistems.com/apks/"
-        const val BASE_URL_SYSPOINT = "https://api.ocsistems.com/public/api/"
-        const val BASE_URL_DONAQUI = "https://apiqa.ocsistems.com/public/api/"
+        const val BASE_URL_SYSPOINT = "https://api.tenet.host/public/api/"
+        const val BASE_URL_DONAQUI = "https://apiqa.ocsistems.com/public/api/" // not used after migration of VPS
         const val permission_Read_data = 789
         var solictaRuta = false
 
