@@ -526,6 +526,7 @@ class MainActivity: BaseActivity() {
             empleado.contrasenia = item.contrasenia
             empleado.identificador = item.identificador
             empleado.status = if (item.status) 1 else 0
+            empleado.clientId = item.clientId
             if (item.path_image == null || item.path_image!!.isEmpty()) {
                 empleado.pathImage = ""
             } else {

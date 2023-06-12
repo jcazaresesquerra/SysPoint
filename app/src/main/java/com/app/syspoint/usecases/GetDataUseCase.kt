@@ -123,6 +123,7 @@ class GetDataUseCase {
                         employee.rute = item.rute
                         employee.status = item.status == 1
                         employee.updatedAt = item.updatedAt
+                        employee.clientId = item.clientId
                         employeeDao.insert(employee)
                         employees.add(employee)
                     } else {

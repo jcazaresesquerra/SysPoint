@@ -1,10 +1,13 @@
 package com.app.syspoint.repository.request
 
 import android.util.Log
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.models.Employee
 import com.app.syspoint.models.json.EmployeeJson
+import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
@@ -15,7 +18,7 @@ import retrofit2.Response
 import java.text.SimpleDateFormat
 
 class RequestEmployees {
-    companion object {
+    companion object: BaseRequest() {
 
         fun requestEmployees(): Call<EmployeeJson> {
             return ApiServices.getClientRetrofit()
@@ -54,6 +57,7 @@ class RequestEmployees {
                                 employee.rute = item.rute
                                 employee.status = item.status == 1
                                 employee.updatedAt = item.updatedAt
+                                employee.clientId = item.clientId
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
@@ -79,6 +83,7 @@ class RequestEmployees {
                                     employeeBox.rute = item.rute
                                     employeeBox.status = item.status == 1
                                     employeeBox.updatedAt = item.updatedAt
+                                    employeeBox.clientId = item.clientId
                                     employeeDao.insert(employeeBox)
                                 }
                                 employees.add(employeeBox)
@@ -101,8 +106,9 @@ class RequestEmployees {
 
 
         fun saveEmployee(employeeList: List<Employee>, onSaveEmployeeListener: GetEmployeeInteractor.SaveEmployeeListener) {
-
+            val employeeSession = getEmployee()
             val employeeJson = EmployeeJson()
+            employeeJson.clienId = employeeSession?.clientId?: "tenet"
             employeeJson.employees = employeeList
             val json = Gson().toJson(employeeJson)
             Log.d("SinEmpleados", json)

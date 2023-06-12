@@ -60,4 +60,8 @@ data class Employee (
     @SerializedName("rute")
     @Expose
     var rute: String? = null,
+
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet",
 ): Serializable

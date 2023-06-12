@@ -11,8 +11,9 @@ class SessionBox (
     var remember: Boolean = false,
     var empleadoId: Long = 0,
     var employeeIdentifier: String = "",
+    var clientId: String = "",
 ) {
     lateinit var employee: ToOne<EmployeeBox>
 
-    constructor(): this(id = 0, remember = false, empleadoId = 0, employeeIdentifier = "")
+    constructor(): this(id = 0, remember = false, empleadoId = 0, employeeIdentifier = "", clientId = "tenet")
 }
