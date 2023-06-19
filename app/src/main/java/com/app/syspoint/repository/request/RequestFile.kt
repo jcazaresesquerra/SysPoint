@@ -13,17 +13,19 @@ import retrofit2.Response
 import java.io.File
 
 class RequestFile {
-    companion object {
+    companion object: BaseRequest() {
         fun saveFile(image: File, sellId: String, onPostFileListener: FileInteractor.OnPostFileListener) {
+            val employee = getEmployee()
             var imagen: MultipartBody.Part? = null
             val cobranza: RequestBody = RequestBody.create(MultipartBody.FORM, sellId)
+            val clientId: RequestBody = RequestBody.create(MultipartBody.FORM, employee?.clientId?:"tenet")
             if (image != null) {
                 val imagenBody = RequestBody.create(MediaType.parse("image/jpg"), image)
                 imagen = MultipartBody.Part.createFormData("imagen", image.name, imagenBody)
             }
             val sendFile = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).postFile(cobranza, imagen)
+            ).postFile(cobranza, clientId, imagen)
 
             sendFile.enqueue(object: Callback<ResponseVenta> {
                 override fun onResponse(

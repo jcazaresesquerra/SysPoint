@@ -7,5 +7,8 @@ import com.google.gson.annotations.SerializedName
 data class RolJson(
     @SerializedName("Roles")
     @Expose
-    var roles: List<Role?>? = null
+    var roles: List<Role?>? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 )

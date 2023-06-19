@@ -5,7 +5,7 @@ import com.app.syspoint.interactor.client.ClientInteractor
 import com.app.syspoint.models.Client
 import com.app.syspoint.models.Data
 import com.app.syspoint.models.RequestClientsByRute
-import com.app.syspoint.models.json.ClientJson
+import com.app.syspoint.models.json.*
 import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.objectBox.dao.ChargeDao
 import com.app.syspoint.repository.objectBox.dao.ClientDao
@@ -23,7 +23,7 @@ import retrofit2.Response
 import java.text.SimpleDateFormat
 
 class RequestClient {
-    companion object {
+    companion object: BaseRequest() {
         fun requestAllClients(onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
             val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
@@ -146,7 +146,8 @@ class RequestClient {
 
         @Deprecated("This method needs to be replaced by requestGetAllClientsAndLastSellByRute")
         fun requestGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
-            val clientsByRute = RequestClientsByRute(rute = ruteByEmployee)
+            val employee = getEmployee()
+            val clientsByRute = RequestClientsByRute(rute = ruteByEmployee, clientId = employee?.clientId?:"tenet")
             val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getAllClientesByRute(clientsByRute)
@@ -356,7 +357,9 @@ class RequestClient {
         }
 
         fun requestGetAllClientsAndLastSellByRute(ruteByEmployee: String, day: Int, onGetAllClientsListener: ClientInteractor.GetAllClientsListener) {
-            val clientsByRute = RequestClientsByRute(rute = ruteByEmployee)
+            val employee = getEmployee()
+            val clientsByRute = RequestClientsByRute(rute = ruteByEmployee, clientId = employee?.clientId?:"tenet")
+            clientsByRute.clientId = employee?.clientId?:"tenet"
             val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getAllClientsAndLastSellByRute(clientsByRute)
@@ -587,10 +590,12 @@ class RequestClient {
 
         // not working fix server issue
         fun requestClientById(clientId: String, onGetClientByIdListener: ClientInteractor.GetClientByIdListener) {
+            val employees = getEmployee()
+            val clientByIdBodyJson = ClientByIdBodyJson(cuenta = clientId, clientId = employees?.clientId?:"tenet" )
 
             val getClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getClienteByID(clientId)
+            ).getClienteByID(clientByIdBodyJson)
 
             getClient.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(
@@ -695,9 +700,10 @@ class RequestClient {
         }
 
         fun saveClients(clientList: List<Client>, onSaveClientListener: ClientInteractor.SaveClientListener) {
-
+            val employee = getEmployee()
             val clientJson = ClientJson()
             clientJson.clients = clientList
+            clientJson.clientId = employee?.clientId?:"tenet"
             val json = Gson().toJson(clientJson)
             Log.d("SinEmpleados", json)
 
@@ -722,9 +728,13 @@ class RequestClient {
         }
 
         fun findClient(clientName: String, onFindClientListener: ClientInteractor.FindClientListener) {
+            val employee = getEmployee()
+            val findClientBodyJson = FindClientBodyJson()
+            findClientBodyJson.clientName = clientName
+            findClientBodyJson.clientId = employee?.clientId?:"tenet"
             val saveClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).findClient(clientName)
+            ).findClient(findClientBodyJson)
 
             saveClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {
@@ -838,9 +848,14 @@ class RequestClient {
         }
 
         fun requestGetClientByAccount(account: String, onGetClientByAccount: ClientInteractor.GetClientByAccount) {
+            val employee = getEmployee()
+            val clientInfoBodyJson = ClientInfoBodyJson()
+            clientInfoBodyJson.clientAccount = account
+            clientInfoBodyJson.clientId = employee?.clientId?:"tenet"
+
             val getClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getClientInfo(account)
+            ).getClientInfo(clientInfoBodyJson)
 
             getClient.enqueue(object: Callback<Data> {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
@@ -1089,9 +1104,12 @@ class RequestClient {
         }
 
         fun getLastCLient(onGetLastClient: ClientInteractor.GetLastClient) {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId?:"tenet"
             val getClients = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getLastClient()
+            ).getLastClient(baseBodyJson)
 
             getClients.enqueue(object: Callback<ClientJson> {
                 override fun onResponse(call: Call<ClientJson>, response: Response<ClientJson>) {

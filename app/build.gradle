@@ -76,15 +76,6 @@ android {
             ]
             buildConfigField "boolean", "REMOTE_LOG_ENABLED", "true"
         }
-        donaqui {
-            dimension "version"
-            resValue "string", "app_name", "Aguas Don Aqui"
-            manifestPlaceholders = [
-                    appIcon: "@drawable/logo_donaqui",
-                    appIconRound: "@drawable/logo_donaqui"
-            ]
-            buildConfigField "boolean", "REMOTE_LOG_ENABLED", "true"
-        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

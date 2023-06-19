@@ -7,5 +7,8 @@ import com.google.gson.annotations.SerializedName
 data class VisitJson(
     @SerializedName("Visitas")
     @Expose
-    var visits: List<Visit?>? = null
+    var visits: List<Visit?>? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 )

@@ -15,14 +15,29 @@ class DepositTicket: BaseTicket() {
 
         try {
 
-            var ticket : String = when(BuildConfig.FLAVOR) {
+            val employee = getEmployee()
+            val clientId = employee?.clientId?:"tenet"
+
+            var ticket : String = when(clientId) {
+                Constants.NUTRIRICA_CLIENT_ID -> {
+                    buildNutriricaHeader()
+                }
+                Constants.DON_AQUI_CLIENT_ID -> {
+                    buildDonAquiHeader()
+                }
+                else -> { // default Tenet
+                    buildTenetHeader()
+                }
+            }
+
+            /*var ticket : String = when(BuildConfig.FLAVOR) {
                 "donaqui" -> {
                     buildDonAquiHeader()
                 }
                 else -> { // default SysPoint
                     buildSyspointHeader()
                 }
-            }
+            }*/
 
             var importeAbono = 0.0
 
@@ -74,7 +89,7 @@ class DepositTicket: BaseTicket() {
         }
     }
 
-    override fun buildSyspointHeader(): String {
+    override fun buildTenetHeader(): String {
         val cobrosBox = box as CobrosBox
 
         val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
@@ -121,7 +136,42 @@ class DepositTicket: BaseTicket() {
                 "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "          HIMA9801022T8         " + Constants.NEW_LINE +
+                "         (667) 579-9656         " + Constants.NEW_LINE +
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
+                "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
+                "VENDEDOR:" + seller +
+                "CLIENTE :" + cobrosBox.cliente.target.cuenta + Constants.NEW_LINE +
+                "" + cobrosBox.cliente.target.nombre_comercial + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO          TICKET" + Constants.NEW_LINE +
+                "SALDO/TIC    ABONO" + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildNutriricaHeader(): String {
+        val cobrosBox = box as CobrosBox
+
+        val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
+        else {
+            val employee = EmployeeDao().getEmployeeByID(cobrosBox.empleadoId)
+            if (employee != null) employee.nombre + Constants.NEW_LINE
+            else Constants.EMPTY_STRING + Constants.NEW_LINE
+        }
+
+        val employeeBox = getEmployee()
+
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
+
+        return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
+                "            NUTRIRICA           " + Constants.NEW_LINE +
+                "       Pedro de Tovar 5460      " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "         (667) 455-9828         " + Constants.NEW_LINE +
+                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE +
                 "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
                 "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
                 "VENDEDOR:" + seller +

@@ -12,10 +12,12 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class RequestVisit {
-    companion object {
+    companion object: BaseRequest() {
         fun saveVisit(visits: List<Visit>, onSaveVisitListener: VisitInteractor.OnSaveVisitListener) {
+            val employee = getEmployee()
             val visitaJsonRF = VisitJson()
             visitaJsonRF.visits = visits
+            visitaJsonRF.clientId = employee?.clientId?:"tenet"
             val json = Gson().toJson(visitaJsonRF)
             Log.d("SinEmpleados", json)
 
@@ -28,6 +30,7 @@ class RequestVisit {
                     if (response.isSuccessful) {
                         onSaveVisitListener.onSaveVisitSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onSaveVisitListener.onSaveVisitError()
                     }
                 }

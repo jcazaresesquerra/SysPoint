@@ -7,7 +7,10 @@ import com.google.gson.internal.LinkedTreeMap
 
 data class ClientJson(
     @SerializedName("Clientes") @Expose
-    var clients: List<Client?>? = null
+    var clients: List<Client?>? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 ) {
     fun fromArray(items: List<LinkedTreeMap<String?, Any?>?>): List<Client>? {
         val result: MutableList<Client> = ArrayList()
