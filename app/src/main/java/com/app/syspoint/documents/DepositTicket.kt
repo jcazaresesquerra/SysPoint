@@ -1,6 +1,5 @@
 package com.app.syspoint.documents
 
-import com.app.syspoint.BuildConfig
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.entities.CobrosBox
 import com.app.syspoint.utils.Constants
@@ -61,7 +60,7 @@ class DepositTicket: BaseTicket() {
                 "%1$-5s %2$-5s %3$5s %4$6s",
                 "",
                 "Saldo Anterior:",
-                Utils.FDinero(cobrosBean.cliente!!.target.saldo_credito + importeAbono),
+                Utils.FDinero(cobrosBean.cliente.target.saldo_credito),
                 ""
             ) + Constants.NEW_LINE +
                     "" + String.format(
@@ -75,7 +74,7 @@ class DepositTicket: BaseTicket() {
                 "%1$-5s %2$-5s %3$5s %4$6s",
                 "",
                 "  Saldo Actual:",
-                Utils.FDinero(cobrosBean.cliente!!.target.saldo_credito),
+                Utils.FDinero(cobrosBean.cliente.target.saldo_credito - importeAbono),
                 ""
             ) + "" + Constants.NEW_LINE +
                     "================================" + Constants.NEW_LINE +
@@ -100,15 +99,14 @@ class DepositTicket: BaseTicket() {
             else Constants.EMPTY_STRING + Constants.NEW_LINE
         }
 
-        return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
-                "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
                 "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
                 "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "           APO170818QR6         " + Constants.NEW_LINE +
                 "          (667) 744-9350        " + Constants.NEW_LINE +
                 "        info@aguapoint.com      " + Constants.NEW_LINE +
-                "         www.aguapoint.com      " + Constants.NEW_LINE +
+                "         www.aguapoint.com      " + Constants.NEW_LINE + Constants.NEW_LINE +
                 "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
                 "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
                 "VENDEDOR:" + seller +
@@ -130,14 +128,13 @@ class DepositTicket: BaseTicket() {
             else Constants.EMPTY_STRING + Constants.NEW_LINE
         }
 
-        return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
-                "         AGUAS DON AQUI         " + Constants.NEW_LINE +
+        return  "         AGUAS DON AQUI         " + Constants.NEW_LINE +
                 " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
                 "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "          HIMA9801022T8         " + Constants.NEW_LINE +
                 "         (667) 579-9656         " + Constants.NEW_LINE +
-                "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                "    Adalberto Higuera Mendez    " + Constants.NEW_LINE + Constants.NEW_LINE +
                 "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
                 "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
                 "VENDEDOR:" + seller +
@@ -165,13 +162,12 @@ class DepositTicket: BaseTicket() {
             employeeBox.nombre + Constants.NEW_LINE
         else Constants.EMPTY_STRING + Constants.NEW_LINE
 
-        return Constants.NEW_LINE + Constants.line + Constants.NEW_LINE +
-                "            NUTRIRICA           " + Constants.NEW_LINE +
+        return  "            NUTRIRICA           " + Constants.NEW_LINE +
                 "       Pedro de Tovar 5460      " + Constants.NEW_LINE +
                 "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "         (667) 455-9828         " + Constants.NEW_LINE +
-                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE +
+                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE + Constants.NEW_LINE +
                 "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
                 "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
                 "VENDEDOR:" + seller +

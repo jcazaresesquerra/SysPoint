@@ -75,7 +75,7 @@ class CloseTicket: BaseTicket() {
                 "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
                 partida.cantidad,
-                Utils.FDinero(partida.cantidad * partida.precio * (1 + partida.impuesto / 100))
+                Utils.FDinero(partida.cantidad * (partida.precio * (1 + partida.impuesto / 100)))
             ) + Constants.NEW_LINE
         }
 

@@ -157,7 +157,7 @@ class SellsDao: AbstractDao<SellBox>() {
                 cashCloseBox.cantidad = playingBox.cantidad
                 cashCloseBox.precio = playingBox.precio
                 cashCloseBox.descripcion = playingBox.descripcion
-                cashCloseBox.impuesto = sellItem.impuesto
+                cashCloseBox.impuesto = playingBox.impuesto
                 cashCloseBox.tipoVenta = sellItem.tipo_venta
                 cashCloseBox.estado = sellItem.estado
                 lista_corte.add(cashCloseBox)

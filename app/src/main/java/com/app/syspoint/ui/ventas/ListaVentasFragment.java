@@ -45,9 +45,11 @@ import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
 import com.app.syspoint.repository.objectBox.dao.RolesDao;
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao;
 import com.app.syspoint.repository.objectBox.dao.SellsDao;
 import com.app.syspoint.repository.objectBox.dao.SessionDao;
 import com.app.syspoint.repository.objectBox.dao.StockHistoryDao;
+import com.app.syspoint.repository.objectBox.dao.TempRuteClientDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
@@ -55,9 +57,11 @@ import com.app.syspoint.repository.objectBox.entities.PlayingBox;
 import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.RolesBox;
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox;
 import com.app.syspoint.repository.objectBox.entities.SellBox;
 import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
+import com.app.syspoint.repository.objectBox.entities.TempRuteClientBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.documents.SellTicket;
@@ -334,6 +338,12 @@ public class ListaVentasFragment extends Fragment {
                                                 if (connected) {
                                                     saveCharge();
                                                 }
+                                            }
+
+                                            TempRuteClientBox tempRuteClientBox = new TempRuteClientDao().getClienteByCuentaCliente(venta.getClient().getTarget().getCuenta());
+                                            if (tempRuteClientBox != null) {
+                                                saveReturnRuteClient(tempRuteClientBox);
+                                                new TempRuteClientDao().removeBox(tempRuteClientBox.getId());
                                             }
 
 
@@ -671,5 +681,48 @@ public class ListaVentasFragment extends Fragment {
             }
         }
         return vendedoresBean;
+    }
+
+    private void saveReturnRuteClient(TempRuteClientBox tempRuteClientBox) {
+        RuteClientDao tempRuteClientDao = new RuteClientDao();
+        RuteClientBox ruteClientBox = new RuteClientBox();
+        ruteClientBox.setId(tempRuteClientBox.getId());
+        ruteClientBox.setNombre_comercial(tempRuteClientBox.getNombre_comercial());
+        ruteClientBox.setCalle(tempRuteClientBox.getCalle());
+        ruteClientBox.setNumero(tempRuteClientBox.getNumero());
+        ruteClientBox.setColonia(tempRuteClientBox.getColonia());
+        ruteClientBox.setCuenta(tempRuteClientBox.getCuenta());
+        ruteClientBox.setRango(tempRuteClientBox.getRango());
+        ruteClientBox.setLun(tempRuteClientBox.getLun());
+        ruteClientBox.setMar(tempRuteClientBox.getMar());
+        ruteClientBox.setMie(tempRuteClientBox.getMie());
+        ruteClientBox.setJue(tempRuteClientBox.getJue());
+        ruteClientBox.setVie(tempRuteClientBox.getVie());
+        ruteClientBox.setSab(tempRuteClientBox.getSab());
+        ruteClientBox.setDom(tempRuteClientBox.getDom());
+        ruteClientBox.setLunOrder(tempRuteClientBox.getLunOrder());
+        ruteClientBox.setMarOrder(tempRuteClientBox.getMarOrder());
+        ruteClientBox.setMieOrder(tempRuteClientBox.getMieOrder());
+        ruteClientBox.setJueOrder(tempRuteClientBox.getJueOrder());
+        ruteClientBox.setVieOrder(tempRuteClientBox.getVieOrder());
+        ruteClientBox.setSabOrder(tempRuteClientBox.getSabOrder());
+        ruteClientBox.setDomOrder(tempRuteClientBox.getDomOrder());
+        ruteClientBox.setOrder(tempRuteClientBox.getOrder());
+        ruteClientBox.setVisitado(0);
+        ruteClientBox.setLatitud(tempRuteClientBox.getLatitud());
+        ruteClientBox.setLongitud(tempRuteClientBox.getLongitud());
+        ruteClientBox.setPhone_contact(tempRuteClientBox.getPhone_contact());
+        ruteClientBox.setStatus(tempRuteClientBox.getStatus());
+        ruteClientBox.setCredito(tempRuteClientBox.isCredito());
+        ruteClientBox.setRecordatorio(tempRuteClientBox.getRecordatorio());
+        ruteClientBox.setRecordatorio(tempRuteClientBox.isRecordatorio());
+        ruteClientBox.setDate_sync(tempRuteClientBox.getDate_sync());
+        ruteClientBox.setUpdatedAt(tempRuteClientBox.getUpdatedAt());
+        ruteClientBox.setVentaClientId(tempRuteClientBox.getVentaClientId());
+        ruteClientBox.setVentaFecha(tempRuteClientBox.getVentaFecha());
+        ruteClientBox.setVentaCreatedAt(tempRuteClientBox.getVentaCreatedAt());
+        ruteClientBox.setVentaUpdatedAt(tempRuteClientBox.getVentaUpdatedAt());
+
+        tempRuteClientDao.insertBox(ruteClientBox);
     }
 }
