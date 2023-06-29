@@ -20,14 +20,29 @@ class CloseTicket: BaseTicket() {
         val mLidata: List<StockBox> = StockDao().list()
         val mListCharge: List<CloseCash> = ChargeDao().getAllConfirmedChargesToday(stockId)
 
-        var ticket : String = when(BuildConfig.FLAVOR) {
+        val employee = getEmployee()
+        val clientId = employee?.clientId?:"tenet"
+
+        var ticket : String = when(clientId) {
+            Constants.NUTRIRICA_CLIENT_ID -> {
+                buildNutriricaHeader()
+            }
+            Constants.DON_AQUI_CLIENT_ID -> {
+                buildDonAquiHeader()
+            }
+            else -> { // default Tenet
+                buildTenetHeader()
+            }
+        }
+
+        /*var ticket : String = when(BuildConfig.FLAVOR) {
             Constants.DON_AQUI_FLAVOR_TAG -> {
                 buildDonAquiHeader()
             }
             else -> { // default SysPoint
                 buildSyspointHeader()
             }
-        }
+        }*/
 
         var totalCredito = 0.0
         var creditoCount = 0
@@ -35,9 +50,7 @@ class CloseTicket: BaseTicket() {
         var contadoCount = 0
         var cliente = Constants.EMPTY_STRING
 
-        listaCorte.distinctBy {
-            it.clienteId
-        }.map { partida ->
+        listaCorte.map { partida ->
             if (partida.tipoVenta == Constants.CONTADO) {
                 contadoCount++
             } else {
@@ -62,7 +75,7 @@ class CloseTicket: BaseTicket() {
                 "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
                 partida.cantidad,
-                Utils.FDinero(partida.cantidad * partida.precio * (1 + partida.impuesto / 100))
+                Utils.FDinero(partida.cantidad * (partida.precio * (1 + partida.impuesto / 100)))
             ) + Constants.NEW_LINE
         }
 
@@ -134,7 +147,7 @@ class CloseTicket: BaseTicket() {
         document = ticket
     }
 
-    override fun buildSyspointHeader(): String {
+    override fun buildTenetHeader(): String {
         val employeeBox = getEmployee()
 
         val sellers = if (employeeBox != null)
@@ -167,12 +180,37 @@ class CloseTicket: BaseTicket() {
             employeeBox.nombre + Constants.NEW_LINE
         else Constants.EMPTY_STRING + Constants.NEW_LINE
 
-        return "         AGUAS DON AQUI         " + Constants.NEW_LINE +
+        return  "         AGUAS DON AQUI         " + Constants.NEW_LINE +
                 " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
                 "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "          HIMA9801022T8         " + Constants.NEW_LINE +
+                "         (667) 579-9656         " + Constants.NEW_LINE +
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                Constants.NEW_LINE + Constants.NEW_LINE +
+                sellers +
+                Utils.fechaActual() + " " + Utils.getHoraActual() + Constants.EMPTY_STRING +
+                Constants.NEW_LINE + Constants.NEW_LINE + Constants.NEW_LINE +
+                "          CORTE DE CAJA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CLIENTE / PRODUCTO             " + Constants.NEW_LINE +
+                "PRECIO    CANTIDAD    IMPORTE  " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildNutriricaHeader(): String {
+        val employeeBox = getEmployee()
+
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
+
+        return  "            NUTRIRICA           " + Constants.NEW_LINE +
+                "       Pedro de Tovar 5460      " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "         (667) 455-9828         " + Constants.NEW_LINE +
+                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE +
                 Constants.NEW_LINE + Constants.NEW_LINE +
                 sellers +
                 Utils.fechaActual() + " " + Utils.getHoraActual() + Constants.EMPTY_STRING +

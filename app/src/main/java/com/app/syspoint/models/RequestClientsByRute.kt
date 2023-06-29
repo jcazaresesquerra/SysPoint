@@ -9,5 +9,8 @@ data class RequestClientsByRute(
     var rute: String? = null,
     @SerializedName("day")
     @Expose
-    var day: Int? = null
+    var day: Int? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 )

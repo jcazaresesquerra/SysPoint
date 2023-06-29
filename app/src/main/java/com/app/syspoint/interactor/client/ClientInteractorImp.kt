@@ -12,7 +12,7 @@ class ClientInteractorImp: ClientInteractor() {
     override fun executeGetAllClients(onGetAllClientsListener: GetAllClientsListener) {
         super.executeGetAllClients(onGetAllClientsListener)
         GlobalScope.launch {
-            RequestClient.requestAllClients(onGetAllClientsListener)
+            //RequestClient.requestAllClients(onGetAllClientsListener)
         }
     }
 
@@ -20,7 +20,7 @@ class ClientInteractorImp: ClientInteractor() {
     override fun executeGetAllClientsByDate(ruteByEmployee: String, day: Int, onGetAllClientsListener: GetAllClientsListener) {
         super.executeGetAllClientsByDate(ruteByEmployee, day, onGetAllClientsListener)
         GlobalScope.launch {
-            RequestClient.requestGetAllClientsByDate(ruteByEmployee, day, onGetAllClientsListener)
+            //RequestClient.requestGetAllClientsByDate(ruteByEmployee, day, onGetAllClientsListener)
         }
     }
 

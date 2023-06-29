@@ -338,14 +338,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun setUpLogo() {
-        when (BuildConfig.FLAVOR) {
-            "donaqui" -> {
-                binding.imageView.setImageResource(R.drawable.logo_donaqui)
-            }
-            else -> {
-                binding.imageView.setImageResource(R.drawable.tenet_land)
-            }
-        }
+        binding.imageView.setImageResource(R.drawable.tenet_land)
     }
 
     private fun showNotInternetConnectionError() {

@@ -4,6 +4,7 @@ import android.util.Log
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.models.Employee
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.EmployeeJson
 import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
@@ -21,24 +22,38 @@ class RequestEmployees {
     companion object: BaseRequest() {
 
         fun requestEmployees(): Call<EmployeeJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             return ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllEmpleados()
+                ).getAllEmpleados(baseBodyJson)
+        }
+
+        /***
+         * This is for sync login not needs body, this gets all employees from all databases
+         */
+        fun requestAllEmployees(): Call<EmployeeJson> {
+            return ApiServices.getClientRetrofit()
+                .create(
+                    PointApi::class.java
+                ).getAllEmployees()
         }
 
         fun requestEmployees(getEmployeesListener: GetEmployeeInteractor.GetEmployeesListener): Call<EmployeeJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             val getEmployees: Call<EmployeeJson> = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllEmpleados()
+                ).getAllEmpleados(baseBodyJson)
 
             getEmployees.enqueue(object: Callback<EmployeeJson> {
                 override fun onResponse(call: Call<EmployeeJson>, response: Response<EmployeeJson>) {
                     if (response.isSuccessful){
                         val employees = arrayListOf<EmployeeBox?>()
                         val employeeDao = EmployeeDao()
-
+                        val clientId = response.body()!!.clienId
                         response.body()!!.employees!!.map { item ->
                             //Validamos si existe el empleado en la base de datos en base al identificador
                             val employeeBox = employeeDao.getEmployeeByIdentifier(item!!.identificador)
@@ -57,7 +72,7 @@ class RequestEmployees {
                                 employee.rute = item.rute
                                 employee.status = item.status == 1
                                 employee.updatedAt = item.updatedAt
-                                employee.clientId = item.clientId
+                                employee.clientId = clientId
                                 employeeDao.insert(employee)
                                 employees.add(employee)
                             } else {
@@ -83,7 +98,7 @@ class RequestEmployees {
                                     employeeBox.rute = item.rute
                                     employeeBox.status = item.status == 1
                                     employeeBox.updatedAt = item.updatedAt
-                                    employeeBox.clientId = item.clientId
+                                    employeeBox.clientId = clientId
                                     employeeDao.insert(employeeBox)
                                 }
                                 employees.add(employeeBox)

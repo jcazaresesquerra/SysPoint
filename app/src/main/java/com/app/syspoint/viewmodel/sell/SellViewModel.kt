@@ -433,6 +433,8 @@ class SellViewModel: ViewModel() {
             if (clientesRutaBean != null) {
                 clientesRutaBean.visitado = 1
                 ruteClientDao.insert(clientesRutaBean)
+
+                saveTempRuteClient(clientesRutaBean)
             }
 
             //Obtiene el nombre del vendedor
@@ -555,6 +557,7 @@ class SellViewModel: ViewModel() {
                 testLoadClientes(clienteID.toString())
             }
             sellsDao.insert(sellBox)
+
 
 
             //Creamos la venta
@@ -726,6 +729,49 @@ class SellViewModel: ViewModel() {
             }
         }
         return vendedoresBean
+    }
+
+    private fun saveTempRuteClient(ruteClientBox: RuteClientBox) {
+        val tempRuteClientDao = TempRuteClientDao()
+        val tempRuteClientBox = TempRuteClientBox()
+        tempRuteClientBox.id = ruteClientBox.id
+        tempRuteClientBox.nombre_comercial = ruteClientBox.nombre_comercial
+        tempRuteClientBox.calle = ruteClientBox.calle
+        tempRuteClientBox.numero = ruteClientBox.numero
+        tempRuteClientBox.colonia = ruteClientBox.colonia
+        tempRuteClientBox.cuenta = ruteClientBox.cuenta
+        tempRuteClientBox.rango = ruteClientBox.rango
+        tempRuteClientBox.lun = ruteClientBox.lun
+        tempRuteClientBox.mar = ruteClientBox.mar
+        tempRuteClientBox.mie = ruteClientBox.mie
+        tempRuteClientBox.jue = ruteClientBox.jue
+        tempRuteClientBox.vie = ruteClientBox.vie
+        tempRuteClientBox.sab = ruteClientBox.sab
+        tempRuteClientBox.dom = ruteClientBox.dom
+        tempRuteClientBox.lunOrder = ruteClientBox.lunOrder
+        tempRuteClientBox.marOrder = ruteClientBox.marOrder
+        tempRuteClientBox.mieOrder = ruteClientBox.mieOrder
+        tempRuteClientBox.jueOrder = ruteClientBox.jueOrder
+        tempRuteClientBox.vieOrder = ruteClientBox.vieOrder
+        tempRuteClientBox.sabOrder = ruteClientBox.sabOrder
+        tempRuteClientBox.domOrder = ruteClientBox.domOrder
+        tempRuteClientBox.order = ruteClientBox.order
+        tempRuteClientBox.visitado = ruteClientBox.visitado
+        tempRuteClientBox.latitud = ruteClientBox.latitud
+        tempRuteClientBox.longitud = ruteClientBox.longitud
+        tempRuteClientBox.phone_contact = ruteClientBox.phone_contact
+        tempRuteClientBox.status = ruteClientBox.status
+        tempRuteClientBox.isCredito = ruteClientBox.isCredito
+        tempRuteClientBox.recordatorio = ruteClientBox.recordatorio
+        tempRuteClientBox.isRecordatorio = ruteClientBox.isRecordatorio
+        tempRuteClientBox.date_sync = ruteClientBox.date_sync
+        tempRuteClientBox.updatedAt = ruteClientBox.updatedAt
+        tempRuteClientBox.ventaClientId = ruteClientBox.ventaClientId
+        tempRuteClientBox.ventaFecha = ruteClientBox.ventaFecha
+        tempRuteClientBox.ventaCreatedAt = ruteClientBox.ventaCreatedAt
+        tempRuteClientBox.ventaUpdatedAt = ruteClientBox.ventaUpdatedAt
+
+        tempRuteClientDao.insertBox(tempRuteClientBox)
     }
 
 }

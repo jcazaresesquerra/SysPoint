@@ -86,7 +86,9 @@ public class SincVentas extends Servicio {
 
         }
 
+
         this.jsonObject.put("ventas", jsonArrayVentas);
+        this.jsonObject.put("clientId", getEmployee() != null ? getEmployee().getClientId() : "tenet");
         String json = this.jsonObject.toString();
 
         boolean isUiThread = false;

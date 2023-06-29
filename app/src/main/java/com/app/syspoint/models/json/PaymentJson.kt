@@ -7,5 +7,8 @@ import com.google.gson.annotations.SerializedName
 data class PaymentJson(
     @SerializedName("Cobranza")
     @Expose
-    var payments: List<Payment?>? = null
+    var payments: List<Payment?>? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 )

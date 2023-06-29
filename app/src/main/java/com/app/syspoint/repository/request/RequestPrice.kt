@@ -3,6 +3,7 @@ package com.app.syspoint.repository.request
 import android.util.Log
 import com.app.syspoint.interactor.prices.PriceInteractor
 import com.app.syspoint.models.Price
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.RequestClients
 import com.app.syspoint.models.json.SpecialPriceJson
 import com.app.syspoint.repository.objectBox.dao.ClientDao
@@ -17,10 +18,12 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class RequestPrice {
-    companion object {
+    companion object: BaseRequest() {
         fun requestSavePrice(priceList: List<Price>, onSendPricesListener: PriceInteractor.SendPricesListener) {
+            val employee = getEmployee()
             val priceJson = SpecialPriceJson()
             priceJson.prices = priceList
+            priceJson.clientId = employee?.clientId?:"tenet"
 
             val json = Gson().toJson(priceJson)
             Log.d("Sinc especiales", json)
@@ -49,16 +52,20 @@ class RequestPrice {
         }
 
         fun requestAllPrices(): Call<SpecialPriceJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             val specialPrices = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getPricesEspecial()
+            ).getPricesEspecial(baseBodyJson)
             return specialPrices
         }
 
         fun requestAllPrices(onGetSpecialPricesListener: PriceInteractor.GetSpecialPricesListener): Call<SpecialPriceJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             val specialPrices = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getPricesEspecial()
+            ).getPricesEspecial(baseBodyJson)
 
             specialPrices.enqueue(object: Callback<SpecialPriceJson> {
                 override fun onResponse(call: Call<SpecialPriceJson>, response: Response<SpecialPriceJson>) {
@@ -108,8 +115,10 @@ class RequestPrice {
         }
 
         fun requestPricesByClient(client: String, onGetPricesByClientListener: PriceInteractor.GetPricesByClientListener) {
+            val employees = getEmployee()
             val requestPrices = RequestClients()
             requestPrices.cuenta = client
+            requestPrices.clientId = employees?.clientId?:"tenet"
 
             val pricesByClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java

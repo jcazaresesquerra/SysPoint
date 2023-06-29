@@ -6,5 +6,8 @@ import com.google.gson.annotations.SerializedName
 data class RequestChargeByRute(
     @SerializedName("cuenta")
     @Expose
-    var account: String? = null
+    var account: String? = null,
+    @SerializedName("clientId")
+    @Expose
+    var clientId: String = "tenet"
 )

@@ -3,6 +3,7 @@ package com.app.syspoint.repository.request
 import android.util.Log
 import com.app.syspoint.interactor.roles.RolInteractor
 import com.app.syspoint.models.Role
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.RolJson
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.dao.RolesDao
@@ -15,18 +16,24 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class RequestRol {
-    companion object {
+    companion object: BaseRequest() {
 
         fun requestAllRoles(): Call<RolJson> {
+            val employees = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employees?.clientId?:"tenet")
+
             return ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getAllRols()
+            ).getAllRols(baseBodyJson)
         }
 
         fun requestAllRoles(onGetAllRolesListener: RolInteractor.OnGetAllRolesListener): Call<RolJson> {
+            val employees = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employees?.clientId?:"tenet")
+
             val getRoles = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getAllRols()
+            ).getAllRols(baseBodyJson)
 
             getRoles.enqueue(object: Callback<RolJson> {
                 override fun onResponse(call: Call<RolJson>, response: Response<RolJson>) {
@@ -71,8 +78,10 @@ class RequestRol {
         }
 
         fun saveRoles(roles: List<Role>, onSaveRolesListener: RolInteractor.OnSaveRolesListener) {
+            val employee = getEmployee()
             val rolesJson = RolJson()
             rolesJson.roles = roles
+            rolesJson.clientId = employee?.clientId?:"tenet"
 
             val saveRoles = ApiServices.getClientRetrofit().create(
                 PointApi::class.java

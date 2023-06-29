@@ -12,16 +12,20 @@ import retrofit2.http.*
 
 interface PointApi {
 
-    // GET AL DATA RESONSE
-    @GET("getAllData")
-    fun getAllDataV2(): Call<Data>
+    // GET AL DATA RESPONSE
+    @POST("getAllData")
+    fun getAllDataV2(@Body baseBodyJson: BaseBodyJson?): Call<Data>
 
-    @GET("getAllDataByDate")
-    fun getAllDataByDate(): Call<Data>
+    @POST("getAllDataByDate")
+    fun getAllDataByDate(@Body baseBodyJson: BaseBodyJson?): Call<Data>
 
     // Empleados
-    @GET("getAllEmpleados")
-    fun getAllEmpleados(): Call<EmployeeJson>
+    @POST("getAllEmpleados")
+    fun getAllEmpleados(@Body baseBodyJson: BaseBodyJson?): Call<EmployeeJson>
+
+    // Unique GET method
+    @GET("getAllEmployees")
+    fun getAllEmployees(): Call<EmployeeJson>
 
     @GET("getEmpleadoByID")
     fun getEmpleadoByID(@Query("identificador") identificador: String?): Call<EmployeeJson>
@@ -30,8 +34,8 @@ interface PointApi {
     fun sendEmpleado(@Body param: EmployeeJson?): Call<EmployeeJson>
 
     // PRODUCTOS
-    @GET("getAllProductos")
-    fun getAllProductos(): Call<ProductJson>
+    @POST("getAllProductos")
+    fun getAllProductos(@Body baseBodyJson: BaseBodyJson?): Call<ProductJson>
 
     @POST("getProductoByID")
     fun getProductoByID(@Query("articulo") articulo: String?): Call<EmployeeJson>
@@ -44,8 +48,8 @@ interface PointApi {
     fun getAllClientes(): Call<ClientJson>
 
     // CLIENTES
-    @GET("getLasClientAccount")
-    fun getLastClient(): Call<ClientJson>
+    @POST("getLasClientAccount")
+    fun getLastClient(@Body baseBodyJson: BaseBodyJson?): Call<ClientJson>
 
     // CLIENTES
     @POST("getAllClientesByRute")
@@ -56,20 +60,20 @@ interface PointApi {
     fun getAllClientsAndLastSellByRute(@Body clientsByRute: RequestClientsByRute?): Call<ClientJson>
 
     @POST("getClienteByID")
-    fun getClienteByID(@Query("cuenta") cuenta: String?): Call<ClientJson>
+    fun getClienteByID(@Body clientByIdBodyJson: ClientByIdBodyJson): Call<ClientJson>
 
     @POST("saveCliente")
     fun sendCliente(@Body param: ClientJson?): Call<ClientJson>
 
     @POST("findClient")
-    fun findClient(@Query("clientName") clientName: String?): Call<ClientJson>
+    fun findClient(@Body findClientBodyJson: FindClientBodyJson): Call<ClientJson>
 
     @POST("getClientInfo")
-    fun getClientInfo(@Query("cuenta") clientAccount: String?): Call<Data>
+    fun getClientInfo(@Body clientInfoBodyJson: ClientInfoBodyJson): Call<Data>
 
     // ROLES
-    @GET("getAllRols")
-    fun getAllRols(): Call<RolJson>
+    @POST("getAllRols")
+    fun getAllRols(@Body baseBodyJson: BaseBodyJson?): Call<RolJson>
 
     @POST("saveRol")
     fun saveRoles(@Body param: RolJson?): Call<RolJson>
@@ -78,8 +82,8 @@ interface PointApi {
     @POST("savePrice")
     fun sendPrecios(@Body param: SpecialPriceJson?): Call<SpecialPriceJson>
 
-    @GET("getAllPrices")
-    fun getPricesEspecial(): Call<SpecialPriceJson>
+    @POST("getAllPrices")
+    fun getPricesEspecial(@Body baseBodyJson: BaseBodyJson?): Call<SpecialPriceJson>
 
     @POST("getPricesByDate")
     fun getPreciosByDate(@Body paramt: RequestPrices?): Call<SpecialPriceJson>
@@ -98,8 +102,8 @@ interface PointApi {
     @POST("updateCobranza")
     fun updateCobranza(@Body param: PaymentJson?): Call<PaymentJson>
 
-    @GET("getAllCobranza")
-    fun getCobranza(): Call<PaymentJson>
+    @POST("getAllCobranza")
+    fun getCobranza(@Body baseBodyJson: BaseBodyJson?): Call<PaymentJson>
 
     @POST("getAllCobranzaByEmployee")
     fun getAllCobranzaByEmployee(@Body chargeByRute: RequestChargeByRute?): Call<PaymentJson>
@@ -112,6 +116,7 @@ interface PointApi {
     @POST("loadImage")
     fun postFile(
         @Part("cobranza") cobranza: RequestBody?,
+        @Part("clientId") clientId: RequestBody?,
         @Part imagen: MultipartBody.Part?
     ): Call<ResponseVenta>
 
