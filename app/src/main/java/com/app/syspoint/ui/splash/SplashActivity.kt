@@ -30,7 +30,7 @@ class SplashActivity: AppCompatActivity() {
 
         Handler().postDelayed({
             var intent = Intent(this, LoginActivity::class.java)
-            if (viewModel.checkSessionData()) {
+            if (viewModel.checkSessionData() && viewModel.isSynced()) {
                 intent = Intent(this, MainActivity::class.java)
             }
             startActivity(intent)
