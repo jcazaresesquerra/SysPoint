@@ -14,11 +14,15 @@ abstract class BaseTicket {
 
     open fun template() {}
 
-    open fun buildSyspointHeader(): String {
+    open fun buildTenetHeader(): String {
        return ""
     }
 
     open fun buildDonAquiHeader(): String {
+        return ""
+    }
+
+    open fun buildNutriricaHeader(): String {
         return ""
     }
 

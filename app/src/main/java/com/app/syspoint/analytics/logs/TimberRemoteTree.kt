@@ -3,6 +3,10 @@ package com.app.syspoint.analytics.logs
 import android.util.Log
 import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.cache.CacheInteractor
+import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
@@ -15,8 +19,9 @@ class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugT
     private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss_SSS_a_zzz", Locale.getDefault())
     private val timeFormatHHmm = SimpleDateFormat("HH:mm", Locale.getDefault())
     private val date = dateFormat.format(Date(System.currentTimeMillis()))
-
-    private var logRef = Firebase.database.getReference("logs/${BuildConfig.FLAVOR}/${deviceDetails.employeeId}/$date/${deviceDetails.deviceId}")
+    val employeeBox = getEmployee()
+    val clientId = employeeBox?.clientId?:"tenet"
+    private var logRef = Firebase.database.getReference("logs/${clientId}/${deviceDetails.employeeId}/$date/${deviceDetails.deviceId}")
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (BuildConfig.REMOTE_LOG_ENABLED) {
@@ -25,10 +30,12 @@ class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugT
             val remoteLog = RemoteLog(priorityAsString(priority), tag, message, t.toString(), time)
             val hour = timeFormatHHmm.format(Date(System.currentTimeMillis()))
 
-            val seller = CacheInteractor().getSeller()
-            if (seller != null) {
+            val employee = getEmployee()
+            val clientId = employeeBox?.clientId?:"tenet"
+
+            if (employee != null) {
                 logRef =
-                    Firebase.database.getReference("logs/${BuildConfig.FLAVOR}/${seller.identificador}/$date/${deviceDetails.deviceId}")
+                    Firebase.database.getReference("logs/${clientId}/${employee.identificador}/$date/${deviceDetails.deviceId}")
             }
 
             with(logRef) {
@@ -57,5 +64,18 @@ class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugT
         Log.ERROR -> Log.e(tag, message)
         Log.ASSERT -> Log.d(tag, message)
         else -> {Log.d(tag, message)}
+    }
+
+    private fun getEmployee(): EmployeeBox? {
+        var vendedoresBean = AppBundle.getUserBox()
+        if (vendedoresBean == null) {
+            val sessionBox = SessionDao().getUserSession()
+            vendedoresBean = if (sessionBox != null) {
+                EmployeeDao().getEmployeeByID(sessionBox.empleadoId)
+            } else {
+                CacheInteractor().getSeller()
+            }
+        }
+        return vendedoresBean
     }
 }

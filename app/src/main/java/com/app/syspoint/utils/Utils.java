@@ -6,6 +6,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import com.app.syspoint.BuildConfig;
+import com.app.syspoint.interactor.cache.CacheInteractor;
+import com.app.syspoint.repository.objectBox.AppBundle;
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao;
+import com.app.syspoint.repository.objectBox.dao.SessionDao;
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox;
+import com.app.syspoint.repository.objectBox.entities.SessionBox;
 
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
@@ -229,6 +235,19 @@ public class Utils {
         String fileName = flavor + "_" + buildType + "_" + versionToDownload + ".apk";
         String url = baseUpdateUrl + flavor + "/" + buildType + "/" + fileName;
         return url;
+    }
+
+    private EmployeeBox getEmployee() {
+        EmployeeBox vendedoresBean = AppBundle.getUserBox();
+        if (vendedoresBean == null) {
+            SessionBox sessionBox = new SessionDao().getUserSession();
+            if (sessionBox != null) {
+                vendedoresBean = new EmployeeDao().getEmployeeByID(sessionBox.getEmpleadoId());
+            } else {
+                vendedoresBean = new CacheInteractor().getSeller();
+            }
+        }
+        return vendedoresBean;
     }
 
 }

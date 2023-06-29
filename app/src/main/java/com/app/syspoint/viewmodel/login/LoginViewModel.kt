@@ -11,6 +11,7 @@ import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.interactor.data.GetAllDataInteractorImp
 import com.app.syspoint.interactor.token.TokenInteractor
 import com.app.syspoint.interactor.token.TokenInteractorImpl
+import com.app.syspoint.models.Resource
 import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
@@ -20,6 +21,7 @@ import com.app.syspoint.models.UserSession
 import com.app.syspoint.models.enums.RoleType
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.*
+import com.app.syspoint.usecases.GetAllEmployeesUseCase
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.viewmodel.BaseViewModel
@@ -27,6 +29,8 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
@@ -87,17 +91,65 @@ class LoginViewModel: BaseViewModel() {
             // save seller in cache
             val cacheInteractor = CacheInteractor()
             cacheInteractor.saveSeller(employeeBox)
+
+            employeeDao.removeUnnecessaryEmployees()
+
+            NetworkStateTask { connected ->
+                if (connected) {
+                    viewModelScope.launch {
+                        loginViewState.postValue(LoginViewState.ConnectedToInternet)
+                        loginViewState.postValue(LoginViewState.LoadingDataStart)
+
+                        GetAllDataInteractorImp().executeGetAllData(object :
+                            GetAllDataInteractor.OnGetAllDataListener {
+                            override fun onGetAllDataSuccess() {
+                                loginViewState.postValue(
+                                    if (employeeBox != null) {
+                                        Timber.tag(TAG).d("loggedIn $email")
+                                        LoginViewState.LoggedIn
+                                    } else {
+                                        Timber.tag(TAG)
+                                            .d("Usuario no encontrado verifique los datos de acceso $email")
+                                        LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+                                    }
+                                )
+                            }
+
+                            override fun onGetAllDataError() {
+                                loginViewState.postValue(
+                                    if (employeeBox != null) {
+                                        Timber.tag(TAG).d("loggedIn $email")
+                                        LoginViewState.LoggedIn
+                                    } else {
+                                        Timber.tag(TAG)
+                                            .d("Usuario no encontrado verifique los datos de acceso $email")
+                                        LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+                                    }
+                                )
+                            }
+                        })
+                    }
+                } else {
+                    loginViewState.postValue(
+                        if (employeeBox != null) {
+                            Timber.tag(TAG).d("loggedIn $email")
+                            LoginViewState.LoggedIn
+                        } else {
+                            Timber.tag(TAG)
+                                .d("Usuario no encontrado verifique los datos de acceso $email")
+                            LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+                        }
+                    )
+                }
+            }.execute()
+
+        } else {
+            Timber.tag(TAG).d("Usuario no encontrado verifique los datos de acceso $email")
+            loginViewState.postValue(
+                    LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
+            )
         }
 
-        loginViewState.postValue(
-            if (employeeBox != null) {
-                Timber.tag(TAG).d("loggedIn $email")
-                LoginViewState.LoggedIn
-            } else {
-                Timber.tag(TAG).d("Usuario no encontrado verifique los datos de acceso $email")
-                LoginViewState.LoginError("Usuario no encontrado verifique los datos de acceso")
-            }
-        )
     }
 
     private fun setRuteByEmployeeIfExists(employeeBox: EmployeeBox) {
@@ -347,24 +399,22 @@ class LoginViewModel: BaseViewModel() {
                 NetworkStateTask { connected ->
                     Timber.tag(TAG).d("sync -> %s", connected)
                     if (connected) {
+
                         viewModelScope.launch {
                             loginViewState.postValue(LoginViewState.ConnectedToInternet)
                             downloadingViewState.postValue(DownloadingViewState.StartDownloadViewState)
-                            GetAllDataInteractorImp().executeGetAllData(object :
-                                GetAllDataInteractor.OnGetAllDataListener {
-                                override fun onGetAllDataSuccess() {
+                            GetAllEmployeesUseCase().invoke().onEach { response ->
+                                if (response is Resource.Success) {
                                     updateSession(true)
                                     downloadingViewState.postValue(DownloadingViewState.DownloadCompletedViewState)
                                     loginViewState.postValue(LoginViewState.LoadingDataFinish)
-                                }
-
-                                override fun onGetAllDataError() {
+                                } else if (response is Resource.Error){
                                     downloadingViewState.postValue(DownloadingViewState.DownloadCancelledViewState)
                                     loginViewState.postValue(LoginViewState.LoadingDataFinish)
                                     removeLocalSync()
                                     loginViewState.postValue(LoginViewState.NotInternetConnection)
                                 }
-                            })
+                            }.launchIn(this)
                         }
                     } else {
                         viewModelScope.launch {

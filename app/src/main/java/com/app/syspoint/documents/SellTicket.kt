@@ -32,12 +32,27 @@ class SellTicket: BaseTicket() {
         }*/
 
 
-        var ticket : String = when(BuildConfig.FLAVOR) {
+        /*var ticket : String = when(BuildConfig.FLAVOR) {
             "donaqui" -> {
                 buildDonAquiHeader()
             }
             else -> { // default SysPoint
                 buildSyspointHeader()
+            }
+        }*/
+
+        val employee = getEmployee()
+        val clientId = employee?.clientId?:"tenet"
+
+        var ticket : String = when(clientId) {
+            Constants.NUTRIRICA_CLIENT_ID -> {
+                buildNutriricaHeader()
+            }
+            Constants.DON_AQUI_CLIENT_ID -> {
+                buildDonAquiHeader()
+            }
+            else -> { // default Tenet
+                buildTenetHeader()
             }
         }
 
@@ -132,7 +147,7 @@ class SellTicket: BaseTicket() {
         document = ticket
     }
 
-    override fun buildSyspointHeader(): String {
+    override fun buildTenetHeader(): String {
         val sellBox = box as SellBox
 
         val vendedor = if (sellBox?.employee?.target != null) {
@@ -187,7 +202,44 @@ class SellTicket: BaseTicket() {
                 "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "          HIMA9801022T8         " + Constants.NEW_LINE +
+                "         (667) 579-9656         " + Constants.NEW_LINE +
                 "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
+                vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildNutriricaHeader(): String {
+
+        val sellBox = box as SellBox
+
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
+        } else {
+            val employeeBox = CacheInteractor().getSeller()
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
+            else ""
+        }
+
+        return  "            NUTRIRICA           " + Constants.NEW_LINE +
+                "       Pedro de Tovar 5460      " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "         (667) 455-9828         " + Constants.NEW_LINE +
+                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +

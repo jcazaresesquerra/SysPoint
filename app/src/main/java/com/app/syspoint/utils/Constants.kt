@@ -2,8 +2,8 @@ package com.app.syspoint.utils
 
 class Constants {
     companion object {
-        const val BASE_URL_SYSPOINT = "https://api.tenet.host/public/api/"
-        const val BASE_URL_DONAQUI = "https://apiqa.ocsistems.com/public/api/" // not used after migration of VPS
+        const val BASE_URL_TENET_PROD = "https://pruebas.tenet.host/public/api/"
+        const val BASE_URL_TENET_QA = "https://apiqa.ocsistems.com/public/api/" // not used after migration of VPS
         const val permission_Read_data = 789
         var solictaRuta = false
 
@@ -12,6 +12,11 @@ class Constants {
         const val DIVIDER = "****************"
         const val DON_AQUI_FLAVOR_TAG = "donaqui"
         const val SYSPOINT_FLAVOR_TAG = "syspoint"
+
+        const val TENET_CLIENT_ID = "syspoint"
+        const val DON_AQUI_CLIENT_ID = "don_aqui"
+        const val NUTRIRICA_CLIENT_ID = "nutririca"
+
         const val CONTADO = "Contado"
 
         //Contiene la línea

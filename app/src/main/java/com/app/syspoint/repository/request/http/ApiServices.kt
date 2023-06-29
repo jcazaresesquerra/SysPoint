@@ -31,11 +31,7 @@ class ApiServices {
         }
 
         private fun getBaseURL(): String {
-            return if (BuildConfig.FLAVOR == "donaqui") {
-                Constants.BASE_URL_DONAQUI
-            } else {
-                Constants.BASE_URL_SYSPOINT
-            }
+            return Constants.BASE_URL_TENET_PROD
         }
     }
 }

@@ -3,6 +3,7 @@ package com.app.syspoint.repository.request
 import android.util.Log
 import com.app.syspoint.interactor.product.GetProductInteractor
 import com.app.syspoint.models.Product
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.ProductJson
 import com.app.syspoint.repository.objectBox.dao.ProductDao
 import com.app.syspoint.repository.objectBox.entities.ProductBox
@@ -15,20 +16,24 @@ import retrofit2.Response
 import java.text.SimpleDateFormat
 
 class RequestProducts {
-    companion object {
+    companion object: BaseRequest() {
 
         fun requestProducts(): Call<ProductJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             return ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllProductos()
+                ).getAllProductos(baseBodyJson)
         }
 
         fun requestProducts(onGetProductsListener: GetProductInteractor.OnGetProductsListener): Call<ProductJson> {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson(clientId = employee?.clientId?:"tenet")
             val getProducts = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllProductos()
+                ).getAllProductos(baseBodyJson)
 
             getProducts.enqueue(object: Callback<ProductJson> {
                 override fun onResponse(call: Call<ProductJson>, response: Response<ProductJson>) {
@@ -92,8 +97,10 @@ class RequestProducts {
         }
 
         fun saveProducts(productList: List<Product>, onSaveProductsListener: GetProductInteractor.OnSaveProductsListener) {
+            val employee = getEmployee()
             val productJson = ProductJson()
             productJson.products = productList
+            productJson.clientId = employee?.clientId?:"tenet"
             val json = Gson().toJson(productJson)
             Log.d("SinProductos", json)
 

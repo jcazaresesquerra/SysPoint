@@ -210,16 +210,9 @@ class MainActivity: BaseActivity() {
 
     private fun setUpLogo() {
         val navHeaderMainBinding = NavHeaderMainBinding.bind(binding.navView.getHeaderView(0))
-
-        when (BuildConfig.FLAVOR) {
-            "donaqui" -> {
-                navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
-                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.logo_donaqui) }
-            }
-            else -> {
-                navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
-                navHeaderMainBinding.imageView?.let { it.setImageResource(R.drawable.tenet_land) }
-            }
+        navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
+        navHeaderMainBinding.imageView?.let {
+            it.setImageResource(R.drawable.tenet_land)
         }
     }
 

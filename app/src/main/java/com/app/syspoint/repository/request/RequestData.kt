@@ -2,6 +2,7 @@ package com.app.syspoint.repository.request
 
 import com.app.syspoint.interactor.data.GetAllDataInteractor
 import com.app.syspoint.models.*
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.repository.objectBox.dao.*
 import com.app.syspoint.repository.objectBox.entities.*
 import com.app.syspoint.repository.request.http.ApiServices
@@ -12,12 +13,17 @@ import retrofit2.Response
 import java.text.SimpleDateFormat
 
 class RequestData {
-    companion object {
+    companion object: BaseRequest() {
         fun requestAllData(onGetAllDataListener: GetAllDataInteractor.OnGetAllDataListener) {
+            val employee = getEmployee()
+
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId?: "tenet"
+
             val call: Call<Data> = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllDataV2()
+                ).getAllDataV2(baseBodyJson)
 
             call.enqueue(object: Callback<Data> {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
@@ -249,10 +255,15 @@ class RequestData {
         }
 
         suspend fun requestAllData2(onGetAllDataListener: GetAllDataInteractor.OnGetAllDataInServiceListener) {
+            val employee = getEmployee()
+
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId?: "tenet"
+
             val call: Call<Data> = ApiServices.getClientRetrofit()
                 .create(
                     PointApi::class.java
-                ).getAllDataV2()
+                ).getAllDataV2(baseBodyJson)
 
             call.enqueue(object: Callback<Data> {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
@@ -482,9 +493,12 @@ class RequestData {
         }
 
         fun requestAllDataByDate(onGetAllDataByDateListener: GetAllDataInteractor.OnGetAllDataByDateListener) {
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId ?: "tenet"
             val getDataByDate = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getAllDataByDate()
+            ).getAllDataByDate(baseBodyJson)
 
             getDataByDate.enqueue(object : Callback<Data> {
                 override fun onResponse(call: Call<Data>, response: Response<Data>) {
@@ -725,6 +739,7 @@ class RequestData {
                             onGetAllDataByDateListener.onGetAllDataByDateError()
                         }
                     } else {
+                        val error = response.errorBody()
                         onGetAllDataByDateListener.onGetAllDataByDateError()
                     }
                 }

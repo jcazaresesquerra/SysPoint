@@ -8,6 +8,7 @@ import com.app.syspoint.BuildConfig
 import com.app.syspoint.interactor.charge.ChargeInteractor
 import com.app.syspoint.models.Payment
 import com.app.syspoint.models.RequestChargeByRute
+import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.PaymentJson
 import com.app.syspoint.models.json.RequestCobranza
 import com.app.syspoint.models.json.RequestTokenBody
@@ -35,10 +36,14 @@ class RequestCharge {
             val subversion = appVersion[1] + "." + appVersion[2]
             val requestTokenBody = RequestTokenBody(version, subversion)
 
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId?: "tenet"
+
             Timber.tag(TAG).d("requestGetCharge2")
             val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getCobranza()
+            ).getCobranza(baseBodyJson)
 
             return getCharge
         }
@@ -49,9 +54,13 @@ class RequestCharge {
             val subversion = appVersion[1] + "." + appVersion[2]
             val requestTokenBody = RequestTokenBody(version, subversion)
 
+            val employee = getEmployee()
+            val baseBodyJson = BaseBodyJson()
+            baseBodyJson.clientId = employee?.clientId?: "tenet"
+
             val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
-            ).getCobranza()
+            ).getCobranza(baseBodyJson)
 
             val isUiThread =
                 if (VERSION.SDK_INT >= VERSION_CODES.M) Looper.getMainLooper().isCurrentThread else Thread.currentThread() === Looper.getMainLooper().thread
@@ -142,7 +151,8 @@ class RequestCharge {
         }
 
         fun requestGetChargeByEmployee(id: String, onGetChargeListener: ChargeInteractor.OnGetChargeByEmployeeListener) {
-            val requestChargesByRute = RequestChargeByRute(id)
+            val employee = getEmployee()
+            val requestChargesByRute = RequestChargeByRute(id, clientId = employee?.clientId?:"tenet")
             val getCharge = ApiServices.getClientRetrofit().create(
                 PointApi::class.java
             ).getAllCobranzaByEmployee(requestChargesByRute)
@@ -229,10 +239,12 @@ class RequestCharge {
         }
 
         fun requestGetChargeByClient(account: String, onGetChargeByClientListener: ChargeInteractor.OnGetChargeByClientListener) {
+            val employee = getEmployee()
             val clientDao = ClientDao()
             val clienteBean = clientDao.getClientByAccount(account)
             val requestCobranza = RequestCobranza()
             requestCobranza.cuenta = clienteBean!!.cuenta
+            requestCobranza.clientId = employee?.clientId?:"tenet"
 
             //Obtiene la respuesta
             val getChargeByClient = ApiServices.getClientRetrofit().create(
@@ -326,8 +338,10 @@ class RequestCharge {
         }
 
         fun saveCharge(charges: List<Payment>, onSaveChargeListener: ChargeInteractor.OnSaveChargeListener) {
+            val employee = getEmployee()
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
+            chargeJson.clientId = employee?.clientId?:"tenet"
             val json = Gson().toJson(chargeJson)
             Log.d("saveCharge Sin Cobranza", json)
 
@@ -349,6 +363,7 @@ class RequestCharge {
                     if (response.isSuccessful) {
                         onSaveChargeListener.onSaveChargeSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onSaveChargeListener.onSaveChargeError()
                     }
                 }
@@ -361,8 +376,10 @@ class RequestCharge {
         }
 
         fun updateCharge(charges: List<Payment>, onUpdateChargeListener: ChargeInteractor.OnUpdateChargeListener) {
+            val employee = getEmployee()
             val chargeJson = PaymentJson()
             chargeJson.payments = charges
+            chargeJson.clientId = employee?.clientId?:"tenet"
             val json = Gson().toJson(chargeJson)
             Log.d("updateCharge Sin Cobranza", json)
 
@@ -382,6 +399,7 @@ class RequestCharge {
                     if (response.isSuccessful) {
                         onUpdateChargeListener.onUpdateChargeSuccess()
                     } else {
+                        val error = response.errorBody()!!.string()
                         onUpdateChargeListener.onUpdateChargeError()
                     }
                 }
