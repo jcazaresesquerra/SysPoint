@@ -118,10 +118,10 @@
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="125dp"
                 android:layout_above="@+id/inputCont"
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="-260dp"
+                android:layout_marginBottom="-235dp"
                 android:src="@drawable/imglogotenet" />
 
             <Button
