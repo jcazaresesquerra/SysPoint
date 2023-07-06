@@ -13,5 +13,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:contentDescription="@string/nav_header_desc"
-        android:src="@drawable/tenet_land" />
+        android:src="@drawable/imglogotenet" />
 </LinearLayout>

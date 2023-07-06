@@ -212,7 +212,7 @@ class MainActivity: BaseActivity() {
         val navHeaderMainBinding = NavHeaderMainBinding.bind(binding.navView.getHeaderView(0))
         navHeaderMainBinding.root.setBackgroundColor(resources.getColor(R.color.white))
         navHeaderMainBinding.imageView?.let {
-            it.setImageResource(R.drawable.tenet_land)
+            it.setImageResource(R.drawable.imglogotenet)
         }
     }
 
