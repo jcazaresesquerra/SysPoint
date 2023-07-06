@@ -23,7 +23,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            tools:ignore="ExtraText">
 
             <TextView
                 android:id="@+id/textView_cliente_venta"
@@ -32,6 +33,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="CLIENTE:"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -39,13 +41,14 @@
 
             <TextView
                 android:id="@+id/textView_cliente_venta_view"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
+                android:layout_width="143dp"
+                android:layout_height="18dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="000001"
-                android:textStyle="bold"
+                android:textSize="12sp"
                 android:textColor="@color/purple_500"
+                android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/textView_cliente_venta"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -59,6 +62,7 @@
                 android:text=""
                 android:maxLines="1"
                 android:textStyle="bold"
+                android:textSize="12sp"
                 android:textColor="@color/purple_500"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -71,6 +75,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="SUBTOTAL:"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -84,6 +89,7 @@
                 android:layout_marginTop="8dp"
                 android:text="$0.00"
                 android:textAlignment="textEnd"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/textView_subtotal_venta"
@@ -95,7 +101,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:text="IMPUESTO:"
+                android:text="IVA:"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -109,6 +116,7 @@
                 android:layout_marginTop="8dp"
                 android:text="$0.00"
                 android:textAlignment="textEnd"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/textView_impuesto_venta"
@@ -121,6 +129,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="TOTAL:"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -134,6 +143,7 @@
                 android:layout_marginTop="8dp"
                 android:text="$0.00"
                 android:textAlignment="textEnd"
+                android:textSize="12sp"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/textView_total_venta"
@@ -176,14 +186,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onRadioButtonClicked"
-                    android:text="Credito" />
+                    android:text="Credito"
+                    android:textSize="12sp"/>
 
                 <RadioButton
                     android:id="@+id/radio_contado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onRadioButtonClicked"
-                    android:text="Contado" />
+                    android:text="Contado"
+                    android:textSize="12sp"/>
             </RadioGroup>
 
 

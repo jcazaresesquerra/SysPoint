@@ -17,9 +17,9 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_inventario_pendiente"
-            tools:listitem="@layout/item_producto_inventario"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_producto_inventario" />
 
         <LinearLayout
             android:id="@+id/empty_state_inventory"

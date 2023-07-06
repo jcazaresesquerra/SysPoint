@@ -27,7 +27,7 @@
         android:textSize="22sp"
         android:maxLines="15"
         android:scrollbars="vertical"
-        android:text="hola"
+        android:text="Esta ventana es para los recordatorios añadidos a los clientes"
         android:id="@+id/dialog_basic.textview.mensaje"/>
 
     <!--Contenedor de los botones-->

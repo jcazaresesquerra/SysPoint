@@ -311,7 +311,7 @@ public class ViewPDFActivity extends AppCompatActivity {
                         return;
                     }
 
-                    textViewStatus.setText("Conectado....");
+                    textViewStatus.setText("Espere un momento...");
 
                     // Spawn a new thread to avoid blocking the GUI one
                     new Thread()
