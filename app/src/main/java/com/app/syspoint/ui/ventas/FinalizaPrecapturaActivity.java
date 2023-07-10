@@ -318,7 +318,7 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
                         return;
                     }
 
-                    textViewStatus.setText("Conectando....");
+                    textViewStatus.setText("Espere un momento...");
 
                     // Spawn a new thread to avoid blocking the GUI one
                     new Thread()

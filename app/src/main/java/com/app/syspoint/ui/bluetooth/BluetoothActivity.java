@@ -234,7 +234,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 return;
             }
 
-            textViewStatus.setText("Conectado....");
+            textViewStatus.setText("Espere un momento...");
             // Get the device MAC address, which is the last 17 chars in the View
             String info = ((TextView) view).getText().toString();
             final String address = info.substring(info.length() - 17);

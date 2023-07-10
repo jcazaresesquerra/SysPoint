@@ -246,7 +246,7 @@ public class CobranzaFragment extends Fragment {
                     Toast.makeText(getContext(), "Bluetooth no encendido", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //textViewStatus.setText("Conectado....");
+                //textViewStatus.setText("Espere un momento...");
                 // Spawn a new thread to avoid blocking the GUI one
                 new Thread()
                 {

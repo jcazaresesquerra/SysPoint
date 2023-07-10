@@ -338,7 +338,7 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private fun setUpLogo() {
-        binding.imageView.setImageResource(R.drawable.tenet_land)
+        binding.imageView.setImageResource(R.drawable.logotenet)
     }
 
     private fun showNotInternetConnectionError() {
