@@ -70,6 +70,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name="com.app.syspoint.ui.login.LoginActivity$KeyBroadcast"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+
         <activity
             android:name=".ui.ventas.CApturaComprobanteActivity"
             android:exported="true"

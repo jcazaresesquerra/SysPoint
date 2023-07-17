@@ -3,7 +3,6 @@ package com.app.syspoint.ui.login
 import android.Manifest
 import android.Manifest.permission
 import android.app.DownloadManager
-import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +12,8 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -56,6 +57,10 @@ class LoginActivity: AppCompatActivity() {
         setUpListeners()
         checkPermissions()
         registerNetworkBroadcastForNougat()
+
+        val keyReceiver = KeyBroadcast()
+        val intentFilter = IntentFilter(Intent.ACTION_MEDIA_BUTTON)
+        registerReceiver(keyReceiver, intentFilter)
 
         viewModel.loginViewState.observe(this, ::loginViewState)
         viewModel.downloadApkViewState.observe(this, ::downloadApkViewState)
@@ -465,6 +470,34 @@ class LoginActivity: AppCompatActivity() {
                 }
             }
         }
+    }
+
+    class KeyBroadcast: BroadcastReceiver() {
+        override fun onReceive(p0: Context?, intent: Intent?) {
+            if (Intent.ACTION_MEDIA_BUTTON == intent!!.action) {
+                val event: KeyEvent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+                } else {
+                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
+                }
+                if (event != null) {
+                    Log.d("KEY_EVENT", event.keyCode.toString())
+                    if (KeyEvent.KEYCODE_MEDIA_PLAY === event!!.keyCode) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_A || keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+            // Barcode key event detected
+            // Handle the barcode scanning event here
+            return true
+        }
+
+        return super.onKeyDown(keyCode, event)
     }
 }
 
