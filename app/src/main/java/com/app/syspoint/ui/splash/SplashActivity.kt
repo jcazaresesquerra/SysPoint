@@ -29,10 +29,10 @@ class SplashActivity: AppCompatActivity() {
         setContentView(binding.root)
 
         Handler().postDelayed({
-            var intent = Intent(this, LoginActivity::class.java)
-            if (viewModel.checkSessionData() && viewModel.isSynced()) {
+            val intent = Intent(this, LoginActivity::class.java)
+            /*if (viewModel.checkSessionData() && viewModel.isSynced()) {
                 intent = Intent(this, MainActivity::class.java)
-            }
+            }*/
             startActivity(intent)
             finish()
         }, TIME_DELAY)

@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -72,6 +73,8 @@ import timber.log.Timber;
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
+    private boolean searchClientMenuItemVisible = false;
+    private boolean mapMenuItemVisible = false;
     AdapterRutaClientes mAdapter;
     List<RuteClientBox> mData;
     private RelativeLayout rlprogress;
@@ -149,6 +152,15 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem searchClientItem = menu.findItem(R.id.search_ciente);
+        MenuItem mapItem = menu.findItem(R.id.viewMap);
+        searchClientItem.setVisible(searchClientMenuItemVisible);
+        mapItem.setVisible(mapMenuItemVisible);
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_home_fragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
@@ -158,6 +170,38 @@ public class HomeFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
+
+            case R.id.search_ciente:
+                Timber.tag(TAG).d("search client");
+
+                final SearchView searchView = (SearchView) item.getActionView();
+
+                searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (!hasFocus) {
+                            item.collapseActionView();
+                            searchView.setQuery("", false);
+                        }
+                    }
+                });
+
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+                    @Override
+                    public boolean onQueryTextSubmit(String arg0) {
+                        mAdapter.getFilter().filter(arg0);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String arg0) {
+                        mAdapter.getFilter().filter(arg0);
+                        return false;
+                    }
+                });
+                return true;
 
             case R.id.sinronizaAll:
                 Timber.tag(TAG).d("sinronizaAll Clicked");
@@ -353,6 +397,14 @@ public class HomeFragment extends Fragment {
             String ruta = ruteoBean.getRuta() != null && !ruteoBean.getRuta().isEmpty() ? ruteoBean.getRuta(): vendedoresBean.getRute();
 
             mData = new RuteClientDao().getAllRutaClientes(ruta, ruteoBean.getDia());
+            if (mData.size() > 0) {
+                searchClientMenuItemVisible = true;
+                mapMenuItemVisible = true;
+                requireActivity().invalidateOptionsMenu();
+            } else {
+                searchClientMenuItemVisible = false;
+                mapMenuItemVisible = false;
+            }
         }
 
         setDataList(mData);

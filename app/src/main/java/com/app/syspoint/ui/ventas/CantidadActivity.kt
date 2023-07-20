@@ -9,9 +9,11 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityCantidadBinding
+import com.app.syspoint.repository.objectBox.dao.ProductDao
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.PrettyDialog
 import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setVisible
 
 class CantidadActivity: AppCompatActivity() {
 
@@ -21,6 +23,14 @@ class CantidadActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityCantidadBinding.inflate(layoutInflater)
+
+        val barcode = intent.extras?.getString(Actividades.PARAM_1) ?: ""
+        val productBox = ProductDao().getProductoByBarCode(barcode)
+        productBox?.let {
+            binding.textViewProduct.text = productBox.descripcion
+            binding.textViewProduct.setVisible()
+        }
+
         setContentView(binding.root)
         initControls()
     }

@@ -140,7 +140,7 @@ class SellsDao: AbstractDao<SellBox>() {
 
         val querySells = abstractBox<SellBox>().query()
             .equal(SellBox_.stockId, stockId.toLong())
-            .equal(SellBox_.estado, "CO", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .notEqual(SellBox_.estado, "CA", QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .build()
         val results = querySells.find()
         querySells.close()

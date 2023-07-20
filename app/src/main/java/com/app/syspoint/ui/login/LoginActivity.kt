@@ -12,7 +12,6 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,6 +29,8 @@ import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
+import android.widget.Toast
+import java.util.*
 
 
 class LoginActivity: AppCompatActivity() {
@@ -58,12 +59,9 @@ class LoginActivity: AppCompatActivity() {
         checkPermissions()
         registerNetworkBroadcastForNougat()
 
-        val keyReceiver = KeyBroadcast()
-        val intentFilter = IntentFilter(Intent.ACTION_MEDIA_BUTTON)
-        registerReceiver(keyReceiver, intentFilter)
-
         viewModel.loginViewState.observe(this, ::loginViewState)
         viewModel.downloadApkViewState.observe(this, ::downloadApkViewState)
+
     }
 
     override fun onDestroy() {
@@ -472,32 +470,5 @@ class LoginActivity: AppCompatActivity() {
         }
     }
 
-    class KeyBroadcast: BroadcastReceiver() {
-        override fun onReceive(p0: Context?, intent: Intent?) {
-            if (Intent.ACTION_MEDIA_BUTTON == intent!!.action) {
-                val event: KeyEvent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
-                } else {
-                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
-                }
-                if (event != null) {
-                    Log.d("KEY_EVENT", event.keyCode.toString())
-                    if (KeyEvent.KEYCODE_MEDIA_PLAY === event!!.keyCode) {
-
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_A || keyCode == KeyEvent.KEYCODE_BUTTON_B) {
-            // Barcode key event detected
-            // Handle the barcode scanning event here
-            return true
-        }
-
-        return super.onKeyDown(keyCode, event)
-    }
 }
 
