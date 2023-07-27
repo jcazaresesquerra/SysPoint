@@ -1,5 +1,6 @@
 package com.app.syspoint.ui
 
+import android.app.Activity
 import android.app.Dialog
 import android.app.DownloadManager
 import android.app.ProgressDialog
@@ -76,6 +77,7 @@ class MainActivity: BaseActivity() {
     companion object {
         @JvmStatic
         var apikey: String? = null
+        const val ACTION_FINISH_ACTIVITY = "com.app.syspoint.ui.MainActivity"
     }
 
     private var mAppBarConfiguration: AppBarConfiguration? = null
@@ -85,6 +87,19 @@ class MainActivity: BaseActivity() {
     private var isOldApkVersionDialogShowing = false
 
     private lateinit var progressDialog: ProgressDialog
+
+    private val finishActivityReceiver = FinishActivityBroadcastReceiver()
+
+    class FinishActivityBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_FINISH_ACTIVITY) {
+                // Finish the current activity
+                if (context is Activity) {
+                    context.finish()
+                }
+            }
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -152,6 +167,13 @@ class MainActivity: BaseActivity() {
         //registerNetworkBroadcastForNougat()
         //startForegroundService(Intent(this, UpdateDataService::class.java))
 
+        val filter = IntentFilter(ACTION_FINISH_ACTIVITY)
+        registerReceiver(finishActivityReceiver, filter)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(finishActivityReceiver)
     }
 
     private fun validateToken() {

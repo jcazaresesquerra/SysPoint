@@ -443,7 +443,7 @@ class LoginViewModel: BaseViewModel() {
         val isUpdated = isSessionUpdated()
 
         if (taskBean == null || (taskBean != null && taskBean.date != Utils.fechaActual()) || !isUpdated) {
-            forceUpdate(false)
+            //forceUpdate(false)
             exist = false
             //updateSession(false)
         } else {
@@ -491,7 +491,7 @@ class LoginViewModel: BaseViewModel() {
         val bean = TaskBox()
 
         bean.date = if (removeTask) "" else Utils.fechaActual()
-        bean.task = "Sincronización"
+        bean.task = "Deleted"
 
         CacheInteractor().removeSellerFromCache()
         CacheInteractor().resetStockId()

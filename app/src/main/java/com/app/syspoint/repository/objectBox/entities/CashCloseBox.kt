@@ -16,7 +16,8 @@ data class CashCloseBox (
     var descripcion: String? = null,
     var impuesto: Double = 0.0,
     var tipoVenta: String? = null,
-    var estado: String? = null
+    var estado: String? = null,
+    var sellId: Long = 0L
 ) {
     lateinit var client: ToOne<ClientBox>
     lateinit var product: ToOne<ProductBox>

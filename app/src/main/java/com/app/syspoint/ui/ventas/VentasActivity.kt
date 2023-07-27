@@ -60,6 +60,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private var clientId: String? = null
     private var sellType: SellType = SellType.SIN_DEFINIR
     private lateinit var geocoder: Geocoder
+    private var barcode = ""
 
     companion object {
         var articuloSeleccionado: String = "";
@@ -876,16 +877,12 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
     }
 
-    private var barcode = ""
-
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.keyCode != KeyEvent.KEYCODE_ENTER)
             barcode += event.unicodeChar.toChar()
 
         if (event.keyCode == KeyEvent.KEYCODE_ENTER && barcode.isNotEmpty()) {
             barcode = removeRepeatedCharacters(barcode)
-            Toast.makeText(applicationContext, "barcode--->>>$barcode", Toast.LENGTH_LONG)
-                .show()
 
             val productBox = ProductDao().getProductoByBarCode(barcode)
             if (productBox != null) {

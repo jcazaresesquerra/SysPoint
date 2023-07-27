@@ -70,13 +70,9 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.app.syspoint.ui.login.LoginActivity$KeyBroadcast"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
 
+        <receiver android:name=".utils.delete_data_service.MidnightAlarmReceiver" />
+        <receiver android:name=".ui.MainActivity$FinishActivityBroadcastReceiver" />
 
         <activity
             android:name=".ui.ventas.CApturaComprobanteActivity"
