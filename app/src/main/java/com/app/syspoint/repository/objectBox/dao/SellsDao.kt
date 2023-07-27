@@ -132,15 +132,14 @@ class SellsDao: AbstractDao<SellBox>() {
     }
 
     fun getAllPartsGroupedClient(): List<CashCloseBox> {
-        val lista_corte: MutableList<CashCloseBox> = ArrayList()
+        var lista_corte: MutableList<CashCloseBox> = ArrayList()
         val productsDao = ProductDao()
         val clientsDao = ClientDao()
-        val playingDao = PlayingDao()
         val stockId = StockDao().getCurrentStockId()
 
         val querySells = abstractBox<SellBox>().query()
             .equal(SellBox_.stockId, stockId.toLong())
-            .equal(SellBox_.estado, "CO", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .notEqual(SellBox_.estado, "CA", QueryBuilder.StringOrder.CASE_INSENSITIVE)
             .build()
         val results = querySells.find()
         querySells.close()
@@ -151,6 +150,7 @@ class SellsDao: AbstractDao<SellBox>() {
                 val product = productsDao.getProductoByID(playingBox.articuloId)
                 val cashCloseBox = CashCloseBox()
                 cashCloseBox.clienteId = sellItem.clienteId
+                cashCloseBox.sellId = sellItem.venta
                 cashCloseBox.product.target = product[0]
                 cashCloseBox.productoId = playingBox.articuloId
                 cashCloseBox.client.target = if (client.isNotEmpty()) client[0] else ClientBox()
@@ -163,6 +163,8 @@ class SellsDao: AbstractDao<SellBox>() {
                 lista_corte.add(cashCloseBox)
             }
         }
+
+
 
         /*val partidaVentaBeanDao = daoSession.partidasBeanDao
 

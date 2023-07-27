@@ -134,7 +134,8 @@
                 android:tint="@android:color/white"
                 app:fabSize="normal"
                 app:rippleColor="@android:color/white"
-                app:srcCompat="@drawable/ic_barcode" />
+                app:srcCompat="@drawable/ic_barcode"
+                android:visibility="gone"/>
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>

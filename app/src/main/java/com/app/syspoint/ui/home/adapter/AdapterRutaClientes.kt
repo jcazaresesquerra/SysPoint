@@ -7,10 +7,11 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
@@ -18,7 +19,6 @@ import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
-import com.app.syspoint.utils.setGone
 import timber.log.Timber
 import java.net.URLEncoder
 import java.util.*
@@ -32,9 +32,10 @@ class AdapterRutaClientes(
     val onItemClickListener: OnItemClickListener,
     val onItemLongClickListener: OnItemLongClickListener,
     val onCallPermissionRequestListener: OnCallPermissionRequestListener
-    ): RecyclerView.Adapter<AdapterRutaClientes.Holder>() {
+    ): RecyclerView.Adapter<AdapterRutaClientes.Holder>(), Filterable {
 
     private var mData = data
+    private var mDataFiltrable: List<RuteClientBox?> = data
 
     interface OnItemClickListener {
         fun onItemClick(position: Int)
@@ -54,14 +55,49 @@ class AdapterRutaClientes(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(mData[position], position + 1, onItemClickListener, onItemLongClickListener, onCallPermissionRequestListener)
+        holder.bind(mDataFiltrable[position], position + 1, onItemClickListener, onItemLongClickListener, onCallPermissionRequestListener)
     }
 
-    override fun getItemCount(): Int = if (mData.isEmpty()) 0 else mData.size
+    override fun getItemCount(): Int = if (mDataFiltrable.isEmpty()) 0 else mDataFiltrable.size
 
     fun setData(data: List<RuteClientBox?>) {
         mData = data
+        mDataFiltrable = data
         notifyDataSetChanged()
+    }
+
+
+    override fun getFilter(): Filter? {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val filtro = constraint.toString()
+                if (filtro.isEmpty()) {
+                    mDataFiltrable = mData
+                } else {
+                    val filtroEmpleados: MutableList<RuteClientBox?> = ArrayList()
+                    for (row in mData) {
+                        if (row!!.nombre_comercial!!.lowercase(Locale.getDefault())
+                                .contains(filtro) || row.calle!!.lowercase(
+                                Locale.getDefault()
+                            ).contains(filtro)
+                        ) {
+                            filtroEmpleados.add(row)
+                        }
+                    }
+                    mDataFiltrable = filtroEmpleados
+                }
+                val results = FilterResults()
+                results.values = mDataFiltrable
+                return results
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                mDataFiltrable = results!!.values as List<RuteClientBox?>
+                notifyDataSetChanged()
+            }
+
+
+        }
     }
 
     class Holder(val binding: ItemListaClientesRutaBinding): RecyclerView.ViewHolder(binding.root) {

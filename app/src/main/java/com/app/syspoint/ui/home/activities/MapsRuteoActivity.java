@@ -75,11 +75,9 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     private GoogleApiClient googleApiClient;
     private Location lastKnownLocation;
     private LocationManager locationManager;
-    private MarkerOptions markerOptions;
     private DialogOptionsClients dialogOptionsClients;
 
     private boolean markerClick = false;
-    private LatLng lastKnownPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,22 +239,24 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
             mData = (List<RuteClientBox>) new RuteClientDao().getAllRutaClientes(ruteoBean.getRuta(), ruteoBean.getDia());
         }
 
+        gMap.clear();
         LatLng position = null;
         int i = 1;
         for (RuteClientBox item : mData) {
             if (item.getLatitud() != null && item.getLongitud() != null) {
                 position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
-                markerOptions = new MarkerOptions();
+                MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
                 Bitmap bitmap = getBitmapMarker(i);
+                i++;
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
 
                 markerOptions.snippet(item.getCuenta());
                 markerOptions.draggable(true);
                 gMap.addMarker(markerOptions);
-                i++;
+
             }
         }
 
@@ -440,7 +440,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                                 Actividades.getSingleton(MapsRuteoActivity.this, VentasActivity.class).muestraActividad(parametros);
                                 dialog.dismiss();
                                 markerClick = false;
-                                lastKnownPosition = marker.getPosition();
                             }
                             markerClick = false;
                             dialog.dismiss();
@@ -452,7 +451,6 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                         Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+52" + clienteBean.getContacto_phone()));
                         startActivity(intent);
                         markerClick = false;
-                        lastKnownPosition = marker.getPosition();
                     })
                     .addButton("¿Como llegar?", R.color.pdlg_color_white, R.color.purple_500, () -> {
                         Timber.tag(TAG).d("onMarkerClick -> show rute -> click");

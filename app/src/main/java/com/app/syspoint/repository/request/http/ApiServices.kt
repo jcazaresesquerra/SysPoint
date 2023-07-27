@@ -1,6 +1,5 @@
 package com.app.syspoint.repository.request.http
 
-import com.app.syspoint.BuildConfig
 import com.app.syspoint.utils.Constants
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -15,8 +14,8 @@ class ApiServices {
         fun getClientRetrofit(): Retrofit {
             val okHttpClient = OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .build()
 
             if (retrofit == null) {

@@ -3,6 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/search_ciente"
+        android:title=""
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        android:icon="@drawable/ic_search_white"
+        android:visible="true"/>
+
+
+    <item
         android:id="@+id/sinronizaAll"
         android:icon="@drawable/ic_sync_white"
         android:orderInCategory="100"

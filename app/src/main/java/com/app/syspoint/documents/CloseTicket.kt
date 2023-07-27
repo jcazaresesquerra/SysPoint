@@ -50,7 +50,9 @@ class CloseTicket: BaseTicket() {
         var contadoCount = 0
         var cliente = Constants.EMPTY_STRING
 
-        listaCorte.map { partida ->
+        val listaCorteDistricted = listaCorte.distinctBy {
+            it.sellId
+        }.map { partida ->
             if (partida.tipoVenta == Constants.CONTADO) {
                 contadoCount++
             } else {
@@ -65,6 +67,12 @@ class CloseTicket: BaseTicket() {
             }
             ticket += partida.descripcion + Constants.NEW_LINE
 
+            /*if (partida.tipoVenta == Constants.CONTADO) {
+                totalContado += partida.cantidad * (partida.precio * (1 + partida.impuesto / 100))
+            } else {
+                totalCredito += partida.cantidad * (partida.precio * (1 + partida.impuesto / 100))
+            }*/
+
             ticket += String.format(
                 "%1$-5s  %2$11s  %3$10s",
                 Utils.FDinero(partida.precio),
@@ -73,9 +81,8 @@ class CloseTicket: BaseTicket() {
             ) + Constants.NEW_LINE
         }
 
-        listaCorte.distinctBy {
-            it.nombre
-        }.map { partida ->
+
+        listaCorte.map { partida ->
             if (partida.tipoVenta == Constants.CONTADO) {
                 totalContado += partida.cantidad * (partida.precio * (1 + partida.impuesto / 100))
             } else {

@@ -3,11 +3,16 @@ package com.app.syspoint.ui.ventas
 import android.Manifest
 import android.app.Dialog
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.*
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
@@ -27,6 +32,7 @@ import com.app.syspoint.repository.objectBox.dao.ProductDao
 import com.app.syspoint.repository.objectBox.dao.SellsModelDao
 import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.ui.precaptura.PrecaptureActivity
+import com.app.syspoint.ui.products.activities.ScannerActivity
 import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
 import com.app.syspoint.utils.*
@@ -37,6 +43,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
 import timber.log.Timber
 import java.util.*
+
 
 const val TAG = "VentasActivity"
 
@@ -53,6 +60,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     private var clientId: String? = null
     private var sellType: SellType = SellType.SIN_DEFINIR
     private lateinit var geocoder: Geocoder
+    private var barcode = ""
+
+    companion object {
+        var articuloSeleccionado: String = "";
+    }
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
@@ -109,6 +121,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         //viewModel.loadClients(clientId)
 
         //viewModel.load(clientId)
+
+        val keyReceiver = KeyBroadcast()
+        val intentFilter = IntentFilter(Intent.ACTION_MEDIA_BUTTON)
+        registerReceiver(keyReceiver, intentFilter)
+
         initControls()
         myTrace.stop()
     }
@@ -118,25 +135,41 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         if (resultCode == RESULT_CANCELED) return
 
+        if (resultCode === ScannerActivity.SCANNER_RESULT) {
+            val barCode = data!!.getStringExtra(Actividades.PARAM_1)
+            val parametros = HashMap<String, String?>()
+            parametros[Actividades.PARAM_1] = barCode
+            val productBox = ProductDao().getProductoByBarCode(barCode)
+            if (productBox != null) {
+                articuloSeleccionado = productBox.articulo!!
+            }
+            Actividades.getSingleton(this@VentasActivity, CantidadActivity::class.java)
+                .muestraActividadForResultAndParams(Actividades.PARAM_INT_1, parametros)
+            return
+        }
+
         val cantidad = data!!.getStringExtra(Actividades.PARAM_1)
-        val articulo = data.getStringExtra(Actividades.PARAM_2)
+        val articulo = if (!articuloSeleccionado.isNullOrEmpty()) articuloSeleccionado else data.getStringExtra(Actividades.PARAM_2)
 
         val productDao = ProductDao()
         val productoBean = productDao.getProductoByArticulo(articulo)
 
         if (productoBean == null) {
             Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
+            articuloSeleccionado = ""
             return
         }
 
         //Validamos si existe el producto
         if (viewModel.validaProducto(productoBean.articulo!!)) {
             showProductExists()
+            articuloSeleccionado = ""
             return
         }
 
         if (cantidad.isNullOrEmpty()) {
             Timber.tag(TAG).d("Ha ocurrido un error, intente nuevamente onActivityResult")
+            articuloSeleccionado = ""
             return
         }
 
@@ -165,6 +198,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             cantidadVendida
         )
 
+        articuloSeleccionado = ""
         refreshRecyclerView(data)
     }
 
@@ -198,6 +232,21 @@ class VentasActivity: AppCompatActivity(), LocationListener {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_5 || event?.keyCode == KeyEvent.KEYCODE_5) {
+            val code = event?.scanCode
+            val barcode = event?.unicodeChar
+
+            if (event?.keyCode == KeyEvent.KEYCODE_ENTER) {
+                Toast.makeText(
+                    applicationContext,
+                    "barcode1--->>>$barcode   ------  barcode2---$code>>>$barcode", Toast.LENGTH_LONG
+                ).show()
+
+            }
+            return true
+        }
+
+
         return if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (!isBackPressed) {
                 isBackPressed = true
@@ -206,6 +255,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             true
         } else super.onKeyDown(keyCode, event)
     }
+
 
     private fun renderViewState(sellViewState: SellViewState) {
         when (sellViewState) {
@@ -238,10 +288,12 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                 showCharge(sellViewState.account, sellViewState.saldo)
             }
             is SellViewState.PrecatureParamsCreated -> {
-                Utils.addActivity2Stack(this)
-                Actividades.getSingleton(this@VentasActivity, PrecaptureActivity::class.java)
-                    .muestraActividad(sellViewState.params)
-                binding.imgBtnFinishVisita.isEnabled = true
+                if (barcode.isEmpty()) {
+                    Utils.addActivity2Stack(this)
+                    Actividades.getSingleton(this@VentasActivity, PrecaptureActivity::class.java)
+                        .muestraActividad(sellViewState.params)
+                    binding.imgBtnFinishVisita.isEnabled = true
+                }
             }
             is SellViewState.ClientType -> {
                 showClientType(sellViewState.clientType)
@@ -357,6 +409,14 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                     .muestraActividadForResult(Actividades.PARAM_INT_1)
                 headerBinding.fbAddProductos.isEnabled = true
                 myTrace.stop()
+            }
+        }
+
+        headerBinding.fbAddBarProductos click {
+            if (headerBinding.fbAddBarProductos.isEnabled) {
+                headerBinding.fbAddBarProductos.isEnabled = false
+                startActivityForResult( Intent(this@VentasActivity, ScannerActivity::class.java), 0x2)
+                headerBinding.fbAddBarProductos.isEnabled = true
             }
         }
     }
@@ -798,4 +858,48 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             progressDialog.dismiss()
         }
     }
+
+    class KeyBroadcast: BroadcastReceiver() {
+        override fun onReceive(p0: Context?, intent: Intent?) {
+            if (Intent.ACTION_MEDIA_BUTTON == intent!!.action) {
+                val event: KeyEvent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+                } else {
+                    intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
+                }
+                if (event != null) {
+                    Log.d("KEY_EVENT", event.keyCode.toString())
+                    if (KeyEvent.KEYCODE_MEDIA_PLAY === event!!.keyCode) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_ENTER)
+            barcode += event.unicodeChar.toChar()
+
+        if (event.keyCode == KeyEvent.KEYCODE_ENTER && barcode.isNotEmpty()) {
+            barcode = removeRepeatedCharacters(barcode)
+
+            val productBox = ProductDao().getProductoByBarCode(barcode)
+            if (productBox != null) {
+                val parametros = HashMap<String, String?>()
+                parametros[Actividades.PARAM_1] = barcode
+                articuloSeleccionado = productBox.articulo!!
+                Actividades.getSingleton(this@VentasActivity, CantidadActivity::class.java)
+                    .muestraActividadForResultAndParams(Actividades.PARAM_INT_1, parametros)
+            }
+            barcode = ""
+        }
+
+        return true
+    }
+
+    fun removeRepeatedCharacters(input: String): String {
+        return input.filterIndexed { index, _ -> index % 2 == 1 }
+    }
+
 }

@@ -12,7 +12,7 @@ android:background="@color/colorBG"
 <androidx.cardview.widget.CardView
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
@@ -25,6 +25,23 @@ android:background="@color/colorBG"
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textView_product"
+            android:layout_width="168dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Agua purificada 20LTs"
+            android:textAlignment="center"
+            android:textColor="@color/purple_700"
+            android:textSize="18sp"
+            android:textStyle=""
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/textView_cantidad_venta_seleccionada_view"
@@ -40,7 +57,7 @@ android:background="@color/colorBG"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/textView_product" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="170dp"
@@ -61,7 +78,8 @@ android:background="@color/colorBG"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
                 android:gravity="center"
                 android:hint="0"
                 android:inputType="number"

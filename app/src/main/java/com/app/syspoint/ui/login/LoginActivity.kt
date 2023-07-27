@@ -3,7 +3,6 @@ package com.app.syspoint.ui.login
 import android.Manifest
 import android.Manifest.permission
 import android.app.DownloadManager
-import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +12,7 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -29,6 +29,8 @@ import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.utils.*
 import com.app.syspoint.viewmodel.login.LoginViewModel
+import android.widget.Toast
+import java.util.*
 
 
 class LoginActivity: AppCompatActivity() {
@@ -59,6 +61,7 @@ class LoginActivity: AppCompatActivity() {
 
         viewModel.loginViewState.observe(this, ::loginViewState)
         viewModel.downloadApkViewState.observe(this, ::downloadApkViewState)
+
     }
 
     override fun onDestroy() {
@@ -466,5 +469,6 @@ class LoginActivity: AppCompatActivity() {
             }
         }
     }
+
 }
 
