@@ -125,13 +125,14 @@ class EmployeeDao: AbstractDao<EmployeeBox>() {
     }
 
     private fun getLastRegister(): EmployeeBox? {
-        val query = abstractBox<EmployeeBox>().query()
-            .orderDesc(EmployeeBox_.id)
-            .build()
-        val results = query.find()
-        query.close()
+        val employee = abstractBox<EmployeeBox>().all
 
-        return if (results.isNotEmpty()) results[0] else null
+        val employees = employee.map { empleado ->
+            val updatedIdentificador = empleado.identificador?.replace("E0", "")?.replace("E", "") ?: empleado.identificador
+            empleado.copy(identificador = updatedIdentificador)
+        }.sortedByDescending { it.identificador }
+
+        return if (employees.isNotEmpty()) employees[0] else null
     }
 
     private fun getEmployee(): EmployeeBox? {
