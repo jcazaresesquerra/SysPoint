@@ -191,13 +191,13 @@ class CloseTicket: BaseTicket() {
             employeeBox.nombre + Constants.NEW_LINE
         else Constants.EMPTY_STRING + Constants.NEW_LINE
 
-        return  "         AGUAS DON AQUI         " + Constants.NEW_LINE +
-                " Blvd. Manuel J. Clouthier 2755 " + Constants.NEW_LINE +
-                "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
+        return  "            Té Verdí            " + Constants.NEW_LINE +
+                "  Mario Alain Urquidez Gonzalez " + Constants.NEW_LINE +
+                "     Paulino Machorro #1881     " + Constants.NEW_LINE +
+                "      Diaz Ordaz C.P. 80180     " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
-                "          HIMA9801022T8         " + Constants.NEW_LINE +
-                "         (667) 579-9656         " + Constants.NEW_LINE +
-                "    Adalberto Higuera Mendez    " + Constants.NEW_LINE +
+                "        RFC:UUGM910620TI9       " + Constants.NEW_LINE +
+                "         (667) 142-8050         " + Constants.NEW_LINE +
                 Constants.NEW_LINE + Constants.NEW_LINE +
                 sellers +
                 Utils.fechaActual() + " " + Utils.getHoraActual() + Constants.EMPTY_STRING +
