@@ -2,21 +2,23 @@ package com.app.syspoint.repository.objectBox.entities
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import io.objectbox.relation.ToMany
-import io.objectbox.relation.ToOne
 
 @Entity
-data class SellBox (
+data class ReturnBox (
     @Id(assignable = true)
     var id: Long = 0,
-    var venta: Long = 0,
-    var tipo_doc: String? = null,
+    var sellId: Long = 0,
+    var articulo: String? = null,
+    var descripcion: String? = null,
+    var cantidad: Int = 0,
+    var precio: Double = 0.0,
+    var impuesto: Double = 0.0,
+    var observ: String? = null,
     var fecha: String? = null,
     var hora: String? = null,
     var clienteId: Long = 0,
     var empleadoId: Long = 0,
     var importe: Double = 0.0,
-    var impuesto: Double = 0.0,
     var datos: String? = null,
     var estado: String? = null,
     var corte: String? = null,
@@ -30,11 +32,4 @@ data class SellBox (
     var cobranza: String? = null,
     var factudado: String? = null,
     var stockId: Int = 0,
-): BaseBox() {
-    lateinit var client: ToOne<ClientBox>
-    lateinit var employee: ToOne<EmployeeBox>
-    lateinit var listaPartidas: ToMany<PlayingBox>
-    lateinit var listaReturnsPartidas: ToMany<ReturnPlayingBox>
-
-    constructor() : this(id = 0)
-}
+)

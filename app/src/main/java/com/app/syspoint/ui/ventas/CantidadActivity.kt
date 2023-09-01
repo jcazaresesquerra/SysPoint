@@ -10,10 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityCantidadBinding
 import com.app.syspoint.repository.objectBox.dao.ProductDao
-import com.app.syspoint.utils.Actividades
-import com.app.syspoint.utils.PrettyDialog
-import com.app.syspoint.utils.click
-import com.app.syspoint.utils.setVisible
+import com.app.syspoint.utils.*
 
 class CantidadActivity: AppCompatActivity() {
 
@@ -36,9 +33,22 @@ class CantidadActivity: AppCompatActivity() {
     }
 
     private fun initControls() {
+
+        if (binding.swReturns.isChecked)
+            binding.llReturnContainer.setVisible()
+        else
+            binding.llReturnContainer.setGone()
+        binding.swReturns.setOnCheckedChangeListener { compoundButton, selected ->
+            if (selected)
+                binding.llReturnContainer.setVisible()
+            else
+                binding.llReturnContainer.setGone()
+        }
+
         binding.buttonSeleccionarCantidadVenta click {
             val cantidad: String = binding.edittextCantidadVentaSeleccionada.text.toString()
-            if (cantidad.isEmpty()) {
+            val returnsQuantity: String = binding.edittextCantidadDevolucionSeleccionada.text.toString()
+            if (cantidad.isEmpty() || cantidad == "0" || (binding.swReturns.isChecked && (returnsQuantity.isEmpty()  || returnsQuantity == "0"))) {
                 val dialog = PrettyDialog(this@CantidadActivity)
                 dialog.setTitle("Cantidad")
                     .setTitleColor(R.color.purple_500)
@@ -65,6 +75,10 @@ class CantidadActivity: AppCompatActivity() {
 
                 if (!barCode.isNullOrEmpty()) {
                     intent.putExtra(Actividades.PARAM_2, barCode)
+                }
+
+                if (binding.swReturns.isChecked) {
+                    intent.putExtra(Actividades.PARAM_3, returnsQuantity)
                 }
 
                 setResult(RESULT_OK, intent)

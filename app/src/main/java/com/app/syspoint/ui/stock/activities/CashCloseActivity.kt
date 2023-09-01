@@ -36,7 +36,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
-import java.util.*
+import java.util.UUID
 
 class CashCloseActivity: AppCompatActivity() {
     private lateinit var binding: ActivityCashCloseBinding

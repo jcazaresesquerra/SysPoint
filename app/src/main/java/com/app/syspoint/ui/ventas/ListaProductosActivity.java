@@ -93,11 +93,16 @@ public class ListaProductosActivity extends AppCompatActivity {
                 articuloSeleccionado = productBox.getArticulo();
             }
         }
+        String returns = data.getStringExtra(Actividades.PARAM_3);
+
 
         //Establece el resultado que debe de regresar
         Intent intent = new Intent();
         intent.putExtra(Actividades.PARAM_1, cantidad);
         intent.putExtra(Actividades.PARAM_2, articuloSeleccionado);
+        if (returns != null) {
+            intent.putExtra(Actividades.PARAM_3, returns);
+        }
         setResult(Activity.RESULT_OK, intent);
         finish();
     }

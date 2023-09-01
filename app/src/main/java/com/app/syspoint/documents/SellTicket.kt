@@ -1,10 +1,10 @@
 package com.app.syspoint.documents
 
-import com.app.syspoint.BuildConfig
 import com.app.syspoint.utils.Constants
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.ReturnDao
 import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.SellBox
 
@@ -68,6 +68,24 @@ class SellTicket: BaseTicket() {
             ) + Constants.NEW_LINE
         }
         ticket += "================================" + Constants.NEW_LINE + Constants.NEW_LINE
+
+        if (!ventasBean.listaReturnsPartidas.isNullOrEmpty()) {
+            ticket += "            DEVOLUCIONES        " + Constants.NEW_LINE + Constants.NEW_LINE
+            ticket += "================================" + Constants.NEW_LINE + Constants.NEW_LINE
+
+            //val importeTotalVenta: Double = ventasBean.importe + ventasBean.impuesto
+            for (items in ventasBean.listaReturnsPartidas) {
+                ticket += "" + items.articulo.target.descripcion + Constants.NEW_LINE +
+                        "" + String.format(
+                    "%1$-5s %2$11s %3$10s %4$10s",
+                    items.cantidad,
+                    Utils.FDinero(items.precio),
+                    Utils.FDinero(items.precio * items.cantidad),
+                    ""
+                ) + Constants.NEW_LINE
+            }
+            ticket += "================================" + Constants.NEW_LINE + Constants.NEW_LINE
+        }
 
 /*
         if (ventasBean.getTipo_venta().compareToIgnoreCase("CREDITO") == 0) {

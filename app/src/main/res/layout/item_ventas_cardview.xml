@@ -66,17 +66,35 @@
                 app:layout_constraintStart_toEndOf="@+id/img_producto_venta"
                 app:layout_constraintTop_toBottomOf="@+id/textView_producto_codigo_venta" />
 
-            <TextView
-                android:id="@+id/textView_producto_cantidad_venta"
-                android:layout_width="80dp"
+            <LinearLayout
+                android:id="@+id/ll_quantity"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="4dp"
-                android:text="Qty 5"
-                android:textColor="@color/purple_700"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                android:orientation="vertical"
                 app:layout_constraintStart_toEndOf="@+id/textView_producto_precio_venta"
-                app:layout_constraintTop_toBottomOf="@+id/textView_producto_codigo_venta" />
+                app:layout_constraintTop_toBottomOf="@+id/textView_producto_codigo_venta">
+                <TextView
+                    android:id="@+id/textView_producto_cantidad_venta"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Ven: 5"
+                    android:textColor="@color/purple_700"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small" />
+
+                <TextView
+                    android:id="@+id/textView_producto_cantidad_devolucion"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Dev: 5"
+                    android:textColor="@color/purple_700"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                    android:visibility="invisible"/>
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/textView_producto_total_venta"

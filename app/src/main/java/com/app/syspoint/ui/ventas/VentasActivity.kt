@@ -29,6 +29,7 @@ import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
 import com.app.syspoint.repository.objectBox.dao.ClientDao
 import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.ReturnDao
 import com.app.syspoint.repository.objectBox.dao.SellsModelDao
 import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.ui.precaptura.PrecaptureActivity
@@ -150,6 +151,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
         val cantidad = data!!.getStringExtra(Actividades.PARAM_1)
         val articulo = if (!articuloSeleccionado.isNullOrEmpty()) articuloSeleccionado else data.getStringExtra(Actividades.PARAM_2)
+        val returns = data.getStringExtra(Actividades.PARAM_3)
 
         val productDao = ProductDao()
         val productoBean = productDao.getProductoByArticulo(articulo)
@@ -190,16 +192,17 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
         val precioEspacial = if (preciosEspeciales.isNullOrEmpty()) preciosEspecialesBeanspecialPricesBox else preciosEspeciales[0]
 
-        val data = viewModel.addItem(
+        val itemData = viewModel.addItem(
             productoBean.articulo!!,
             productoBean.descripcion!!,
             precioEspacial?.precio ?: productoBean.precio,
             productoBean.iva,
-            cantidadVendida
+            cantidadVendida,
+            returns?.toInt() ?: 0
         )
 
         articuloSeleccionado = ""
-        refreshRecyclerView(data)
+        refreshRecyclerView(itemData)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -467,6 +470,11 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
                         val dao = SellsModelDao()
                         dao.delete(sell.id)
+
+                        if (sell.returnQuantity != 0) {
+                            val returnDao = ReturnDao()
+                            returnDao.delete(sell.id)
+                        }
                         viewModel.refreshSellData()
                         dialog.dismiss()
                     }.addButton(getString(R.string.cancelar_dialog), R.color.pdlg_color_white, R.color.red_900) { dialog.dismiss() }
@@ -482,9 +490,26 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                         .inflate(LayoutInflater.from(this@VentasActivity), binding.root, false)
                     dialogo.requestWindowFeature(Window.FEATURE_NO_TITLE) //before
                     dialogo.setContentView(dialogBinding.root)
+
+                    if (sell.returnQuantity != 0) {
+                        dialogBinding.llReturnContainer.setVisible()
+                        dialogBinding.swReturns.isChecked = true
+                        dialogBinding.edittextCantidadDevolucionSeleccionada.setText(sell.returnQuantity.toString())
+                    } else {
+                        dialogBinding.llReturnContainer.setGone()
+                        dialogBinding.swReturns.isChecked = false
+                    }
+                    //dialogBinding.edittextCantidadVentaSeleccionada.setText(sell.cantidad)
+                    dialogBinding.swReturns.setOnCheckedChangeListener { compoundButton, selected ->
+                        if (selected)
+                            dialogBinding.llReturnContainer.setVisible()
+                        else
+                            dialogBinding.llReturnContainer.setGone()
+                    }
                     dialogBinding.buttonSeleccionarCantidadVentaDialog click {
-                        val cantidad = dialogBinding.edittextCantidadVentaSeleccionadaDialog.text.toString()
-                        if (cantidad.isNotEmpty()) {
+                        val cantidad = dialogBinding.edittextCantidadVentaSeleccionada.text.toString()
+                        val returnsQuantity: String = dialogBinding.edittextCantidadDevolucionSeleccionada.text.toString()
+                        if (cantidad.isNotEmpty() && cantidad != "0" && (dialogBinding.swReturns.isChecked && (returnsQuantity.isNotEmpty()  && returnsQuantity != "0"))) {
                             val params = Bundle()
                             params.putString(FirebaseAnalytics.Param.SCREEN_NAME, TAG)
                             params.putString(FirebaseAnalytics.Param.VALUE, PARAM.ADD_PRODUCT_SUCCESS_CLICK.value)
@@ -498,16 +523,19 @@ class VentasActivity: AppCompatActivity(), LocationListener {
                             } else {
                                 val dao = SellsModelDao()
                                 sell.cantidad = cantidadVenta
+                                sell.returnQuantity = if (dialogBinding.swReturns.isChecked) returnsQuantity.toInt() else 0
                                 dao.insert(sell)
                                 viewModel.refreshSellData()
                                 dialogo.dismiss()
                             }
+                        } else {
+                            showQuantityErrorDialog()
                         }
                     }
                     dialogo.show()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(dialogBinding.edittextCantidadVentaSeleccionadaDialog.windowToken, 0)
-                    dialogBinding.edittextCantidadVentaSeleccionadaDialog.requestFocus()
+                    imm.hideSoftInputFromWindow(dialogBinding.edittextCantidadVentaSeleccionada.windowToken, 0)
+                    dialogBinding.edittextCantidadVentaSeleccionada.requestFocus()
                     window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
                 }
             })
@@ -777,9 +805,9 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     private fun showQuantityErrorDialog() {
         val dialog = PrettyDialog(this@VentasActivity)
-        dialog.setTitle("Precio")
+        dialog.setTitle("Cantidad")
             .setTitleColor(R.color.purple_500)
-            .setMessage("El precio debe de ser mayor a cero")
+            .setMessage("La cantidad debe de ser mayor a cero")
             .setMessageColor(R.color.purple_700)
             .setAnimationEnabled(false)
             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500) { dialog.dismiss() }

@@ -11,6 +11,8 @@ import com.app.syspoint.repository.objectBox.entities.SellModelBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 
 class AdapterItemsVenta(
     data: List<SellModelBox?>,
@@ -49,7 +51,13 @@ class AdapterItemsVenta(
             ventasModelBean?.let { item ->
                 binding.textViewProductoCodigoVenta.text = item.articulo
                 binding.textViewProductoDescripcionVenta.text = item.descripcion
-                binding.textViewProductoCantidadVenta.text = "Cant. " + item.cantidad
+                binding.textViewProductoCantidadVenta.text = "Ven. " + item.cantidad
+                if (item.returnQuantity != 0) {
+                    binding.textViewProductoCantidadDevolucion.setVisible()
+                    binding.textViewProductoCantidadDevolucion.text = "Dev. " + item.returnQuantity
+                } else
+                    binding.textViewProductoCantidadDevolucion.setInvisible()
+
                 binding.textViewProductoPrecioVenta.text = Utils.FDinero(item.precio)
                 val total: Double = item.precio * item.cantidad
                 binding.textViewProductoTotalVenta.text = Utils.FDinero(total)
@@ -66,10 +74,10 @@ class AdapterItemsVenta(
                     }
                 }
 
-                itemView click  { onItemClickListener.onItemClick(ventasModelBean) }
+                itemView click  { onItemClickListener.onItemClick(item) }
 
                 itemView longClick  {
-                    onItemLongClickListener.onItemLongClicked(ventasModelBean)
+                    onItemLongClickListener.onItemLongClicked(item)
                     false
                 }
             }

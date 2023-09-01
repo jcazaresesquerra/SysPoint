@@ -12,6 +12,7 @@ import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.utils.click
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.ArrayList
 
 private const val TAG = "AdapterListaProductosInv"
 

@@ -55,7 +55,9 @@ class SellViewModel: ViewModel() {
     fun refreshSellData() {
         viewModelScope.launch(Dispatchers.IO) {
             val data = SellsModelDao().list() as List<SellModelBox?>
+            val returnData = ReturnDao().list() as List<ReturnBox?>
             partidas.postValue(data)
+
             sellViewState.postValue(SellViewState.SellsRefresh(data))
         }
     }
@@ -271,7 +273,9 @@ class SellViewModel: ViewModel() {
     }
 
     fun addItem(articulo: String, descripcion: String, precio: Double,
-                impuesto: Int, cantidad: Int): ArrayList<SellModelBox?> {
+                impuesto: Int, cantidad: Int, returnsQuantity: Int): ArrayList<SellModelBox?> {
+
+
 
         val item = SellModelBox()
         val dao = SellsModelDao()
@@ -281,11 +285,27 @@ class SellViewModel: ViewModel() {
         item.precio = precio
         item.impuesto = impuesto.toDouble()
         item.observ = descripcion
+        item.returnQuantity = returnsQuantity
+        //if (returnsQuantity != 0) item.returnId = returnItem.id
         dao.insert(item)
         val sells = partidas.value as ArrayList<SellModelBox?>
         sells.add(item)
-
         partidas.value = sells
+
+        val returnItem = ReturnBox()
+        if (returnsQuantity != 0) {
+            val dao = ReturnDao()
+            returnItem.articulo = articulo
+            returnItem.descripcion = descripcion
+            returnItem.cantidad = cantidad
+            returnItem.precio = precio
+            returnItem.impuesto = impuesto.toDouble()
+            returnItem.observ = descripcion
+            returnItem.sellId = item.id
+            dao.insert(returnItem)
+            //returnsPartidas.value = sells
+        }
+
         //sellViewState.postValue(SellViewState.ItemAdded(sells))
         return sells
     }
@@ -388,6 +408,7 @@ class SellViewModel: ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             val lista = ArrayList<PlayingBox>()
+            val returnsList = ArrayList<ReturnPlayingBox>()
             val sellsDao = SellsDao()
             val sellBox = SellBox()
             val ultimoFolio = sellsDao.getUltimoFolio()
@@ -409,6 +430,20 @@ class SellViewModel: ViewModel() {
                         partidaBean.venta = java.lang.Long.valueOf(ultimoFolio.toLong())
                         partidaBean.descripcion = productsBox.descripcion
                         lista.add(partidaBean)
+
+                        if (partida.returnQuantity != 0) {
+                            val returnPlayingBox = ReturnPlayingBox()
+                            returnPlayingBox.articulo.target = productsBox
+                            returnPlayingBox.cantidad = partida.returnQuantity
+                            returnPlayingBox.precio = partida.precio
+                            returnPlayingBox.impuesto = partida.impuesto
+                            returnPlayingBox.observ = productsBox.descripcion
+                            returnPlayingBox.fecha = Date()
+                            returnPlayingBox.hora = Utils.getHoraActual()
+                            returnPlayingBox.venta = java.lang.Long.valueOf(ultimoFolio.toLong())
+                            returnPlayingBox.descripcion = productsBox.descripcion
+                            returnsList.add(returnPlayingBox)
+                        }
                     }
                 }
             }
@@ -462,6 +497,7 @@ class SellViewModel: ViewModel() {
             sellBox.tipo_venta = sellType.value
             sellBox.usuario_cancelo = ""
             sellBox.listaPartidas.addAll(lista)
+            sellBox.listaReturnsPartidas.addAll(returnsList)
 
             var clienteMatriz: ClientBox? = null
             if (!clienteBean1.matriz.isNullOrEmpty()) {
