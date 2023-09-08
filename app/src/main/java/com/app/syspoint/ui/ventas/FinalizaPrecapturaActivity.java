@@ -283,6 +283,11 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             cliente.setPhone_contacto(""+item.getContacto_phone());
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
+            cliente.setUpdatedAt(item.getUpdatedAt());
+            cliente.setLimite_credito(item.getLimite_credito());
+            cliente.setSaldo_credito(item.getSaldo_credito());
+            cliente.setMatriz(item.getMatriz());
+
             listaClientes.add(cliente);
         }
 
