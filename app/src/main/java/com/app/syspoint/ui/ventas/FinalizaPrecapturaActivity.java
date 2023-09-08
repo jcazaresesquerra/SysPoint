@@ -267,7 +267,6 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             cliente.setCiudad(item.getCiudad());
             cliente.setCodigoPostal(item.getCodigo_postal());
             cliente.setFechaRegistro(item.getFecha_registro());
-            cliente.setCuenta(item.getCuenta());
             cliente.setStatus(item.getStatus()? 1 : 0);
             cliente.setConsec(item.getConsec());
             cliente.setRango(item.getRango());
@@ -283,11 +282,12 @@ public class FinalizaPrecapturaActivity extends AppCompatActivity {
             cliente.setPhone_contacto(""+item.getContacto_phone());
             cliente.setRecordatorio(""+item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
-            cliente.setUpdatedAt(item.getUpdatedAt());
             cliente.setLimite_credito(item.getLimite_credito());
             cliente.setSaldo_credito(item.getSaldo_credito());
             cliente.setMatriz(item.getMatriz());
-
+            cliente.setUpdatedAt(item.getUpdatedAt());
+            cliente.setCuenta(item.getCuenta());
+            cliente.setStatus(item.getStatus()? 1 : 0);
             listaClientes.add(cliente);
         }
 
