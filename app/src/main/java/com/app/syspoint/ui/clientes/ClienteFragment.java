@@ -349,10 +349,12 @@ public class ClienteFragment extends Fragment {
             if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
                 if (rolesBean != null) {
                     if (rolesBean.getActive()) {
-                        editCliente(cliente.getCuenta());
+                        //editCliente(cliente.getCuenta()); //btnEditarCliente #codigotemporal
+                        Toast.makeText(getContext(), "Opcion desactivada temporalmente", Toast.LENGTH_LONG).show();
+                        return;
                     } else {
 
-                        Toast.makeText(getContext(), "No tienes privilegios para esta area", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "No tienes privilegios para editar clientes", Toast.LENGTH_LONG).show();
                         return;
                     }
                 }

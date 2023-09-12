@@ -30,6 +30,7 @@ data class SellBox (
     var cobranza: String? = null,
     var factudado: String? = null,
     var stockId: Int = 0,
+    var updatedAt: String? = null,
 ): BaseBox() {
     lateinit var client: ToOne<ClientBox>
     lateinit var employee: ToOne<EmployeeBox>

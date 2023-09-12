@@ -14,8 +14,8 @@ class ApiServices {
         fun getClientRetrofit(): Retrofit {
             val okHttpClient = OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .writeTimeout(1, TimeUnit.MINUTES)
                 .build()
 
             if (retrofit == null) {

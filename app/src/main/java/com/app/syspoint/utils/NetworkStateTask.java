@@ -37,8 +37,8 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
                         HttpURLConnection urlc = (HttpURLConnection) (new URL("https://www.google.com").openConnection());
                         urlc.setRequestProperty("User-Agent", "Test");
                         urlc.setRequestProperty("Connection", "close");
-                        urlc.setConnectTimeout(1000);
-                        urlc.setReadTimeout(1000);
+                        urlc.setConnectTimeout(2000);
+                        urlc.setReadTimeout(2000);
                         urlc.connect();
                         return urlc.getResponseCode() == 200;
                 } else {
