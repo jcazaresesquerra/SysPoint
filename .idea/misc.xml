@@ -3,14 +3,20 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_actualiza_cliente.xml" value="0.3625" />
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_cantidad.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_lista_productos.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_listado_productos.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_pre_captura.xml" value="0.3625" />
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_registar_empleado.xml" value="0.3625" />
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_registrar_producto.xml" value="0.3625" />
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/activity_registro_cliente.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/content_main.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/fragment_lista_ventas.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/item_lista_productod.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/item_lista_productos_ventas.xml" value="0.3625" />
         <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/item_lista_ventas.xml" value="0.3625" />
+        <entry key="..\:/Users/52667/Desktop/SysPoint/app/src/main/res/layout/no_internet_dialog_warning.xml" value="0.3625" />
         <entry key="..\:/Users/52667/StudioProjects/SysPoint/app/src/main/res/layout/activity_abono_documetnto.xml" value="0.3625" />
         <entry key="..\:/Users/52667/StudioProjects/SysPoint/app/src/main/res/layout/activity_actualiza_cliente.xml" value="0.3625" />
         <entry key="..\:/Users/52667/StudioProjects/SysPoint/app/src/main/res/layout/activity_actualiza_producto.xml" value="0.3625" />

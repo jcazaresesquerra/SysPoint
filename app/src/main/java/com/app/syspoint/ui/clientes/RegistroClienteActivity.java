@@ -388,25 +388,25 @@ public class RegistroClienteActivity extends AppCompatActivity {
                             location.getLatitude(), location.getLongitude(), 1);
                     if (!list.isEmpty()) {
 
-                       // if (!isLocation) {
-                       //     String address = list.get(0).getAddressLine(0);
-                       //     String cityName = list.get(0).getLocality();
-                       //     String stateName = list.get(0).getAdminArea();
-                       //     String codigo = list.get(0).getPostalCode();
+                        // if (!isLocation) {
+                        //     String address = list.get(0).getAddressLine(0);
+                        //     String cityName = list.get(0).getLocality();
+                        //     String stateName = list.get(0).getAdminArea();
+                        //     String codigo = list.get(0).getPostalCode();
 //
-                       //    if(editText_calle_registro_cliente.getText().toString().isEmpty()){
-                       //         editText_calle_registro_cliente.setText(address);
-                       //     }
+                        //    if(editText_calle_registro_cliente.getText().toString().isEmpty()){
+                        //         editText_calle_registro_cliente.setText(address);
+                        //     }
 //
-                       //     editText_cp_registro_cliente.setText(codigo);
-                       //     editText_colonia_registro_cliente.setText(cityName);
-                       //     editText_ciudad_registro_cliente.setText(stateName);
-                       //     editTextLatitud.setText("" + list.get(0).getLatitude());
-                       //     editTextLongitud.setText("" + list.get(0).getLongitude());
-                       // } else {
-                       //     editTextLatitud.setText("" + list.get(0).getLatitude());
-                       //     editTextLongitud.setText("" + list.get(0).getLongitude());
-                       // }
+                        //     editText_cp_registro_cliente.setText(codigo);
+                        //     editText_colonia_registro_cliente.setText(cityName);
+                        //     editText_ciudad_registro_cliente.setText(stateName);
+                        //     editTextLatitud.setText("" + list.get(0).getLatitude());
+                        //     editTextLongitud.setText("" + list.get(0).getLongitude());
+                        // } else {
+                        //     editTextLatitud.setText("" + list.get(0).getLatitude());
+                        //     editTextLongitud.setText("" + list.get(0).getLongitude());
+                        // }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

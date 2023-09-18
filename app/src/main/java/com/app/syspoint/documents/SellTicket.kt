@@ -235,12 +235,12 @@ class SellTicket: BaseTicket() {
             else ""
         }
 
-        return  "            NUTRIRICA           " + Constants.NEW_LINE +
-                "       Pedro de Tovar 5460      " + Constants.NEW_LINE +
-                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+        return  "         AGUAS DON AQUI         " + Constants.NEW_LINE +
+                "    Manuel J. Clouthier #2755   " + Constants.NEW_LINE +
+                "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
-                "         (667) 455-9828         " + Constants.NEW_LINE +
-                " Alexi De Jesus Mendez Coyantes " + Constants.NEW_LINE +
+                "         (667) 579-9656         " + Constants.NEW_LINE +
+                "     ADALBERTO HIGUERA MENDEZ   " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +

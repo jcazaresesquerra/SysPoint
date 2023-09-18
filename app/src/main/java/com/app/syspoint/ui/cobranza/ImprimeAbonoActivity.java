@@ -290,6 +290,9 @@ public class ImprimeAbonoActivity extends AppCompatActivity {
             cliente.setPhone_contacto("" + item.getContacto_phone());
             cliente.setRecordatorio("" + item.getRecordatorio());
             cliente.setVisitas(item.getVisitasNoefectivas());
+            cliente.setSaldo_credito(item.getSaldo_credito()); //#codigotemporal
+            cliente.setMatriz(item.getMatriz()); //#codigotemporal
+            cliente.setUpdatedAt(item.getUpdatedAt()); //#codigotemporal
             listaClientes.add(cliente);
         }
 

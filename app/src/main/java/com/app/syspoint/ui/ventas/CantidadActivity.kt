@@ -26,8 +26,10 @@ class CantidadActivity: AppCompatActivity() {
 
         val barcode = intent.extras?.getString(Actividades.PARAM_1) ?: ""
         val productBox = ProductDao().getProductoByBarCode(barcode)
+
         productBox?.let {
             binding.textViewProduct.text = productBox.descripcion
+            binding.textViewProduct.textSize = 24f // Tamaño de fuente en sp (puntos)
             binding.textViewProduct.setVisible()
         }
 

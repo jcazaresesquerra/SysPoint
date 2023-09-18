@@ -224,6 +224,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
         editTextPrecio = findViewById(R.id.inp_articulo_precio_actualiza);
         editTextIVA = findViewById(R.id.inp_articulo_iva_actualiza);
         editTextCodigoDeBarras = findViewById(R.id.inp_articulo_codigo_barras_actualiza);
+
     }
 
     void initToolBar(){
