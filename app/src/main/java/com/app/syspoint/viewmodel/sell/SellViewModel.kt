@@ -77,54 +77,53 @@ class SellViewModel: ViewModel() {
     @Synchronized
     fun setUpChargeByClient(clientId: String?) {
         sellViewState.value = SellViewState.LoadingStart
+        NetworkStateTask { connected: Boolean ->
+            if (connected) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val clientDao = ClientDao()
+                    val clienteBean = clientDao.getClientByAccount(clientId.toString())
 
-            NetworkStateTask { connected: Boolean ->
-                if (connected) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        val clientDao = ClientDao()
-                        val clienteBean = clientDao.getClientByAccount(clientId.toString())
-
-                        ChargeInteractorImp().executeGetChargeByClient(
-                            clienteBean!!.cuenta!!,
-                            object : OnGetChargeByClientListener {
-                                override fun onGetChargeByClientSuccess(chargeByClientList: List<ChargeBox>) {
-                                    val saldoCliente =
-                                        ChargeDao().getSaldoByCliente(clienteBean.cuenta!!)
-                                    clienteBean.saldo_credito = saldoCliente
-                                    clienteBean.date_sync = Utils.fechaActual()
-                                    clientDao.insertBox(clienteBean)
-                                    val saldo: Double =
-                                        if (clienteBean.matriz == null || (clienteBean.matriz != null && clienteBean.matriz!!.compareTo(
-                                                "null",
-                                                ignoreCase = true
-                                            ) == 0)
-                                        ) {
-                                            clienteBean.saldo_credito
-                                        } else {
-                                            val client =
-                                                clientDao.getClientByAccount(clienteBean.matriz)
-                                            client?.saldo_credito ?: 0.0
-                                        }
-                                    //sellViewState.postValue(SellViewState.LoadingFinish)
-                                    sellViewState.postValue(
-                                        SellViewState.ChargeByClientLoaded(
-                                            clienteBean.cuenta!!,
-                                            saldo
-                                        )
+                    ChargeInteractorImp().executeGetChargeByClient(
+                        clienteBean!!.cuenta!!,
+                        object : OnGetChargeByClientListener {
+                            override fun onGetChargeByClientSuccess(chargeByClientList: List<ChargeBox>) {
+                                val saldoCliente =
+                                    ChargeDao().getSaldoByCliente(clienteBean.cuenta!!)
+                                clienteBean.saldo_credito = saldoCliente
+                                clienteBean.date_sync = Utils.fechaActual()
+                                clientDao.insertBox(clienteBean)
+                                val saldo: Double =
+                                    if (clienteBean.matriz == null || (clienteBean.matriz != null && clienteBean.matriz!!.compareTo(
+                                            "null",
+                                            ignoreCase = true
+                                        ) == 0)
+                                    ) {
+                                        clienteBean.saldo_credito
+                                    } else {
+                                        val client =
+                                            clientDao.getClientByAccount(clienteBean.matriz)
+                                        client?.saldo_credito ?: 0.0
+                                    }
+                                //sellViewState.postValue(SellViewState.LoadingFinish)
+                                sellViewState.postValue(
+                                    SellViewState.ChargeByClientLoaded(
+                                        clienteBean.cuenta!!,
+                                        saldo
                                     )
-                                    setUpPricesByClient(clientId)
-                                }
+                                )
+                                setUpPricesByClient(clientId)
+                            }
 
-                                override fun onGetChargeByClientError() {
-                                    //sellViewState.postValue(SellViewState.LoadingFinish)
-                                    setUpPricesByClient(clientId)
-                                }
-                            })
-                    }
-                } else {
-                    proceedWithoutInternet(clientId)
+                            override fun onGetChargeByClientError() {
+                                //sellViewState.postValue(SellViewState.LoadingFinish)
+                                setUpPricesByClient(clientId)
+                            }
+                        })
                 }
-            }.execute()
+            } else {
+                proceedWithoutInternet(clientId)
+            }
+        }.execute()
 
     }
 
@@ -383,7 +382,7 @@ class SellViewModel: ViewModel() {
     }
 
     @Synchronized
-    fun finishPrecature(clientId: String?, sellType: SellType, subtota: String, import: String) {
+    fun finishPrecature(clientId: String?, sellType: SellType, subtotal: String, import: String) {
         sellViewState.value = SellViewState.LoadingStart
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -406,7 +405,7 @@ class SellViewModel: ViewModel() {
                         partidaBean.observ = productsBox!!.descripcion
                         partidaBean.fecha = Date()
                         partidaBean.hora = Utils.getHoraActual()
-                        partidaBean.venta = java.lang.Long.valueOf(ultimoFolio.toLong())
+                        partidaBean.venta = java.lang.Long.valueOf(ultimoFolio)
                         partidaBean.descripcion = productsBox.descripcion
                         lista.add(partidaBean)
                     }
@@ -449,7 +448,7 @@ class SellViewModel: ViewModel() {
             sellBox.empleadoId = employeeBox?.id ?: (sessionBox?.id?: -1)
             sellBox.client.target = clienteBean1
             sellBox.employee.target = employeeBox
-            sellBox.importe = subtota.replace(",", "").toDouble()
+            sellBox.importe = subtotal.replace(",", "").toDouble()
             sellBox.impuesto = import.replace(",", "").toDouble()
             sellBox.datos = clienteBean1.nombre_comercial
             sellBox.estado = "CO"
@@ -472,7 +471,7 @@ class SellViewModel: ViewModel() {
             }
 
             sellBox.ticket = Utils.getHoraActual().replace(":", "") + Utils.getFechaRandom().replace("-", "")
-            val totalVenta: Double = subtota.replace(",", "").toDouble() +
+            val totalVenta: Double = subtotal.replace(",", "").toDouble() +
                     import.replace(",", "").toDouble()
 
             val ticketRamdom: String = ticketRamdom() + sellBox.fecha!!.replace("-", "") + "" + sellBox.hora!!.replace(":", "")
@@ -557,8 +556,6 @@ class SellViewModel: ViewModel() {
                 testLoadClientes(clienteID.toString())
             }
             sellsDao.insert(sellBox)
-
-
 
             //Creamos la venta
             sellsDao.creaVenta(sellBox, lista)

@@ -103,7 +103,7 @@ public class HomeFragment extends Fragment {
                 loadRuta();
             } else if (o instanceof GetClientsByRuteViewState.GetClientsByRuteError) {
                 Timber.tag(TAG).d("GetClientsByRuteError call showDialogNotConnectionInternet");
-                showDialogNotConnectionInternet();
+                //showDialogNotConnectionInternet();
             }
         });
 
@@ -434,7 +434,7 @@ public class HomeFragment extends Fragment {
         }
 
         boolean finalIsOrderRute = isOrderRute;
-        mAdapter = new AdapterRutaClientes(mData, position -> {
+        mAdapter = new AdapterRutaClientes(mData, (clientBox, position) -> {
             Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> %s -> %s", position, mData);
             if (position >= 0) {
                 boolean canSell = true;
@@ -446,11 +446,10 @@ public class HomeFragment extends Fragment {
                 }
 
                 if (canSell) {
-                    RuteClientBox clienteBean = mData.get(position);
                     HashMap<String, String> parametros = new HashMap<>();
-                    parametros.put(Actividades.PARAM_1, clienteBean.getCuenta());
+                    parametros.put(Actividades.PARAM_1, clientBox.getCuenta());
 
-                    Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> open VentasActivity -> %s", clienteBean.getCuenta());
+                    Timber.tag(TAG).d("initRecyclerView -> AdapterRutaClientes -> open VentasActivity -> %s", clientBox.getCuenta());
 
                     Actividades.getSingleton(getActivity(), VentasActivity.class).muestraActividad(parametros);
                 }

@@ -12,6 +12,7 @@ import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.charge.ChargeInteractor.OnSaveChargeListener
 import com.app.syspoint.interactor.charge.ChargeInteractor.OnUpdateChargeListener
 import com.app.syspoint.interactor.charge.ChargeInteractorImp
+import com.app.syspoint.interactor.client.ClientInteractor
 import com.app.syspoint.interactor.client.ClientInteractor.GetAllClientsListener
 import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
@@ -24,11 +25,16 @@ import com.app.syspoint.interactor.visit.VisitInteractorImp
 import com.app.syspoint.models.*
 import com.app.syspoint.models.sealed.*
 import com.app.syspoint.repository.objectBox.AppBundle
+import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
+import com.app.syspoint.repository.objectBox.entities.RoutingBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
 import com.app.syspoint.usecases.GetChargeUseCase
 import com.app.syspoint.usecases.GetDataUseCase
+import com.app.syspoint.usecases.GetRolesUseCase
 import com.app.syspoint.usecases.GetUpdatesUseCase
 import com.app.syspoint.utils.Utils
 import kotlinx.coroutines.Dispatchers
@@ -38,12 +44,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-
-import com.app.syspoint.repository.objectBox.dao.*
-import com.app.syspoint.repository.objectBox.entities.ClientBox
-import com.app.syspoint.repository.objectBox.entities.EmployeeBox
-import com.app.syspoint.repository.objectBox.entities.RoutingBox
-import com.app.syspoint.usecases.GetRolesUseCase
 import timber.log.Timber
 import java.text.SimpleDateFormat
 
@@ -223,6 +223,7 @@ class HomeViewModel: ViewModel() {
                         getClientsByRute.postValue(true)
                         _getClientsByRuteViewState.postValue(GetClientsByRuteViewState.GetClientsByRuteSuccess(clientList))
                         saveClientes()
+                        getMatrizes(true)
                         if (!isUpdate)
                             homeLoadingViewState.postValue(HomeLoadingViewState.LoadingFinish)
                         Log.d(TAG, "Clientes actualizados correctamente")
@@ -238,6 +239,38 @@ class HomeViewModel: ViewModel() {
                         Log.d(TAG, "Ha ocurrido un error. Conectate a internet para cambiar de ruta u obtener los clientes")
                     }
                 })
+            }
+        }
+    }
+
+    fun getMatrizes(isUpdate: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getClientsByRute.postValue(false)
+
+            val routingDao = RoutingDao()
+            val ruteoBean = routingDao.getRutaEstablecida()
+            if (ruteoBean != null) {
+                val clientDao = ClientDao()
+                val clientListDB = clientDao.getClientsByRute(ruteoBean.ruta!!)
+
+                val matrizes = clientListDB.filter {
+                    !it.matriz.isNullOrEmpty() && it.matriz != "null"
+                }.map { it.matriz }
+                Timber.tag(TAG).d(matrizes.toString())
+
+                ClientInteractorImp().executeGetClientById(matrizes, object : ClientInteractor.GetClientByIdListener {
+                    override fun onGetClientByIdSuccess() {
+                        saveClientes()
+                        Log.d(TAG, "Clientes matrices actualizados correctamente")
+                    }
+
+                    override fun onGetClientByIdError() {
+                        saveClientes()
+                        Log.d(TAG, "Ha ocurrido un error. Conectate a internet para cambiar de ruta u obtener los clientes")
+                    }
+                })
+
+
             }
         }
     }

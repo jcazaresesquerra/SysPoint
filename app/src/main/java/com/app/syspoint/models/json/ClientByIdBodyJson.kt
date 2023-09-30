@@ -4,9 +4,9 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 data class ClientByIdBodyJson(
-    @SerializedName("cuenta")
+    @SerializedName("ids")
     @Expose
-    var cuenta: String? = null,
+    var ids: List<String?>? = null,
     @SerializedName("clientId")
     @Expose
     var clientId: String = "tenet"

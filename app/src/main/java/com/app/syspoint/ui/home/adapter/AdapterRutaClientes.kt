@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
+import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
@@ -38,7 +39,7 @@ class AdapterRutaClientes(
     private var mDataFiltrable: List<RuteClientBox?> = data
 
     interface OnItemClickListener {
-        fun onItemClick(position: Int)
+        fun onItemClick(clientBox: RuteClientBox, position: Int)
     }
 
     interface OnItemLongClickListener {
@@ -207,7 +208,7 @@ class AdapterRutaClientes(
 
                 itemView click  {
                     Timber.tag(TAG).d("AdapterRutaClientes -> Holder -> bind -> itemView -> click")
-                    onItemClickListener.onItemClick(adapterPosition)
+                    onItemClickListener.onItemClick(clienteBean, adapterPosition)
                 }
 
                 val calendar = Calendar.getInstance()

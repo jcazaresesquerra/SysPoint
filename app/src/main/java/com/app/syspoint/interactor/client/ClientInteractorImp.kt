@@ -33,10 +33,10 @@ class ClientInteractorImp: ClientInteractor() {
     }
 
     @Synchronized
-    override fun executeGetClientById(clientId: String, onGetClientByIdListener: GetClientByIdListener) {
-        super.executeGetClientById(clientId, onGetClientByIdListener)
+    override fun executeGetClientById(ids: List<String?>, onGetClientByIdListener: GetClientByIdListener) {
+        super.executeGetClientById(ids, onGetClientByIdListener)
         GlobalScope.launch {
-            RequestClient.requestClientById(clientId, onGetClientByIdListener)
+            RequestClient.requestClientById(ids, onGetClientByIdListener)
         }
     }
 

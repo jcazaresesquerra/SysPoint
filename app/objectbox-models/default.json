@@ -1,0 +1,1796 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:6952153427466271145",
+      "lastPropertyId": "13:1346498414663235358",
+      "name": "CashCloseBox",
+      "properties": [
+        {
+          "id": "1:6121711953322166473",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:5832108541361910",
+          "name": "nombre",
+          "type": 9
+        },
+        {
+          "id": "3:7720009693280106006",
+          "name": "clienteId",
+          "type": 6
+        },
+        {
+          "id": "4:2890977532679016954",
+          "name": "productoId",
+          "type": 6
+        },
+        {
+          "id": "5:4269124786511516924",
+          "name": "cantidad",
+          "type": 5
+        },
+        {
+          "id": "6:537367816724237161",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "7:7479137428790873109",
+          "name": "descripcion",
+          "type": 9
+        },
+        {
+          "id": "8:7049607263839592632",
+          "name": "impuesto",
+          "type": 8
+        },
+        {
+          "id": "9:918886947581042664",
+          "name": "tipoVenta",
+          "type": 9
+        },
+        {
+          "id": "10:7921894773309422485",
+          "name": "estado",
+          "type": 9
+        },
+        {
+          "id": "11:5610278801750992879",
+          "name": "sellId",
+          "type": 6
+        },
+        {
+          "id": "12:8799363746400430333",
+          "name": "clientId",
+          "indexId": "1:5547490472799609890",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ClientBox"
+        },
+        {
+          "id": "13:1346498414663235358",
+          "name": "productId",
+          "indexId": "2:172631431811782859",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ProductBox"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:5267645315445967506",
+      "lastPropertyId": "16:6102854330702548877",
+      "name": "ChargeBox",
+      "properties": [
+        {
+          "id": "1:2906650808517286560",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:5770481600996567378",
+          "name": "cobranza",
+          "type": 9
+        },
+        {
+          "id": "3:4633939045353526557",
+          "name": "cliente",
+          "type": 9
+        },
+        {
+          "id": "4:5037662532160228021",
+          "name": "importe",
+          "type": 8
+        },
+        {
+          "id": "5:8425896947120271222",
+          "name": "saldo",
+          "type": 8
+        },
+        {
+          "id": "6:7093632214389086439",
+          "name": "acuenta",
+          "type": 8
+        },
+        {
+          "id": "7:3456353876606046992",
+          "name": "venta",
+          "type": 6
+        },
+        {
+          "id": "8:1097306169709105405",
+          "name": "estado",
+          "type": 9
+        },
+        {
+          "id": "9:9165442252482830143",
+          "name": "observaciones",
+          "type": 9
+        },
+        {
+          "id": "10:3873080138257184064",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "11:4477952477503495622",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "12:1765284195874901145",
+          "name": "empleado",
+          "type": 9
+        },
+        {
+          "id": "13:8108617597232432178",
+          "name": "isCheck",
+          "type": 1
+        },
+        {
+          "id": "14:7104135326968924948",
+          "name": "abono",
+          "type": 1
+        },
+        {
+          "id": "15:1411893004217672501",
+          "name": "updatedAt",
+          "type": 10
+        },
+        {
+          "id": "16:6102854330702548877",
+          "name": "stockId",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:2388233952828455527",
+      "lastPropertyId": "7:299918140584949649",
+      "name": "ChargeModelBox",
+      "properties": [
+        {
+          "id": "1:6595110294991602829",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:8575420436796522320",
+          "name": "venta",
+          "type": 6
+        },
+        {
+          "id": "3:2920973693246977145",
+          "name": "cobranza",
+          "type": 9
+        },
+        {
+          "id": "4:8594083260563297908",
+          "name": "importe",
+          "type": 8
+        },
+        {
+          "id": "5:8975861678097723229",
+          "name": "saldo",
+          "type": 8
+        },
+        {
+          "id": "6:3462445035829889219",
+          "name": "acuenta",
+          "type": 8
+        },
+        {
+          "id": "7:299918140584949649",
+          "name": "no_referen",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:8471751877925667667",
+      "lastPropertyId": "43:3758641819766102465",
+      "name": "ClientBox",
+      "properties": [
+        {
+          "id": "1:3089610493068178742",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:8611608805124296466",
+          "name": "nombre_comercial",
+          "type": 9
+        },
+        {
+          "id": "3:5204711533325475623",
+          "name": "calle",
+          "type": 9
+        },
+        {
+          "id": "4:2122016256051981417",
+          "name": "numero",
+          "type": 9
+        },
+        {
+          "id": "5:7768756113174161082",
+          "name": "colonia",
+          "type": 9
+        },
+        {
+          "id": "6:1680156494347219069",
+          "name": "ciudad",
+          "type": 9
+        },
+        {
+          "id": "7:707258722168042401",
+          "name": "codigo_postal",
+          "type": 5
+        },
+        {
+          "id": "8:7083731043887033348",
+          "name": "fecha_registro",
+          "type": 9
+        },
+        {
+          "id": "9:2982434598930050248",
+          "name": "cuenta",
+          "type": 9
+        },
+        {
+          "id": "10:282598578869173794",
+          "name": "status",
+          "type": 1
+        },
+        {
+          "id": "11:5153580891674553032",
+          "name": "consec",
+          "type": 9
+        },
+        {
+          "id": "12:3786112018341314560",
+          "name": "rango",
+          "type": 9
+        },
+        {
+          "id": "13:8584085789205854314",
+          "name": "lun",
+          "type": 5
+        },
+        {
+          "id": "14:826690576351193435",
+          "name": "mar",
+          "type": 5
+        },
+        {
+          "id": "15:3109147743073923902",
+          "name": "mie",
+          "type": 5
+        },
+        {
+          "id": "16:205797806777071400",
+          "name": "jue",
+          "type": 5
+        },
+        {
+          "id": "17:6202896322441636700",
+          "name": "vie",
+          "type": 5
+        },
+        {
+          "id": "18:1621063264802411993",
+          "name": "sab",
+          "type": 5
+        },
+        {
+          "id": "19:5466600372242801279",
+          "name": "dom",
+          "type": 5
+        },
+        {
+          "id": "20:5061938234501884662",
+          "name": "lunOrder",
+          "type": 5
+        },
+        {
+          "id": "21:1613945158196087714",
+          "name": "marOrder",
+          "type": 5
+        },
+        {
+          "id": "22:2553280226807929748",
+          "name": "mieOrder",
+          "type": 5
+        },
+        {
+          "id": "23:7481455435038779368",
+          "name": "jueOrder",
+          "type": 5
+        },
+        {
+          "id": "24:7793085868539753895",
+          "name": "vieOrder",
+          "type": 5
+        },
+        {
+          "id": "25:6535229610236877387",
+          "name": "sabOrder",
+          "type": 5
+        },
+        {
+          "id": "26:3457818024587699215",
+          "name": "domOrder",
+          "type": 5
+        },
+        {
+          "id": "27:9194452644802495080",
+          "name": "visitado",
+          "type": 5
+        },
+        {
+          "id": "28:6805759482249377533",
+          "name": "latitud",
+          "type": 9
+        },
+        {
+          "id": "29:1672097256330408029",
+          "name": "longitud",
+          "type": 9
+        },
+        {
+          "id": "30:9201376060720765071",
+          "name": "contacto_phone",
+          "type": 9
+        },
+        {
+          "id": "31:4377519157335462429",
+          "name": "recordatorio",
+          "type": 9
+        },
+        {
+          "id": "32:8294105859540178055",
+          "name": "isRecordatorio",
+          "type": 1
+        },
+        {
+          "id": "33:8600725232448388577",
+          "name": "visitasNoefectivas",
+          "type": 5
+        },
+        {
+          "id": "34:6677687674518400700",
+          "name": "isCredito",
+          "type": 1
+        },
+        {
+          "id": "35:1733673520857141015",
+          "name": "limite_credito",
+          "type": 8
+        },
+        {
+          "id": "36:8657905580910124328",
+          "name": "saldo_credito",
+          "type": 8
+        },
+        {
+          "id": "37:6084206262672533159",
+          "name": "matriz",
+          "type": 9
+        },
+        {
+          "id": "38:4263565994541217344",
+          "name": "date_sync",
+          "type": 9
+        },
+        {
+          "id": "39:6064207945962583951",
+          "name": "updatedAt",
+          "type": 9
+        },
+        {
+          "id": "40:130596709046895999",
+          "name": "ventaClientId",
+          "type": 5
+        },
+        {
+          "id": "41:123441611691137048",
+          "name": "ventaFecha",
+          "type": 9
+        },
+        {
+          "id": "42:4590172231479759505",
+          "name": "ventaCreatedAt",
+          "type": 9
+        },
+        {
+          "id": "43:3758641819766102465",
+          "name": "ventaUpdatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:4118591975265459199",
+      "lastPropertyId": "11:4546555374705355229",
+      "name": "CobdetBox",
+      "properties": [
+        {
+          "id": "1:6821040770594566138",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:8276667929345386823",
+          "name": "cobro",
+          "type": 6
+        },
+        {
+          "id": "3:5852075199496974423",
+          "name": "cobranza",
+          "type": 9
+        },
+        {
+          "id": "4:1724626146723077905",
+          "name": "clienteId",
+          "indexId": "3:180912079549128686",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ClientBox"
+        },
+        {
+          "id": "5:289904923078002272",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "6:4936912663836921546",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "7:1358075008603493269",
+          "name": "importe",
+          "type": 8
+        },
+        {
+          "id": "8:4899958528357067872",
+          "name": "venta",
+          "type": 6
+        },
+        {
+          "id": "9:500246898046587878",
+          "name": "empleadoId",
+          "indexId": "4:1146137585642004792",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "10:4953956473820767012",
+          "name": "abono",
+          "type": 5
+        },
+        {
+          "id": "11:4546555374705355229",
+          "name": "saldo",
+          "type": 8
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:5554747568129404446",
+      "lastPropertyId": "10:6575316481993243875",
+      "name": "CobrosBox",
+      "properties": [
+        {
+          "id": "1:4918310607949879943",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:7232215051173365501",
+          "name": "cobro",
+          "type": 5
+        },
+        {
+          "id": "3:9043295137884846305",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "4:3111161561018851990",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "5:7217865989462573840",
+          "name": "clienteId",
+          "indexId": "5:5466608094754505752",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ClientBox"
+        },
+        {
+          "id": "6:9173742026429044528",
+          "name": "empleadoId",
+          "indexId": "6:5668657579142158004",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "7:8599330333100779843",
+          "name": "importe",
+          "type": 8
+        },
+        {
+          "id": "8:200146084760264240",
+          "name": "estado",
+          "type": 9
+        },
+        {
+          "id": "9:4324132292664218689",
+          "name": "temporal",
+          "type": 5
+        },
+        {
+          "id": "10:6575316481993243875",
+          "name": "sinc",
+          "type": 5
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:2664362560264214661",
+          "name": "listaPartidas",
+          "targetId": "5:4118591975265459199"
+        }
+      ]
+    },
+    {
+      "id": "7:6132253915678275907",
+      "lastPropertyId": "14:8627208324356156086",
+      "name": "EmployeeBox",
+      "properties": [
+        {
+          "id": "1:9195794313214201872",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:3024250360467149951",
+          "name": "nombre",
+          "type": 9
+        },
+        {
+          "id": "3:4820290272463363486",
+          "name": "direccion",
+          "type": 9
+        },
+        {
+          "id": "4:5145421145421805727",
+          "name": "email",
+          "type": 9
+        },
+        {
+          "id": "5:6204027299628119792",
+          "name": "telefono",
+          "type": 9
+        },
+        {
+          "id": "6:1804251400820784013",
+          "name": "fecha_nacimiento",
+          "type": 9
+        },
+        {
+          "id": "7:6278164689486714768",
+          "name": "fecha_ingreso",
+          "type": 9
+        },
+        {
+          "id": "8:3841997134752770191",
+          "name": "contrasenia",
+          "type": 9
+        },
+        {
+          "id": "9:9161072165813950360",
+          "name": "identificador",
+          "type": 9
+        },
+        {
+          "id": "10:1994284784017547785",
+          "name": "status",
+          "type": 1
+        },
+        {
+          "id": "11:9098983796175079606",
+          "name": "path_image",
+          "type": 9
+        },
+        {
+          "id": "12:7377669013368172075",
+          "name": "rute",
+          "type": 9
+        },
+        {
+          "id": "13:8675548413381391463",
+          "name": "updatedAt",
+          "type": 9
+        },
+        {
+          "id": "14:8627208324356156086",
+          "name": "clientId",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:6391764578866626624",
+      "lastPropertyId": "5:7616013212748652625",
+      "name": "LastSellBox",
+      "properties": [
+        {
+          "id": "1:4085745440183932677",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:739587903548648803",
+          "name": "ventaClientId",
+          "type": 5
+        },
+        {
+          "id": "3:3949327227891803565",
+          "name": "ventaFecha",
+          "type": 9
+        },
+        {
+          "id": "4:4208644008520871629",
+          "name": "ventaCreatedAt",
+          "type": 9
+        },
+        {
+          "id": "5:7616013212748652625",
+          "name": "ventaUpdatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "9:3129296207542572635",
+      "lastPropertyId": "3:8601690736049334332",
+      "name": "PersistancePricesBox",
+      "properties": [
+        {
+          "id": "1:9060714915878282948",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:7013423658329317451",
+          "name": "mostrar",
+          "type": 9
+        },
+        {
+          "id": "3:8601690736049334332",
+          "name": "valor",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "10:2165295771100455546",
+      "lastPropertyId": "10:6460953144132681664",
+      "name": "PlayingBox",
+      "properties": [
+        {
+          "id": "1:8250011169415063549",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:8976801042996085573",
+          "name": "venta",
+          "type": 6
+        },
+        {
+          "id": "3:6447993482697874868",
+          "name": "articuloId",
+          "indexId": "7:2819413524355573877",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ProductBox"
+        },
+        {
+          "id": "4:6218728973981148600",
+          "name": "cantidad",
+          "type": 5
+        },
+        {
+          "id": "5:4162822748518777635",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "6:2956886554570683799",
+          "name": "impuesto",
+          "type": 8
+        },
+        {
+          "id": "7:8090613736335474050",
+          "name": "descripcion",
+          "type": 9
+        },
+        {
+          "id": "8:6737333158179728350",
+          "name": "observ",
+          "type": 9
+        },
+        {
+          "id": "9:6420426409982411558",
+          "name": "fecha",
+          "type": 10
+        },
+        {
+          "id": "10:6460953144132681664",
+          "name": "hora",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "11:4839702128608801871",
+      "lastPropertyId": "4:7904116602250025940",
+      "name": "PrinterBox",
+      "properties": [
+        {
+          "id": "1:462757326510476648",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:5770302676602717340",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:5191587331368995936",
+          "name": "address",
+          "type": 9
+        },
+        {
+          "id": "4:7904116602250025940",
+          "name": "idPrinter",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "12:4840597654428146895",
+      "lastPropertyId": "10:3931528297318353973",
+      "name": "ProductBox",
+      "properties": [
+        {
+          "id": "1:982338634820848816",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:2828019060323145943",
+          "name": "articulo",
+          "type": 9
+        },
+        {
+          "id": "3:5741703391804155996",
+          "name": "descripcion",
+          "type": 9
+        },
+        {
+          "id": "4:2405645368506879595",
+          "name": "status",
+          "type": 9
+        },
+        {
+          "id": "5:1973394173231866375",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "6:6265083071853124111",
+          "name": "iva",
+          "type": 5
+        },
+        {
+          "id": "7:8582809913727767603",
+          "name": "codigo_barras",
+          "type": 9
+        },
+        {
+          "id": "8:4584364115465734277",
+          "name": "path_img",
+          "type": 9
+        },
+        {
+          "id": "9:582142455628588504",
+          "name": "existencia",
+          "type": 5
+        },
+        {
+          "id": "10:3931528297318353973",
+          "name": "updatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "13:1957183203001721923",
+      "lastPropertyId": "5:3258036505774483348",
+      "name": "RolesBox",
+      "properties": [
+        {
+          "id": "1:2028734407565015237",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:2691942247710979377",
+          "name": "empleadoId",
+          "indexId": "8:705327359060774157",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "3:1958864846220278474",
+          "name": "modulo",
+          "type": 9
+        },
+        {
+          "id": "4:4548585044913673554",
+          "name": "active",
+          "type": 1
+        },
+        {
+          "id": "5:3258036505774483348",
+          "name": "identificador",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "14:7267058710236435690",
+      "lastPropertyId": "5:2444650070138470498",
+      "name": "RoutingBox",
+      "properties": [
+        {
+          "id": "1:4314882953307675396",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:4515643836843944786",
+          "name": "region",
+          "type": 9
+        },
+        {
+          "id": "3:4228639259957905403",
+          "name": "ruta",
+          "type": 9
+        },
+        {
+          "id": "4:4453602536834872428",
+          "name": "dia",
+          "type": 5
+        },
+        {
+          "id": "5:2444650070138470498",
+          "name": "fecha",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "15:636513653274345244",
+      "lastPropertyId": "36:8665196169128779365",
+      "name": "RuteClientBox",
+      "properties": [
+        {
+          "id": "1:1315880357819920319",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:1184436595303540613",
+          "name": "nombre_comercial",
+          "type": 9
+        },
+        {
+          "id": "3:277364820388274317",
+          "name": "calle",
+          "type": 9
+        },
+        {
+          "id": "4:6946700615395010138",
+          "name": "numero",
+          "type": 9
+        },
+        {
+          "id": "5:9161948674609336445",
+          "name": "colonia",
+          "type": 9
+        },
+        {
+          "id": "6:1171277954121887063",
+          "name": "cuenta",
+          "type": 9
+        },
+        {
+          "id": "7:2964227066849775880",
+          "name": "rango",
+          "type": 9
+        },
+        {
+          "id": "8:8092289546652471621",
+          "name": "lun",
+          "type": 5
+        },
+        {
+          "id": "9:9035830985154279249",
+          "name": "mar",
+          "type": 5
+        },
+        {
+          "id": "10:485554597559818834",
+          "name": "mie",
+          "type": 5
+        },
+        {
+          "id": "11:4912623847105269262",
+          "name": "jue",
+          "type": 5
+        },
+        {
+          "id": "12:391836810702222855",
+          "name": "vie",
+          "type": 5
+        },
+        {
+          "id": "13:612873870473477073",
+          "name": "sab",
+          "type": 5
+        },
+        {
+          "id": "14:2905809212733871518",
+          "name": "dom",
+          "type": 5
+        },
+        {
+          "id": "15:1920193107311207954",
+          "name": "lunOrder",
+          "type": 5
+        },
+        {
+          "id": "16:523337052034653164",
+          "name": "marOrder",
+          "type": 5
+        },
+        {
+          "id": "17:952536643353443568",
+          "name": "mieOrder",
+          "type": 5
+        },
+        {
+          "id": "18:1320471070813013907",
+          "name": "jueOrder",
+          "type": 5
+        },
+        {
+          "id": "19:5513970424423749712",
+          "name": "vieOrder",
+          "type": 5
+        },
+        {
+          "id": "20:103171778545146976",
+          "name": "sabOrder",
+          "type": 5
+        },
+        {
+          "id": "21:7380898547012234496",
+          "name": "domOrder",
+          "type": 5
+        },
+        {
+          "id": "22:7714445822456809573",
+          "name": "order",
+          "type": 5
+        },
+        {
+          "id": "23:3823222761771503555",
+          "name": "visitado",
+          "type": 5
+        },
+        {
+          "id": "24:8666538241569710422",
+          "name": "latitud",
+          "type": 9
+        },
+        {
+          "id": "25:7270250598385550767",
+          "name": "longitud",
+          "type": 9
+        },
+        {
+          "id": "26:3740462756226352082",
+          "name": "phone_contact",
+          "type": 9
+        },
+        {
+          "id": "27:8249485366675357936",
+          "name": "status",
+          "type": 1
+        },
+        {
+          "id": "28:8748198149408207603",
+          "name": "isCredito",
+          "type": 1
+        },
+        {
+          "id": "29:4507119125509982604",
+          "name": "recordatorio",
+          "type": 9
+        },
+        {
+          "id": "30:734153658113133906",
+          "name": "isRecordatorio",
+          "type": 1
+        },
+        {
+          "id": "31:5567204224418466064",
+          "name": "date_sync",
+          "type": 9
+        },
+        {
+          "id": "32:4138811998515778482",
+          "name": "updatedAt",
+          "type": 9
+        },
+        {
+          "id": "33:1657873079426224893",
+          "name": "ventaClientId",
+          "type": 5
+        },
+        {
+          "id": "34:6933570846836427649",
+          "name": "ventaFecha",
+          "type": 9
+        },
+        {
+          "id": "35:7155990861567304435",
+          "name": "ventaCreatedAt",
+          "type": 9
+        },
+        {
+          "id": "36:8665196169128779365",
+          "name": "ventaUpdatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "16:2475326700683734940",
+      "lastPropertyId": "25:1370434629474401028",
+      "name": "SellBox",
+      "properties": [
+        {
+          "id": "1:4017308601421409298",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:7931402777418382421",
+          "name": "venta",
+          "type": 6
+        },
+        {
+          "id": "3:8401263535043956694",
+          "name": "tipo_doc",
+          "type": 9
+        },
+        {
+          "id": "4:8470960737664427855",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "5:715938164733654627",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "6:7073813243802188803",
+          "name": "clienteId",
+          "type": 6
+        },
+        {
+          "id": "7:5547688539801495889",
+          "name": "empleadoId",
+          "type": 6
+        },
+        {
+          "id": "8:3548432274434975605",
+          "name": "importe",
+          "type": 8
+        },
+        {
+          "id": "9:6181078624555052209",
+          "name": "impuesto",
+          "type": 8
+        },
+        {
+          "id": "10:76413469761026545",
+          "name": "datos",
+          "type": 9
+        },
+        {
+          "id": "11:6196940023873991979",
+          "name": "estado",
+          "type": 9
+        },
+        {
+          "id": "12:1659704292962688184",
+          "name": "corte",
+          "type": 9
+        },
+        {
+          "id": "13:6785144224085995523",
+          "name": "temporal",
+          "type": 5
+        },
+        {
+          "id": "14:3888116780802104837",
+          "name": "sync",
+          "type": 5
+        },
+        {
+          "id": "15:4535284322339250279",
+          "name": "latidud",
+          "type": 9
+        },
+        {
+          "id": "16:2428817484623505162",
+          "name": "longitud",
+          "type": 9
+        },
+        {
+          "id": "17:4087413920263583884",
+          "name": "ticket",
+          "type": 9
+        },
+        {
+          "id": "18:1436859483854586044",
+          "name": "tipo_venta",
+          "type": 9
+        },
+        {
+          "id": "19:3322621187183266833",
+          "name": "usuario_cancelo",
+          "type": 9
+        },
+        {
+          "id": "20:9140985238855968750",
+          "name": "cobranza",
+          "type": 9
+        },
+        {
+          "id": "21:736408643477050470",
+          "name": "factudado",
+          "type": 9
+        },
+        {
+          "id": "22:7666029132292454225",
+          "name": "stockId",
+          "type": 5
+        },
+        {
+          "id": "23:6877847119541200288",
+          "name": "clientId",
+          "indexId": "9:5430516365139041805",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ClientBox"
+        },
+        {
+          "id": "24:7929885197818533759",
+          "name": "employeeId",
+          "indexId": "10:7290226468255836224",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "25:1370434629474401028",
+          "name": "updatedAt",
+          "type": 9
+        }
+      ],
+      "relations": [
+        {
+          "id": "2:2718302301396415038",
+          "name": "listaPartidas",
+          "targetId": "10:2165295771100455546"
+        }
+      ]
+    },
+    {
+      "id": "17:461527858953358198",
+      "lastPropertyId": "7:5606500421438365697",
+      "name": "SellModelBox",
+      "properties": [
+        {
+          "id": "1:7202818182639957040",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:4598234098231411818",
+          "name": "articulo",
+          "type": 9
+        },
+        {
+          "id": "3:3976412563910146097",
+          "name": "descripcion",
+          "type": 9
+        },
+        {
+          "id": "4:7672386395806256924",
+          "name": "cantidad",
+          "type": 5
+        },
+        {
+          "id": "5:5316454242380579790",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "6:7304208755116171307",
+          "name": "impuesto",
+          "type": 8
+        },
+        {
+          "id": "7:5606500421438365697",
+          "name": "observ",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "18:8083912217048176003",
+      "lastPropertyId": "6:488043644033620306",
+      "name": "SessionBox",
+      "properties": [
+        {
+          "id": "1:8637396903632124881",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:5583146649842287299",
+          "name": "remember",
+          "type": 1
+        },
+        {
+          "id": "3:553879689409260669",
+          "name": "empleadoId",
+          "type": 6
+        },
+        {
+          "id": "4:2541562500720779829",
+          "name": "employeeIdentifier",
+          "type": 9
+        },
+        {
+          "id": "5:3120121767689713074",
+          "name": "clientId",
+          "type": 9
+        },
+        {
+          "id": "6:488043644033620306",
+          "name": "employeeId",
+          "indexId": "11:6287070953693060720",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "19:2831107776272870421",
+      "lastPropertyId": "6:7635075532314634925",
+      "name": "SpecialPricesBox",
+      "properties": [
+        {
+          "id": "1:2488721970860375080",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:1162486210461736817",
+          "name": "cliente",
+          "type": 9
+        },
+        {
+          "id": "3:7041210012583225229",
+          "name": "articulo",
+          "type": 9
+        },
+        {
+          "id": "4:755515465523928080",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "5:4404648884201426180",
+          "name": "active",
+          "type": 1
+        },
+        {
+          "id": "6:7635075532314634925",
+          "name": "fecha_sync",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "20:3335077878328919720",
+      "lastPropertyId": "13:5862213284728665582",
+      "name": "StockBox",
+      "properties": [
+        {
+          "id": "1:7710919102723778446",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:3111430471088235473",
+          "name": "estado",
+          "type": 9
+        },
+        {
+          "id": "3:6092886854552280067",
+          "name": "articuloId",
+          "indexId": "12:6191150404285994331",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ProductBox"
+        },
+        {
+          "id": "4:2546749624679841895",
+          "name": "cantidad",
+          "type": 5
+        },
+        {
+          "id": "5:893783425388603101",
+          "name": "lastCantidad",
+          "type": 5
+        },
+        {
+          "id": "6:1230619193385220806",
+          "name": "totalCantidad",
+          "type": 5
+        },
+        {
+          "id": "7:1565201795609609732",
+          "name": "precio",
+          "type": 8
+        },
+        {
+          "id": "8:3010484431086898873",
+          "name": "impuesto",
+          "type": 8
+        },
+        {
+          "id": "9:456197688840038515",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "10:5475241102414176271",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "11:6064015031865305342",
+          "name": "articulo_clave",
+          "type": 9
+        },
+        {
+          "id": "12:966730654117228355",
+          "name": "stockId",
+          "type": 5
+        },
+        {
+          "id": "13:5862213284728665582",
+          "name": "loadId",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "21:3027172298055807567",
+      "lastPropertyId": "4:8820312864616845055",
+      "name": "StockHistoryBox",
+      "properties": [
+        {
+          "id": "1:1616830440156881814",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:1732364921430493915",
+          "name": "articuloId",
+          "indexId": "13:2697579375722816743",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ProductBox"
+        },
+        {
+          "id": "3:6802684603024584843",
+          "name": "cantidad",
+          "type": 5
+        },
+        {
+          "id": "4:8820312864616845055",
+          "name": "articulo_clave",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "22:1097425172157523084",
+      "lastPropertyId": "3:206565761032808258",
+      "name": "TaskBox",
+      "properties": [
+        {
+          "id": "1:7203038293599067851",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:422734640859091132",
+          "name": "date",
+          "type": 9
+        },
+        {
+          "id": "3:206565761032808258",
+          "name": "task",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "23:585863928916471524",
+      "lastPropertyId": "36:1482075762027968679",
+      "name": "TempRuteClientBox",
+      "properties": [
+        {
+          "id": "1:4559013619239468344",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:208747567154702365",
+          "name": "nombre_comercial",
+          "type": 9
+        },
+        {
+          "id": "3:4115639677251266164",
+          "name": "calle",
+          "type": 9
+        },
+        {
+          "id": "4:8940407810189770089",
+          "name": "numero",
+          "type": 9
+        },
+        {
+          "id": "5:2631432534516971188",
+          "name": "colonia",
+          "type": 9
+        },
+        {
+          "id": "6:7529490626581171433",
+          "name": "cuenta",
+          "type": 9
+        },
+        {
+          "id": "7:8379315540474857924",
+          "name": "rango",
+          "type": 9
+        },
+        {
+          "id": "8:3137337028440465339",
+          "name": "lun",
+          "type": 5
+        },
+        {
+          "id": "9:8936424283329670153",
+          "name": "mar",
+          "type": 5
+        },
+        {
+          "id": "10:895873093688311995",
+          "name": "mie",
+          "type": 5
+        },
+        {
+          "id": "11:8738267233700823806",
+          "name": "jue",
+          "type": 5
+        },
+        {
+          "id": "12:2566528799451054657",
+          "name": "vie",
+          "type": 5
+        },
+        {
+          "id": "13:5283818497264957727",
+          "name": "sab",
+          "type": 5
+        },
+        {
+          "id": "14:8318530204108199020",
+          "name": "dom",
+          "type": 5
+        },
+        {
+          "id": "15:6530873280204088351",
+          "name": "lunOrder",
+          "type": 5
+        },
+        {
+          "id": "16:3562493676029620421",
+          "name": "marOrder",
+          "type": 5
+        },
+        {
+          "id": "17:8153088497701339665",
+          "name": "mieOrder",
+          "type": 5
+        },
+        {
+          "id": "18:7410994539727476998",
+          "name": "jueOrder",
+          "type": 5
+        },
+        {
+          "id": "19:8330363796544105727",
+          "name": "vieOrder",
+          "type": 5
+        },
+        {
+          "id": "20:7333680271378105154",
+          "name": "sabOrder",
+          "type": 5
+        },
+        {
+          "id": "21:3780861623317055332",
+          "name": "domOrder",
+          "type": 5
+        },
+        {
+          "id": "22:3104960295390632850",
+          "name": "order",
+          "type": 5
+        },
+        {
+          "id": "23:4736329919477380385",
+          "name": "visitado",
+          "type": 5
+        },
+        {
+          "id": "24:1518084811667478772",
+          "name": "latitud",
+          "type": 9
+        },
+        {
+          "id": "25:4316369659064732727",
+          "name": "longitud",
+          "type": 9
+        },
+        {
+          "id": "26:1799532777292935211",
+          "name": "phone_contact",
+          "type": 9
+        },
+        {
+          "id": "27:929482105415053572",
+          "name": "status",
+          "type": 1
+        },
+        {
+          "id": "28:4087532038240441735",
+          "name": "isCredito",
+          "type": 1
+        },
+        {
+          "id": "29:4404664108494950441",
+          "name": "recordatorio",
+          "type": 9
+        },
+        {
+          "id": "30:986553109246033753",
+          "name": "isRecordatorio",
+          "type": 1
+        },
+        {
+          "id": "31:1251557482090920830",
+          "name": "date_sync",
+          "type": 9
+        },
+        {
+          "id": "32:719563707966788845",
+          "name": "updatedAt",
+          "type": 9
+        },
+        {
+          "id": "33:8734155693410158847",
+          "name": "ventaClientId",
+          "type": 5
+        },
+        {
+          "id": "34:8318029169883255339",
+          "name": "ventaFecha",
+          "type": 9
+        },
+        {
+          "id": "35:8270257274281001282",
+          "name": "ventaCreatedAt",
+          "type": 9
+        },
+        {
+          "id": "36:1482075762027968679",
+          "name": "ventaUpdatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "24:3821465800056864517",
+      "lastPropertyId": "9:1113237953092463986",
+      "name": "VisitsBox",
+      "properties": [
+        {
+          "id": "1:3797796154507020929",
+          "name": "id",
+          "type": 6,
+          "flags": 129
+        },
+        {
+          "id": "2:7948426364706521111",
+          "name": "fecha",
+          "type": 9
+        },
+        {
+          "id": "3:1099869796973129397",
+          "name": "hora",
+          "type": 9
+        },
+        {
+          "id": "4:6319113608037877391",
+          "name": "clienteId",
+          "indexId": "14:8015374576079021362",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ClientBox"
+        },
+        {
+          "id": "5:151230271284485056",
+          "name": "empleadoId",
+          "indexId": "15:9223329830154229886",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "6:4935306640040739393",
+          "name": "latidud",
+          "type": 9
+        },
+        {
+          "id": "7:5011241390586367353",
+          "name": "longitud",
+          "type": 9
+        },
+        {
+          "id": "8:6055755436894726255",
+          "name": "motivo_visita",
+          "type": 9
+        },
+        {
+          "id": "9:1113237953092463986",
+          "name": "updatedAt",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "24:3821465800056864517",
+  "lastIndexId": "15:9223329830154229886",
+  "lastRelationId": "2:2718302301396415038",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

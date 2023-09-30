@@ -589,9 +589,9 @@ class RequestClient {
         }
 
         // not working fix server issue
-        fun requestClientById(clientId: String, onGetClientByIdListener: ClientInteractor.GetClientByIdListener) {
+        fun requestClientById(ids: List<String?>, onGetClientByIdListener: ClientInteractor.GetClientByIdListener) {
             val employees = getEmployee()
-            val clientByIdBodyJson = ClientByIdBodyJson(cuenta = clientId, clientId = employees?.clientId?:"tenet" )
+            val clientByIdBodyJson = ClientByIdBodyJson(ids = ids, clientId = employees?.clientId?:"tenet" )
 
             val getClient = ApiServices.getClientRetrofit().create(
                 PointApi::class.java

@@ -59,7 +59,7 @@ interface PointApi {
     @POST("getAllClientsAndLastSellByRute")
     fun getAllClientsAndLastSellByRute(@Body clientsByRute: RequestClientsByRute?): Call<ClientJson>
 
-    @POST("getClienteByID")
+    @POST("getClientesByIDs")
     fun getClienteByID(@Body clientByIdBodyJson: ClientByIdBodyJson): Call<ClientJson>
 
     @POST("saveCliente")
