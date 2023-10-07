@@ -548,8 +548,8 @@ class SellViewModel: ViewModel() {
                         clienteBean1.saldo_credito + totalVenta
                     clienteBean1.saldo_credito = saldoNuevo
                     clienteBean1.visitasNoefectivas = 0
-                    clienteBean1.date_sync =
-                        Utils.fechaActual()
+                    clienteBean1.date_sync = Utils.fechaActual()
+                    clienteBean1.updatedAt = Utils.fechaActualHMS()
                     clientDao1.insertBox(clienteBean1)
                     clienteID = clienteBean1.id
                 }

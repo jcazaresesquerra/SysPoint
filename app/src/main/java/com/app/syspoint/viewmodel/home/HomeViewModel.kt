@@ -217,7 +217,7 @@ class HomeViewModel: ViewModel() {
             val ruteoBean = routingDao.getRutaEstablecida()
             if (ruteoBean != null) {
                 val vendedoresBean = getEmployee()
-                val ruta = if (ruteoBean.ruta != null && !ruteoBean.ruta!!.isEmpty()) ruteoBean.ruta else vendedoresBean?.rute
+                val ruta = if (ruteoBean.ruta != null && ruteoBean.ruta!!.isNotEmpty()) ruteoBean.ruta else vendedoresBean?.rute
                 ClientInteractorImp().executeGetAllClientsAndLastSellByRute(ruta!!, ruteoBean.dia, object : GetAllClientsListener {
                     override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
                         getClientsByRute.postValue(true)
