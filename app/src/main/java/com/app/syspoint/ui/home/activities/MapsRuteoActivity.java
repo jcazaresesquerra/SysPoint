@@ -241,8 +241,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         gMap.clear();
-        for (int i = 1; i < mData.size(); i++) {
-            RuteClientBox item = mData.get(i);
+        int i = 1;
+        for (RuteClientBox item : mData) {
             if (item.getLatitud() != null && item.getLongitud() != null) {
                 LatLng position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
@@ -250,8 +250,8 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
                 markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
                 Bitmap bitmap = getBitmapMarker(i);
+                i++;
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
-
                 markerOptions.snippet(item.getCuenta());
                 markerOptions.draggable(true);
                 gMap.addMarker(markerOptions);
