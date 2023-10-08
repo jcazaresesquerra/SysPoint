@@ -223,6 +223,7 @@ class ChargeViewModel: ViewModel() {
         //Actualizamos el saldo del cliente
         clienteBean.saldo_credito = nuevoSaldo
         clienteBean.date_sync = Utils.fechaActual()
+        clienteBean.updatedAt = Utils.fechaActualHMS()
         clientesDao.insert(clienteBean)
 
         //Creamos el template del timbre
@@ -332,6 +333,7 @@ class ChargeViewModel: ViewModel() {
             cliente.isCredito = if (item.isCredito) 1 else 0
             cliente.saldo_credito = item.saldo_credito
             cliente.limite_credito = item.limite_credito
+            cliente.updatedAt = item.updatedAt
             if (item.matriz === "null" && item.matriz == null) {
                 cliente.matriz = "null"
             } else {

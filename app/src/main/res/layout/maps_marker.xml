@@ -3,6 +3,7 @@
     android:id="@+id/framelayout"
     android:layout_width="30dp"
     android:layout_height="40dp">
+
     <ImageView
         android:id="@+id/marker"
         android:layout_height="40dp"
@@ -10,10 +11,12 @@
         android:background="@drawable/gm_mark_red"/>
 
     <TextView android:id="@+id/marker_number"
-        android:layout_width="wrap_content"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:textSize="15sp"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:textSize="12sp"
         android:textColor="@color/white"
-        android:text="25"/>
+        android:text="123"/>
 </RelativeLayout>

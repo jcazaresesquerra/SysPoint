@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -240,17 +241,15 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
         }
 
         gMap.clear();
-        LatLng position = null;
-        int i = 1;
-        for (RuteClientBox item : mData) {
+        for (int i = 1; i < mData.size(); i++) {
+            RuteClientBox item = mData.get(i);
             if (item.getLatitud() != null && item.getLongitud() != null) {
-                position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
+                LatLng position = new LatLng(Double.parseDouble(item.getLatitud()), Double.parseDouble(item.getLongitud()));
 
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(position);
                 markerOptions.title(item.getNombre_comercial());
                 Bitmap bitmap = getBitmapMarker(i);
-                i++;
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
 
                 markerOptions.snippet(item.getCuenta());
@@ -473,17 +472,24 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private Bitmap getBitmapMarker(int order) {
-        RelativeLayout tv = (RelativeLayout) this.getLayoutInflater().inflate(R.layout.maps_marker, null, false);
-        tv.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        RelativeLayout marker = (RelativeLayout) this.getLayoutInflater().inflate(R.layout.maps_marker, null, false);
+        marker.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        tv.layout(0, 0, tv.getMeasuredWidth(), tv.getMeasuredHeight());
+        marker.layout(0, 0, marker.getMeasuredWidth(), marker.getMeasuredHeight());
 
-        TextView text = tv.findViewById(R.id.marker_number);
+        TextView text = marker.findViewById(R.id.marker_number);
         text.setText(String.valueOf(order));
 
-        tv.setDrawingCacheEnabled(true);
-        tv.buildDrawingCache();
-        Bitmap bm = tv.getDrawingCache();
+        ImageView iv = marker.findViewById(R.id.marker);
+        if (order == 1) {
+            iv.setImageResource(R.drawable.gm_mark_orange);
+        } else {
+            iv.setImageResource(R.drawable.gm_mark_red);
+        }
+
+        marker.setDrawingCacheEnabled(true);
+        marker.buildDrawingCache();
+        Bitmap bm = marker.getDrawingCache();
         return bm;
     }
 
