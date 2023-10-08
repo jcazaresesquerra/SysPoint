@@ -542,7 +542,7 @@ class LoginViewModel: BaseViewModel() {
     }
 
     private fun startDownloadInFirebase(islandRef: StorageReference, fileName: String, versionToDownload: String) {
-        val rootPath = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "syspoint/apks/")
+        val rootPath = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "tenet/apks/")
         if (!rootPath.exists()) {
             rootPath.mkdirs()
         }
