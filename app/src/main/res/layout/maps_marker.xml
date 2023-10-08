@@ -7,8 +7,7 @@
     <ImageView
         android:id="@+id/marker"
         android:layout_height="40dp"
-        android:layout_width="30dp"
-        android:background="@drawable/gm_mark_red"/>
+        android:layout_width="30dp" />
 
     <TextView android:id="@+id/marker_number"
         android:layout_width="30dp"
