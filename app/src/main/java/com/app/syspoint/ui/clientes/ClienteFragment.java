@@ -345,18 +345,22 @@ public class ClienteFragment extends Fragment {
             }
             final RolesDao rolesDao = new RolesDao();
             RolesBox rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
+            RolesBox rolesBean1 = rolesDao.getRolByEmpleado(identificador, "EditarClientes");
 
             if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
-                if (rolesBean != null) {
+                if (rolesBean != null && rolesBean1 != null) {
                     if (rolesBean.getActive()) {
-                        //editCliente(cliente.getCuenta()); //btnEditarCliente #codigotemporal
-                        Toast.makeText(getContext(), "Opcion desactivada temporalmente", Toast.LENGTH_LONG).show();
+                        editCliente(cliente.getCuenta()); //btnEditarCliente #codigotemporal
+                        //Toast.makeText(getContext(), "Opcion desactivada temporalmente", Toast.LENGTH_LONG).show();
                         return;
                     } else {
 
                         Toast.makeText(getContext(), "No tienes privilegios para editar clientes", Toast.LENGTH_LONG).show();
                         return;
                     }
+                }else{
+                    Toast.makeText(getContext(), "No tienes privilegios para editar clientes", Toast.LENGTH_LONG).show();
+                    return;
                 }
 
             } else if (strName.compareToIgnoreCase("Nueva venta") == 0) {
