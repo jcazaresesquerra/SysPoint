@@ -320,15 +320,14 @@ public class ClienteFragment extends Fragment {
         builderSingle.setTitle("Seleccionar opción");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
+
         arrayAdapter.add("Editar");
         arrayAdapter.add("Nueva venta");
         arrayAdapter.add("Ver Mapa");
         arrayAdapter.add("Editar precios especiales");
         arrayAdapter.add("Agregar a ruta");
         arrayAdapter.add(("Recordatorio"));
-        if (cliente.isCredito()) {
-            arrayAdapter.add(("Cobranza"));
-        }
+        arrayAdapter.add(("Cobranza"));
 
         builderSingle.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
 
