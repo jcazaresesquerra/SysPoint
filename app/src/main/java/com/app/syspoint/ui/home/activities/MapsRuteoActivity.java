@@ -482,7 +482,7 @@ public class MapsRuteoActivity extends AppCompatActivity implements OnMapReadyCa
 
         ImageView iv = marker.findViewById(R.id.marker);
         if (order == 1) {
-            iv.setImageResource(R.drawable.gm_mark_orange);
+            iv.setImageResource(R.drawable.gm_mark_green);
         } else {
             iv.setImageResource(R.drawable.gm_mark_red);
         }

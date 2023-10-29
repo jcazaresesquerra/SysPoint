@@ -1130,7 +1130,7 @@
     },
     {
       "id": "16:2475326700683734940",
-      "lastPropertyId": "24:7929885197818533759",
+      "lastPropertyId": "25:1370434629474401028",
       "name": "SellBox",
       "properties": [
         {
@@ -1259,6 +1259,11 @@
           "type": 11,
           "flags": 520,
           "relationTarget": "EmployeeBox"
+        },
+        {
+          "id": "25:1370434629474401028",
+          "name": "updatedAt",
+          "type": 9
         }
       ],
       "relations": [

@@ -320,15 +320,14 @@ public class ClienteFragment extends Fragment {
         builderSingle.setTitle("Seleccionar opción");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line);
+
         arrayAdapter.add("Editar");
         arrayAdapter.add("Nueva venta");
         arrayAdapter.add("Ver Mapa");
         arrayAdapter.add("Editar precios especiales");
         arrayAdapter.add("Agregar a ruta");
         arrayAdapter.add(("Recordatorio"));
-        if (cliente.isCredito()) {
-            arrayAdapter.add(("Cobranza"));
-        }
+        arrayAdapter.add(("Cobranza"));
 
         builderSingle.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
 
@@ -345,18 +344,22 @@ public class ClienteFragment extends Fragment {
             }
             final RolesDao rolesDao = new RolesDao();
             RolesBox rolesBean = rolesDao.getRolByEmpleado(identificador, "Clientes");
+            RolesBox rolesBean1 = rolesDao.getRolByEmpleado(identificador, "EditarClientes");
 
             if (strName == null || strName.compareToIgnoreCase("Editar") == 0) {
-                if (rolesBean != null) {
+                if (rolesBean != null && rolesBean1 != null) {
                     if (rolesBean.getActive()) {
-                        //editCliente(cliente.getCuenta()); //btnEditarCliente #codigotemporal
-                        Toast.makeText(getContext(), "Opcion desactivada temporalmente", Toast.LENGTH_LONG).show();
+                        editCliente(cliente.getCuenta()); //btnEditarCliente #codigotemporal
+                        //Toast.makeText(getContext(), "Opcion desactivada temporalmente", Toast.LENGTH_LONG).show();
                         return;
                     } else {
 
                         Toast.makeText(getContext(), "No tienes privilegios para editar clientes", Toast.LENGTH_LONG).show();
                         return;
                     }
+                }else{
+                    Toast.makeText(getContext(), "No tienes privilegios para editar clientes", Toast.LENGTH_LONG).show();
+                    return;
                 }
 
             } else if (strName.compareToIgnoreCase("Nueva venta") == 0) {
