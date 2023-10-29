@@ -104,6 +104,7 @@ class PrecaptureViewModel: ViewModel() {
             client.phone_contacto = "" + item.contacto_phone
             client.recordatorio = "" + item.recordatorio
             client.visitas = item.visitasNoefectivas
+            client.updatedAt = item.updatedAt
             if (item.isCredito) {
                 client.isCredito = 1
             } else {

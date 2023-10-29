@@ -10,6 +10,7 @@ import com.app.syspoint.documents.SellTicket
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.charge.ChargeInteractor.OnGetChargeByClientListener
 import com.app.syspoint.interactor.charge.ChargeInteractorImp
+import com.app.syspoint.interactor.client.ClientInteractor.GetAllClientsListener
 import com.app.syspoint.interactor.client.ClientInteractor.SaveClientListener
 import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.interactor.prices.PriceInteractor.GetPricesByClientListener
@@ -26,6 +27,7 @@ import com.app.syspoint.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import timber.log.Timber
 import java.util.*
 
 class SellViewModel: ViewModel() {
@@ -37,10 +39,13 @@ class SellViewModel: ViewModel() {
     private val latitude = MutableLiveData<Double>()
     private val longitude = MutableLiveData<Double>()
 
+    companion object {
+        const val TAG = "SellViewModel"
+    }
+
     init {
         sellImport.value = 0.0
     }
-    val mutex = Mutex()
 
     @Synchronized
     fun setUpSells() {
@@ -769,6 +774,29 @@ class SellViewModel: ViewModel() {
         tempRuteClientBox.ventaUpdatedAt = ruteClientBox.ventaUpdatedAt
 
         tempRuteClientDao.insertBox(tempRuteClientBox)
+    }
+
+    fun fetchUpdatedClientsByRute() {
+        val routingDao = RoutingDao()
+        val routingBox = routingDao.getRutaEstablecida()
+        if (routingBox != null) {
+            val vendedoresBean = getEmployee()
+            routingBox.ruta?.let {
+                val ruta = if (it.isNotEmpty()) routingBox.ruta else vendedoresBean!!.rute
+                ClientInteractorImp().executeGetAllClientsAndLastSellByRute(
+                    ruta!!,
+                    routingBox.dia,
+                    object : GetAllClientsListener {
+                        override fun onGetAllClientsSuccess(clientList: List<ClientBox>) {
+                            Timber.tag(TAG).d("onGetAllClientsSuccess")
+                        }
+
+                        override fun onGetAllClientsError() {
+                            Timber.tag(TAG).d("onGetAllClientsError")
+                        }
+                    })
+            }
+        }
     }
 
 }

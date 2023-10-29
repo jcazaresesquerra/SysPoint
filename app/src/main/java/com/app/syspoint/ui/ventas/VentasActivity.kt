@@ -90,6 +90,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         //showLoading()
         viewModel.clearSells()
         viewModel.setUpSells()
+        viewModel.fetchUpdatedClientsByRute()
 
         val data = SellsModelDao().list() as List<SellModelBox?>
         initRecyclerView(data)

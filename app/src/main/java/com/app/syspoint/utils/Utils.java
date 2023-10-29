@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class Utils {
 
@@ -52,16 +53,26 @@ public class Utils {
     }
 
     public static String getHoraActual(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         final String hora = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return  hora;
     }
 
     public  static  String getFechaRandom(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("MM-dd");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return  fecha;
     }
 
@@ -97,16 +108,27 @@ public class Utils {
     }
 
     public static String fechaActual(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return  fecha;
     }
 
     public static Date getCurrentDayHMS(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         try {
             return format.parse(fecha);
         } catch (ParseException e) {
@@ -126,16 +148,26 @@ public class Utils {
     }
 
     public static String fechaActualHMS(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return  fecha;
     }
 
     public static Date fechaActualHMS_(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         try {
             return format.parse(fecha);
         } catch (ParseException e) {
@@ -145,25 +177,40 @@ public class Utils {
     }
 
     public static String fechaActualHMSStartDay(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return fecha + " 00:00:00";
     }
 
     public static String fechaActualHMSEndDay(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return fecha + " 23:59:59";
     }
 
     public static Date fechaActualHMSStartDay_(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final SimpleDateFormat formatHMS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String fecha = format.format(calendarFechaFin.getTime());
         String stringFecha =  fecha + " 00:00:00";
+        TimeZone.setDefault(backup);
         try {
             return formatHMS.parse(stringFecha);
         } catch (ParseException e) {
@@ -173,11 +220,16 @@ public class Utils {
     }
 
     public static Date fechaActualHMSEndDay_(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         final SimpleDateFormat formatHMS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         final String fecha = format.format(calendarFechaFin.getTime());
         String stringFecha =  fecha + " 23:59:59";
+        TimeZone.setDefault(backup);
         try {
             return formatHMS.parse(stringFecha);
         } catch (ParseException e) {
@@ -187,9 +239,14 @@ public class Utils {
     }
 
     public static String fechaActualPicker(){
-        final Calendar calendarFechaFin = Calendar.getInstance();
+        TimeZone backup = TimeZone.getDefault();
+        String timezoneS = "GMT-7";
+        TimeZone tz = TimeZone.getTimeZone(timezoneS);
+        TimeZone.setDefault(tz);
+        final Calendar calendarFechaFin = Calendar.getInstance(tz);
         final SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
         final String fecha = format.format(calendarFechaFin.getTime());
+        TimeZone.setDefault(backup);
         return  fecha;
     }
 
