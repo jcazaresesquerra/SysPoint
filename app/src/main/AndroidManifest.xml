@@ -62,6 +62,9 @@
         <service android:name=".repository.service.UpdateDataService"
             android:exported="false"/>
 
+        <service android:name=".repository.service.RemoveDataService"
+            android:exported="false"/>
+
         <receiver android:name="com.app.syspoint.ui.login.LoginActivity$NetworkChangeReceiver"
             android:exported="true">
             <intent-filter>

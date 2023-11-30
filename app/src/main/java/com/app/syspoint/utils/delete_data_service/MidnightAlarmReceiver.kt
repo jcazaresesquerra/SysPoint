@@ -12,6 +12,7 @@ import com.app.syspoint.ui.MainActivity.Companion.ACTION_FINISH_ACTIVITY
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.utils.Utils
 import timber.log.Timber
+import java.util.Calendar
 
 class MidnightAlarmReceiver : BroadcastReceiver() {
 
@@ -20,13 +21,17 @@ class MidnightAlarmReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        forceUpdate(true)
-        try {
-            val finishIntent = Intent(ACTION_FINISH_ACTIVITY)
-            context.sendBroadcast(finishIntent)
-            //exitApplication(context as Activity)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        val calendar: Calendar = Calendar.getInstance()
+        if (calendar.get(Calendar.HOUR_OF_DAY) == 0
+            && calendar.get(Calendar.MINUTE) == 0) {
+            forceUpdate(true)
+            try {
+                val finishIntent = Intent(ACTION_FINISH_ACTIVITY)
+                context.sendBroadcast(finishIntent)
+                //exitApplication(context as Activity)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.app.syspoint.repository.cache
 
 import android.content.Context
+import java.time.LocalDate
 
 class SharedPreferencesManager(context: Context) {
     /*
@@ -13,6 +14,7 @@ class SharedPreferencesManager(context: Context) {
     private val APP_TOKEN: String = "app_token"
     private val STOCK_ID: String = "stock_id"
     private val LOAD_ID: String = "load_id"
+    private val CURRENT_SAVED_DATE: String = "currentDate"
 
 
     /*
@@ -121,5 +123,17 @@ class SharedPreferencesManager(context: Context) {
     fun getCurrentLoadId(): Int {
         val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
         return prefs.getInt(LOAD_ID, 0)
+    }
+
+    fun storeCurrentDate(currentDate: LocalDate) {
+        val editor =
+            mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE).edit()
+        editor.putString(CURRENT_SAVED_DATE, currentDate.toString())
+        editor.apply()
+    }
+
+    fun getCurrentDate(): String? {
+        val prefs = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(CURRENT_SAVED_DATE, null)
     }
 }

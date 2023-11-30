@@ -5,7 +5,6 @@ import android.provider.Settings
 import com.app.syspoint.analytics.logs.DeviceDetails
 import com.app.syspoint.analytics.logs.TimberRemoteTree
 import com.app.syspoint.interactor.cache.CacheInteractor
-import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.repository.objectBox.entities.MyObjectBox
 import com.app.syspoint.utils.delete_data_service.AlarmHelper
 import io.objectbox.BoxStore

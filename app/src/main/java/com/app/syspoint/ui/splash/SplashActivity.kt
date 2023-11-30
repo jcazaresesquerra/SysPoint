@@ -6,6 +6,7 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.app.syspoint.databinding.ActivitySplashBinding
+import com.app.syspoint.repository.service.RemoveDataService
 import com.app.syspoint.ui.MainActivity
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.viewmodel.SplashViewModel
@@ -27,6 +28,9 @@ class SplashActivity: AppCompatActivity() {
         viewModel = ViewModelProvider(this)[SplashViewModel::class.java]
 
         setContentView(binding.root)
+
+        val serviceIntent = Intent(this, RemoveDataService::class.java)
+        startService(serviceIntent)
 
         Handler().postDelayed({  // #codigotemporal
             var intent = Intent(this, LoginActivity::class.java)

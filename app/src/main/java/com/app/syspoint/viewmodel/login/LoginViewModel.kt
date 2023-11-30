@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
+import java.time.LocalDate
 import java.io.FileOutputStream as FileOutputStream1
 
 private const val TAG = "LoginViewModel"
@@ -106,6 +107,7 @@ class LoginViewModel: BaseViewModel() {
                                 loginViewState.postValue(
                                     if (employeeBox != null) {
                                         Timber.tag(TAG).d("loggedIn $email")
+                                        saveCurrentDate()
                                         LoginViewState.LoggedIn
                                     } else {
                                         Timber.tag(TAG)
@@ -119,6 +121,7 @@ class LoginViewModel: BaseViewModel() {
                                 loginViewState.postValue(
                                     if (employeeBox != null) {
                                         Timber.tag(TAG).d("loggedIn $email")
+                                        saveCurrentDate()
                                         LoginViewState.LoggedIn
                                     } else {
                                         Timber.tag(TAG)
@@ -133,6 +136,7 @@ class LoginViewModel: BaseViewModel() {
                     loginViewState.postValue(
                         if (employeeBox != null) {
                             Timber.tag(TAG).d("loggedIn $email")
+                            saveCurrentDate()
                             LoginViewState.LoggedIn
                         } else {
                             Timber.tag(TAG)
@@ -356,23 +360,25 @@ class LoginViewModel: BaseViewModel() {
         Handler().postDelayed({
             NetworkStateTask { connected ->
                 if (connected) {
-                    TokenInteractorImpl().executeGetToken(object :
-                        TokenInteractor.OnGetTokenListener {
-                        override fun onGetTokenSuccess(token: String?, currentVersion: String) {
-                            sync()
-                        }
-
-                        override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String, throwable: Throwable?) {
-                            if (throwable == null) {
-                                downloadApkViewState.postValue(
-                                    DownloadApkViewState.ApkOldVersion(
-                                        baseUpdateUrl,
-                                        currentVersion
-                                    )
-                                )
+                    viewModelScope.launch {
+                        TokenInteractorImpl().executeGetToken(object :
+                            TokenInteractor.OnGetTokenListener {
+                            override fun onGetTokenSuccess(token: String?, currentVersion: String) {
+                                sync()
                             }
-                        }
-                    })
+
+                            override fun onGetTokenError(baseUpdateUrl: String, currentVersion: String, throwable: Throwable?) {
+                                if (throwable == null) {
+                                    downloadApkViewState.postValue(
+                                        DownloadApkViewState.ApkOldVersion(
+                                            baseUpdateUrl,
+                                            currentVersion
+                                        )
+                                    )
+                                }
+                            }
+                        })
+                    }
                 } else {
                     viewModelScope.launch {
                         //removeLocalSync()
@@ -567,6 +573,13 @@ class LoginViewModel: BaseViewModel() {
             loginViewState.postValue(
                 LoginViewState.LoadingDataFinish
             )
+        }
+    }
+
+    private fun saveCurrentDate() {
+        App.INSTANCE?.baseContext?.let {
+            val currentDate = LocalDate.now()
+            SharedPreferencesManager(it).storeCurrentDate(currentDate)
         }
     }
 }

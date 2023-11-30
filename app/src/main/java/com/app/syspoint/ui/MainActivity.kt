@@ -1,6 +1,7 @@
 package com.app.syspoint.ui
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Dialog
 import android.app.DownloadManager
 import android.app.ProgressDialog
@@ -28,7 +29,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.androidnetworking.error.ANError
-import com.app.syspoint.BuildConfig
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ActivityMainBinding
 import com.app.syspoint.databinding.NavHeaderMainBinding
@@ -62,6 +62,7 @@ import com.app.syspoint.repository.objectBox.entities.RolesBox
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnError
 import com.app.syspoint.repository.request.http.Servicio.ResponseOnSuccess
 import com.app.syspoint.repository.request.http.SincVentas
+import com.app.syspoint.repository.service.RemoveDataService
 import com.app.syspoint.ui.login.LoginActivity
 import com.app.syspoint.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -174,6 +175,25 @@ class MainActivity: BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(finishActivityReceiver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val serviceIntent = Intent(this, RemoveDataService::class.java)
+        if (!isServiceRunning(RemoveDataService::class.java)) {
+            startService(serviceIntent)
+        }
+    }
+
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun validateToken() {
