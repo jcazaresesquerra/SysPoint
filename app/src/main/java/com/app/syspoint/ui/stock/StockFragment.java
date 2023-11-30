@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
@@ -39,7 +40,6 @@ import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
-import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.ui.stock.activities.CashCloseActivity;
 import com.app.syspoint.ui.stock.activities.ConfirmaInventarioActivity;
 import com.app.syspoint.ui.stock.activities.ListaProductosInventarioActivity;

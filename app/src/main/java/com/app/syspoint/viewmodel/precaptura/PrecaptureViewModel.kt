@@ -11,7 +11,12 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Visit
 import com.app.syspoint.models.sealed.PrecaptureViewState
 import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
+import com.app.syspoint.repository.objectBox.dao.VisitsDao
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.VisitsBox
 import com.app.syspoint.utils.Actividades

@@ -33,14 +33,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor;
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp;
 import com.app.syspoint.interactor.roles.RolInteractor;
 import com.app.syspoint.interactor.roles.RolInteractorImp;
-import com.app.syspoint.R;
 import com.app.syspoint.models.Employee;
 import com.app.syspoint.models.Role;
 import com.app.syspoint.models.enums.RoleType;

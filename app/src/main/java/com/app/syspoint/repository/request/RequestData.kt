@@ -1,10 +1,20 @@
 package com.app.syspoint.repository.request
 
 import com.app.syspoint.interactor.data.GetAllDataInteractor
-import com.app.syspoint.models.*
+import com.app.syspoint.models.Data
 import com.app.syspoint.models.json.BaseBodyJson
-import com.app.syspoint.repository.objectBox.dao.*
-import com.app.syspoint.repository.objectBox.entities.*
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.RolesDao
+import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
+import com.app.syspoint.repository.objectBox.entities.ProductBox
+import com.app.syspoint.repository.objectBox.entities.RolesBox
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi
 import retrofit2.Call

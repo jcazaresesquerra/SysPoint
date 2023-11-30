@@ -36,9 +36,9 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
-import com.app.syspoint.R;
 import com.app.syspoint.models.Product;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;

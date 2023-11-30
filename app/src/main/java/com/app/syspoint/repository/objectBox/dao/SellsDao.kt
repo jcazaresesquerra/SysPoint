@@ -1,7 +1,11 @@
 package com.app.syspoint.repository.objectBox.dao
 
 import com.app.syspoint.App
-import com.app.syspoint.repository.objectBox.entities.*
+import com.app.syspoint.repository.objectBox.entities.CashCloseBox
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.PlayingBox
+import com.app.syspoint.repository.objectBox.entities.SellBox
+import com.app.syspoint.repository.objectBox.entities.SellBox_
 import io.objectbox.query.QueryBuilder
 import timber.log.Timber
 

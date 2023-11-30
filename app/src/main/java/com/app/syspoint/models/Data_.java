@@ -2,12 +2,6 @@ package com.app.syspoint.models;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.app.syspoint.models.Client;
-import com.app.syspoint.models.Payment;
-import com.app.syspoint.models.Employee;
-import com.app.syspoint.models.Price;
-import com.app.syspoint.models.Product;
-import com.app.syspoint.models.Role;
 
 import java.util.List;
 

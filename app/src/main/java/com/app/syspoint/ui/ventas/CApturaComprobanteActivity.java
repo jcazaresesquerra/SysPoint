@@ -17,13 +17,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.file.FileInteractor;
 import com.app.syspoint.interactor.file.FileInteractorImp;
-import com.bumptech.glide.Glide;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.app.syspoint.R;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
+import com.bumptech.glide.Glide;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.io.IOException;

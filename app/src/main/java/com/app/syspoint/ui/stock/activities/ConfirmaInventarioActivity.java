@@ -16,9 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
-
-import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.documents.StockTicket;
+import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.objectBox.dao.StockDao;
 import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.ui.stock.adapter.AdapterInventario;

@@ -1,14 +1,11 @@
 package com.app.syspoint.repository.request
 
 import android.util.Log
-import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.models.Employee
 import com.app.syspoint.models.json.BaseBodyJson
 import com.app.syspoint.models.json.EmployeeJson
-import com.app.syspoint.repository.objectBox.AppBundle
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
-import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.request.http.ApiServices
 import com.app.syspoint.repository.request.http.PointApi

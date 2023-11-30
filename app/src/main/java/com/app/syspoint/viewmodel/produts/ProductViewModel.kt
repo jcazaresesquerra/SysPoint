@@ -1,18 +1,18 @@
 package com.app.syspoint.viewmodel.produts
 
 import androidx.lifecycle.MutableLiveData
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.product.GetProductInteractor
 import com.app.syspoint.interactor.product.GetProductsInteractorImp
 import com.app.syspoint.models.sealed.ProductViewState
 import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.utils.NetworkStateTask
-import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.dao.ProductDao
 import com.app.syspoint.repository.objectBox.dao.RolesDao
 import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.repository.objectBox.entities.ProductBox
+import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
 
 class ProductViewModel: BaseViewModel() {

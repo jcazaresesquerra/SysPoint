@@ -6,7 +6,11 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.lifecycle.ViewModelProvider
@@ -20,7 +24,12 @@ import com.app.syspoint.models.sealed.ChargeViewState
 import com.app.syspoint.repository.objectBox.dao.ChargeModelDao
 import com.app.syspoint.repository.objectBox.entities.ChargeModelBox
 import com.app.syspoint.ui.cobranza.adapter.AdapterCobranza
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.Actividades
+import com.app.syspoint.utils.PrettyDialog
+import com.app.syspoint.utils.Utils
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.charge.ChargeViewModel
 
 class CobranzaActivity: AppCompatActivity() {

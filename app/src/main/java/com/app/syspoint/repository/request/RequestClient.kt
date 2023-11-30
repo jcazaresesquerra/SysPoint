@@ -6,11 +6,11 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.Data
 import com.app.syspoint.models.RequestClientsByRute
 import com.app.syspoint.models.json.*
-import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.objectBox.dao.ChargeDao
 import com.app.syspoint.repository.objectBox.dao.ClientDao
 import com.app.syspoint.repository.objectBox.dao.RuteClientDao
 import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox

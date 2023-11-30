@@ -27,11 +27,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.androidnetworking.error.ANError;
+import com.app.syspoint.R;
+import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.interactor.charge.ChargeInteractor;
 import com.app.syspoint.interactor.charge.ChargeInteractorImp;
 import com.app.syspoint.interactor.client.ClientInteractor;
 import com.app.syspoint.interactor.client.ClientInteractorImp;
-import com.app.syspoint.R;
+import com.app.syspoint.models.Client;
+import com.app.syspoint.models.Payment;
 import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
@@ -47,12 +50,9 @@ import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.SellBox;
 import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
-import com.app.syspoint.ui.bluetooth.BluetoothActivity;
-import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.request.http.Servicio;
 import com.app.syspoint.repository.request.http.SincVentasByID;
-import com.app.syspoint.models.Client;
-import com.app.syspoint.models.Payment;
+import com.app.syspoint.ui.bluetooth.BluetoothActivity;
 import com.app.syspoint.ui.templates.ViewPDFActivity;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.NetworkStateTask;
@@ -69,10 +69,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import io.objectbox.Box;
-import io.objectbox.query.Query;
-import io.objectbox.query.QueryBuilder;
 
 public class ImprimeAbonoActivity extends AppCompatActivity {
 

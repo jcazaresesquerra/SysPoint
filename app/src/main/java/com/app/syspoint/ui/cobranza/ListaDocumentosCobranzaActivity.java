@@ -15,15 +15,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.app.syspoint.R;
+import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.dao.ChargeModelDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
-import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeModelBox;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaDocumentosCobranza;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
+
 import java.util.List;
 
 public class ListaDocumentosCobranzaActivity extends AppCompatActivity {

@@ -9,10 +9,9 @@ import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.databinding.ItemListaProductosVentasBinding
-import com.app.syspoint.repository.objectBox.dao.StockHistoryDao
 import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.utils.click
-import java.util.*
+import java.util.Locale
 
 class AdapterListaProductosVentas(
     data: List<ProductBox?>,

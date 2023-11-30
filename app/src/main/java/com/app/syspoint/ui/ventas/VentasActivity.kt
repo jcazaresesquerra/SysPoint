@@ -8,12 +8,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.location.*
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.location.LocationProvider
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.RadioButton
 import android.widget.Toast
@@ -24,7 +34,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.syspoint.R
 import com.app.syspoint.analytics.EVENT
 import com.app.syspoint.analytics.PARAM
-import com.app.syspoint.databinding.*
+import com.app.syspoint.databinding.ActivityVentasBinding
+import com.app.syspoint.databinding.DialogCantidadVentaBinding
+import com.app.syspoint.databinding.DialogRecordatorioBinding
+import com.app.syspoint.databinding.DialogWarningBinding
+import com.app.syspoint.databinding.EncabezadoVentasBinding
 import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
 import com.app.syspoint.repository.objectBox.dao.ClientDao
@@ -35,14 +49,20 @@ import com.app.syspoint.ui.precaptura.PrecaptureActivity
 import com.app.syspoint.ui.products.activities.ScannerActivity
 import com.app.syspoint.ui.templates.ViewPDFActivity
 import com.app.syspoint.ui.ventas.adapter.AdapterItemsVenta
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.Actividades
+import com.app.syspoint.utils.PrettyDialog
+import com.app.syspoint.utils.Utils
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.sell.SellViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
 import timber.log.Timber
-import java.util.*
+import java.util.Locale
 
 
 const val TAG = "VentasActivity"

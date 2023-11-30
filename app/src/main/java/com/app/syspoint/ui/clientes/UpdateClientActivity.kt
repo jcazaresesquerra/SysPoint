@@ -5,12 +5,23 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.*
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.location.LocationProvider
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.*
-import android.widget.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.DatePicker
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
@@ -21,9 +32,15 @@ import com.app.syspoint.interactor.client.ClientInteractorImp
 import com.app.syspoint.models.Client
 import com.app.syspoint.repository.objectBox.dao.ClientDao
 import com.app.syspoint.repository.objectBox.entities.ClientBox
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.Actividades
+import com.app.syspoint.utils.PrettyDialog
+import com.app.syspoint.utils.Utils
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
+import com.app.syspoint.utils.setVisible
 import java.io.IOException
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class UpdateClientActivity: AppCompatActivity() {
 

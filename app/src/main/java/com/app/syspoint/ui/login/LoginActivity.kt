@@ -12,7 +12,6 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -24,13 +23,24 @@ import com.app.syspoint.interactor.installer.ApkInstaller
 import com.app.syspoint.models.sealed.DownloadApkViewState
 import com.app.syspoint.models.sealed.DownloadingViewState
 import com.app.syspoint.models.sealed.LoginViewState
-import com.app.syspoint.models.sealed.LoginViewState.*
+import com.app.syspoint.models.sealed.LoginViewState.ConnectedToInternet
+import com.app.syspoint.models.sealed.LoginViewState.LoadingDataFinish
+import com.app.syspoint.models.sealed.LoginViewState.LoadingDataStart
+import com.app.syspoint.models.sealed.LoginViewState.LoggedIn
+import com.app.syspoint.models.sealed.LoginViewState.LoginError
+import com.app.syspoint.models.sealed.LoginViewState.LoginVersionError
+import com.app.syspoint.models.sealed.LoginViewState.NoSessionExists
+import com.app.syspoint.models.sealed.LoginViewState.NotInternetConnection
 import com.app.syspoint.repository.cache.SharedPreferencesManager
 import com.app.syspoint.ui.MainActivity
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.OldApkVersionDialog
+import com.app.syspoint.utils.PrettyDialog
+import com.app.syspoint.utils.Utils
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.setGone
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.login.LoginViewModel
-import android.widget.Toast
-import java.util.*
 
 
 class LoginActivity: AppCompatActivity() {

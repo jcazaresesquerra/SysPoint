@@ -2,7 +2,7 @@ package com.app.syspoint.repository.objectBox.entities
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import java.util.*
+import java.util.Date
 
 @Entity
 data class ChargeBox(

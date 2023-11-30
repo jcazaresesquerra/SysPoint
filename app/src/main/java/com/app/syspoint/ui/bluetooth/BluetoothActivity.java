@@ -27,8 +27,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -38,11 +36,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.app.syspoint.R;
 import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.app.syspoint.R;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

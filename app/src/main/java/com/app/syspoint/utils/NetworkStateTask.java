@@ -4,8 +4,9 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.util.Log;
+
 import com.app.syspoint.App;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 

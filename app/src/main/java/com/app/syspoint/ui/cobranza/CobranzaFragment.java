@@ -31,13 +31,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.syspoint.R;
+import com.app.syspoint.bluetooth.ConnectedThread;
+import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.repository.objectBox.dao.CobrosDao;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
 import com.app.syspoint.repository.objectBox.entities.CobrosBox;
 import com.app.syspoint.repository.objectBox.entities.PrinterBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
-import com.app.syspoint.bluetooth.ConnectedThread;
-import com.app.syspoint.documents.DepositTicket;
 import com.app.syspoint.ui.clientes.TaskClients;
 import com.app.syspoint.ui.cobranza.adapter.AdapterListaCobranzas;
 import com.app.syspoint.utils.Actividades;

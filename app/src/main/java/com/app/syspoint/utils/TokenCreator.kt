@@ -1,7 +1,5 @@
 package com.app.syspoint.utils
 
-import com.app.syspoint.BuildConfig
-
 /*class TokenCreator {
     companion object {
         private const val API_LEVEL = "2"

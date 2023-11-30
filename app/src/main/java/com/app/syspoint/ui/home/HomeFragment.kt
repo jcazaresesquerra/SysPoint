@@ -1,26 +1,5 @@
 package com.app.syspoint.ui.home
 
-import android.app.Dialog
-import android.app.ProgressDialog
-import android.os.Bundle
-import android.os.Handler
-import android.view.*
-import android.widget.Toast
-import androidx.appcompat.widget.AppCompatButton
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.app.syspoint.R
-import com.app.syspoint.databinding.FragmentHomeBinding
-import com.app.syspoint.models.sealed.HomeViewState
-import com.app.syspoint.ui.customs.DialogoRuteo
-import com.app.syspoint.ui.customs.DialogoRuteo.DialogListener
-import com.app.syspoint.ui.home.activities.MapsRuteoActivity
-import com.app.syspoint.ui.home.adapter.AdapterRutaClientes
-import com.app.syspoint.ui.ventas.VentasActivity
-import com.app.syspoint.utils.*
-import com.app.syspoint.viewmodel.home.HomeViewModel
-
 /*class HomeFragment: Fragment() {
 
     companion object {

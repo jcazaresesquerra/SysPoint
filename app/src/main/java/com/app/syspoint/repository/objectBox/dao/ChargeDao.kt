@@ -2,11 +2,8 @@ package com.app.syspoint.repository.objectBox.dao
 
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.models.CloseCash
-import com.app.syspoint.repository.objectBox.entities.CashCloseBox
 import com.app.syspoint.repository.objectBox.entities.ChargeBox
 import com.app.syspoint.repository.objectBox.entities.ChargeBox_
-import com.app.syspoint.repository.objectBox.entities.ClientBox_
-import com.app.syspoint.repository.objectBox.entities.CobrosBox
 import com.app.syspoint.utils.Utils
 import io.objectbox.query.QueryBuilder
 

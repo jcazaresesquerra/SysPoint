@@ -1,14 +1,14 @@
 package com.app.syspoint.documents
 
-import com.app.syspoint.BuildConfig
-import com.app.syspoint.utils.Constants
-import com.app.syspoint.utils.Utils
-import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.models.CloseCash
-import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.repository.objectBox.dao.*
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.dao.SellsDao
+import com.app.syspoint.repository.objectBox.dao.StockDao
+import com.app.syspoint.repository.objectBox.dao.StockHistoryDao
 import com.app.syspoint.repository.objectBox.entities.CashCloseBox
 import com.app.syspoint.repository.objectBox.entities.StockBox
+import com.app.syspoint.utils.Constants
+import com.app.syspoint.utils.Utils
 
 class CloseTicket: BaseTicket() {
 

@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,10 +34,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.exifinterface.media.ExifInterface;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
-import com.app.syspoint.R;
 import com.app.syspoint.models.Product;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
@@ -47,6 +47,7 @@ import com.app.syspoint.utils.Constants;
 import com.app.syspoint.utils.NetworkStateTask;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.Utils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;

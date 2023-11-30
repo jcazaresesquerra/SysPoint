@@ -2,9 +2,7 @@ package com.app.syspoint.ui.clientes.PreciosEspeciales;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,9 +22,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
-import com.app.syspoint.R;
 import com.app.syspoint.models.Price;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;

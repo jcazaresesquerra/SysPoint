@@ -5,7 +5,14 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -21,7 +28,12 @@ import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.ui.products.activities.ActualizaProductoActivity
 import com.app.syspoint.ui.products.activities.RegistrarProductoActivity
 import com.app.syspoint.ui.products.adapters.AdapterListaProductos
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.Actividades
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.onFocusChange
+import com.app.syspoint.utils.onQueryText
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.produts.ProductViewModel
 
 class ProductFragment: Fragment() {

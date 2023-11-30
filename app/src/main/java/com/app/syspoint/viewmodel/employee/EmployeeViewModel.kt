@@ -2,17 +2,17 @@ package com.app.syspoint.viewmodel.employee
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.interactor.employee.GetEmployeeInteractor
 import com.app.syspoint.interactor.employee.GetEmployeesInteractorImp
+import com.app.syspoint.models.sealed.EmployeeLoadingViewState
 import com.app.syspoint.models.sealed.EmployeeViewState
 import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.utils.NetworkStateTask
-import com.app.syspoint.interactor.cache.CacheInteractor
-import com.app.syspoint.models.sealed.EmployeeLoadingViewState
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.dao.RolesDao
 import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.EmployeeBox
+import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.viewmodel.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -11,7 +11,8 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class TimberRemoteTree(private val deviceDetails: DeviceDetails) : Timber.DebugTree() {
 

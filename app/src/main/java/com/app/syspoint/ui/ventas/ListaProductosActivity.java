@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.models.enums.RoleType;
 import com.app.syspoint.repository.objectBox.AppBundle;
@@ -34,9 +35,8 @@ import com.app.syspoint.repository.objectBox.entities.RolesBox;
 import com.app.syspoint.repository.objectBox.entities.SessionBox;
 import com.app.syspoint.ui.products.activities.ScannerActivity;
 import com.app.syspoint.ui.ventas.adapter.AdapterListaProductosVentas;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.app.syspoint.R;
 import com.app.syspoint.utils.Actividades;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;

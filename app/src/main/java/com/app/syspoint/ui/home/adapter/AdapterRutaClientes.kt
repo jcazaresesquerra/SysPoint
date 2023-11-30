@@ -15,14 +15,14 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.app.syspoint.R
 import com.app.syspoint.databinding.ItemListaClientesRutaBinding
-import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.RuteClientBox
 import com.app.syspoint.utils.Utils
 import com.app.syspoint.utils.click
 import com.app.syspoint.utils.longClick
 import timber.log.Timber
 import java.net.URLEncoder
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 

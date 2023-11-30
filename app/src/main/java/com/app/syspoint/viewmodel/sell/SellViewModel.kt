@@ -19,16 +19,34 @@ import com.app.syspoint.models.Client
 import com.app.syspoint.models.enums.SellType
 import com.app.syspoint.models.sealed.SellViewState
 import com.app.syspoint.repository.objectBox.AppBundle
-import com.app.syspoint.repository.objectBox.dao.*
-import com.app.syspoint.repository.objectBox.entities.*
+import com.app.syspoint.repository.objectBox.dao.ChargeDao
+import com.app.syspoint.repository.objectBox.dao.ClientDao
+import com.app.syspoint.repository.objectBox.dao.EmployeeDao
+import com.app.syspoint.repository.objectBox.dao.ProductDao
+import com.app.syspoint.repository.objectBox.dao.RoutingDao
+import com.app.syspoint.repository.objectBox.dao.RuteClientDao
+import com.app.syspoint.repository.objectBox.dao.SellsDao
+import com.app.syspoint.repository.objectBox.dao.SellsModelDao
+import com.app.syspoint.repository.objectBox.dao.SessionDao
+import com.app.syspoint.repository.objectBox.dao.StockDao
+import com.app.syspoint.repository.objectBox.dao.TempRuteClientDao
+import com.app.syspoint.repository.objectBox.entities.ChargeBox
+import com.app.syspoint.repository.objectBox.entities.ClientBox
+import com.app.syspoint.repository.objectBox.entities.EmployeeBox
+import com.app.syspoint.repository.objectBox.entities.PlayingBox
+import com.app.syspoint.repository.objectBox.entities.RuteClientBox
+import com.app.syspoint.repository.objectBox.entities.SellBox
+import com.app.syspoint.repository.objectBox.entities.SellModelBox
+import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox
+import com.app.syspoint.repository.objectBox.entities.TempRuteClientBox
 import com.app.syspoint.utils.Actividades
 import com.app.syspoint.utils.NetworkStateTask
 import com.app.syspoint.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import timber.log.Timber
-import java.util.*
+import java.util.Date
+import java.util.Random
 
 class SellViewModel: ViewModel() {
 

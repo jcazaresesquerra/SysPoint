@@ -11,7 +11,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,6 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.app.syspoint.R;
+import com.app.syspoint.utils.Actividades;
+import com.app.syspoint.utils.gmap.MapDirectionAPI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -40,9 +42,6 @@ import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.app.syspoint.R;
-import com.app.syspoint.utils.Actividades;
-import com.app.syspoint.utils.gmap.MapDirectionAPI;
 
 import org.json.JSONArray;
 import org.json.JSONException;

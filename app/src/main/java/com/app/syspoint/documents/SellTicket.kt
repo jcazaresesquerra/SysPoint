@@ -1,12 +1,11 @@
 package com.app.syspoint.documents
 
-import com.app.syspoint.BuildConfig
-import com.app.syspoint.utils.Constants
-import com.app.syspoint.utils.Utils
 import com.app.syspoint.interactor.cache.CacheInteractor
 import com.app.syspoint.repository.objectBox.dao.EmployeeDao
 import com.app.syspoint.repository.objectBox.dao.SessionDao
 import com.app.syspoint.repository.objectBox.entities.SellBox
+import com.app.syspoint.utils.Constants
+import com.app.syspoint.utils.Utils
 
 class SellTicket: BaseTicket() {
 

@@ -11,7 +11,7 @@ import com.app.syspoint.databinding.ItemListaProductosInventarioBinding
 import com.app.syspoint.repository.objectBox.entities.ProductBox
 import com.app.syspoint.utils.click
 import timber.log.Timber
-import java.util.*
+import java.util.Locale
 
 private const val TAG = "AdapterListaProductosInv"
 

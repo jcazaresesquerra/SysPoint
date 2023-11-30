@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.R;
+import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.interactor.cache.CacheInteractor;
 import com.app.syspoint.repository.cache.SharedPreferencesManager;
 import com.app.syspoint.repository.objectBox.dao.PrinterDao;
@@ -38,7 +38,6 @@ import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.repository.objectBox.entities.StockBox;
 import com.app.syspoint.repository.objectBox.entities.StockHistoryBox;
 import com.app.syspoint.ui.bluetooth.BluetoothActivity;
-import com.app.syspoint.bluetooth.ConnectedThread;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
 

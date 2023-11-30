@@ -8,7 +8,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -26,9 +33,15 @@ import com.app.syspoint.repository.objectBox.entities.EmployeeBox
 import com.app.syspoint.ui.employees.activities.ActualizarEmpleadoActivity
 import com.app.syspoint.ui.employees.activities.RegistarEmpleadoActivity
 import com.app.syspoint.ui.employees.adapters.EmployeeListAdapter
-import com.app.syspoint.utils.*
+import com.app.syspoint.utils.Actividades
+import com.app.syspoint.utils.Constants
+import com.app.syspoint.utils.click
+import com.app.syspoint.utils.onFocusChange
+import com.app.syspoint.utils.onQueryText
+import com.app.syspoint.utils.setInvisible
+import com.app.syspoint.utils.setVisible
 import com.app.syspoint.viewmodel.employee.EmployeeViewModel
-import kotlinx.android.synthetic.main.fragment_employee.*
+import kotlinx.android.synthetic.main.fragment_employee.lyt_empleados
 import timber.log.Timber
 
 private const val TAG = "EmployeeFragment"

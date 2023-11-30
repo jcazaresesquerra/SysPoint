@@ -1,7 +1,5 @@
 package com.app.syspoint.ui.home;
 
-import static com.app.syspoint.utils.Constants.REQUEST_PERMISSION_LOCATION;
-
 import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -26,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;

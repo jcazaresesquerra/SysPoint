@@ -17,19 +17,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.syspoint.R;
 import com.app.syspoint.interactor.prices.PriceInteractor;
 import com.app.syspoint.interactor.prices.PriceInteractorImp;
+import com.app.syspoint.models.Price;
 import com.app.syspoint.repository.objectBox.dao.ClientDao;
 import com.app.syspoint.repository.objectBox.dao.SpecialPricesDao;
 import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.SpecialPricesBox;
+import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.PrettyDialog;
 import com.app.syspoint.utils.PrettyDialogCallback;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.app.syspoint.R;
-import com.app.syspoint.models.Price;
-import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Utils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;

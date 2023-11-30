@@ -8,7 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.app.syspoint.R;
 import com.app.syspoint.repository.objectBox.dao.ChargeDao;
 import com.app.syspoint.repository.objectBox.entities.ChargeBox;
