@@ -8,7 +8,6 @@ plugins {
     id 'com.google.firebase.firebase-perf'
 }
 
-
 android {
     signingConfigs {
 
@@ -29,7 +28,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 33
         versionCode 6
-        versionName "2.1.5"
+        versionName "2.1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -82,7 +81,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 
 ext {
     retrofitVersion = "2.4.0"

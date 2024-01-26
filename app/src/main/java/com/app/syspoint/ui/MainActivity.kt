@@ -457,6 +457,7 @@ class MainActivity: BaseActivity() {
                 precio.articulo = item.articulo
                 precio.cliente = item.cliente
                 precio.precio = item.precio
+                precio.updatedAt = item.updatedAt
                 listaPreciosServidor.add(precio)
             }
             PriceInteractorImp().executeSendPrices(

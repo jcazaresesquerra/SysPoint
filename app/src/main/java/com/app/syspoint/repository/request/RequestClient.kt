@@ -1047,13 +1047,24 @@ class RequestClient {
                                     specialPricesBox.articulo = item.articulo
                                     specialPricesBox.precio = item.precio
                                     specialPricesBox.active = item.active == 1
+                                    specialPricesBox.updatedAt = item.updatedAt.toString()
                                     specialPricesDao.insert(specialPricesBox)
                                 } else {
-                                    preciosEspecialesBean.cliente = item.cliente
-                                    preciosEspecialesBean.articulo = item.articulo
-                                    preciosEspecialesBean.precio = item.precio
-                                    preciosEspecialesBean.active = item.active == 1
-                                    specialPricesDao.insert(preciosEspecialesBean)
+                                    val update = if (!preciosEspecialesBean.updatedAt.isNullOrEmpty() && !item.updatedAt.toString().isNullOrEmpty()) {
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                        val dateItem = formatter.parse(item.updatedAt.toString())
+                                        val dateBean = formatter.parse(preciosEspecialesBean.updatedAt)
+                                        dateItem?.compareTo(dateBean) ?: 1
+                                    } else 1
+
+                                    if (update > 0) {
+                                        preciosEspecialesBean.cliente = item.cliente
+                                        preciosEspecialesBean.articulo = item.articulo
+                                        preciosEspecialesBean.precio = item.precio
+                                        preciosEspecialesBean.active = item.active == 1
+                                        preciosEspecialesBean.updatedAt = item.updatedAt.toString()
+                                        specialPricesDao.insert(preciosEspecialesBean)
+                                    }
                                 }
                             }
 

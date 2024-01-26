@@ -220,6 +220,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
 
                                 bean.setActive(false);
                                 bean.setFecha_sync(Utils.fechaActual());
+                                bean.setUpdatedAt(Utils.fechaActualHMS());
                                 dao.inserBox(bean);
 
                                 if (!Utils.isNetworkAvailable(getApplication())) {
@@ -288,7 +289,7 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
         for (SpecialPricesBox items : listaDB){
 
             final Price precio = new Price();
-            if (items.getActive() == true){
+            if (items.getActive()){
                 precio.setActive(1);
             }else{
                 precio.setActive(0);
@@ -297,8 +298,8 @@ public class PreciosEspecialesActivity extends AppCompatActivity {
             precio.setArticulo(items.getArticulo());
             precio.setCliente(items.getCliente());
             precio.setPrecio(items.getPrecio());
+            precio.setUpdatedAt(items.getUpdatedAt());
             listaPreciosServidor.add(precio);
-
         }
 
         new PriceInteractorImp().executeSendPrices(listaPreciosServidor, new PriceInteractor.SendPricesListener() {

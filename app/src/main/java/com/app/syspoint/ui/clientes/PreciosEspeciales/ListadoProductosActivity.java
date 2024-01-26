@@ -196,6 +196,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
                     preciosEspecialesBean.setPrecio(Double.parseDouble(precio));
                     preciosEspecialesBean.setActive(true);
                     preciosEspecialesBean.setFecha_sync(Utils.fechaActual());
+                    preciosEspecialesBean.setUpdatedAt(Utils.fechaActualHMS());
                     specialPricesDao.inserBox(preciosEspecialesBean);
                     //Sincroniza la información con el servidor
 
@@ -284,6 +285,7 @@ public class ListadoProductosActivity extends AppCompatActivity {
             precio.setArticulo(items.getArticulo());
             precio.setCliente(items.getCliente());
             precio.setPrecio(items.getPrecio());
+            precio.setUpdatedAt(items.getUpdatedAt());
             listaPreciosServidor.add(precio);
         }
 

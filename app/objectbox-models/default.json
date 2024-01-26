@@ -1362,7 +1362,7 @@
     },
     {
       "id": "19:2831107776272870421",
-      "lastPropertyId": "6:7635075532314634925",
+      "lastPropertyId": "7:4369713721494139337",
       "name": "SpecialPricesBox",
       "properties": [
         {
@@ -1394,6 +1394,11 @@
         {
           "id": "6:7635075532314634925",
           "name": "fecha_sync",
+          "type": 9
+        },
+        {
+          "id": "7:4369713721494139337",
+          "name": "updatedAt",
           "type": 9
         }
       ],

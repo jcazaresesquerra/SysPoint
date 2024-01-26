@@ -55,7 +55,7 @@ class SpecialPricesDao: AbstractDao<SpecialPricesBox>() {
     fun getPreciosBydate(fecha: String?): List<SpecialPricesBox> {
         val query = abstractBox<SpecialPricesBox>().query()
             .equal(SpecialPricesBox_.fecha_sync, fecha, QueryBuilder.StringOrder.CASE_INSENSITIVE)
-            .equal(SpecialPricesBox_.active, false)
+            .equal(SpecialPricesBox_.active, true)
             .build()
 
         val results = query.find()

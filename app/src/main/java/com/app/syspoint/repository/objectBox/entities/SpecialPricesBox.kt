@@ -11,5 +11,6 @@ data class SpecialPricesBox (
     var articulo: String? = null,
     var precio: Double = 0.0,
     var active: Boolean = false,
-    var fecha_sync: String? = null
+    var fecha_sync: String? = null,
+    var updatedAt: String? = null
 )

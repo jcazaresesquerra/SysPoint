@@ -16,6 +16,7 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 
 class RequestPrice {
     companion object: BaseRequest() {
@@ -93,11 +94,21 @@ class RequestPrice {
                                 specialPricesDao.insert(bean)
                                 priceList.add(bean)
                             } else {
-                                preciosEspecialesBean.cliente = clienteBean.cuenta
-                                preciosEspecialesBean.articulo = productoBean.articulo
-                                preciosEspecialesBean.precio = item.precio
-                                preciosEspecialesBean.active = item.active == 1
-                                specialPricesDao.insert(preciosEspecialesBean)
+                                val update = if (!preciosEspecialesBean.updatedAt.isNullOrEmpty() && !item.updatedAt.toString().isNullOrEmpty()) {
+                                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val dateItem = formatter.parse(item.updatedAt.toString())
+                                    val dateBean = formatter.parse(preciosEspecialesBean.updatedAt)
+                                    dateItem?.compareTo(dateBean) ?: 1
+                                } else 1
+
+                                if (update > 0) {
+                                    preciosEspecialesBean.cliente = clienteBean.cuenta
+                                    preciosEspecialesBean.articulo = productoBean.articulo
+                                    preciosEspecialesBean.precio = item.precio
+                                    preciosEspecialesBean.active = item.active == 1
+                                    preciosEspecialesBean.updatedAt = item.updatedAt.toString()
+                                    specialPricesDao.insert(preciosEspecialesBean)
+                                }
                                 priceList.add(preciosEspecialesBean)
                             }
                         }
