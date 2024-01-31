@@ -54,24 +54,24 @@
 
                     <TextView
                         android:id="@+id/textView_lista_empleado_nombre"
-                        android:text="Example"
-                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="8dp"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:maxLines="1"
+                        android:text="JESUS OSVALDO CAZARES ESQUERRA"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
                     <TextView
-                        android:textColor="@color/purple_700"
                         android:id="@+id/textView_lista_empleado_identificador"
-                        android:text="T001"
-                        android:textStyle="bold"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="8dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:text="E001"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:textColor="@color/purple_700"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
             </LinearLayout>

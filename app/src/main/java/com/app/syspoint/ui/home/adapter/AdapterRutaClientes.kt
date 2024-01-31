@@ -158,7 +158,12 @@ class AdapterRutaClientes(
 
                                         val uri = Uri.parse(
                                             "https://api.whatsapp.com/send?phone=" + "+52" + clienteBean.phone_contact + "&text=" + URLEncoder.encode(
-                                                "Hola!!"
+                                                "Soy el vendedor de Agua Point, Responsable de la entrega de agua en tu domicilio\n" +
+                                                        "\n" +
+                                                        "¿Deseas que visite tu domicilio el dia de hoy?" +
+                                                        "\n" + "\n"+
+                                                        "_Aprovecho este mensaje para informarle que a partir del 1 de febrero, el precio del garrafón de 20 litros se incrementará a \$40.00 pesos._"
+
                                             )
                                         )
 

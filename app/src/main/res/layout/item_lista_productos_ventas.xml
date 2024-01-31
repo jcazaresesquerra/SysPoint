@@ -17,17 +17,17 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="91dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
-                app:civ_fill_color="@color/purple_500"
-                app:civ_border_color="@color/purple_500"
                 android:id="@+id/img_producto_venta_lista"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
+                app:civ_border_color="@color/purple_500"
+                app:civ_fill_color="@color/purple_500"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

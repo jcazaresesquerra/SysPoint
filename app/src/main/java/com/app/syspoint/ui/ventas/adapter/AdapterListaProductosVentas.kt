@@ -83,7 +83,10 @@ class AdapterListaProductosVentas(
             productoBean?.let { producto ->
                 binding.textViewProductoCodigoListaVentaLista.text = producto.articulo
                 binding.textViewProductoDescripcionVentaLista.text = producto.descripcion
-                binding.textViewProductoPrecioListaVentaLista.text = producto.precio.toString()
+
+                val precioConFormato = String.format("%.2f", producto.precio)
+                binding.textViewProductoPrecioListaVentaLista.text = "$$precioConFormato"
+                //binding.textViewProductoPrecioListaVentaLista.text = "$" + producto.precio.toString()
 
                 if (producto.path_img != null) {
                     val decodedString: ByteArray =

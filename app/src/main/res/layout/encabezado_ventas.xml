@@ -37,13 +37,13 @@
 
             <TextView
                 android:id="@+id/textView_cliente_venta_view"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
+                android:layout_width="140dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="000001"
-                android:textStyle="bold"
                 android:textColor="@color/purple_500"
+                android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@+id/textView_cliente_venta"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -192,6 +192,7 @@
                     android:layout_height="wrap_content"
                     android:onClick="onRadioButtonClicked"
                     android:text="Contado" />
+
             </RadioGroup>
 
 

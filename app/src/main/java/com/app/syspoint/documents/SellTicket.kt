@@ -56,6 +56,15 @@ class SellTicket: BaseTicket() {
         }
 
         //val importeTotalVenta: Double = ventasBean.importe + ventasBean.impuesto
+
+
+
+
+
+
+
+
+
         for (items in ventasBean.listaPartidas) {
             ticket += "" + items.articulo.target.descripcion + Constants.NEW_LINE +
                     "" + String.format(
@@ -102,14 +111,14 @@ class SellTicket: BaseTicket() {
                 "" + String.format(
             "%1$-5s %2$-10s %3$11s %4$10s",
             "",
-            "       IVA:",
+            "        IVA:",
             Utils.FDinero(ventasBean.impuesto),
             ""
         ) + Constants.NEW_LINE +
                 "" + String.format(
             "%1$-5s %2$-10s %3$11s %4$10s",
             "",
-            "     Total:",
+            "      Total:",
             Utils.FDinero(ventasBean.importe + ventasBean.impuesto),
             ""
         ) + "" + Constants.NEW_LINE
@@ -169,13 +178,14 @@ class SellTicket: BaseTicket() {
                 "        info@aguapoint.com      " + Constants.NEW_LINE +
                 "         www.aguapoint.com      " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
@@ -203,7 +213,6 @@ class SellTicket: BaseTicket() {
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
                 "        RFC:UUGM910620TI9       " + Constants.NEW_LINE +
                 "         (667) 142-8050         " + Constants.NEW_LINE +
-
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +

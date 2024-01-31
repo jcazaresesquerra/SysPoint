@@ -199,13 +199,13 @@ public class RegistroClienteActivity extends AppCompatActivity {
                     }
 
                     final PrettyDialog dialog = new PrettyDialog(this);
-                    dialog.setTitle("Campor requeridos")
+                    dialog.setTitle("Campos requeridos")
                             .setTitleColor(R.color.purple_500)
-                            .setMessage("Debe de completar los campos requeridos " + "\n" + campos)
-                            .setMessageColor(R.color.purple_700)
+                            .setMessage("Por favor, complete todos los campos obligatorios antes de continuar.")
+                            .setMessageColor(R.color.purple_500)
                             .setAnimationEnabled(false)
                             .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, () -> dialog.dismiss())
-                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, () -> dialog.dismiss());
+                            .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.purple_500, () -> dialog.dismiss());
 
                     dialog.setCancelable(false);
                     dialog.show();
@@ -529,30 +529,30 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
         if (nombre.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("nombre");
+            listaCamposValidos.add("Nombre");
         }
 
         if (calle.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("ciudad");
+            listaCamposValidos.add("Calle");
         }
 
         if (numero.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("numero");
+            listaCamposValidos.add("Numero");
         }
 
         if (colonia.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("colonia");
+            listaCamposValidos.add("Colonia");
         }
         if (ciudad.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("ciudad");
+            listaCamposValidos.add("Ciudad");
         }
         if (cp.isEmpty()) {
             valida = false;
-            listaCamposValidos.add("C.P");
+            listaCamposValidos.add("Codigo Postal");
         }
 
         return valida;
@@ -566,7 +566,12 @@ public class RegistroClienteActivity extends AppCompatActivity {
 
     private void registraCliente() {
         String numero = inp_contacto_phone_registro_cliente.getText().toString();
-        if (numero != null && !numero.isEmpty() && !numero.equals("null")) {
+
+        // Eliminar espacios en blanco y permitir solo dígitos
+        numero = numero.replaceAll("\\s", "").replaceAll("\\D", "");
+        // Ahora 'numero' contiene solo dígitos y no tiene espacios en blanco
+
+        if (numero != null && !numero.isEmpty() && !numero.equals("null") && numero.length() == 10) {
             if (latitudeSet && longitudeSet) {
                 final ClientBox clienteBean = new ClientBox();
                 final ClientDao clientDao = new ClientDao();

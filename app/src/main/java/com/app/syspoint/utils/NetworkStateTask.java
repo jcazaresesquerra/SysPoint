@@ -35,7 +35,7 @@ public class NetworkStateTask extends AsyncTask<String, Void, Boolean> {
                 NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
 
                 if (networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected()) {
-                        HttpURLConnection urlc = (HttpURLConnection) (new URL("https://www.google.com").openConnection());
+                        HttpURLConnection urlc = (HttpURLConnection) (new URL("https://espanol.yahoo.com/").openConnection());
                         urlc.setRequestProperty("User-Agent", "Test");
                         urlc.setRequestProperty("Connection", "close");
                         urlc.setConnectTimeout(2000);

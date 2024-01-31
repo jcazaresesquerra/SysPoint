@@ -16,17 +16,17 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="88dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
-                app:civ_border_color="@color/purple_500"
-                app:civ_fill_color="@color/purple_500"
                 android:id="@+id/img_producto_venta"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
+                app:civ_border_color="@color/purple_500"
+                app:civ_fill_color="@color/purple_500"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -61,8 +61,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
                 android:text="$25.00"
-                android:textColor="@color/purple_700"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                android:textColor="@color/purple_700"
                 app:layout_constraintStart_toEndOf="@+id/img_producto_venta"
                 app:layout_constraintTop_toBottomOf="@+id/textView_producto_codigo_venta" />
 
@@ -70,11 +70,11 @@
                 android:id="@+id/textView_producto_cantidad_venta"
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="4dp"
                 android:text="Qty 5"
-                android:textColor="@color/purple_700"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                android:textColor="@color/purple_700"
                 app:layout_constraintStart_toEndOf="@+id/textView_producto_precio_venta"
                 app:layout_constraintTop_toBottomOf="@+id/textView_producto_codigo_venta" />
 

@@ -172,7 +172,7 @@ public class RegistrarProductoActivity extends AppCompatActivity {
                             .setMessage("Debe de completar los campos requeridos " + "\n" + campos)
                             .setMessageColor(R.color.purple_700)
                             .setAnimationEnabled(false)
-                            .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, dialog::dismiss)
+                            .setIcon(R.drawable.tenet_icon, R.color.purple_500, dialog::dismiss)
                             .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.light_blue_700, dialog::dismiss);
 
                     dialog.setCancelable(false);

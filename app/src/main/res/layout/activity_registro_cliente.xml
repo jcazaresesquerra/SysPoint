@@ -69,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:layout_weight="1"
-                    android:hint="Calle o vialidad">
+                    android:hint="Calle">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inp_calle_registro_cliente"
@@ -191,8 +191,9 @@
                         android:id="@+id/inp_contacto_phone_registro_cliente"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Teléfono de contacto"
+                        android:hint="Teléfono*"
                         android:inputType="phone"
+                        android:maxLength="10"
                         android:maxLines="1">
 
                     </com.google.android.material.textfield.TextInputEditText>
