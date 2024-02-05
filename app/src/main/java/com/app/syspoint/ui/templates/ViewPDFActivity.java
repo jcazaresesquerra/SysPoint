@@ -4,7 +4,10 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -51,6 +54,9 @@ import timber.log.Timber;
 
 public class ViewPDFActivity extends AppCompatActivity {
 
+    private MyReceiver myReceiver;
+
+
     private final String TAG = ViewPDFActivity.class.getSimpleName();
 
     //Connection bluetooth
@@ -79,6 +85,12 @@ public class ViewPDFActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        myReceiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(myReceiver, filter);
+
+
         setContentView(R.layout.activity_view_pdf);
 
         initToolBar();
@@ -214,9 +226,25 @@ public class ViewPDFActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (myReceiver != null) {
+            unregisterReceiver(myReceiver);
+        }
         if(mConnectedThread != null)
             mConnectedThread.cancel();
 
+    }
+
+
+    public class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                // Aquí puedes ejecutar el código que deseas al bloquear el teléfono
+                Utils.finishActivitiesFromStack();
+                finish();
+                // Puedes agregar más acciones según tus necesidades
+            }
+        }
     }
 
     @Override
@@ -379,4 +407,13 @@ public class ViewPDFActivity extends AppCompatActivity {
     public boolean isBluetoothEnabled() {
         return mBTAdapter != null && mBTAdapter.isEnabled();
     }
+
+
+
+
+
+
+
+
+
 }
