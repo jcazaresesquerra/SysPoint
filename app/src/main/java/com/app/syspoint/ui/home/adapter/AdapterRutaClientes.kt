@@ -143,12 +143,16 @@ class AdapterRutaClientes(
                             } else {
                                 when(item.itemId ) {
                                     R.id.call_client -> {
+
+                                        // Filtrar el número de teléfono
+                                        val numeroTelefonoFiltrado = clienteBean.phone_contact!!.filter { it.isDigit() }
+
                                         Timber.tag(TAG)
                                             .d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> call number ${clienteBean.phone_contact}")
 
                                         val intent = Intent(
                                             Intent.ACTION_CALL,
-                                            Uri.parse("tel:" + "+52" + clienteBean.phone_contact)
+                                            Uri.parse("tel:+52$numeroTelefonoFiltrado")
                                         )
                                         itemView.context.startActivity(intent)
                                     }
@@ -156,13 +160,14 @@ class AdapterRutaClientes(
                                         Timber.tag(TAG)
                                             .d("AdapterRutaClientes -> Holder -> bind -> imgCall -> setOnMenuItemClickListener -> send WP ${clienteBean.phone_contact}")
 
+                                        // Filtrar el número de teléfono
+                                        val numeroTelefonoFiltrado = clienteBean.phone_contact!!.filter { it.isDigit() }
+
                                         val uri = Uri.parse(
-                                            "https://api.whatsapp.com/send?phone=" + "+52" + clienteBean.phone_contact + "&text=" + URLEncoder.encode(
+                                            "https://api.whatsapp.com/send?phone=+52$numeroTelefonoFiltrado&text=" + URLEncoder.encode(
                                                 "Soy el vendedor de Agua Point, Responsable de la entrega de agua en tu domicilio\n" +
                                                         "\n" +
-                                                        "¿Deseas que visite tu domicilio el dia de hoy?" +
-                                                        "\n" + "\n"+
-                                                        "_Aprovecho este mensaje para informarle que a partir del 1 de febrero, el precio del garrafón de 20 litros se incrementará a \$40.00 pesos._"
+                                                        "¿Deseas que visite tu domicilio el dia de hoy?"
 
                                             )
                                         )

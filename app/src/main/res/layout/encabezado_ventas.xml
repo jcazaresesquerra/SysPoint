@@ -173,7 +173,7 @@
             <RadioGroup
                 android:id="@+id/radioGroup"
                 android:layout_width="wrap_content"
-                android:layout_height="35dp"
+                android:layout_height="50dp"
                 android:layout_marginEnd="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -184,16 +184,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onRadioButtonClicked"
-                    android:text="Credito" />
+                    android:text="Crédito"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="8dp"
+                    />
 
                 <RadioButton
                     android:id="@+id/radio_contado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="onRadioButtonClicked"
-                    android:text="Contado" />
+                    android:text="Contado"
+                    android:textSize="16sp"
+                    android:layout_marginStart="8dp"
+                    />
 
             </RadioGroup>
+
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

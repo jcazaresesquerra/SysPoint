@@ -70,4 +70,5 @@
 
     <string name="snackbar_message_text">Para salir de la aplicación, presiona nuevamente.</string>
     <string name="do_charge_text_button">Realizar cobranza ($%.2f)</string>
+
 </resources>

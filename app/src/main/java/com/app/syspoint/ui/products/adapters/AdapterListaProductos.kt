@@ -16,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
+import java.text.NumberFormat
 
 class AdapterListaProductos(
     data: List<ProductBox?>,
@@ -89,11 +91,14 @@ class AdapterListaProductos(
         fun bind(productoBean: ProductBox?, onItemClickListener: OnItemClickListener) {
             productoBean?.let { producto ->
 
+                //val precio: Double = producto.getPrecio()
+                val formatoMoneda: NumberFormat = DecimalFormat("$#,##0.00")
+
                 binding.textViewArticuloList.text = producto.articulo
                 binding.textViewDescripcionProductoList.text = producto.descripcion
-                binding.textViewPreciosArticuloList.text = "$" + producto.precio
+                binding.textViewPreciosArticuloList.text = formatoMoneda.format(producto.precio);
                 binding.textViewArticuloIVAList.text = producto.iva.toString() + "%"
-                binding.textViewArticuloCategoriaList.text = "SYS"
+                binding.textViewArticuloCategoriaList.text = "PT"
                 binding.textViewArticuloStatusList.text = producto.status
                 binding.textViewArticuloCodBarrasList.text = producto.codigo_barras
 

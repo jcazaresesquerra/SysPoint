@@ -149,7 +149,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 if (msg.what == CONNECTING_STATUS) {
                     if (msg.arg1 == 1) {
                         textViewStatus.setText("Dispositivo conectado ");
-
                         if (mConnectedThread != null) //First check to make sure thread created
                             mConnectedThread.write("");
                     } else {
