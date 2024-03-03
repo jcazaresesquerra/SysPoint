@@ -99,6 +99,7 @@ public class ConnectedThread extends Thread {
 
        // mConnectedThread.printTicketVisita(concepto_visita_seleccioando, tipo_inventario_seleccionado, vendedoresBean.getNombre(), Utils.fechaActual(), Utils.getHoraActual());
 
+
         try {
             try {
                 Thread.sleep(1000);
@@ -108,6 +109,7 @@ public class ConnectedThread extends Thread {
             outputStream = mmSocket.getOutputStream();
             byte[] printFormat = new byte[]{0x1B,0x21,0x03};
             outputStream.write(printFormat);
+
 
             String header = headerTicket();
             String body = bodyText();

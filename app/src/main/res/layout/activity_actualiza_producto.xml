@@ -115,7 +115,7 @@ tools:context=".ui.products.activities.ActualizaProductoActivity">
                 android:layout_marginEnd="5dp">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:hint="Concepto, Articulo"
+                    android:hint="Clave"
                     android:id="@+id/inp_articulo_actualiza"
                     android:inputType="text"
                     android:maxLines="1"
@@ -152,7 +152,7 @@ tools:context=".ui.products.activities.ActualizaProductoActivity">
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:layout_weight="1"
-                android:hint="Precio $">
+                android:hint="Precio $0.00">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inp_articulo_precio_actualiza"

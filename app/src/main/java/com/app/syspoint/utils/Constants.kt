@@ -16,6 +16,7 @@ class Constants {
         const val TENET_CLIENT_ID = "syspoint"
         const val DON_AQUI_CLIENT_ID = "don_aqui"
         const val NUTRIRICA_CLIENT_ID = "nutririca"
+        const val PRUEBAS_CLIENT_ID = "pruebas"
 
         const val CONTADO = "Contado"
 

@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:text="CLIENTE:"
+                android:text="CTE:"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -37,8 +37,8 @@
 
             <TextView
                 android:id="@+id/textView_cliente_venta_view"
-                android:layout_width="140dp"
-                android:layout_height="20dp"
+                android:layout_width="141dp"
+                android:layout_height="21dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="000001"
@@ -172,8 +172,8 @@
 
             <RadioGroup
                 android:id="@+id/radioGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_width="192dp"
+                android:layout_height="32dp"
                 android:layout_marginEnd="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -182,22 +182,20 @@
                 <RadioButton
                     android:id="@+id/radio_credito"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="8dp"
                     android:onClick="onRadioButtonClicked"
                     android:text="Crédito"
-                    android:textSize="16sp"
-                    android:layout_marginEnd="8dp"
-                    />
+                    android:textSize="16sp" />
 
                 <RadioButton
                     android:id="@+id/radio_contado"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="8dp"
                     android:onClick="onRadioButtonClicked"
                     android:text="Contado"
-                    android:textSize="16sp"
-                    android:layout_marginStart="8dp"
-                    />
+                    android:textSize="16sp" />
 
             </RadioGroup>
 

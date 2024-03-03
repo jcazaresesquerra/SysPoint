@@ -1,6 +1,7 @@
 package com.app.syspoint.interactor.product
 
 import com.app.syspoint.models.Product
+import com.app.syspoint.repository.objectBox.entities.ClientBox
 import com.app.syspoint.repository.objectBox.entities.ProductBox
 
 abstract class GetProductInteractor {
@@ -23,4 +24,8 @@ abstract class GetProductInteractor {
     open fun executeGetProducts(onGetProductsListener: OnGetProductsListener) {}
     open fun executeGetProductById(product: String, onGetProductByIdListener: OnGetProductByIdListener) {}
     open fun executeSaveProducts(products: List<Product>, onSaveProductsListener: OnSaveProductsListener) {}
+
+
+
+
 }

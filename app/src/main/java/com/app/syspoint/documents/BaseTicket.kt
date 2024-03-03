@@ -25,6 +25,9 @@ abstract class BaseTicket {
     open fun buildNutriricaHeader(): String {
         return ""
     }
+    open fun buildPruebasHeader(): String {
+        return ""
+    }
 
     open fun getEmployee(): EmployeeBox? {
         var vendedoresBean = AppBundle.getUserBox()
@@ -38,4 +41,6 @@ abstract class BaseTicket {
         }
         return vendedoresBean
     }
+
+
 }

@@ -392,7 +392,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
     }
 
     private void testLoadProductos(Long idProducto){
-         progressshow();
+        progressshow();
         final ProductDao productDao = new ProductDao();
         List<ProductBox> listaProductosDB =  productDao.getProductoByID(idProducto);
 
@@ -488,7 +488,7 @@ public class ActualizaProductoActivity extends AppCompatActivity {
 
     public String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 0, baos);
         imageByteArray = baos.toByteArray();
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }

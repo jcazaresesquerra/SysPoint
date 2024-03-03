@@ -50,6 +50,9 @@ class SellTicket: BaseTicket() {
             Constants.DON_AQUI_CLIENT_ID -> {
                 buildDonAquiHeader()
             }
+            Constants.PRUEBAS_CLIENT_ID -> {
+                buildPruebasHeader()
+            }
             else -> { // default Tenet
                 buildTenetHeader()
             }
@@ -206,13 +209,13 @@ class SellTicket: BaseTicket() {
             else ""
         }
 
-        return  "            Té Verdí            " + Constants.NEW_LINE +
-                "  Mario Alain Urquidez Gonzalez " + Constants.NEW_LINE +
-                "     Paulino Machorro #1881     " + Constants.NEW_LINE +
-                "      Diaz Ordaz C.P. 80180     " + Constants.NEW_LINE +
+        return  "            TOMAGUA             " + Constants.NEW_LINE +
+                "   Vianey Arlyn Carrillo Guerra " + Constants.NEW_LINE +
+                "       Alvaro Obregon 4113      " + Constants.NEW_LINE +
+                "      Las Cucas C.P. 80018      " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
-                "        RFC:UUGM910620TI9       " + Constants.NEW_LINE +
-                "         (667) 142-8050         " + Constants.NEW_LINE +
+                "        RFC:CAGV951105KR3       " + Constants.NEW_LINE +
+                "         (667) 320-4000         " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
@@ -243,12 +246,12 @@ class SellTicket: BaseTicket() {
             else ""
         }
 
-        return  "         AGUAS DON AQUI         " + Constants.NEW_LINE +
-                "    Manuel J. Clouthier #2755   " + Constants.NEW_LINE +
-                "     Buenos Aires C.P. 80199    " + Constants.NEW_LINE +
+        return  "            Nutri Rica          " + Constants.NEW_LINE +
+                "       Pedro de tovar #5460     " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
-                "         (667) 579-9656         " + Constants.NEW_LINE +
-                "     ADALBERTO HIGUERA MENDEZ   " + Constants.NEW_LINE +
+                "         (667) 455-9828         " + Constants.NEW_LINE +
+                " ALEXI DE JESUS MENDEZ COYANTES " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
@@ -263,4 +266,44 @@ class SellTicket: BaseTicket() {
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE
     }
+    override fun buildPruebasHeader(): String {
+
+        val sellBox = box as SellBox
+
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
+        } else {
+            val employeeBox = CacheInteractor().getSeller()
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
+            else ""
+        }
+
+        return  "              SWTENET           " + Constants.NEW_LINE +
+                "      Calz. Aeropuerto 4912-A   " + Constants.NEW_LINE +
+                "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "         (667) 208-1920         " + Constants.NEW_LINE +
+                " JESUS OSVALDO CAZARES ESQUERRA " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
+                vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+
+
+
+
 }

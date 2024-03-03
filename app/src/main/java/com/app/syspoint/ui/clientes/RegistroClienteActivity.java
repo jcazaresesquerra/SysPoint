@@ -107,6 +107,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
         //locationStart();
 
         editText_fecha_alta_registro_cliente.setText(Utils.fechaActualPicker());
+
     }
 
     @Override

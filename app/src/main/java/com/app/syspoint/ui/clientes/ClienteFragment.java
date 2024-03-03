@@ -587,7 +587,6 @@ public class ClienteFragment extends Fragment {
         if (clientBox.getRecordatorio() == null ||  clientBox.getRecordatorio() == "null" || clientBox.getRecordatorio().isEmpty()  ){
         }else {
             et_post.setText(clientBox.getRecordatorio());
-
         }
         ((AppCompatButton) dialog.findViewById(R.id.bt_cancel)).setOnClickListener(new View.OnClickListener() {
             @Override

@@ -271,9 +271,9 @@ class LoginActivity: AppCompatActivity() {
         if (!isOldApkVersionDialogShowing) {
             isOldApkVersionDialogShowing = true
             val oldApkVersionDialog = OldApkVersionDialog(this)
-            oldApkVersionDialog.setTitle("Error")
+            oldApkVersionDialog.setTitle("Actualizacion disponible")
                 .setTitleColor(R.color.purple_500)
-                .setMessage("Su versión no esta soportada, por favor, actualice su aplicación")
+                .setMessage("Su aplicación necesita una actualización para funcionar correctamente en este dispositivo. Por favor, actualícela para continuar.")
                 .setMessageColor(R.color.purple_700)
                 .setAnimationEnabled(false)
                 .addButton(

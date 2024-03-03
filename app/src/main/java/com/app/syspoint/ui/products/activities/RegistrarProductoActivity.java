@@ -37,10 +37,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.app.syspoint.R;
+import com.app.syspoint.interactor.client.ClientInteractor;
+import com.app.syspoint.interactor.client.ClientInteractorImp;
 import com.app.syspoint.interactor.product.GetProductInteractor;
 import com.app.syspoint.interactor.product.GetProductsInteractorImp;
 import com.app.syspoint.models.Product;
+import com.app.syspoint.repository.objectBox.dao.ClientDao;
 import com.app.syspoint.repository.objectBox.dao.ProductDao;
+import com.app.syspoint.repository.objectBox.entities.ClientBox;
 import com.app.syspoint.repository.objectBox.entities.ProductBox;
 import com.app.syspoint.utils.Actividades;
 import com.app.syspoint.utils.Constants;
@@ -153,6 +157,10 @@ public class RegistrarProductoActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+
+
+
         switch (item.getItemId()){
             case android.R.id.home:
                 finish();
@@ -487,8 +495,11 @@ public class RegistrarProductoActivity extends AppCompatActivity {
 
     public String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 0, baos);
         imageByteArray = baos.toByteArray();
         return Base64.encodeToString(imageByteArray, Base64.DEFAULT);
     }
+
+
+
 }
