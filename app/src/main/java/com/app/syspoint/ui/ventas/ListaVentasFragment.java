@@ -543,39 +543,39 @@ public class ListaVentasFragment extends Fragment {
         switch (item.getItemId()) {
 
             case R.id.activaBluetooth:
-                    if (isBluetoothEnabled()){
-                        if (mBTSocket != null){
-                            final PrettyDialog dialog = new PrettyDialog(getContext());
-                            dialog.setTitle("Conexión")
-                                    .setTitleColor(R.color.purple_500)
-                                    .setMessage("El bluetooth ya esta habilitado...")
-                                    .setMessageColor(R.color.purple_700)
-                                    .setAnimationEnabled(false)
-                                    .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
-                                        @Override
-                                        public void onClick() {
-                                            dialog.dismiss();
-                                        }
-                                    })
-                                    .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
-                                        @Override
-                                        public void onClick() {
-                                            dialog.dismiss();
-                                        }
-                                    });
-                            dialog.setCancelable(false);
-                            dialog.show();
-                            return true;
-                        }else {
-                            if (isConfigPrinter()) {
-                                if (!isBluetoothEnabled()) {
-                                    Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                    startActivityForResult(enableBluetooth, 0);
-                                }
-                                initPrinter();
+                if (isBluetoothEnabled()){
+                    if (mBTSocket != null){
+                        final PrettyDialog dialog = new PrettyDialog(getContext());
+                        dialog.setTitle("Conexión")
+                                .setTitleColor(R.color.purple_500)
+                                .setMessage("El bluetooth ya esta habilitado...")
+                                .setMessageColor(R.color.purple_700)
+                                .setAnimationEnabled(false)
+                                .setIcon(R.drawable.pdlg_icon_info, R.color.purple_500, new PrettyDialogCallback() {
+                                    @Override
+                                    public void onClick() {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .addButton(getString(R.string.confirmar_dialog), R.color.pdlg_color_white, R.color.purple_500, new PrettyDialogCallback() {
+                                    @Override
+                                    public void onClick() {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        dialog.setCancelable(false);
+                        dialog.show();
+                        return true;
+                    }else {
+                        if (isConfigPrinter()) {
+                            if (!isBluetoothEnabled()) {
+                                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                startActivityForResult(enableBluetooth, 0);
                             }
+                            initPrinter();
                         }
                     }
+                }
 
                 return true;
 

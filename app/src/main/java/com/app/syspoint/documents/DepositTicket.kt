@@ -21,11 +21,17 @@ class DepositTicket: BaseTicket() {
                 Constants.NUTRIRICA_CLIENT_ID -> {
                     buildNutriricaHeader()
                 }
-                Constants.DON_AQUI_CLIENT_ID -> {
-                    buildDonAquiHeader()
+                Constants.TOMAGUA_CLIENT_ID -> {
+                    buildTomaguaHeader()
                 }
                 Constants.PRUEBAS_CLIENT_ID -> {
                     buildPruebasHeader()
+                }
+                Constants.PARATY_CLIENT_ID -> {
+                    buildParatyHeader()
+                }
+                Constants.TEWAI_CLIENT_ID -> {
+                    buildTewaiHeader()
                 }
                 else -> { // default Tenet
                     buildTenetHeader()
@@ -121,7 +127,7 @@ class DepositTicket: BaseTicket() {
                 "================================" + Constants.NEW_LINE
     }
 
-    override fun buildDonAquiHeader(): String {
+    override fun buildTomaguaHeader(): String {
         val cobrosBox = box as CobrosBox
 
         val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
@@ -214,5 +220,76 @@ class DepositTicket: BaseTicket() {
                 "SALDO/TIC    ABONO" + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE
     }
+
+    override fun buildParatyHeader(): String {
+        val cobrosBox = box as CobrosBox
+
+        val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
+        else {
+            val employee = EmployeeDao().getEmployeeByID(cobrosBox.empleadoId)
+            if (employee != null) employee.nombre + Constants.NEW_LINE
+            else Constants.EMPTY_STRING + Constants.NEW_LINE
+        }
+
+        val employeeBox = getEmployee()
+
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
+
+        return  "             PARATY             " + Constants.NEW_LINE +
+                "  Franco Aaron Flores Castillo  " + Constants.NEW_LINE +
+                "      Ciudades Hermanas 722     " + Constants.NEW_LINE +
+                "  Lomas de Guadalupe C.P. 80250 " + Constants.NEW_LINE +
+                "          FOCF851204CN6         " + Constants.NEW_LINE +
+                "          (667) 481-8105        " + Constants.NEW_LINE +
+                "    parati.aguacln@gmail.com    " + Constants.NEW_LINE +
+                "          www.paraty.com        " + Constants.NEW_LINE + Constants.NEW_LINE +
+                "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
+                "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
+                "VENDEDOR:" + seller +
+                "CLIENTE :" + cobrosBox.cliente.target.cuenta + Constants.NEW_LINE +
+                "" + cobrosBox.cliente.target.nombre_comercial + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO          TICKET" + Constants.NEW_LINE +
+                "SALDO/TIC    ABONO" + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildTewaiHeader(): String {
+        val cobrosBox = box as CobrosBox
+
+        val seller = if (cobrosBox?.empleado?.target != null) cobrosBox.empleado.target.nombre + Constants.NEW_LINE
+        else {
+            val employee = EmployeeDao().getEmployeeByID(cobrosBox.empleadoId)
+            if (employee != null) employee.nombre + Constants.NEW_LINE
+            else Constants.EMPTY_STRING + Constants.NEW_LINE
+        }
+
+        val employeeBox = getEmployee()
+
+        val sellers = if (employeeBox != null)
+            employeeBox.nombre + Constants.NEW_LINE
+        else Constants.EMPTY_STRING + Constants.NEW_LINE
+
+        return  "             TE WAI             " + Constants.NEW_LINE +
+                "     Benito Juarez #344 PTE     " + Constants.NEW_LINE +
+                "        Centro C.P. 80000       " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "        RFC: HWA160603KW7       " + Constants.NEW_LINE +
+                "         (667) 390-0701         " + Constants.NEW_LINE + Constants.NEW_LINE +
+                "COBRANZA:" + cobrosBox.cobro + Constants.NEW_LINE +
+                "FECHA   :" + cobrosBox.fecha + Constants.NEW_LINE +
+                "VENDEDOR:" + seller +
+                "CLIENTE :" + cobrosBox.cliente.target.cuenta + Constants.NEW_LINE +
+                "" + cobrosBox.cliente.target.nombre_comercial + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO          TICKET" + Constants.NEW_LINE +
+                "SALDO/TIC    ABONO" + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+
+
 
 }

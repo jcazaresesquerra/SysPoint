@@ -47,11 +47,17 @@ class SellTicket: BaseTicket() {
             Constants.NUTRIRICA_CLIENT_ID -> {
                 buildNutriricaHeader()
             }
-            Constants.DON_AQUI_CLIENT_ID -> {
-                buildDonAquiHeader()
+            Constants.TOMAGUA_CLIENT_ID -> {
+                buildTomaguaHeader()
             }
             Constants.PRUEBAS_CLIENT_ID -> {
                 buildPruebasHeader()
+            }
+            Constants.PARATY_CLIENT_ID -> {
+                buildParatyHeader()
+            }
+            Constants.TEWAI_CLIENT_ID -> {
+                buildTewaiHeader()
             }
             else -> { // default Tenet
                 buildTenetHeader()
@@ -195,7 +201,7 @@ class SellTicket: BaseTicket() {
                 "================================" + Constants.NEW_LINE
     }
 
-    override fun buildDonAquiHeader(): String {
+    override fun buildTomaguaHeader(): String {
         val sellBox = box as SellBox
 
         val vendedor = if (sellBox?.employee?.target != null) {
@@ -217,14 +223,14 @@ class SellTicket: BaseTicket() {
                 "        RFC:CAGV951105KR3       " + Constants.NEW_LINE +
                 "         (667) 320-4000         " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
-                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
-                vendedor +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
@@ -253,14 +259,14 @@ class SellTicket: BaseTicket() {
                 "         (667) 455-9828         " + Constants.NEW_LINE +
                 " ALEXI DE JESUS MENDEZ COYANTES " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
-                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
-                vendedor +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
@@ -288,14 +294,50 @@ class SellTicket: BaseTicket() {
                 "         (667) 208-1920         " + Constants.NEW_LINE +
                 " JESUS OSVALDO CAZARES ESQUERRA " + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
-                "" + Constants.NEW_LINE +
-                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE +
-                vendedor +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
                 "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
                 "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildTewaiHeader(): String {
+
+        val sellBox = box as SellBox
+
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
+        } else {
+            val employeeBox = CacheInteractor().getSeller()
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
+            else ""
+        }
+
+        return  "             TE WAI             " + Constants.NEW_LINE +
+                "     Benito Juarez #344 PTE     " + Constants.NEW_LINE +
+                "        Centro C.P. 80000       " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "        RFC: HWA160603KW7       " + Constants.NEW_LINE +
+                "         (667) 390-0701         " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
                 "" + Constants.NEW_LINE +
                 "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE +
                 "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
@@ -303,7 +345,42 @@ class SellTicket: BaseTicket() {
     }
 
 
+    override fun buildParatyHeader(): String {
 
+        val sellBox = box as SellBox
 
+        val vendedor = if (sellBox?.employee?.target != null) {
+            "Vendedor:" + sellBox.employee.target.nombre + Constants.NEW_LINE
+        } else {
+            val employeeBox = CacheInteractor().getSeller()
+            val sessionBox = SessionDao().getUserSession()
+            val employee = EmployeeDao().getEmployeeByID(sessionBox?.empleadoId ?: sellBox.empleadoId)
+            if (employeeBox != null) "Vendedor:" + employeeBox.nombre + Constants.NEW_LINE
+            else if (employee != null) "Vendedor:" + employee.nombre + Constants.NEW_LINE
+            else ""
+        }
+
+        return  "             PARATY             " + Constants.NEW_LINE +
+                "  Franco Aaron Flores Castillo  " + Constants.NEW_LINE +
+                "      Ciudades Hermanas 722     " + Constants.NEW_LINE +
+                "  Lomas de Guadalupe C.P. 80250 " + Constants.NEW_LINE +
+                "          FOCF851204CN6         " + Constants.NEW_LINE +
+                "          (667) 481-8105        " + Constants.NEW_LINE +
+                "    parati.aguacln@gmail.com    " + Constants.NEW_LINE +
+                "          www.paraty.com        " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "(" + sellBox.client.target.cuenta + ")  " + sellBox.client.target.nombre_comercial + Constants.NEW_LINE + vendedor +
+                "" + sellBox.fecha + " " + sellBox.hora + "" + Constants.NEW_LINE +
+                "FOLIO FINAL:         " + sellBox.ticket + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "          NOTA DE VENTA         " + Constants.NEW_LINE +
+                "             " + sellBox.tipo_venta?.toUpperCase() +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
 
 }

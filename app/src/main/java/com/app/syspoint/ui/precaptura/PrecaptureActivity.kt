@@ -1,6 +1,7 @@
 package com.app.syspoint.ui.precaptura
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -140,6 +141,8 @@ class PrecaptureActivity: AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
+
+
 
     override fun onConnected(bundle: Bundle?) {
         updateLastLocation(true)

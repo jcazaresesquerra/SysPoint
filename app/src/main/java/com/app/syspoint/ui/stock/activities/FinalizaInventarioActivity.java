@@ -110,9 +110,9 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
         }
 
 
-        // Ask for location permission if not already allowed
+        // Ask for location permission if not already allowed //esto lo comento para verificar si el ticket ya no suele salir grande
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+           ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
 
 
@@ -337,8 +337,6 @@ public class FinalizaInventarioActivity extends AppCompatActivity {
 
             if(mConnectedThread != null) //First check to make sure thread created
                 mConnectedThread.write(templateTicket);
-
-
 
         } else if (id == android.R.id.home) {
             Timber.tag(TAG).d("home -> click");

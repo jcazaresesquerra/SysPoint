@@ -14,9 +14,11 @@ class Constants {
         const val SYSPOINT_FLAVOR_TAG = "syspoint"
 
         const val TENET_CLIENT_ID = "syspoint"
-        const val DON_AQUI_CLIENT_ID = "don_aqui"
+        const val TOMAGUA_CLIENT_ID = "tomagua"
         const val NUTRIRICA_CLIENT_ID = "nutririca"
         const val PRUEBAS_CLIENT_ID = "pruebas"
+        const val PARATY_CLIENT_ID = "paraty"
+        const val TEWAI_CLIENT_ID = "tewai"
 
         const val CONTADO = "Contado"
 

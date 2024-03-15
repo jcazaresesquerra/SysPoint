@@ -164,7 +164,7 @@ tools:context=".ui.clientes.MapsClienteActivity">
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="match_parent"
-                            android:src="@drawable/market" />
+                            android:src="@drawable/location" />
 
                         <TextView
                             android:id="@+id/pickUpText"

@@ -18,7 +18,7 @@ abstract class BaseTicket {
        return ""
     }
 
-    open fun buildDonAquiHeader(): String {
+    open fun buildTomaguaHeader(): String {
         return ""
     }
 
@@ -29,6 +29,13 @@ abstract class BaseTicket {
         return ""
     }
 
+    open fun buildParatyHeader(): String {
+        return ""
+    }
+
+    open fun buildTewaiHeader(): String {
+        return ""
+    }
     open fun getEmployee(): EmployeeBox? {
         var vendedoresBean = AppBundle.getUserBox()
         if (vendedoresBean == null) {
@@ -41,6 +48,8 @@ abstract class BaseTicket {
         }
         return vendedoresBean
     }
+
+
 
 
 }

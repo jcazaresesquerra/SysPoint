@@ -108,14 +108,14 @@ public class CApturaComprobanteActivity extends AppCompatActivity {
                 || shouldShowRequestPermissionRationale(Manifest.permission.CALL_PHONE)
                 || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION))) {
             requestPermissions(
-                   new String[]{
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.BLUETOOTH,
-                        Manifest.permission.CALL_PHONE,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                     }, 100
+                    new String[]{
+                            Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.BLUETOOTH,
+                            Manifest.permission.CALL_PHONE,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                    }, 100
             );
         }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);

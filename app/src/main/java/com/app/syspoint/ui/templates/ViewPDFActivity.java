@@ -171,6 +171,10 @@ public class ViewPDFActivity extends AppCompatActivity {
             }
         }).execute(), 100);
 
+
+
+
+
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (isConfigPrinter()) {
@@ -186,7 +190,7 @@ public class ViewPDFActivity extends AppCompatActivity {
         }
 
 
-        // Ask for location permission if not already allowed
+        // Ask for location permission if not already allowed //esto lo comento para verificar si el ticket ya no suele salir grande
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 

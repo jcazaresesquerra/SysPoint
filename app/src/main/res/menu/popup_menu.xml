@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/call_client"
-        android:title="Llamar 📱" />
+        android:title="Llamar" />
 
     <item
         android:id="@+id/send_whatsapp"
-        android:title="Requiere Servicio❓"/>
+        android:title="Requiere Servicio"/>
 
 </menu>

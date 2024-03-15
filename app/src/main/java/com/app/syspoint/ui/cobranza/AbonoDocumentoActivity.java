@@ -23,6 +23,8 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
     private EditText editTextCantidad;
     private TextView textView_importe_cobranza_documento;
     private double saldoDocumento;
+
+    private String nombre_comercial;
     private Switch aSwitch;
 
     @Override
@@ -35,6 +37,7 @@ public class AbonoDocumentoActivity extends AppCompatActivity {
     private void init() {
 
         this.editTextCantidad = findViewById(R.id.ti_importe_documento);
+
 
         this.textView_importe_cobranza_documento = findViewById(R.id.tv_importe_cobranza_documento);
 

@@ -15,6 +15,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -73,6 +76,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
     private TextView pickUpText;
     Button setPickUpButton;
     Button bnt_direcction_client;
+
     String numero = "";
     String calle = "";
     String localidad = "";
@@ -165,7 +169,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                 if (latLng != null) {
                     int height = 150;
                     int width = 160;
-                    BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.market);
+                    BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.location);
                     Bitmap b = bitmapdraw.getBitmap();
                     Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
                     if (gMap != null) {
@@ -259,6 +263,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
                                          lngStr = String.valueOf(latlang.latitude);
                                      }
 
+
                                      lat = latStr;
                                      lng = lngStr;
                                      latMarker= lat;
@@ -294,6 +299,21 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+        // Dentro del método onMapReady o en cualquier otro lugar donde quieras mostrar el mensaje
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsClienteActivity.this);
+        builder.setMessage("Selecciona la ubicación exacta manteniendo pulsado el marcador en el mapa y moviéndolo a la posición deseada.")
+                .setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Código que se ejecuta cuando se hace clic en el botón "Aceptar"
+                        dialog.dismiss(); // Cierra el diálogo
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+
+
         gMap = googleMap;
         gMap.getUiSettings().setMyLocationButtonEnabled(true);
         gMap.getUiSettings().setMapToolbarEnabled(true);
@@ -305,37 +325,50 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
 
     }
 
+    private Marker myLocationMarker; // Declarar una variable de miembro para almacenar el marcador de ubicación
+
     private void updateLastLocation(boolean move) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCATION);
             return;
         }
- 
+
         lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(
                 googleApiClient);
         gMap.setMyLocationEnabled(true);
         int height = 150;
         int width = 160;
-        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.market);
+        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.location);
         Bitmap b = bitmapdraw.getBitmap();
         Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
         if (lastKnownLocation != null) {
             LatLng place =  new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             if (move) {
-                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), 20f)
+                if (myLocationMarker == null) {
+                    myLocationMarker = gMap.addMarker(new MarkerOptions()
+                            .position(place)
+                            .title("Aqui estoy")
+                            .draggable(true)
+                            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+                } else {
+                    myLocationMarker.setPosition(place); // Mover el marcador a la nueva ubicación
+                }
 
-                );
-                gMap.addMarker(new MarkerOptions().position(place).title("Aqui estoy").draggable(true).icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
-                gMap.animateCamera(CameraUpdateFactory.zoomTo(20f));
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        place, 15f));
+                gMap.animateCamera(CameraUpdateFactory.zoomTo(15f));
+
+                // Muestra la ventana de información del marcador automáticamente
+                myLocationMarker.showInfoWindow();
             }
 
-
-           // fetchNearDriver(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+            // fetchNearDriver(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
 
             onPickUp();
         }
     }
+
+
 
     private void openAutocompleteActivity(int request_code) {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG);
@@ -397,6 +430,7 @@ public class MapsClienteActivity extends AppCompatActivity implements OnMapReady
            pais = cityName;
            cp = codigo;
            address = direccion;
+
 
            runOnUiThread(() -> pickUpText.setText(address));
 

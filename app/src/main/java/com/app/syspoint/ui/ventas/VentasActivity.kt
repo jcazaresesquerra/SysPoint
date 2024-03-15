@@ -181,6 +181,7 @@ class VentasActivity: AppCompatActivity(), LocationListener {
             return
         }
 
+
         //Validamos si existe el producto
         if (viewModel.validaProducto(productoBean.articulo!!)) {
             showProductExists()
@@ -546,6 +547,8 @@ class VentasActivity: AppCompatActivity(), LocationListener {
 
     //Apartir de aqui empezamos a obtener la direciones y coordenadas
     private fun locationStart() {
+
+/*
         val mlocManager = getSystemService(LOCATION_SERVICE) as LocationManager
 
         val gpsEnabled = mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -564,8 +567,9 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         }
         mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f, this)
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-    }
 
+*/
+    }
 
     override fun onLocationChanged(location: Location) {
         /*Geocodificacion- Proceso de conversión de coordenadas a direccion*/
@@ -647,10 +651,20 @@ class VentasActivity: AppCompatActivity(), LocationListener {
         headerBinding.radioContado.setVisible()
 
         if (sellType == SellType.CREDITO) {
-            headerBinding.radioCredito.setVisible()
+            headerBinding.radioCredito.isEnabled = true; // Habilitar el componente
         } else {
-            headerBinding.radioCredito.setInvisible()
+            headerBinding.radioCredito.isEnabled = false; // Inhabilitar el componente
         }
+
+        /*
+           if (sellType == SellType.CREDITO) {
+                        headerBinding.radioCredito.setVisible()
+                    } else {
+                        headerBinding.radioCredito.setInvisible()
+                    }
+         */
+
+
     }
 
     /*******************************   DIALOGS ********************************/

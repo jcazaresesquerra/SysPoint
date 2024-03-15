@@ -19,11 +19,17 @@ class StockTicket: BaseTicket() {
             Constants.NUTRIRICA_CLIENT_ID -> {
                 buildNutriricaHeader()
             }
-            Constants.DON_AQUI_CLIENT_ID -> {
-                buildDonAquiHeader()
+            Constants.TOMAGUA_CLIENT_ID -> {
+                buildTomaguaHeader()
             }
             Constants.PRUEBAS_CLIENT_ID -> {
                 buildPruebasHeader()
+            }
+            Constants.PARATY_CLIENT_ID -> {
+                buildParatyHeader()
+            }
+            Constants.TEWAI_CLIENT_ID -> {
+                buildTewaiHeader()
             }
             else -> { // default Tenet
                 buildTenetHeader()
@@ -84,7 +90,7 @@ class StockTicket: BaseTicket() {
 
         val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
 
-        return "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
+        return  "     AGUA POINT S.A. DE C.V.    " + Constants.NEW_LINE +
                 "     Calz. Aeropuerto 4912 A    " + Constants.NEW_LINE +
                 "      San Rafael C.P. 80150     " + Constants.NEW_LINE +
                 "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
@@ -105,8 +111,34 @@ class StockTicket: BaseTicket() {
                 "================================" + Constants.NEW_LINE
     }
 
+    override fun buildParatyHeader(): String {
+        // get seller
+        val employeeBox = getEmployee()
 
-    override fun buildDonAquiHeader(): String {
+        val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
+
+        return  "             PARATY             " + Constants.NEW_LINE +
+                "  Franco Aaron Flores Castillo  " + Constants.NEW_LINE +
+                "      Ciudades Hermanas 722     " + Constants.NEW_LINE +
+                "  Lomas de Guadalupe C.P. 80250 " + Constants.NEW_LINE +
+                "          FOCF851204CN6         " + Constants.NEW_LINE +
+                "          (667) 481-8105        " + Constants.NEW_LINE +
+                "    parati.aguacln@gmail.com    " + Constants.NEW_LINE +
+                "          www.paraty.com        " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                vendedor +
+                "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "           INVENTARIO          " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
+    override fun buildTomaguaHeader(): String {
         // get seller
         val employeeBox = getEmployee()
 
@@ -181,4 +213,30 @@ class StockTicket: BaseTicket() {
                 "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
                 "================================" + Constants.NEW_LINE
     }
+
+    override fun buildTewaiHeader(): String {
+        // get seller
+        val employeeBox = getEmployee()
+
+        val vendedor = if (employeeBox != null) "" + employeeBox.nombre + Constants.NEW_LINE else ""
+
+        return  "             TE WAI             " + Constants.NEW_LINE +
+                "     Benito Juarez #344 PTE     " + Constants.NEW_LINE +
+                "        Centro C.P. 80000       " + Constants.NEW_LINE +
+                "        Culiacan, Sinaloa       " + Constants.NEW_LINE +
+                "        RFC: HWA160603KW7       " + Constants.NEW_LINE +
+                "         (667) 390-0701         " + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                vendedor +
+                "" + Utils.fechaActual() + " " + Utils.getHoraActual() + "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "" + Constants.NEW_LINE +
+                "           INVENTARIO          " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE +
+                "CONCEPTO / PRODUCTO             " + Constants.NEW_LINE +
+                "CANTIDAD     PRECIO     IMPORTE " + Constants.NEW_LINE +
+                "================================" + Constants.NEW_LINE
+    }
+
 }

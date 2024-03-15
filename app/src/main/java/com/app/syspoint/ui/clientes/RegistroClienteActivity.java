@@ -120,6 +120,7 @@ public class RegistroClienteActivity extends AppCompatActivity {
             String cuenta = data.getStringExtra(Actividades.PARAM_1);
             inp_matriz_asignada_registro_cliente.setText(cuenta);
         }else if(requestCode == 300) {
+
             String numero = data.getStringExtra(Actividades.PARAM_1);
             String calle = data.getStringExtra(Actividades.PARAM_2);
             String localidad = data.getStringExtra(Actividades.PARAM_3);
